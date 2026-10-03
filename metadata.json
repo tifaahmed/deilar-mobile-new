@@ -1,0 +1,6 @@
+{
+  "name": "Deilar Medical - كرت الخصومات الطبية",
+  "description": "منصة وبطاقة الخصومات الطبية الشاملة للمستشفيات والعيادات والصيدليات ومعامل التحاليل مع خريطة تفاعلية لتحديد أقرب مقدمي الخدمة وإدارة الاشتراكات.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
