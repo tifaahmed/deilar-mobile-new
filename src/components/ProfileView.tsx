@@ -31,11 +31,14 @@ import {
   Mail,
   Phone,
   FileText,
-  Send
+  Send,
+  Languages,
+  Globe
 } from 'lucide-react';
 import { Beneficiary, UsageRecord } from '../types';
 import { OfficialDeilarCard } from './OfficialDeilarCard';
 import { downloadDeilarCardImage } from '../utils/downloadCard';
+import { useLanguage } from '../context/LanguageContext';
 
 export type ProfileSubSection = 'card' | 'members' | 'support' | 'personal' | 'theme';
 
@@ -55,6 +58,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onThemeChange,
   onAddBeneficiary,
 }) => {
+  const { language, setLanguage, t, isAr, brandName } = useLanguage();
+
   // Active sub-section state (Default to 'card')
   const [activeSection, setActiveSection] = useState<ProfileSubSection>('card');
 
@@ -67,10 +72,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   // Personal Info form state
   const [personalInfo, setPersonalInfo] = useState({
-    fullName: 'مصطفى مرسي',
+    fullName: isAr ? 'مصطفى مرسي' : 'Mostafa Morsy',
     phone: '01020709993',
     email: 'mostafa.morsy3110@gmail.com',
-    governorate: 'القاهرة - المعادي',
+    governorate: isAr ? 'القاهرة - المعادي' : 'Cairo - Maadi',
     nationalId: '29508150102345',
   });
   const [personalSaveSuccess, setPersonalSaveSuccess] = useState(false);
@@ -78,12 +83,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   // New Beneficiary form state
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [newMemberName, setNewMemberName] = useState('');
-  const [newMemberRelation, setNewMemberRelation] = useState('زوجة');
+  const [newMemberRelation, setNewMemberRelation] = useState(isAr ? 'زوجة' : 'Wife');
   const [newMemberNid, setNewMemberNid] = useState('');
   const [addMemberSuccess, setAddMemberSuccess] = useState(false);
 
   // Support ticket form state
-  const [ticketTopic, setTopic] = useState('استفسار عام');
+  const [ticketTopic, setTopic] = useState('ticketTopicGeneral');
   const [ticketMessage, setTicketMessage] = useState('');
   const [ticketSent, setTicketSent] = useState(false);
 
@@ -113,8 +118,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   const handleShareWhatsApp = () => {
+    const cardTitle = isAr ? `بطاقة ${brandName} للخصم الطبي المعتمدة 🎫` : `${brandName} Certified Medical Discount Card 🎫`;
     const text = encodeURIComponent(
-      `بطاقة ديلار للخصم الطبي المعتمدة 🎫\nالاسم: ${currentBeneficiary.name}\nرقم العضوية: ${memId}\nالصلاحية: حتى 31/12/2027\nخصومات تصل حتى 70% في المستشفيات والمعامل.\nالموقع: https://deilar.com`
+      `${cardTitle}\n${isAr ? 'الاسم' : 'Name'}: ${currentBeneficiary.name}\n${isAr ? 'رقم العضوية' : 'Membership ID'}: ${memId}\n${isAr ? 'الصلاحية' : 'Validity'}: 31/12/2027\n${isAr ? 'خصومات تصل حتى 70% في المستشفيات والمعامل.' : 'Discounts up to 70% at hospitals & labs.'}\nhttps://deilar.com`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -166,7 +172,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const isDark = theme === 'dark';
 
   return (
-    <div className="space-y-4 pb-24 pt-2 animate-in fade-in duration-200 text-right">
+    <div className={`space-y-4 pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
       {/* 1. Profile Identity Header */}
       <section className={`rounded-2xl p-4 border transition-colors shadow-2xs ${
         isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200/90 text-slate-900'
@@ -174,7 +180,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#941946] to-[#6d1132] text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
-              <span>{personalInfo.fullName.charAt(0) || 'م'}</span>
+              <span>{personalInfo.fullName.charAt(0) || 'M'}</span>
             </div>
 
             <div>
@@ -182,50 +188,50 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <h2 className={`text-base font-bold ${isDark ? 'text-[#F1F5F9]' : 'text-slate-900'}`}>{personalInfo.fullName}</h2>
                 <span className="text-[10px] font-bold text-emerald-700 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  عضو نشط
+                  {t('activeMember')}
                 </span>
               </div>
-              <p className="text-xs text-[#c89e43] font-bold mt-0.5">رقم العضوية: MEM-1000</p>
+              <p className="text-xs text-[#c89e43] font-bold mt-0.5">{t('membershipId')}: MEM-1000</p>
               <p className={`text-[11px] font-mono ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{personalInfo.phone}</p>
             </div>
           </div>
 
           <button
             onClick={() => handleDownload('front')}
-            className="px-3 py-1.5 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1 transition-colors shrink-0"
+            className="px-3 py-1.5 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1 transition-colors shrink-0 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>تحميل الكرت</span>
+            <span>{t('downloadCardShort')}</span>
           </button>
         </div>
       </section>
 
-      {/* 2. Interactive Navigation Tabs (التقسيمات الخمسة) */}
+      {/* 2. Interactive Navigation Tabs (5 Sections) */}
       <div className={`p-1.5 rounded-2xl border transition-colors flex items-center gap-1 overflow-x-auto no-scrollbar shadow-2xs ${
         isDark ? 'bg-[#181B26] border-white/[0.08]' : 'bg-white border-slate-200/90'
       }`}>
         <button
           onClick={() => setActiveSection('card')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeSection === 'card'
               ? 'bg-[#941946] text-white shadow-xs'
               : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <CreditCard className="w-3.5 h-3.5" />
-          <span>الكرت الطبي</span>
+          <span>{t('tabCard')}</span>
         </button>
 
         <button
           onClick={() => setActiveSection('members')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeSection === 'members'
               ? 'bg-[#941946] text-white shadow-xs'
               : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>أفراد الأسرة</span>
+          <span>{t('tabMembers')}</span>
           <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-white/20">
             {beneficiaries.length}
           </span>
@@ -233,38 +239,38 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
         <button
           onClick={() => setActiveSection('support')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeSection === 'support'
               ? 'bg-[#941946] text-white shadow-xs'
               : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <Headphones className="w-3.5 h-3.5" />
-          <span>الدعم الفني</span>
+          <span>{t('tabSupport')}</span>
         </button>
 
         <button
           onClick={() => setActiveSection('personal')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeSection === 'personal'
               ? 'bg-[#941946] text-white shadow-xs'
               : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <UserCheck className="w-3.5 h-3.5" />
-          <span>بياناتي</span>
+          <span>{t('tabPersonal')}</span>
         </button>
 
         <button
           onClick={() => setActiveSection('theme')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all ${
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
             activeSection === 'theme'
               ? 'bg-[#941946] text-white shadow-xs'
               : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
           <Palette className="w-3.5 h-3.5" />
-          <span>المظهر</span>
+          <span>{t('tabTheme')}</span>
         </button>
       </div>
 
@@ -276,10 +282,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-[#941946]" />
-              <h3 className="text-xs font-bold">كرت ديلار الطبي الخاص بحسابك</h3>
+              <h3 className="text-xs font-bold">{t('userCardTitle')}</h3>
             </div>
             <span className="text-[10px] font-bold text-[#c89e43] bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/30">
-              رسمي ومعتمد
+              {t('officialCertified')}
             </span>
           </div>
 
@@ -290,13 +296,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <button
                   key={b.id}
                   onClick={() => setSelectedBeneficiaryId(b.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${
+                  className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
                     selectedBeneficiaryId === b.id
                       ? 'bg-[#941946] text-white shadow-xs'
                       : isDark ? 'bg-[#1E2330] text-[#94A3B8] border border-white/[0.08]' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
-                  {b.name} ({b.relation || 'رئيسي'})
+                  {b.name} ({b.relation || (isAr ? 'رئيسي' : 'Primary')})
                 </button>
               ))}
             </div>
@@ -315,7 +321,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               isDark ? 'text-[#94A3B8]' : 'text-slate-400'
             }`}>
               <RotateCw className="w-3 h-3 text-[#c89e43]" />
-              <span>اضغط على الكرت لقلب الوجهين (الأمامي / الخلفي)</span>
+              <span>{t('tapToFlip')}</span>
             </p>
           </div>
 
@@ -328,7 +334,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 className="py-2.5 px-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>تحميل وجه الكارت (PNG)</span>
+                <span>{t('downloadFront')}</span>
               </button>
 
               <button
@@ -341,57 +347,57 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 }`}
               >
                 <Download className="w-4 h-4" />
-                <span>تحميل ظهر الكارت (PNG)</span>
+                <span>{t('downloadBack')}</span>
               </button>
             </div>
 
             <div className="grid grid-cols-3 gap-1.5 pt-1">
               <button
                 onClick={() => setIsFlipped(!isFlipped)}
-                className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border ${
+                className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border cursor-pointer ${
                   isDark ? 'bg-[#1E2330] hover:bg-[#252c3d] text-[#F1F5F9] border-white/[0.08]' : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200/70'
                 }`}
               >
                 <RotateCw className="w-3.5 h-3.5 text-[#c89e43]" />
-                <span>{isFlipped ? 'الوجه الأمامي' : 'ظهر الكرت'}</span>
+                <span>{isFlipped ? t('frontSide') : t('backSide')}</span>
               </button>
 
               <button
                 onClick={handleCopyCardId}
-                className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border ${
+                className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border cursor-pointer ${
                   isDark ? 'bg-[#1E2330] hover:bg-[#252c3d] text-[#F1F5F9] border-white/[0.08]' : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200/70'
                 }`}
               >
                 {copiedId ? (
                   <>
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-emerald-400">تم النسخ!</span>
+                    <span className="text-emerald-400">{t('copied')}</span>
                   </>
                 ) : (
                   <>
                     <Copy className={`w-3.5 h-3.5 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
-                    <span>نسخ الرقم</span>
+                    <span>{t('copyId')}</span>
                   </>
                 )}
               </button>
 
               <button
                 onClick={handleShareWhatsApp}
-                className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border ${
+                className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border cursor-pointer ${
                   isDark 
                     ? 'bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border-emerald-800/40' 
                     : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200/70'
                 }`}
               >
                 <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>مشاركة واتساب</span>
+                <span>{t('shareWhatsapp')}</span>
               </button>
             </div>
 
             {downloadSuccess && (
               <div className="p-2.5 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs text-emerald-400 flex items-center justify-center gap-1.5 animate-in fade-in">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="font-bold">تم حفظ كرت ديلار الطبي عالي الدقة على جهازك بنجاح!</span>
+                <span className="font-bold">{t('cardDownloadSuccess')}</span>
               </div>
             )}
           </div>
@@ -406,7 +412,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-[#941946]" />
-              <h3 className="text-xs font-bold">أفراد الأسرة المسجلين بالكرت ({beneficiaries.length})</h3>
+              <h3 className="text-xs font-bold">{t('familyMembersCount')} ({beneficiaries.length})</h3>
             </div>
             
             <button
@@ -414,12 +420,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               className="px-2.5 py-1 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>إضافة فرد جديد</span>
+              <span>{t('addNewMember')}</span>
             </button>
           </div>
 
           <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
-            جميع الأفراد أدناه مشمولين بنسب الخصم الطبية، اضغط على أي فرد لعرض بطاقته الشخصية.
+            {t('familyMembersDesc')}
           </p>
 
           <div className="space-y-2 pt-1">
@@ -446,7 +452,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                       <span className={`text-[10px] px-2 py-0.2 rounded-md ${
                         isDark ? 'bg-[#252c3d] text-[#94A3B8]' : 'bg-slate-200/80 text-slate-500'
                       }`}>
-                        {b.relation || 'حساب رئيسي'}
+                        {b.relation || t('primaryAccount')}
                       </span>
                     </div>
                     <p className={`text-[10px] font-mono mt-0.5 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{b.cardNumber}</p>
@@ -455,11 +461,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    مفعل ✓
+                    {t('activeStatus')}
                   </span>
                   <span className="text-xs font-bold text-[#941946] flex items-center gap-0.5">
-                    <span>عرض الكرت</span>
-                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>{t('viewCardAction')}</span>
+                    <ChevronLeft className={`w-3.5 h-3.5 ${isAr ? '' : 'rotate-180'}`} />
                   </span>
                 </div>
               </div>
@@ -472,10 +478,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               isDark ? 'bg-[#1E2330] border-white/[0.08]' : 'bg-rose-50/40 border-rose-200'
             }`}>
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold">إضافة فرد جديد إلى الكرت الطبي</h4>
+                <h4 className="text-xs font-bold">{t('addMemberTitle')}</h4>
                 <button
                   onClick={() => setShowAddMemberModal(false)}
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs cursor-pointer ${
                     isDark ? 'bg-[#252c3d] text-[#94A3B8]' : 'bg-slate-200 text-slate-600'
                   }`}
                 >
@@ -485,11 +491,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
               <form onSubmit={handleAddNewMember} className="space-y-2.5">
                 <div>
-                  <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>الاسم الكامل للفرد:</label>
+                  <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{t('memberNamePrompt')}</label>
                   <input
                     type="text"
                     required
-                    placeholder="مثال: ياسمين مصطفى مرسي"
+                    placeholder={isAr ? 'مثال: ياسمين مصطفى مرسي' : 'e.g. Yasmin Mostafa Morsy'}
                     value={newMemberName}
                     onChange={(e) => setNewMemberName(e.target.value)}
                     className={`w-full px-3 py-2 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
@@ -500,7 +506,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>صلة القرابة:</label>
+                    <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{t('relationPrompt')}</label>
                     <select
                       value={newMemberRelation}
                       onChange={(e) => setNewMemberRelation(e.target.value)}
@@ -508,20 +514,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200 text-slate-900'
                       }`}
                     >
-                      <option value="زوجة">زوجة</option>
-                      <option value="ابن">ابن</option>
-                      <option value="ابنة">ابنة</option>
-                      <option value="والد">والد</option>
-                      <option value="والدة">والدة</option>
-                      <option value="أخ / أخت">أخ / أخت</option>
+                      <option value={isAr ? 'زوجة' : 'Wife'}>{t('relWife')}</option>
+                      <option value={isAr ? 'ابن' : 'Son'}>{t('relSon')}</option>
+                      <option value={isAr ? 'ابنة' : 'Daughter'}>{t('relDaughter')}</option>
+                      <option value={isAr ? 'والد' : 'Father'}>{t('relFather')}</option>
+                      <option value={isAr ? 'والدة' : 'Mother'}>{t('relMother')}</option>
+                      <option value={isAr ? 'أخ / أخت' : 'Sibling'}>{t('relSibling')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>الرقم القومي (اختياري):</label>
+                    <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{t('nationalIdOptional')}</label>
                     <input
                       type="text"
-                      placeholder="14 رقم"
+                      placeholder="14 digits"
                       value={newMemberNid}
                       onChange={(e) => setNewMemberNid(e.target.value)}
                       className={`w-full px-3 py-2 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
@@ -535,7 +541,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   type="submit"
                   className="w-full py-2.5 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer"
                 >
-                  {addMemberSuccess ? 'تمت إضافة الفرد بنجاح! ✓' : 'تأكيد إضافة الفرد'}
+                  {addMemberSuccess ? t('memberAddedSuccess') : t('confirmAddMember')}
                 </button>
               </form>
             </div>
@@ -551,15 +557,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Headphones className="w-4 h-4 text-[#941946]" />
-              <h3 className="text-xs font-bold">فريق الدعم الفني وخدمة العملاء</h3>
+              <h3 className="text-xs font-bold">{t('supportTitle')}</h3>
             </div>
             <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
-              متاح 24/7
+              {t('supportAvailable247')}
             </span>
           </div>
 
           <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
-            فريق رعاية عملاء كرت ديلار الطبي متواجد على مدار الساعة للرد على استفساراتكم وحجز المستشفيات.
+            {t('supportDesc')}
           </p>
 
           {/* Quick Direct Buttons */}
@@ -571,7 +577,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               className="py-3 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-2xs"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>محادثة واتساب مباشرة</span>
+              <span>{t('directWhatsapp')}</span>
             </a>
 
             <a
@@ -581,7 +587,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               }`}
             >
               <PhoneCall className="w-4 h-4 text-amber-400" />
-              <span>اتصال هاتفي بالخط الساخن</span>
+              <span>{t('hotlineCall')}</span>
             </a>
           </div>
 
@@ -594,7 +600,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 isDark ? 'bg-[#1E2330] hover:bg-[#252c3d] text-[#F1F5F9] border-white/[0.08]' : 'bg-slate-50 hover:bg-slate-100 text-slate-800 border-slate-200'
               }`}
             >
-              <span>الموقع الرسمي لـ ديلار</span>
+              <span>{t('officialWebsite')}</span>
               <ExternalLink className={`w-3.5 h-3.5 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
             </a>
 
@@ -604,7 +610,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               rel="noreferrer"
               className="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
             >
-              <span>صفحتنا على فيسبوك</span>
+              <span>{t('facebookPage')}</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -615,7 +621,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           }`}>
             <h4 className="text-xs font-bold flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-[#941946]" />
-              <span>إرسال استفسار أو بلاغ لمشرف الخدمة:</span>
+              <span>{t('ticketSectionTitle')}</span>
             </h4>
 
             <form onSubmit={handleSendSupportTicket} className="space-y-2">
@@ -626,16 +632,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200 text-slate-900'
                 }`}
               >
-                <option value="استفسار عام">استفسار عام عن نسب الخصم</option>
-                <option value="شكوى فرع">إبلاغ عن عدم تطبيق الخصم بفرع معين</option>
-                <option value="حجز عملية">مساعدة في حجز عملية جراحية أو كشف استشاري</option>
-                <option value="طلب إضافة منشأة">اقتراح إضافة مستشفى أو معمل جديد للشبكة</option>
+                <option value="ticketTopicGeneral">{t('ticketTopicGeneral')}</option>
+                <option value="ticketTopicComplaint">{t('ticketTopicComplaint')}</option>
+                <option value="ticketTopicBooking">{t('ticketTopicBooking')}</option>
+                <option value="ticketTopicSuggest">{t('ticketTopicSuggest')}</option>
               </select>
 
               <textarea
                 required
                 rows={3}
-                placeholder="اكتب تفاصيل استفسارك أو طلبك هنا..."
+                placeholder={t('ticketPlaceholder')}
                 value={ticketMessage}
                 onChange={(e) => setTicketMessage(e.target.value)}
                 className={`w-full px-3 py-2 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
@@ -648,13 +654,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 className="w-full py-2.5 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>إرسال الرسالة إلى خدمة العملاء</span>
+                <span>{t('sendTicketBtn')}</span>
               </button>
 
               {ticketSent && (
                 <div className="p-2.5 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs text-emerald-400 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>تم استلام استفسارك بنجاح! سيتواصل معك ممثل خدمة العملاء عبر الهاتف أو الواتساب فوراً.</span>
+                  <span>{t('ticketSuccess')}</span>
                 </div>
               )}
             </form>
@@ -670,24 +676,24 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-[#941946]" />
-              <h3 className="text-xs font-bold">تعديل البيانات الشخصية للحساب</h3>
+              <h3 className="text-xs font-bold">{t('personalInfoTitle')}</h3>
             </div>
-            <span className={`text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>تحديث فوري</span>
+            <span className={`text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{t('instantUpdate')}</span>
           </div>
 
           <form onSubmit={handleSavePersonalInfo} className="space-y-3">
             <div>
               <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                الاسم بالكامل (كما يظهر على الكرت الطبي):
+                {t('fullNamePrompt')}
               </label>
               <div className="relative">
-                <User className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
+                <User className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
                 <input
                   type="text"
                   required
                   value={personalInfo.fullName}
                   onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
-                  className={`w-full pr-9 pl-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
+                  className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
                     isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
                   }`}
                 />
@@ -697,16 +703,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                  رقم الهاتف الأساسي:
+                  {t('phonePrompt')}
                 </label>
                 <div className="relative">
-                  <Phone className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
+                  <Phone className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
                   <input
                     type="tel"
                     required
                     value={personalInfo.phone}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
-                    className={`w-full pr-9 pl-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
+                    className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
                       isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
                     }`}
                   />
@@ -715,16 +721,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
               <div>
                 <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                  البريد الإلكتروني:
+                  {t('emailPrompt')}
                 </label>
                 <div className="relative">
-                  <Mail className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
+                  <Mail className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
                   <input
                     type="email"
                     required
                     value={personalInfo.email}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
-                    className={`w-full pr-9 pl-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
+                    className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
                       isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
                     }`}
                   />
@@ -735,15 +741,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                  المحافظة والمنطقة:
+                  {t('governoratePrompt')}
                 </label>
                 <div className="relative">
-                  <MapPin className={`w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
+                  <MapPin className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
                   <input
                     type="text"
                     value={personalInfo.governorate}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, governorate: e.target.value })}
-                    className={`w-full pr-9 pl-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
+                    className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
                       isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
                     }`}
                   />
@@ -752,7 +758,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
               <div>
                 <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                  الرقم القومي (14 رقم):
+                  {t('nationalIdPrompt')}
                 </label>
                 <input
                   type="text"
@@ -770,114 +776,185 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
             >
               <Save className="w-4 h-4" />
-              <span>حفظ التعديلات على الحساب</span>
+              <span>{t('saveChangesBtn')}</span>
             </button>
 
             {personalSaveSuccess && (
               <div className="p-2.5 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs text-emerald-400 flex items-center justify-center gap-2 animate-in fade-in">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="font-bold">تم حفظ وتحديث بياناتك الشخصية بنجاح!</span>
+                <span className="font-bold">{t('saveChangesSuccess')}</span>
               </div>
             )}
           </form>
         </section>
       )}
 
-      {/* 7. Section 5: مكان الشكل العام للتطبيق (Dark Theme & Light Theme) */}
+      {/* 7. Section 5: مكان الشكل العام للتطبيق ولغة التطبيق (Theme & Language) */}
       {activeSection === 'theme' && (
-        <section className={`rounded-2xl p-4 border transition-colors shadow-2xs space-y-4 animate-in fade-in duration-150 ${
+        <section className={`rounded-2xl p-4 border transition-colors shadow-2xs space-y-5 animate-in fade-in duration-150 ${
           isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200/90 text-slate-900'
         }`}>
-          <div className="flex items-center justify-between">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b pb-3 border-inherit">
             <div className="flex items-center gap-2">
               <Palette className="w-4 h-4 text-[#941946]" />
-              <h3 className="text-xs font-bold">الشكل العام ومظهر التطبيق (Theme)</h3>
+              <h3 className="text-xs font-bold">{t('appearanceSectionTitle')}</h3>
             </div>
-            <span className={`text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>تطبيق فوري</span>
+            <span className={`text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{t('instantUpdate')}</span>
           </div>
 
-          <p className={`text-[11px] leading-relaxed ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
-            اختر المظهر المفضل لتجربة استخدام مريحة لعينك في كافة شاشات التطبيق:
-          </p>
-
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            {/* Light Theme Card */}
-            <div
-              onClick={() => onThemeChange && onThemeChange('light')}
-              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2.5 relative ${
-                theme === 'light'
-                  ? 'border-[#941946] bg-rose-50/50 shadow-md ring-2 ring-[#941946]/20'
-                  : 'border-slate-200 hover:border-slate-300 bg-white'
-              }`}
-            >
-              {theme === 'light' && (
-                <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-[#941946] text-white flex items-center justify-center">
-                  <Check className="w-3 h-3" />
-                </div>
-              )}
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-xs">
-                <Sun className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-slate-900">الوضع الفاتح (Light)</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">ألوان نهارية ناصعة وواضحة</p>
-              </div>
-            </div>
-
-            {/* Dark Theme Card */}
-            <div
-              onClick={() => onThemeChange && onThemeChange('dark')}
-              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2.5 relative ${
-                theme === 'dark'
-                  ? 'border-[#941946] bg-[#181B26] shadow-md ring-2 ring-[#941946]/30 text-[#F1F5F9]'
-                  : 'border-white/[0.08] hover:border-white/20 bg-[#181B26] text-[#94A3B8]'
-              }`}
-            >
-              {theme === 'dark' && (
-                <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-[#941946] text-white flex items-center justify-center">
-                  <Check className="w-3 h-3" />
-                </div>
-              )}
-              <div className="w-12 h-12 rounded-2xl bg-[#1E2330] text-indigo-300 flex items-center justify-center shadow-xs border border-white/[0.08]">
-                <Moon className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-[#F1F5F9]">الوضع الداكن (Dark)</h4>
-                <p className="text-[10px] text-[#94A3B8] mt-0.5">خلفية #0A0E17 وكروت #181B26</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Palette Details Box */}
-          <div className={`p-3 rounded-xl border text-[11px] space-y-1.5 ${
-            isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#94A3B8]' : 'bg-slate-50 border-slate-200 text-slate-600'
-          }`}>
+          {/* 1. LANGUAGE SWITCHER (العربية "ديلر" / English "deilar") */}
+          <div className="space-y-2.5">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#c89e43] shrink-0" />
-              <span className={isDark ? 'text-[#F1F5F9]' : 'text-slate-900'}>
-                المظهر النشط حالياً: <b>{theme === 'dark' ? 'الوضع الداكن (Dark Mode)' : 'الوضع الفاتح (Light Mode)'}</b>
-              </span>
+              <Languages className="w-4 h-4 text-[#c89e43]" />
+              <h4 className="text-xs font-bold">{t('languageChoiceTitle')}</h4>
             </div>
-            {isDark && (
-              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px] text-[#94A3B8]">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#0A0E17] border border-white/20"></span>
-                  <span>الخلفية: #0A0E17</span>
+            <p className={`text-[11px] leading-relaxed ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
+              {t('languageChoiceDesc')}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 pt-0.5">
+              {/* Arabic Option */}
+              <div
+                onClick={() => setLanguage('ar')}
+                className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-2 relative ${
+                  language === 'ar'
+                    ? 'border-[#941946] bg-rose-50/50 dark:bg-[#941946]/20 shadow-md ring-2 ring-[#941946]/20'
+                    : isDark 
+                      ? 'border-white/[0.08] hover:border-white/20 bg-[#1E2330]' 
+                      : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🇪🇬</span>
+                  <div>
+                    <h5 className="text-xs font-bold">العربية</h5>
+                    <p className="text-[10px] text-amber-500 font-bold">اسم المنصة: ديلر</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#181B26] border border-white/20"></span>
-                  <span>الكروت: #181B26</span>
+                {language === 'ar' && (
+                  <div className="w-5 h-5 rounded-full bg-[#941946] text-white flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3" />
+                  </div>
+                )}
+              </div>
+
+              {/* English Option */}
+              <div
+                onClick={() => setLanguage('en')}
+                className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between gap-2 relative ${
+                  language === 'en'
+                    ? 'border-[#941946] bg-rose-50/50 dark:bg-[#941946]/20 shadow-md ring-2 ring-[#941946]/20'
+                    : isDark 
+                      ? 'border-white/[0.08] hover:border-white/20 bg-[#1E2330]' 
+                      : 'border-slate-200 hover:border-slate-300 bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🇬🇧</span>
+                  <div>
+                    <h5 className="text-xs font-bold">English</h5>
+                    <p className="text-[10px] text-amber-500 font-bold">Brand: deilar</p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#F1F5F9] border border-slate-400"></span>
-                  <span>نصوص رئيسية: #F1F5F9</span>
+                {language === 'en' && (
+                  <div className="w-5 h-5 rounded-full bg-[#941946] text-white flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-inherit pt-3 space-y-2.5">
+            {/* 2. THEME SWITCHER */}
+            <div className="flex items-center gap-2">
+              <Sun className="w-4 h-4 text-amber-500" />
+              <h4 className="text-xs font-bold">{t('themeChoiceTitle')}</h4>
+            </div>
+            <p className={`text-[11px] leading-relaxed ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
+              {t('themeChoiceDesc')}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              {/* Light Theme Card */}
+              <div
+                onClick={() => onThemeChange && onThemeChange('light')}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2.5 relative ${
+                  theme === 'light'
+                    ? 'border-[#941946] bg-rose-50/50 shadow-md ring-2 ring-[#941946]/20'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                }`}
+              >
+                {theme === 'light' && (
+                  <div className={`absolute top-2 ${isAr ? 'left-2' : 'right-2'} w-5 h-5 rounded-full bg-[#941946] text-white flex items-center justify-center`}>
+                    <Check className="w-3 h-3" />
+                  </div>
+                )}
+                <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-xs">
+                  <Sun className="w-6 h-6" />
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#94A3B8]"></span>
-                  <span>نصوص ثانوية: #94A3B8</span>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900">{t('lightMode')}</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{t('lightModeDesc')}</p>
                 </div>
               </div>
-            )}
+
+              {/* Dark Theme Card */}
+              <div
+                onClick={() => onThemeChange && onThemeChange('dark')}
+                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2.5 relative ${
+                  theme === 'dark'
+                    ? 'border-[#941946] bg-[#181B26] shadow-md ring-2 ring-[#941946]/30 text-[#F1F5F9]'
+                    : 'border-white/[0.08] hover:border-white/20 bg-[#181B26] text-[#94A3B8]'
+                }`}
+              >
+                {theme === 'dark' && (
+                  <div className={`absolute top-2 ${isAr ? 'left-2' : 'right-2'} w-5 h-5 rounded-full bg-[#941946] text-white flex items-center justify-center`}>
+                    <Check className="w-3 h-3" />
+                  </div>
+                )}
+                <div className="w-12 h-12 rounded-2xl bg-[#1E2330] text-indigo-300 flex items-center justify-center shadow-xs border border-white/[0.08]">
+                  <Moon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-[#F1F5F9]">{t('darkMode')}</h4>
+                  <p className="text-[10px] text-[#94A3B8] mt-0.5">{t('darkModeDesc')}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Palette Details Box */}
+            <div className={`p-3 rounded-xl border text-[11px] space-y-1.5 mt-2 ${
+              isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#94A3B8]' : 'bg-slate-50 border-slate-200 text-slate-600'
+            }`}>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#c89e43] shrink-0" />
+                <span className={isDark ? 'text-[#F1F5F9]' : 'text-slate-900'}>
+                  {t('activeThemeLabel')} <b>{theme === 'dark' ? t('darkMode') : t('lightMode')}</b> • {t('activeLangLabel')} <b>{isAr ? 'العربية (ديلر)' : 'English (deilar)'}</b>
+                </span>
+              </div>
+              {isDark && (
+                <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px] text-[#94A3B8]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#0A0E17] border border-white/20"></span>
+                    <span>Background: #0A0E17</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#181B26] border border-white/20"></span>
+                    <span>Cards: #181B26</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#F1F5F9] border border-slate-400"></span>
+                    <span>Text Primary: #F1F5F9</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#94A3B8]"></span>
+                    <span>Text Secondary: #94A3B8</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       )}

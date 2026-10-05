@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Store, MapPin, User } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export type NavTab = 'home' | 'store' | 'products' | 'map' | 'profile';
 
@@ -10,6 +11,7 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   const [isSlim, setIsSlim] = useState(false);
+  const { isAr } = useLanguage();
 
   const tabs = [
     {
@@ -26,7 +28,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
     },
     {
       id: 'map' as NavTab,
-      labelEn: 'Map & Doctors',
+      labelEn: 'Map',
       labelAr: 'الخريطة',
       icon: MapPin,
     },
@@ -72,11 +74,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
     return () => window.removeEventListener('scroll', handleScroll, { capture: true });
   }, []);
 
-  // Reset to normal size on tab switch
-  useEffect(() => {
-    setIsSlim(false);
-  }, [activeTab]);
-
   const activeIndex = tabs.findIndex(
     (t) => t.id === activeTab || (activeTab === 'products' && t.id === 'store')
   );
@@ -93,13 +90,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           SMOOTH SLIDING RED ARCH INDICATOR:
           - Automatically adjusts between Normal Size and Slim Size
           - Smooth gliding animation across tabs
-          - Suspended above bottom (never touches the bottom border)
+          - Correctly positions for both RTL (Arabic) and LTR (English)
         */}
         <div
           className="absolute top-0 bottom-0 pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1)]"
           style={{
             width: '25%',
-            right: `${safeIndex * 25}%`,
+            ...(isAr ? { right: `${safeIndex * 25}%` } : { left: `${safeIndex * 25}%` }),
           }}
         >
           <div className="w-full h-full flex flex-col items-center justify-start relative">
@@ -116,12 +113,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
                 }`}
                 fill="currentColor"
               >
-                {/* 
-                  Silhouette matching unnamed.jpg:
-                  - Top dome protruding above navbar line
-                  - Horizontal wings tapering along top border
-                  - Floating rounded cup suspended with clear white space below
-                */}
                 <path d="M 4 22 
                          C 18 22, 28 21, 35 21 
                          C 36 7, 43 2, 55 2 
@@ -145,13 +136,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className="relative z-10 flex flex-col items-center justify-center flex-1 h-full focus:outline-none select-none group min-h-[44px]"
+              className="relative z-10 flex flex-col items-center justify-center flex-1 h-full focus:outline-none select-none group min-h-[44px] cursor-pointer"
             >
-              {/* 
-                Icon:
-                - Active: Elevated into the dome, turns white
-                - Responsive to Normal vs Slim size
-              */}
+              {/* Icon */}
               <div
                 className={`transition-all duration-300 ease-out flex items-center justify-center ${
                   isActive
@@ -170,11 +157,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
                 />
               </div>
 
-              {/* 
-                Name / Label:
-                - Active: Inside the red bowl, white bold font
-                - Responsive to Normal vs Slim size
-              */}
+              {/* Label in Arabic or English */}
               <span
                 className={`tracking-tight transition-all duration-300 ${
                   isActive
@@ -186,7 +169,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
                       : 'font-medium text-slate-500 translate-y-0.5 text-[10px] group-hover:text-slate-700'
                 }`}
               >
-                {tab.labelAr}
+                {isAr ? tab.labelAr : tab.labelEn}
               </span>
             </button>
           );

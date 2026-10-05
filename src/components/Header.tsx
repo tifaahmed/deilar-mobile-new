@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, Smartphone, Monitor, Navigation, ShoppingCart } from 'lucide-react';
 import { PRESET_LOCATIONS } from '../utils/geo';
 import { DeilarLogo } from './DeilarLogo';
+import { useLanguage } from '../context/LanguageContext';
 
 interface HeaderProps {
   currentLocationName: string;
@@ -26,6 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [showLocationDropdown, setShowLocationDropdown] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(true);
+  const { language, brandName, t, isAr } = useLanguage();
 
   // Dynamic Scroll Direction Detection:
   // - Scroll DOWN -> Hide header smoothly
@@ -73,9 +75,13 @@ export const Header: React.FC<HeaderProps> = ({
           <DeilarLogo className="h-8 sm:h-9 w-auto" />
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">DEILAR</span>
+              <span className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">
+                {brandName}
+              </span>
             </div>
-            <p className="text-[10px] text-slate-500 font-medium hidden xs:block">كرت الخصومات</p>
+            <p className="text-[10px] text-slate-500 font-medium hidden xs:block">
+              {t('tagline')}
+            </p>
           </div>
         </div>
 
@@ -83,8 +89,8 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="relative">
           <button
             onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/70 rounded-full transition-colors border border-slate-200/60"
-            title="تغيير موقعك الجغرافي للبحث عن الأقرب"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/70 rounded-full transition-colors border border-slate-200/60 cursor-pointer"
+            title={t('selectLocationPrompt')}
           >
             <MapPin className="w-3.5 h-3.5 text-[#931A47] shrink-0" />
             <span className="max-w-[110px] sm:max-w-[140px] truncate text-[11px] font-semibold">{currentLocationName}</span>
@@ -92,9 +98,9 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           {showLocationDropdown && (
-            <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 text-right">
+            <div className={`absolute top-full ${isAr ? 'left-0 text-right' : 'right-0 text-left'} mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150`}>
               <div className="px-3 py-1.5 border-b border-slate-100">
-                <p className="text-xs font-bold text-slate-800">اختر موقعك لتحديد أقرب الفروع:</p>
+                <p className="text-xs font-bold text-slate-800">{t('selectLocationPrompt')}</p>
               </div>
               <button
                 onClick={() => {
@@ -102,13 +108,13 @@ export const Header: React.FC<HeaderProps> = ({
                   setShowLocationDropdown(false);
                 }}
                 disabled={isGpsLoading}
-                className="w-full text-right px-3 py-2 text-xs text-[#931A47] font-semibold hover:bg-rose-50 flex items-center justify-between transition-colors"
+                className={`w-full ${isAr ? 'text-right' : 'text-left'} px-3 py-2 text-xs text-[#931A47] font-semibold hover:bg-rose-50 flex items-center justify-between transition-colors cursor-pointer`}
               >
                 <span className="flex items-center gap-1.5">
                   <Navigation className="w-3.5 h-3.5" />
-                  {isGpsLoading ? 'جاري تحديد موقعك...' : 'تحديد موقعي التلقائي (GPS)'}
+                  {isGpsLoading ? t('gpsLoading') : t('autoGps')}
                 </span>
-                <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded">مباشر</span>
+                <span className="text-[10px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded">GPS</span>
               </button>
               <div className="border-t border-slate-100 my-1"></div>
               {PRESET_LOCATIONS.filter((l) => !l.isGps).map((loc) => (
@@ -118,10 +124,10 @@ export const Header: React.FC<HeaderProps> = ({
                     onLocationSelect(loc);
                     setShowLocationDropdown(false);
                   }}
-                  className="w-full text-right px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-between"
+                  className={`w-full ${isAr ? 'text-right' : 'text-left'} px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer`}
                 >
                   <span>{loc.name}</span>
-                  <span className="text-[10px] text-slate-400">مصر</span>
+                  <span className="text-[10px] text-slate-400">{isAr ? 'مصر' : 'Egypt'}</span>
                 </button>
               ))}
             </div>
@@ -133,33 +139,33 @@ export const Header: React.FC<HeaderProps> = ({
           {onOpenCart && (
             <button
               onClick={onOpenCart}
-              className="relative p-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 rounded-full transition-all border border-slate-200/80"
-              title="عربة المشتريات"
+              className="relative p-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 rounded-full transition-all border border-slate-200/80 cursor-pointer"
+              title={t('cart')}
             >
               <ShoppingCart className="w-4 h-4 text-slate-700" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -left-1 bg-[#941946] text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#931A47] text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-scale-in">
                   {cartCount}
                 </span>
               )}
             </button>
           )}
 
-          {/* Desktop/Mobile Frame Toggle */}
+          {/* Desktop/Tablet Mode Viewport Frame Switcher */}
           <button
             onClick={onToggleFrame}
-            className="hidden md:flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-            title="التبديل بين وضع إطار الهاتف ووضع سطح المكتب الكامل"
+            className="hidden md:flex items-center gap-1 px-2.5 py-1 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors border border-slate-200/80 cursor-pointer"
+            title={isMobileFrame ? t('expandedView') : t('phoneFrame')}
           >
             {isMobileFrame ? (
               <>
-                <Monitor className="w-3.5 h-3.5 text-slate-700" />
-                <span className="text-[11px]">شاشة كاملة</span>
+                <Monitor className="w-3.5 h-3.5 text-[#931A47]" />
+                <span className="text-[11px] font-medium">{t('expandedView')}</span>
               </>
             ) : (
               <>
                 <Smartphone className="w-3.5 h-3.5 text-[#931A47]" />
-                <span className="text-[11px]">وضع الجوال</span>
+                <span className="text-[11px] font-medium">{t('phoneFrame')}</span>
               </>
             )}
           </button>

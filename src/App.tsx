@@ -48,8 +48,10 @@ import {
 import { MedicalProvider, ProviderCategory, Beneficiary, UsageRecord, Product, CartItem } from './types';
 import { calculateDistanceKm, PRESET_LOCATIONS } from './utils/geo';
 import { Smartphone, Monitor } from 'lucide-react';
+import { useLanguage } from './context/LanguageContext';
 
 export default function App() {
+  const { isAr, t, brandName } = useLanguage();
   const [activeTab, setActiveTab] = useState<NavTab>('home');
   const [isMobileFrame, setIsMobileFrame] = useState<boolean>(true);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; name: string }>({
@@ -234,24 +236,24 @@ export default function App() {
       {/* Top Banner Bar on desktop for device frame switch */}
       <div className="hidden md:flex items-center justify-between w-full max-w-md px-3 py-1.5 text-xs text-white/90 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 mb-2 shadow-lg">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-amber-300">منصة ديلار الطبية</span>
+          <span className="font-bold text-amber-300">{t('brandPlatform')}</span>
           <span>•</span>
-          <span className="text-white/80">كرت الخصومات المعتمد</span>
+          <span className="text-white/80">{t('certifiedCard')}</span>
         </div>
 
         <button
           onClick={() => setIsMobileFrame(!isMobileFrame)}
-          className="flex items-center gap-1.5 px-2.5 py-1 bg-white/15 hover:bg-white/25 border border-white/30 rounded-lg text-white font-semibold transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1 bg-white/15 hover:bg-white/25 border border-white/30 rounded-lg text-white font-semibold transition-colors cursor-pointer"
         >
           {isMobileFrame ? (
             <>
               <Monitor className="w-3.5 h-3.5 text-amber-300" />
-              <span>عرض موسع</span>
+              <span>{t('expandedView')}</span>
             </>
           ) : (
             <>
               <Smartphone className="w-3.5 h-3.5 text-amber-300" />
-              <span>إطار الهاتف</span>
+              <span>{t('phoneFrame')}</span>
             </>
           )}
         </button>
