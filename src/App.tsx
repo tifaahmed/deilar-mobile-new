@@ -27,7 +27,7 @@
  * ==============================================================================
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BottomNav, NavTab } from './components/BottomNav';
 import { HomeView } from './components/HomeView';
@@ -35,10 +35,11 @@ import { MapView } from './components/MapView';
 import { StoreView } from './components/StoreView';
 import { ProductsView } from './components/ProductsView';
 import { ProfileView } from './components/ProfileView';
-import { ProviderDetailModal } from './components/ProviderDetailModal';
+import { ProviderDetailView } from './components/ProviderDetailView';
 import { SearchModal } from './components/SearchModal';
 import { FloatingContactButton } from './components/FloatingContactButton';
 import { CartCheckoutModal } from './components/CartCheckoutModal';
+import { FreeCardRequestModal } from './components/FreeCardRequestModal';
 import { 
   MEDICAL_PROVIDERS, 
   INITIAL_BENEFICIARIES, 
@@ -58,13 +59,41 @@ export default function App() {
   });
   const [isGpsLoading, setIsGpsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ProviderCategory>('all');
-  const [selectedProviderModal, setSelectedProviderModal] = useState<(MedicalProvider & { distanceKm?: number }) | null>(null);
+  const [selectedProvider, setSelectedProvider] = useState<(MedicalProvider & { distanceKm?: number }) | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isGlobalCartOpen, setIsGlobalCartOpen] = useState(false);
 
   // Beneficiaries & Usage History state
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>(INITIAL_BENEFICIARIES);
   const [usageHistory, setUsageHistory] = useState<UsageRecord[]>(INITIAL_USAGE_HISTORY);
+
+  // App Appearance Theme state ('light' | 'dark')
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('deilar_theme') as 'light' | 'dark') || 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    setTheme(newTheme);
+    localStorage.setItem('deilar_theme', newTheme);
+  };
+
+  // Free Card Request Modal for first-time / unregistered visitors
+  const [isFreeCardModalOpen, setIsFreeCardModalOpen] = useState<boolean>(() => {
+    try {
+      const isRegistered = localStorage.getItem('deilar_user_registered');
+      return !isRegistered;
+    } catch {
+      return true;
+    }
+  });
 
   // Shopping Cart state for Store & Products
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -155,13 +184,15 @@ export default function App() {
     });
   };
 
-  const handleAddBeneficiary = (newBenData: Omit<Beneficiary, 'id' | 'status'>) => {
-    const newBen: Beneficiary = {
-      ...newBenData,
-      id: `ben-${Date.now()}`,
-      status: 'active',
-    };
-    setBeneficiaries([...beneficiaries, newBen]);
+  const handleAddBeneficiary = (newBenData: Beneficiary | Omit<Beneficiary, 'id' | 'status'>) => {
+    const newBen: Beneficiary = 'id' in newBenData
+      ? newBenData
+      : {
+          ...newBenData,
+          id: `ben-${Date.now()}`,
+          status: 'active',
+        };
+    setBeneficiaries((prev) => [...prev, newBen]);
   };
 
   const handleNavigateToMap = (cat: ProviderCategory = 'all') => {
@@ -228,10 +259,16 @@ export default function App() {
 
       {/* Main Container: Exact Smartphone Frame matching screenshot or Expanded layout */}
       <div
-        className={`w-full transition-all duration-300 relative bg-white pb-20 ${
+        className={`w-full transition-all duration-300 relative pb-20 ${
+          theme === 'dark' ? 'dark bg-[#0A0E17] text-[#F1F5F9]' : 'bg-white text-slate-900'
+        } ${
           isMobileFrame
-            ? 'max-w-[440px] rounded-none sm:rounded-[44px] border-0 sm:border-[10px] sm:border-slate-900 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden min-h-screen sm:min-h-[880px]'
-            : 'max-w-4xl rounded-3xl border border-slate-300 shadow-2xl overflow-hidden min-h-screen'
+            ? `max-w-[440px] rounded-none sm:rounded-[44px] border-0 sm:border-[10px] ${
+                theme === 'dark' ? 'sm:border-[#181B26]' : 'sm:border-slate-900'
+              } shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden min-h-screen sm:min-h-[880px]`
+            : `max-w-4xl rounded-3xl border ${
+                theme === 'dark' ? 'border-white/[0.08]' : 'border-slate-300'
+              } shadow-2xl overflow-hidden min-h-screen`
         }`}
       >
         {/* Smartphone top bezel & camera punch-hole (only in mobile frame mode on tablet/desktop) */}
@@ -255,66 +292,86 @@ export default function App() {
           onOpenCart={() => setIsGlobalCartOpen(true)}
         />
 
-        {/* Main Content View based on Active Tab */}
+        {/* Main Content View based on Active Tab or Selected Medical Provider Page */}
         <main className="p-3.5 sm:p-5">
-          {activeTab === 'home' && (
-            <HomeView
-              userLocation={userLocation}
-              providersWithDistance={providersWithDistance}
-              onSelectProvider={(p) => {
-                const withDist = providersWithDistance.find((item) => item.id === p.id);
-                setSelectedProviderModal(withDist || p);
+          {selectedProvider ? (
+            <ProviderDetailView
+              provider={selectedProvider}
+              onBack={() => setSelectedProvider(null)}
+              onNavigateToMap={() => {
+                setSelectedProvider(null);
+                setActiveTab('map');
               }}
-              onNavigateToMap={handleNavigateToMap}
-              onNavigateToCard={() => setActiveTab('profile')}
-              onNavigateToStore={() => setActiveTab('store')}
-              onNavigateToProducts={() => setActiveTab('products')}
-              onSearchOpen={() => setIsSearchOpen(true)}
-            />
-          )}
-
-          {activeTab === 'store' && (
-            <StoreView
-              cart={cart}
-              onAddToCart={handleAddToCart}
-              onUpdateCartQty={handleUpdateCartQty}
-              onRemoveFromCart={handleRemoveFromCart}
-              onClearCart={handleClearCart}
-              onOpenCart={() => setIsGlobalCartOpen(true)}
-            />
-          )}
-
-          {activeTab === 'products' && (
-            <ProductsView
-              onBackToStore={() => setActiveTab('store')}
-              cart={cart}
-              onAddToCart={handleAddToCart}
-              onUpdateCartQty={handleUpdateCartQty}
-              onRemoveFromCart={handleRemoveFromCart}
-              onClearCart={handleClearCart}
-            />
-          )}
-
-          {activeTab === 'map' && (
-            <MapView
-              userLocation={userLocation}
-              providers={providersWithDistance}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
-              onSelectProvider={(p) => {
-                const withDist = providersWithDistance.find((item) => item.id === p.id);
-                setSelectedProviderModal(withDist || p);
+              onNavigateToCard={() => {
+                setSelectedProvider(null);
+                setActiveTab('profile');
               }}
-              onRequestGps={handleRequestGps}
-              isGpsLoading={isGpsLoading}
             />
-          )}
+          ) : (
+            <>
+              {activeTab === 'home' && (
+                <HomeView
+                  userLocation={userLocation}
+                  providersWithDistance={providersWithDistance}
+                  onSelectProvider={(p) => {
+                    const withDist = providersWithDistance.find((item) => item.id === p.id);
+                    setSelectedProvider(withDist || p);
+                  }}
+                  onNavigateToMap={handleNavigateToMap}
+                  onNavigateToCard={() => setActiveTab('profile')}
+                  onNavigateToStore={() => setActiveTab('store')}
+                  onNavigateToProducts={() => setActiveTab('products')}
+                  onSearchOpen={() => setIsSearchOpen(true)}
+                />
+              )}
 
-          {activeTab === 'profile' && (
-            <ProfileView
-              beneficiaries={beneficiaries}
-              usageHistory={usageHistory}
-            />
+              {activeTab === 'store' && (
+                <StoreView
+                  cart={cart}
+                  onAddToCart={handleAddToCart}
+                  onUpdateCartQty={handleUpdateCartQty}
+                  onRemoveFromCart={handleRemoveFromCart}
+                  onClearCart={handleClearCart}
+                  onOpenCart={() => setIsGlobalCartOpen(true)}
+                />
+              )}
+
+              {activeTab === 'products' && (
+                <ProductsView
+                  onBackToStore={() => setActiveTab('store')}
+                  cart={cart}
+                  onAddToCart={handleAddToCart}
+                  onUpdateCartQty={handleUpdateCartQty}
+                  onRemoveFromCart={handleRemoveFromCart}
+                  onClearCart={handleClearCart}
+                />
+              )}
+
+              {activeTab === 'map' && (
+                <MapView
+                  userLocation={userLocation}
+                  providers={providersWithDistance}
+                  selectedCategory={selectedCategory}
+                  onSelectCategory={setSelectedCategory}
+                  onSelectProvider={(p) => {
+                    const withDist = providersWithDistance.find((item) => item.id === p.id);
+                    setSelectedProvider(withDist || p);
+                  }}
+                  onRequestGps={handleRequestGps}
+                  isGpsLoading={isGpsLoading}
+                />
+              )}
+
+              {activeTab === 'profile' && (
+                <ProfileView
+                  beneficiaries={beneficiaries}
+                  usageHistory={usageHistory}
+                  theme={theme}
+                  onThemeChange={handleThemeChange}
+                  onAddBeneficiary={handleAddBeneficiary}
+                />
+              )}
+            </>
           )}
         </main>
 
@@ -329,27 +386,12 @@ export default function App() {
         <BottomNav
           activeTab={activeTab}
           onTabChange={(tab) => {
+            setSelectedProvider(null);
             setActiveTab(tab);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
       </div>
-
-      {/* Global Provider Detail Modal */}
-      {selectedProviderModal && (
-        <ProviderDetailModal
-          provider={selectedProviderModal}
-          onClose={() => setSelectedProviderModal(null)}
-          onNavigateToMap={() => {
-            setSelectedProviderModal(null);
-            setActiveTab('map');
-          }}
-          onNavigateToCard={() => {
-            setSelectedProviderModal(null);
-            setActiveTab('profile');
-          }}
-        />
-      )}
 
       {/* Global Quick Search Modal */}
       <SearchModal
@@ -357,7 +399,8 @@ export default function App() {
         onClose={() => setIsSearchOpen(false)}
         providers={providersWithDistance}
         onSelectProvider={(p) => {
-          setSelectedProviderModal(p);
+          setSelectedProvider(p);
+          setIsSearchOpen(false);
         }}
       />
 
@@ -369,6 +412,19 @@ export default function App() {
         onUpdateCartQty={handleUpdateCartQty}
         onRemoveFromCart={handleRemoveFromCart}
         onClearCart={handleClearCart}
+      />
+
+      {/* Free Card Request Modal for First-time / Unregistered Visitors */}
+      <FreeCardRequestModal
+        isOpen={isFreeCardModalOpen}
+        onClose={() => setIsFreeCardModalOpen(false)}
+        onSuccessRegister={(phone, name) => {
+          if (name) {
+            setBeneficiaries((prev) =>
+              prev.map((b, idx) => (idx === 0 ? { ...b, name } : b))
+            );
+          }
+        }}
       />
     </div>
   );

@@ -52,7 +52,7 @@ import {
 import { Store, Product, CartItem } from '../types';
 import { DEILAR_STORES, SPECIALTY_PRODUCTS } from '../data/storesData';
 import { ProductsView } from './ProductsView';
-import { StoreDetailModal } from './StoreDetailModal';
+import { StoreDetailView } from './StoreDetailView';
 
 interface StoreViewProps {
   initialSubTab?: 'stores' | 'products';
@@ -76,8 +76,7 @@ export const StoreView: React.FC<StoreViewProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'stores' | 'products'>(initialSubTab);
   const [storeCategoryFilter, setStoreCategoryFilter] = useState<string>('all');
   const [storeSearchQuery, setStoreSearchQuery] = useState('');
-  const [selectedStoreModal, setSelectedStoreModal] = useState<Store | null>(null);
-  const [selectedProductModal, setSelectedProductModal] = useState<Product | null>(null);
+  const [selectedStore, setSelectedStore] = useState<Store | null>(null);
 
   const storeCategories = [
     { id: 'all', label: 'كافة المتاجر' },
@@ -96,6 +95,20 @@ export const StoreView: React.FC<StoreViewProps> = ({
       store.branches.toLowerCase().includes(storeSearchQuery.toLowerCase());
     return matchesCat && matchesSearch;
   });
+
+  // If a store is selected, open dedicated full page view!
+  if (selectedStore) {
+    return (
+      <StoreDetailView
+        store={selectedStore}
+        products={SPECIALTY_PRODUCTS}
+        onBack={() => setSelectedStore(null)}
+        onAddToCart={onAddToCart}
+        cart={cart}
+        onOpenCart={onOpenCart}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 pb-24 pt-2 animate-in fade-in duration-200">
@@ -161,43 +174,13 @@ export const StoreView: React.FC<StoreViewProps> = ({
           onNavigateToStore={(storeId) => {
             const found = DEILAR_STORES.find((s) => s.id === storeId);
             if (found) {
-              setSelectedStoreModal(found);
+              setSelectedStore(found);
             }
           }}
         />
       ) : (
         /* ==================== THE STORES VIEW (2 PER ROW) ==================== */
         <div className="space-y-4">
-          {/* Hero Store Banner */}
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-950 via-[#182a46] to-[#941946] text-white p-5 shadow-lg">
-            <div className="relative z-10 space-y-2">
-              <div className="inline-flex items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-amber-300 border border-white/10">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>متاجر معتمدة بخصومات كرت ديلار</span>
-              </div>
-
-              <h2 className="text-base sm:text-lg font-black text-white leading-tight">
-                متاجر البن الفاخر، مناحل العسل الطبيعي، ومعاصر زيت الزيتون
-              </h2>
-
-              <p className="text-[11px] text-slate-300 leading-relaxed max-w-sm">
-                تصفح متاجرك المفضلة واستفد من خصومات حصرية تصل حتى 30% لحاملي كرت ديلار الطبي أونلاين وداخل الفروع.
-              </p>
-
-              <div className="pt-1 flex items-center gap-2">
-                <button
-                  onClick={() => setActiveSubTab('products')}
-                  className="px-3.5 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl shadow-sm flex items-center gap-1 transition-colors"
-                >
-                  <Package className="w-3.5 h-3.5" />
-                  <span>تصفح كل المنتجات ({SPECIALTY_PRODUCTS.length})</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
-          </div>
-
           {/* Search Input for Stores */}
           <div className="relative">
             <input
@@ -252,7 +235,7 @@ export const StoreView: React.FC<StoreViewProps> = ({
               return (
                 <div
                   key={store.id}
-                  onClick={() => setSelectedStoreModal(store)}
+                  onClick={() => setSelectedStore(store)}
                   className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group"
                 >
                   <div>
@@ -309,7 +292,7 @@ export const StoreView: React.FC<StoreViewProps> = ({
                     )}
 
                     <span className="text-[10px] font-extrabold text-[#941946] group-hover:underline flex items-center gap-0.5">
-                      <span>عرض</span>
+                      <span>عرض المتجر</span>
                       <ChevronRight className="w-3 h-3" />
                     </span>
                   </div>
@@ -318,21 +301,6 @@ export const StoreView: React.FC<StoreViewProps> = ({
             })}
           </div>
         </div>
-      )}
-
-      {/* Store Detail Modal */}
-      {selectedStoreModal && (
-        <StoreDetailModal
-          store={selectedStoreModal}
-          products={SPECIALTY_PRODUCTS}
-          onClose={() => setSelectedStoreModal(null)}
-          onSelectProduct={(prod) => {
-            setSelectedStoreModal(null);
-            setSelectedProductModal(prod);
-          }}
-          onAddToCart={onAddToCart}
-          cart={cart}
-        />
       )}
     </div>
   );

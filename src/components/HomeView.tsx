@@ -38,7 +38,6 @@ import {
   ArrowLeft, 
   Clock, 
   Star, 
-  Calculator,
   Shield, 
   ChevronLeft,
   Award,
@@ -76,21 +75,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onNavigateToProducts,
   onSearchOpen,
 }) => {
-  // Calculator state
-  const [calcServiceType, setCalcServiceType] = useState<'labs' | 'clinics' | 'radiology' | 'dental'>('labs');
-  const [calcAmount, setCalcAmount] = useState<number>(2500);
-
-  // Discount percentage calculation for the calculator
-  const discountRates = {
-    labs: 0.45,
-    clinics: 0.30,
-    radiology: 0.35,
-    dental: 0.40,
-  };
-  const currentDiscountRate = discountRates[calcServiceType];
-  const moneySaved = Math.round(calcAmount * currentDiscountRate);
-  const finalPrice = calcAmount - moneySaved;
-
   // Nearest 3 providers sorted by distance
   const nearestProviders = [...providersWithDistance].sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 3);
 
@@ -105,72 +89,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white" />
       </div>
-
-      {/* 1. Hero Promotional Banner (Matching the user's reference image with Card visible!) */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-rose-950 via-rose-900 to-rose-800 text-white shadow-xl shadow-rose-950/20">
-        {/* Card ambient graphic behind the banner */}
-        <div className="absolute -left-12 -bottom-10 w-64 h-44 opacity-25 pointer-events-none rotate-12">
-          <img
-            src="/src/assets/images/deilar_card_front_official_1791012713788.jpg"
-            alt="Card Backdrop"
-            className="w-full h-full object-cover rounded-xl"
-          />
-        </div>
-
-        <div className="relative p-5 sm:p-6 flex flex-col justify-between min-h-[175px]">
-          {/* Top highlight kicker */}
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-amber-300 tracking-wider flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              شبكة ديلار الطبية الشاملة 2026
-            </span>
-            <span className="text-[11px] bg-white/15 backdrop-blur-xs text-white px-2.5 py-0.5 rounded-full font-medium border border-white/20">
-              بطاقة علاجية موحدة
-            </span>
-          </div>
-
-          {/* Main Huge 50% Discounts graphic like in the uploaded image */}
-          <div className="flex items-center justify-between gap-3 my-1">
-            <div className="flex-1">
-              <div className="flex items-baseline gap-2">
-                <span className="text-4xl sm:text-5xl font-black tracking-tight text-white drop-shadow-sm font-sans">
-                  50%
-                </span>
-                <div className="flex flex-col">
-                  <span className="bg-[#931A47] text-white font-extrabold text-sm sm:text-base px-2.5 py-0.5 rounded-md shadow-xs">
-                    خصومات
-                  </span>
-                  <span className="text-xs sm:text-sm font-medium text-rose-100 mt-0.5">
-                    تصل إلى
-                  </span>
-                </div>
-              </div>
-              <p className="text-xs text-rose-100/90 mt-1.5 font-normal leading-relaxed">
-                على المستشفيات والعمليات الجراحية، كشوفات الاستشاريين، معامل التحاليل والأشعة والصيدليات.
-              </p>
-            </div>
-
-            {/* Floating 3D Medical Card Thumbnail Preview */}
-            <div className="shrink-0 flex flex-col items-center">
-              <button
-                onClick={onNavigateToCard}
-                className="group relative transition-transform active:scale-95 text-center focus:outline-none"
-              >
-                <div className="w-24 sm:w-28 rounded-xl overflow-hidden shadow-2xl border-2 border-amber-400/70 group-hover:scale-105 transition-all bg-white p-0.5">
-                  <img
-                    src="/src/assets/images/deilar_card_front_official_1791012713788.jpg"
-                    alt="كارت ديلار الطبي"
-                    className="w-full h-auto object-cover rounded-lg"
-                  />
-                </div>
-                <span className="inline-block mt-1 text-[10px] font-bold text-amber-300 group-hover:underline">
-                  كارت العيله ⟵
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 2. Quick Location & Search Bar */}
       <section className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-xs flex items-center gap-2">
@@ -335,18 +253,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* 5. Nearest Medical Providers to User Location (Geographic System Highlight) */}
+      {/* 5. Nearest Medical Providers to User Location */}
       <section className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-rose-50 text-[#931A47] flex items-center justify-center">
               <MapPin className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">أقرب مقدمي الخدمة لموقعك الآن</h2>
-              <p className="text-[11px] text-slate-500">
-                محدد بناءً على: {userLocation.name}
-              </p>
+              <h2 className="text-sm font-bold text-slate-900">اقرب مقدم خدمه(القاهره)</h2>
             </div>
           </div>
 
@@ -359,49 +274,63 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </button>
         </div>
 
-        {/* Nearest List Cards */}
-        <div className="space-y-2.5">
-          {nearestProviders.map((provider) => (
-            <div
-              key={provider.id}
-              onClick={() => onSelectProvider(provider)}
-              className="p-3 rounded-xl border border-slate-200 hover:border-rose-300 hover:bg-rose-50/20 transition-all cursor-pointer flex items-center justify-between gap-3 group"
-            >
-              <div className="flex items-center gap-3">
-                {/* Logo Badge */}
-                <div className="w-11 h-11 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-800 font-extrabold text-xs shrink-0 group-hover:border-rose-200">
-                  {provider.logo.substring(0, 3)}
+        {/* Nearest List Cards - Harmonious layout: Photo + Title + Facility Type + Distance + Discount Tag */}
+        <div className="space-y-3">
+          {nearestProviders.map((provider) => {
+            const providerPhoto = provider.imageUrl || 
+              (provider.category === 'labs' ? '/src/assets/images/sector_medical_labs_1791011785809.jpg' :
+               provider.category === 'pharmacies' ? '/src/assets/images/sector_pharmacy_1791011795635.jpg' :
+               provider.category === 'dental_optical' ? '/src/assets/images/sector_dental_eye_1791011806216.jpg' :
+               '/src/assets/images/sector_health_care_1791011774979.jpg');
+
+            return (
+              <div
+                key={provider.id}
+                onClick={() => onSelectProvider(provider)}
+                className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#941946]/40 transition-all cursor-pointer p-2.5 flex items-center gap-3 group overflow-hidden"
+              >
+                {/* 1. صوره (Image) */}
+                <div className="relative w-20 h-20 sm:w-24 sm:h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100">
+                  <img
+                    src={providerPhoto}
+                    alt={provider.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent" />
                 </div>
 
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xs font-bold text-slate-900 group-hover:text-[#931A47] transition-colors">
-                      {provider.name}
-                    </h3>
-                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                {/* 2. العنوان + 3. نوع المنشأة + 4. الكيلومترات + 5. الخصم */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 space-y-1.5">
+                  {/* 2. العنوان (Title / Name) */}
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-[#941946] transition-colors truncate leading-tight">
+                    {provider.name}
+                  </h3>
+
+                  {/* 3. نوع المنشأه (Facility Type) */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 font-semibold rounded-md text-[10px]">
+                      {provider.categoryAr}
+                    </span>
+                  </div>
+
+                  {/* السطر السفلي: 4. الكيلومترات + 5. الخصم (منفصلين ومنسقين بدون تداخل) */}
+                  <div className="flex items-center justify-between gap-2 pt-0.5">
+                    {/* 4. الكيلومترات */}
+                    <div className="flex items-center gap-1 text-[11px] font-bold text-rose-700 shrink-0">
+                      <MapPin className="w-3.5 h-3.5 text-[#941946] shrink-0" />
+                      <span>{formatDistance(provider.distanceKm)}</span>
+                    </div>
+
+                    {/* 5. الخصم كا تاج */}
+                    <span className="px-2 py-0.5 bg-rose-50 text-[#941946] border border-rose-200/80 rounded-md text-[10px] font-extrabold whitespace-nowrap shadow-2xs">
                       {provider.discount}
                     </span>
                   </div>
-
-                  <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
-                    <span className="text-[#931A47] font-semibold flex items-center gap-0.5">
-                      <MapPin className="w-3 h-3" />
-                      {formatDistance(provider.distanceKm)}
-                    </span>
-                    <span>•</span>
-                    <span className="truncate max-w-[170px]">{provider.address}</span>
-                  </div>
                 </div>
               </div>
-
-              <div className="text-left shrink-0">
-                <span className="text-xs font-semibold text-[#931A47] group-hover:underline flex items-center gap-0.5">
-                  التفاصيل
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
@@ -470,102 +399,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           ))}
         </div>
-      </section>
-
-      {/* 7. Instant Savings Calculator / حاسبة التوفير المالي بكرت ديلار */}
-      <section className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-5 shadow-lg shadow-slate-950/20 relative overflow-hidden">
-        {/* Subtle card glow in background */}
-        <div className="absolute -left-10 -bottom-10 w-44 h-32 opacity-15 pointer-events-none">
-          <img
-            src="/src/assets/images/deilar_vip_card_mockup_1791012301520.jpg"
-            alt="Card Ambient"
-            className="w-full h-full object-cover rounded-xl"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 mb-3 relative z-10">
-          <div className="w-8 h-8 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-bold">
-            <Calculator className="w-4 h-4" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-white">حاسبة التوفير بكرت ديلار الطبي</h3>
-            <p className="text-[11px] text-slate-300">احسب مقدار ما ستوفره فوراً في فاتورتك القادمة</p>
-          </div>
-        </div>
-
-        {/* Category selector */}
-        <div className="grid grid-cols-4 gap-1.5 p-1 bg-slate-800/80 rounded-xl mb-4 border border-slate-700 relative z-10">
-          <button
-            onClick={() => setCalcServiceType('labs')}
-            className={`py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              calcServiceType === 'labs' ? 'bg-[#931A47] text-white shadow-xs' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            تحاليل (45%)
-          </button>
-          <button
-            onClick={() => setCalcServiceType('radiology')}
-            className={`py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              calcServiceType === 'radiology' ? 'bg-[#931A47] text-white shadow-xs' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            أشعة (35%)
-          </button>
-          <button
-            onClick={() => setCalcServiceType('clinics')}
-            className={`py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              calcServiceType === 'clinics' ? 'bg-[#931A47] text-white shadow-xs' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            كشف (30%)
-          </button>
-          <button
-            onClick={() => setCalcServiceType('dental')}
-            className={`py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-              calcServiceType === 'dental' ? 'bg-[#931A47] text-white shadow-xs' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            أسنان (40%)
-          </button>
-        </div>
-
-        {/* Amount Slider */}
-        <div className="space-y-2 mb-4 relative z-10">
-          <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-300">قيمة الفاتورة المتوقعة:</span>
-            <span className="text-amber-300 font-bold text-base font-mono">{calcAmount.toLocaleString()} ج.م</span>
-          </div>
-          <input
-            type="range"
-            min="300"
-            max="15000"
-            step="100"
-            value={calcAmount}
-            onChange={(e) => setCalcAmount(Number(e.target.value))}
-            className="w-full accent-rose-600 bg-slate-700 h-2 rounded-lg cursor-pointer"
-          />
-        </div>
-
-        {/* Calculation Result */}
-        <div className="p-3.5 bg-slate-800/90 rounded-xl border border-slate-700 flex items-center justify-between relative z-10">
-          <div>
-            <p className="text-[11px] text-slate-400">ستدفع فقط بعد الخصم:</p>
-            <p className="text-lg font-black text-white font-mono">{finalPrice.toLocaleString()} ج.م</p>
-          </div>
-
-          <div className="text-left bg-emerald-500/20 border border-emerald-500/40 px-3 py-1.5 rounded-lg">
-            <p className="text-[10px] text-emerald-300 font-medium">قيمة التوفير الصافي:</p>
-            <p className="text-base font-black text-emerald-400 font-mono">+{moneySaved.toLocaleString()} ج.م</p>
-          </div>
-        </div>
-
-        <button
-          onClick={onNavigateToCard}
-          className="w-full mt-3 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-colors flex items-center justify-center gap-1.5 relative z-10"
-        >
-          <span>استخدم كرتك الطبي الآن للحصول على هذا الخصم</span>
-          <ArrowLeft className="w-3.5 h-3.5" />
-        </button>
       </section>
 
       {/* 8. Trust Highlights */}
