@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { setApiLanguage } from '../api/http';
 
 export type AppLanguage = 'ar' | 'en';
 
@@ -380,16 +381,16 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Phone Number (010xxxxxxxx)',
   },
   freeCardSubmit: {
-    ar: 'تفعيل الكارت مجاناً',
-    en: 'Activate Free Card',
+    ar: 'اطلب الكارت مجاناً',
+    en: 'Request Free Card',
   },
   freeCardSubmitting: {
-    ar: 'جاري التفعيل...',
-    en: 'Activating...',
+    ar: 'جاري الإرسال...',
+    en: 'Sending...',
   },
   freeCardSuccessTitle: {
-    ar: 'تم تفعيل كارتك بنجاح!',
-    en: 'Card Activated Successfully!',
+    ar: 'تم استلام طلبك بنجاح!',
+    en: 'Request received!',
   },
   enterAppAction: {
     ar: 'الدخول للتطبيق',
@@ -503,6 +504,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return 'ar';
     }
   });
+
+  // Set during render (not in an effect) so every API call made by a child's
+  // effect in this same commit already carries the right `?lang=`.
+  setApiLanguage(language);
 
   const setLanguage = (lang: AppLanguage) => {
     setLanguageState(lang);

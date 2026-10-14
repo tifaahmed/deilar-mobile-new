@@ -1,0 +1,6 @@
+{
+  "appId": "com.deilar.card",
+  "appName": "Deilar",
+  "webDir": "dist",
+  "android": { "allowMixedContent": false }
+}

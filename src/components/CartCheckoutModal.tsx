@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   ShoppingCart, 
   Trash2, 
@@ -17,11 +17,26 @@ import {
   X,
   AlertCircle,
   Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  Download
 } from 'lucide-react';
 import { Product, CartItem } from '../types';
+import { ApiError } from '../api/http';
+import { placeOrder, uploadReceipt, type PlacedOrder } from '../api/orders';
+import { useSession } from '../utils/session';
+import { fetchSavedAddress } from '../api/auth';
+import { fetchLocations, fetchShopSettings } from '../api/endpoints';
+import { useApi } from '../hooks/useApi';
+import { rememberOrder } from '../utils/orders';
+import { getArea } from '../utils/area';
+import { downloadInvoicePdf } from '../utils/invoicePdf';
+import { navigate, routeHref } from '../router';
 
 interface CartCheckoutModalProps {
+  /** Rendered as a full page (`/cart`, `/checkout`) rather than a popup. */
+  asPage?: boolean;
+  /** The step the page opens on — the URL decides. */
+  initialStep?: 'cart' | 'checkout';
   isOpen: boolean;
   onClose: () => void;
   cart: CartItem[];
@@ -31,6 +46,8 @@ interface CartCheckoutModalProps {
 }
 
 export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
+  asPage = false,
+  initialStep = 'cart',
   isOpen,
   onClose,
   cart,
@@ -38,29 +55,75 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   onRemoveFromCart,
   onClearCart,
 }) => {
-  const [step, setStep] = useState<'cart' | 'checkout' | 'success'>('cart');
+  const [step, setStepState] = useState<'cart' | 'checkout' | 'success'>(initialStep);
+
+  // As a page, moving between the basket and the payment is moving between URLs, so back/refresh/links work.
+  const setStep = (next: 'cart' | 'checkout' | 'success') => {
+    if (asPage && next !== 'success') navigate(routeHref({ checkout: next }));
+    setStepState(next);
+  };
+
+  useEffect(() => {
+    if (asPage) setStepState((current) => (current === 'success' ? current : initialStep));
+  }, [asPage, initialStep]);
   
-  // Payment Method: 'wallet' (محفظة إلكترونية / فودافون كاش) or 'bank' (تحويل بنكي / إنستاباي)
-  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'bank'>('wallet');
+  // Payment Method: 'wallet' (محفظة إلكترونية / فودافون كاش) or 'cod' (الدفع عند الاستلام)
+  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'cod'>('wallet');
+  const session = useSession();
 
   // Customer shipping info
-  const [customerName, setCustomerName] = useState('مصطفى مرسي');
-  const [customerPhone, setCustomerPhone] = useState('01020709993');
-  const [customerCity, setCustomerCity] = useState('القاهرة');
-  const [customerAddress, setCustomerAddress] = useState('المعادي - شارع النصر');
+  const [customerName, setCustomerName] = useState(session.name ?? '');
+  const [customerPhone, setCustomerPhone] = useState(session.phone ?? session.leadPhone ?? '');
+  const [addressType, setAddressType] = useState<'home' | 'work' | 'other'>('home');
+  // Opens on the area the visitor picked when the app first asked for their location.
+  const [customerGovernorate, setCustomerGovernorate] = useState(() => getArea()?.governorate.name ?? '');
+  const [customerCity, setCustomerCity] = useState(() => getArea()?.city?.name ?? '');
+  const [customerStreet, setCustomerStreet] = useState('');
+  const [buildingNumber, setBuildingNumber] = useState('');
+  const [floorNumber, setFloorNumber] = useState('');
+  const [apartmentNumber, setApartmentNumber] = useState('');
+  const [specialMark, setSpecialMark] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
+  // The address as one line, smallest to largest — for the WhatsApp summary and the review.
+  const customerAddress = [customerStreet, buildingNumber, floorNumber, apartmentNumber, customerCity, customerGovernorate, specialMark].map((part) => part.trim()).filter(Boolean).join('، ');
+  // A signed-in member's saved address opens the form filled in; the buyer can still change any of it.
+  const saved = useApi(isOpen && session.token ? `saved-address:${session.token}` : null, () => fetchSavedAddress(session.token!));
+  const [prefilled, setPrefilled] = useState(false);
+
+  useEffect(() => {
+    const address = saved.data;
+    if (!address || prefilled) return;
+
+    setPrefilled(true);
+    if (address.type) setAddressType(address.type);
+    if (address.governorate) setCustomerGovernorate(address.governorate);
+    if (address.city) setCustomerCity(address.city);
+    if (address.street) setCustomerStreet(address.street);
+    if (address.building_number) setBuildingNumber(address.building_number);
+    if (address.floor_number) setFloorNumber(address.floor_number);
+    if (address.apartment_number) setApartmentNumber(address.apartment_number);
+    if (address.special_mark) setSpecialMark(address.special_mark);
+  }, [saved.data, prefilled]);
+
+  const governorates = useApi(isOpen ? 'all-governorates-checkout' : null, (signal) => fetchLocations(signal));
 
   // Payment proof details
-  const [senderWalletNumber, setSenderWalletNumber] = useState('');
-  const [bankReferenceNumber, setBankReferenceNumber] = useState('');
+  // The wallet the money comes from defaults to the card owner's own number (their sign-in phone, else the phone typed
+  // above); it only stops following that once the buyer types a different one.
+  const [typedSenderWallet, setSenderWalletNumber] = useState<string | null>(null);
+  const senderWalletNumber = typedSenderWallet ?? (session.phone || customerPhone);
   
   // Copy to clipboard feedbacks
   const [copiedWallet, setCopiedWallet] = useState(false);
-  const [copiedInstapay, setCopiedInstapay] = useState(false);
-  const [copiedIban, setCopiedIban] = useState(false);
 
   // Generated Order ID
-  const [orderId, setOrderId] = useState('');
+  const [placed, setPlaced] = useState<PlacedOrder | null>(null);
+  const orderId = placed?.order_code ?? '';
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const shop = useApi(isOpen ? 'shop-settings' : null, (signal) => fetchShopSettings(signal));
+  const [isPlacing, setIsPlacing] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [receiptFailed, setReceiptFailed] = useState(false);
 
   if (!isOpen) return null;
 
@@ -70,44 +133,124 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
     (acc, item) => acc + (item.product.originalPrice - item.product.price) * item.quantity,
     0
   );
-  const shippingFee = totalCartPrice > 500 ? 0 : 35; // Free shipping over 500 EGP
-  const finalTotal = totalCartPrice + shippingFee;
+  // The website's own shipping rule (its shop settings): a flat fee, free from the threshold up. The server decides for real.
+  const walletNumber = shop.data?.wallet_number ?? null;
+  // No wallet number set in the backend (/admin/setting): a transfer has nowhere to go, so only pay-on-delivery is offered.
+  const walletAvailable = !shop.data || !!walletNumber;
+  const whatsappTo = (shop.data?.contact.whatsapp ?? '').replace(/\D/g, '');
+  const deliveryPrice = shop.data?.delivery_price ?? 35;
+  const freeFrom = shop.data ? shop.data.free_delivery_threshold : 500;
+  const shippingFee = freeFrom !== null && totalCartPrice >= freeFrom ? 0 : deliveryPrice;
+  const remainingForFree = freeFrom !== null && shippingFee > 0 ? Math.max(0, freeFrom - totalCartPrice) : 0;
+  // An estimate while shopping; once the order is placed the server's figures replace it.
+  const finalTotal = placed ? placed.total_amount : totalCartPrice + shippingFee;
+
+  useEffect(() => {
+    if (!walletAvailable && paymentMethod === 'wallet') setPaymentMethod('cod');
+  }, [walletAvailable, paymentMethod]);
+
+  const [pdfBusy, setPdfBusy] = useState(false);
+
+  // The basket (or, once placed, the order with the server's own figures) as a PDF on the device.
+  const handleDownloadPdf = async () => {
+    setPdfBusy(true);
+    try {
+      await downloadInvoicePdf({
+        code: placed?.order_code ?? null,
+        customer: { name: customerName, phone: customerPhone, address: customerAddress },
+        items: cart.map((item) => ({ name: item.product.name, quantity: item.quantity, unit: item.product.price, total: item.product.price * item.quantity })),
+        saved: totalCartSavings,
+        delivery: placed ? placed.delivery_price : shippingFee,
+        total: finalTotal,
+        payment: paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : 'الدفع عند الاستلام',
+        member: totalCartSavings > 0 ? session.cardNumber : null,
+      });
+    } catch {
+      setSubmitError('تعذر إنشاء ملف PDF، حاول مرة أخرى');
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   const handleCopyWallet = () => {
-    navigator.clipboard.writeText('01020709993');
+    if (walletNumber) navigator.clipboard.writeText(walletNumber);
     setCopiedWallet(true);
     setTimeout(() => setCopiedWallet(false), 2000);
   };
 
-  const handleCopyInstapay = () => {
-    navigator.clipboard.writeText('deilar@instapay');
-    setCopiedInstapay(true);
-    setTimeout(() => setCopiedInstapay(false), 2000);
-  };
-
-  const handleCopyIban = () => {
-    navigator.clipboard.writeText('EG5400020001000001020709993');
-    setCopiedIban(true);
-    setTimeout(() => setCopiedIban(false), 2000);
-  };
-
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newOrderId = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
-    setOrderId(newOrderId);
-    setStep('success');
+    if (isPlacing) return;
+
+    setIsPlacing(true);
+    setSubmitError(null);
+    setReceiptFailed(false);
+
+    // The wallet number the buyer typed travels in the order notes, where the team reconciles transfers.
+    const transferNote =
+      paymentMethod === 'wallet' ? `محفظة المرسل: ${senderWalletNumber}` : '';
+
+    try {
+      const order = await placeOrder(
+        {
+          name: customerName.trim(),
+          phone: customerPhone.trim(),
+          addressType,
+          governorate: customerGovernorate,
+          city: customerCity.trim(),
+          street: customerStreet.trim(),
+          buildingNumber,
+          floorNumber,
+          apartmentNumber,
+          specialMark,
+          notes: [customerNotes.trim(), transferNote].filter(Boolean).join('\n'),
+          payment: paymentMethod === 'cod' ? 'cod' : 'transfer-wallet',
+          membershipNumber: session.cardNumber,
+          items: cart.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
+        },
+        session.token,
+      );
+
+      if (receiptFile && paymentMethod !== 'cod') {
+        await uploadReceipt(order.order_code, receiptFile).catch(() => setReceiptFailed(true));
+      }
+
+      // Kept on this device so the order can be followed from "My orders" without logging in.
+      rememberOrder({
+        code: order.order_code,
+        placedAt: new Date().toISOString(),
+        total: order.total_amount,
+        itemCount: cart.reduce((sum, item) => sum + item.quantity, 0),
+        summary: cart[0]?.product.name ?? '',
+        image: cart[0]?.product.image ?? null,
+      });
+
+      setPlaced(order);
+      setStep('success');
+    } catch (err) {
+      const errors = err instanceof ApiError ? (err.body?.errors as Record<string, string[]> | undefined) : undefined;
+      setSubmitError(
+        err instanceof ApiError && err.status === 422
+          ? errors ? Object.values(errors).flat()[0] ?? err.message : err.message
+          : err instanceof ApiError && err.status === 429
+            ? 'محاولات كثيرة، انتظر قليلاً ثم حاول مرة أخرى'
+            : 'تعذر تسجيل الطلب، تأكد من اتصالك بالإنترنت وحاول مرة أخرى',
+      );
+    } finally {
+      setIsPlacing(false);
+    }
   };
 
   const handleSendWhatsAppConfirmation = () => {
-    const paymentLabel = paymentMethod === 'wallet' 
+    const paymentLabel = paymentMethod === 'wallet'
       ? `تحويل محفظة إلكترونية (فودافون كاش) من رقم: ${senderWalletNumber || 'غير محدد'}`
-      : `تحويل بنكي / إنستاباي - مرجع الحوالة: ${bankReferenceNumber || 'غير محدد'}`;
+      : 'الدفع عند الاستلام';
 
     let message = `🛒 *طلب جديد من متجر ديلار - رقم الطلب: #${orderId}*\n\n`;
     message += `👤 *بيانات العميل:*\n`;
     message += `• الاسم: ${customerName}\n`;
     message += `• الهاتف: ${customerPhone}\n`;
-    message += `• العنوان: ${customerCity} - ${customerAddress}\n`;
+    message += `• العنوان: ${customerAddress}\n`;
     if (customerNotes) message += `• ملاحظات: ${customerNotes}\n`;
 
     message += `\n📦 *المنتجات المطلوبة:*\n`;
@@ -124,12 +267,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
     message += `💳 *طريقة الدفع المحددة:*\n${paymentLabel}\n\n`;
     message += `يرجى تأكيد استلام الحوالة والبدء في تجهيز وشحن الطلب. شكراً لكم!`;
 
-    window.open(`https://wa.me/201020709993?text=${encodeURIComponent(message)}`, '_blank');
+    if (whatsappTo) window.open(`https://wa.me/${whatsappTo}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in">
-      <div className="bg-white rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
+    <div className={asPage ? 'animate-in fade-in duration-200' : 'fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in'}>
+      <div className={asPage ? 'bg-white rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col' : 'bg-white rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col'}>
         {/* Header */}
         <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
           <div className="flex items-center gap-2">
@@ -201,7 +344,6 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                                   {item.product.storeName}
                                 </span>
                               )}
-                              {item.product.weight && <span>• {item.product.weight}</span>}
                             </div>
                             <div className="text-xs font-black text-[#941946] font-mono mt-1">
                               {item.product.price * item.quantity} ج.م
@@ -245,14 +387,17 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       <span>إجمالي قيمة المنتجات:</span>
                       <span>{totalCartPrice + totalCartSavings} ج.م</span>
                     </div>
-                    <div className="flex justify-between text-emerald-600 font-bold">
-                      <span>خصم وتوفير كرت ديلار:</span>
-                      <span>-{totalCartSavings} ج.م</span>
-                    </div>
+                    {totalCartSavings > 0 && (
+                      <div className="flex justify-between text-emerald-600 font-bold">
+                        <span>خصم وتوفير كرت ديلار:</span>
+                        <span>-{totalCartSavings} ج.م</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-slate-600">
                       <span>تكلفة الشحن والتوصيل:</span>
-                      <span>{shippingFee === 0 ? 'مجاناً (لطلبات فوق 500 ج.م)' : `${shippingFee} ج.م`}</span>
+                      <span>{shippingFee === 0 ? `مجاناً (لطلبات ${freeFrom} ج.م فأكثر)` : `${shippingFee} ج.م`}</span>
                     </div>
+                    {remainingForFree > 0 && <p className="text-[10px] text-amber-700 font-bold">أضف منتجات بـ {remainingForFree} ج.م لتحصل على توصيل مجاني</p>}
                     <div className="flex justify-between text-slate-900 font-black border-t border-slate-200 pt-2 text-sm">
                       <span>المبلغ الإجمالي للدفع:</span>
                       <span className="text-[#941946] font-mono">{finalTotal} ج.م</span>
@@ -306,8 +451,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   اختر طريقة التحويل وسداد قيمة المنتجات:
                 </label>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2">
                   {/* Option A: Mobile Wallet (فودافون كاش ومحافظ الهاتف) */}
+                  {walletAvailable && (
                   <div
                     onClick={() => setPaymentMethod('wallet')}
                     className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
@@ -330,29 +476,22 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       <span>تحويل فوري وسريع</span>
                     </div>
                   </div>
+                  )}
+                </div>
 
-                  {/* Option B: Bank Transfer / InstaPay */}
-                  <div
-                    onClick={() => setPaymentMethod('bank')}
-                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
-                      paymentMethod === 'bank'
-                        ? 'border-[#941946] bg-rose-50/50 shadow-xs'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-                        <Building2 className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-900">تحويل بنكي</h4>
-                        <p className="text-[9.5px] text-slate-500">إنستاباي InstaPay / حساب بنكي</p>
-                      </div>
-                    </div>
-                    <div className="mt-2 text-[10px] font-bold text-blue-600 flex items-center gap-1">
-                      <Check className="w-3 h-3" />
-                      <span>حساب رسمي معتمد</span>
-                    </div>
+                {/* Option B: pay the courier */}
+                <div
+                  onClick={() => setPaymentMethod('cod')}
+                  className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2 ${
+                    paymentMethod === 'cod' ? 'border-[#941946] bg-rose-50/50 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'
+                  }`}
+                >
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">الدفع عند الاستلام</h4>
+                    <p className="text-[9.5px] text-slate-500">ادفع للمندوب عند وصول الطلب</p>
                   </div>
                 </div>
               </div>
@@ -371,8 +510,8 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <div className="bg-white p-2.5 rounded-xl border border-rose-200/80 flex items-center justify-between">
                     <div>
                       <span className="text-[10px] text-slate-400 block">رقم المحفظة لتحويل المبلغ:</span>
-                      <span className="text-sm font-black text-slate-900 font-mono tracking-wider">
-                        01020709993
+                      <span dir="ltr" className="text-sm font-black text-slate-900 font-mono tracking-wider">
+                        {walletNumber ?? '—'}
                       </span>
                     </div>
 
@@ -410,66 +549,20 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   </div>
                 </div>
               ) : (
-                /* BANK / INSTAPAY DETAILS */
-                <div className="p-3.5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800">بيانات التحويل البنكي وإنستاباي:</span>
-                    <span className="text-[9.5px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
-                      معتمد رسمي
-                    </span>
-                  </div>
+                <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-[11px] text-emerald-900 leading-relaxed">
+                  ستدفع قيمة الطلب للمندوب عند الاستلام. لا حاجة لأي تحويل الآن.
+                </div>
+              )}
 
-                  {/* InstaPay Handle */}
-                  <div className="bg-white p-2.5 rounded-xl border border-blue-200 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-slate-400 block">معرف إنستاباي السريع (InstaPay):</span>
-                      <span className="text-xs font-black text-blue-900 font-mono">deilar@instapay</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleCopyInstapay}
-                      className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded-lg flex items-center gap-1 transition-colors"
-                    >
-                      {copiedInstapay ? 'تم النسخ!' : 'نسخ المعرف'}
-                    </button>
-                  </div>
-
-                  {/* Bank Account */}
-                  <div className="bg-white p-2.5 rounded-xl border border-blue-200 space-y-1 text-[11px]">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">اسم البنك:</span>
-                      <span className="font-bold text-slate-800">البنك الأهلي المصري (NBE)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">اسم الحساب:</span>
-                      <span className="font-bold text-slate-800">شركة ديلار للرعاية الصحية</span>
-                    </div>
-                    <div className="flex justify-between items-center pt-1 border-t border-slate-100">
-                      <span className="text-slate-500">رقم الحساب / IBAN:</span>
-                      <button
-                        type="button"
-                        onClick={handleCopyIban}
-                        className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-0.5"
-                      >
-                        <Copy className="w-3 h-3" />
-                        <span>{copiedIban ? 'تم النسخ!' : 'نسخ الآيبان IBAN'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                      رقم مرجع التحويل أو اسم صاحب الحساب المحول منه:
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={bankReferenceNumber}
-                      onChange={(e) => setBankReferenceNumber(e.target.value)}
-                      placeholder="مثال: حوالة إنستاباي رقم 94812 / اسم المحول"
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600"
-                    />
-                  </div>
+              {paymentMethod !== 'cod' && (
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">صورة إيصال التحويل (اختياري - يمكن إرسالها لاحقاً):</label>
+                  <input
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+                    className="w-full text-[11px] text-slate-600 file:mr-2 file:rounded-lg file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-[11px] file:font-bold file:text-white"
+                  />
                 </div>
               )}
 
@@ -480,68 +573,109 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <span>عنوان التوصيل واستلام المنتجات:</span>
                 </span>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-[10px] text-slate-500 block mb-0.5">الاسم ثلاثي:</label>
-                    <input
-                      type="text"
-                      required
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:bg-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] text-slate-500 block mb-0.5">رقم الموبايل / واتساب:</label>
-                    <input
-                      type="tel"
-                      required
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:bg-white"
-                    />
-                  </div>
-                </div>
+                {(() => {
+                  const input = 'w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs focus:outline-none focus:bg-white focus:border-[#941946]';
+                  const label = 'text-[11px] font-bold text-slate-700 block mb-1';
+                  const star = <span className="text-rose-500">*</span>;
+                  const kinds: ['home' | 'work' | 'other', string][] = [['home', 'المنزل'], ['work', 'العمل'], ['other', 'آخر']];
+                  return (
+                    <div className="space-y-2.5">
+                      <div>
+                        <label className={label}>الاسم بالكامل {star}</label>
+                        <input type="text" required minLength={3} autoComplete="name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="الاسم الذي نسأل عنه عند التوصيل" className={input} />
+                      </div>
 
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="text-[10px] text-slate-500 block mb-0.5">المحافظة:</label>
-                    <select
-                      value={customerCity}
-                      onChange={(e) => setCustomerCity(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:bg-white"
-                    >
-                      <option value="القاهرة">القاهرة</option>
-                      <option value="الجيزة">الجيزة</option>
-                      <option value="الإسكندرية">الإسكندرية</option>
-                      <option value="القليوبية">القليوبية</option>
-                      <option value="الشرقية">الشرقية</option>
-                      <option value="الدقهلية">الدقهلية</option>
-                      <option value="محافظة أخرى">محافظة أخرى</option>
-                    </select>
-                  </div>
+                      <div>
+                        <label className={label}>رقم الهاتف {star}</label>
+                        <input type="tel" required inputMode="tel" dir="ltr" autoComplete="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="01X XXXX XXXX" className={`${input} font-mono text-right`} />
+                      </div>
 
-                  <div className="col-span-2">
-                    <label className="text-[10px] text-slate-500 block mb-0.5">العنوان بالتفصيل:</label>
-                    <input
-                      type="text"
-                      required
-                      value={customerAddress}
-                      onChange={(e) => setCustomerAddress(e.target.value)}
-                      placeholder="اسم الشارع، رقم العمارة، الشقة"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs focus:outline-none focus:bg-white"
-                    />
-                  </div>
-                </div>
+                      <div>
+                        <span className={label}>نوع العنوان</span>
+                        <div className="flex flex-wrap gap-2">
+                          {kinds.map(([value, text]) => (
+                            <label key={value} className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold transition-colors ${addressType === value ? 'border-[#941946] bg-rose-50 text-[#941946]' : 'border-slate-200 text-slate-500 hover:border-[#941946]/40'}`}>
+                              <input type="radio" name="address_type" value={value} checked={addressType === value} onChange={() => setAddressType(value)} className="accent-[#941946]" />
+                              {text}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className={label}>المحافظة {star}</label>
+                          <select required value={customerGovernorate} onChange={(e) => setCustomerGovernorate(e.target.value)} className={input}>
+                            <option value="">مثال: القاهرة</option>
+                            {(governorates.data ?? []).map((g) => (
+                              <option key={g.id} value={g.name}>{g.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className={label}>المدينة {star}</label>
+                          <input type="text" required autoComplete="address-level2" value={customerCity} onChange={(e) => setCustomerCity(e.target.value)} placeholder="مثال: مدينة نصر" className={input} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className={label}>الشارع {star}</label>
+                        <input type="text" required autoComplete="street-address" value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} placeholder="اسم الشارع" className={input} />
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className={label}>رقم العمارة</label>
+                          <input type="text" inputMode="numeric" value={buildingNumber} onChange={(e) => setBuildingNumber(e.target.value)} placeholder="اختياري" className={input} />
+                        </div>
+                        <div>
+                          <label className={label}>الدور</label>
+                          <input type="text" value={floorNumber} onChange={(e) => setFloorNumber(e.target.value)} placeholder="اختياري" className={input} />
+                        </div>
+                        <div>
+                          <label className={label}>رقم الشقة</label>
+                          <input type="text" value={apartmentNumber} onChange={(e) => setApartmentNumber(e.target.value)} placeholder="اختياري" className={input} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className={label}>علامة مميزة</label>
+                        <input type="text" value={specialMark} onChange={(e) => setSpecialMark(e.target.value)} placeholder="اختياري — جوار الصيدلية مثلًا" className={input} />
+                      </div>
+
+                      <div>
+                        <label className={label}>ملاحظات</label>
+                        <textarea rows={2} value={customerNotes} onChange={(e) => setCustomerNotes(e.target.value)} placeholder="اختياري — موعد توصيل مناسب لك مثلًا" className={input} />
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
+
+              {submitError && (
+                <p className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2" role="alert">
+                  {submitError}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={pdfBusy || cart.length === 0}
+                className="w-full py-2.5 bg-white hover:bg-slate-50 disabled:opacity-60 border border-slate-300 text-slate-700 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+              >
+                {pdfBusy ? <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" /> : <Download className="w-4 h-4" />}
+                <span>تحميل ملخص الطلب PDF</span>
+              </button>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all"
+                disabled={isPlacing}
+                className="disabled:opacity-60 w-full py-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all"
               >
-                <Check className="w-4 h-4" />
-                <span>تأكيد تسجيل الطلب وإرسال إشعار التحويل</span>
+                {isPlacing ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
+                <span>{isPlacing ? 'جاري تسجيل الطلب...' : paymentMethod === 'cod' ? 'تأكيد الطلب' : 'تأكيد تسجيل الطلب وإرسال إشعار التحويل'}</span>
               </button>
             </form>
           )}
@@ -573,19 +707,37 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">العنوان:</span>
-                  <span className="font-bold text-slate-800">{customerCity} - {customerAddress}</span>
+                  <span className="font-bold text-slate-800">{customerAddress}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">طريقة السداد:</span>
                   <span className="font-bold text-[#941946]">
-                    {paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : 'تحويل بنكي / إنستاباي'}
+                    {paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : 'الدفع عند الاستلام'}
                   </span>
                 </div>
+                {placed && placed.delivery_price > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">مصاريف الشحن:</span>
+                    <span className="font-bold text-slate-800 font-mono">{placed.delivery_price} ج.م</span>
+                  </div>
+                )}
+                {placed && placed.delivery_price === 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">مصاريف الشحن:</span>
+                    <span className="font-bold text-emerald-700">مجاناً</span>
+                  </div>
+                )}
                 <div className="flex justify-between border-t border-slate-200 pt-1 font-bold">
-                  <span>المبلغ المدفوع:</span>
+                  <span>{paymentMethod === 'cod' ? 'المبلغ المطلوب عند الاستلام:' : 'المبلغ المطلوب تحويله:'}</span>
                   <span className="text-emerald-700 font-mono">{finalTotal} ج.م</span>
                 </div>
               </div>
+
+              {receiptFailed && (
+                <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  تم تسجيل طلبك لكن تعذر رفع صورة الإيصال. أرسلها لنا عبر واتساب برقم الطلب.
+                </p>
+              )}
 
               {/* Instant WhatsApp Notification Button */}
               <div className="space-y-2 pt-2">
@@ -594,12 +746,40 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>إرسال تفاصيل الطلب وإشعار التحويل عبر واتساب فوراً</span>
+                  <span>{paymentMethod === 'cod' ? 'إرسال تفاصيل الطلب عبر واتساب' : 'إرسال تفاصيل الطلب وإشعار التحويل عبر واتساب فوراً'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadPdf}
+                  disabled={pdfBusy}
+                  className="w-full py-3 bg-white hover:bg-slate-50 disabled:opacity-60 border border-slate-300 text-slate-800 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+                >
+                  {pdfBusy ? <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" /> : <Download className="w-4 h-4" />}
+                  <span>تحميل الفاتورة PDF</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const code = placed?.order_code;
+                    onClearCart();
+                    setPlaced(null);
+                    setStep('cart');
+                    setReceiptFile(null);
+                    if (!asPage) onClose();
+                    if (code) navigate(routeHref({ orders: { code } }));
+                  }}
+                  className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold transition-colors"
+                >
+                  تتبع طلبي
                 </button>
 
                 <button
                   onClick={() => {
                     onClearCart();
+                    setPlaced(null);
+                    setStep('cart');
+                    setReceiptFile(null);
                     onClose();
                   }}
                   className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"

@@ -25,10 +25,12 @@
 │   │   ├── SearchModal.tsx         # نافذة البحث السريع المباشر في المنشآت الطبية
 │   │   ├── StoreDetailModal.tsx    # نافذة تفاصيل المتجر الشريك ومنتجاته التابعة
 │   │   └── StoreView.tsx           # صفحة "المتجر" (متاجر البن والعسل والزيت - 2 في السطر)
-│   ├── data/
-│   │   ├── mockData.ts             # بيانات المنشآت الطبية (1,500+ مركز)، الخطط، وسجل التوفير
-│   │   ├── productsData.ts         # منتجات الرعاية والأجهزة الطبية
-│   │   └── storesData.ts           # المتاجر الشريكة (بن وعسل وزيت) وقائمة منتجاتها
+│   ├── api/                        # طبقة الاتصال بالـ API (ibusiness_medical)
+│   │   ├── http.ts                 # fetch + كاش في الذاكرة + دمج الطلبات المتطابقة (بدون preflight)
+│   │   ├── endpoints.ts            # دوال كل endpoint (`/api/v1/mobile/*`)
+│   │   ├── types.ts                # شكل ردود الـ API (منشآت، متاجر، منتجات)
+│   │   └── adapters.ts             # تحويلات صغيرة (منتج السلة، واتساب، المسافة)
+│   ├── hooks/                      # useApi / usePaged (تمرير لا نهائي) / useDebounced / useCatalog
 │   ├── utils/
 │   │   ├── downloadCard.ts         # محرك رسم وتوليد كارت ديلار بصيغة PNG عالية الدقة (1200x750)
 │   │   └── geo.ts                  # دوال حساب المسافات الجغرافية ومواقع المحافظات المصرية
@@ -98,3 +100,36 @@
    - اللون العنابي/البرغندي الرئيسي: `#941946` / `from-[#941946]`
    - اللون الذهبي المعتمد: `#c89e43` / `text-amber-400`
    - خلفيات الكروت: درجات ناعمة من الرمادي والأبيض `bg-slate-50` / `bg-white`.
+
+
+---
+
+## 🔌 مصدر البيانات (API)
+
+المنشآت والفروع والمتاجر والمنتجات تأتي من `ibusiness_medical` عبر endpoints خفيفة مخصصة للتطبيق
+(`app/Http/Controllers/Api/V1/Mobile`) — كل رد يحمل فقط ما تعرضه الشاشة:
+
+| الشاشة | الطلب |
+|---|---|
+| الرئيسية | `GET /mobile/facility-types` + `GET /mobile/facilities?lat&lng&per_page=3` |
+| الخريطة | `GET /mobile/map-pins` (نقاط خفيفة) ثم `GET /mobile/branches/{id}` عند الضغط على نقطة |
+| القائمة / البحث | `GET /mobile/facilities?q&type&governorate_id&lat&lng&radius_km&page` (ترقيم بلا COUNT) |
+| تفاصيل منشأة | `GET /mobile/facilities/{slug}` ثم `/branches?page=` |
+| المتاجر / المنتجات | `/mobile/stores`, `/mobile/store-categories`, `/mobile/products`, `/mobile/product-types` |
+
+قواعد الأداء: اللغة والموقع يُرسلان كـ query (`?lang=`) بدون headers مخصصة لتجنب preflight؛ الإحداثيات تُقرّب
+لتتشارك الطلبات المتقاربة نفس الـ URL؛ الردود تحمل `ETag` فيرد الخادم بـ `304` بدون body عند عدم التغيير؛
+وعنوان الـ API يُضبط من `VITE_API_URL`.
+
+## 🔐 الدخول والكرت
+
+- زران في نافذة الدخول (`AccessModal`): **تسجيل الدخول برقم الهاتف** (كود OTP يرسله الباك إند: `POST /mobile/auth/otp` ثم `/mobile/auth/otp/verify`) و**عرض بيانات الكرت برقم العضوية** (`GET /mobile/card/{number}` بدون تسجيل دخول).
+- لو أضاف المستخدم رقم الكرت أولاً يمكنه تسجيل الدخول بعده؛ الرقم المُدخل يبقى. ولو لم يضف رقماً، الدخول بالهاتف يجلب كرته تلقائياً.
+- الجلسة في `utils/session.ts`. النافذة تظهر للزائر كل 10 دقائق بعد إغلاقها، وتتوقف عند الدخول أو إضافة رقم كرت أو إرسال رقم الهاتف، حتى تسجيل الخروج.
+
+## ⬆️ التحديث الإجباري
+
+- `utils/forceUpdate.ts` يطلب `GET /mobile/app-config` عند الفتح وعند العودة للتطبيق، ويقارن `min_version_code` برقم نسخة التطبيق (`versionCode` من `android/app/build.gradle`، يُحقن وقت البناء كـ `__APP_VERSION_CODE__`).
+- لو النسخة أقدم تظهر `ForceUpdateScreen` (بدون إغلاق) وزر «حدّث الآن» يفتح صفحة التطبيق في Google Play (`store_url`).
+- فشل الطلب لا يمنع التطبيق (fail-open).
+- خطوات الإصدار: ارفع `versionCode` → انشر على Google Play → بعد ظهور النسخة ارفع `min_version_code` في الباك إند لنفس الرقم.

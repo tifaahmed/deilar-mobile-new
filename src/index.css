@@ -151,3 +151,20 @@ html.dark, .dark {
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
+
+@keyframes map-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes map-color {
+  0%, 100% { color: #941946; }
+  33% { color: #d4a748; }
+  66% { color: #15294b; }
+}
+@keyframes map-color-active {
+  0%, 100% { color: #ffffff; }
+  50% { color: #f5d77a; }
+}
+.map-icon-bounce { animation: map-bounce 1s ease-in-out infinite; }
+.map-icon-color { animation: map-color 3s linear infinite; }
+.map-icon-color-active { animation: map-color-active 1.5s ease-in-out infinite; }

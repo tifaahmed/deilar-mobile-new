@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Beneficiary } from '../types';
 import { DeilarLogo } from './DeilarLogo';
+import cardFront from '../assets/images/deilar_card_front_official_1791012713788.jpg';
 import { OfficialDeilarCard } from './OfficialDeilarCard';
 
 interface MyCardViewProps {
@@ -74,7 +75,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
       {/* Background Card Ambient Texture */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-96 overflow-hidden opacity-10 -z-10">
         <img
-          src="/src/assets/images/deilar_card_front_official_1791012713788.jpg"
+          src={cardFront}
           alt="Deilar Card Background"
           className="w-full h-full object-cover scale-110 blur-[2px]"
         />

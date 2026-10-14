@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { MessageCircle, PhoneCall, X } from 'lucide-react';
+import { useContact } from '../hooks/useCatalog';
 
 export const FloatingContactButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const contactNumber = '01020709993';
+  const contact = useContact();
+  const contactNumber = contact.phone ?? '';
 
   return (
     <div className="fixed bottom-20 left-4 sm:left-6 z-40 flex flex-col items-start gap-2.5 select-none">
@@ -23,9 +25,9 @@ export const FloatingContactButton: React.FC = () => {
 
           {/* 1. زرار الاتصال الهاتفي */}
           <a
-            href={`tel:${contactNumber}`}
+            href={`tel:${contact.dial ?? contactNumber}`}
             onClick={() => setIsOpen(false)}
-            className="w-full py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors shadow-xs"
+            className={`${contact.phone ? '' : 'hidden '}w-full py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors shadow-xs`}
           >
             <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-amber-400 shrink-0">
               <PhoneCall className="w-3.5 h-3.5" />
@@ -38,11 +40,11 @@ export const FloatingContactButton: React.FC = () => {
 
           {/* 2. زرار محادثة واتس */}
           <a
-            href={`https://wa.me/201020709993`}
+            href={`https://wa.me/${contact.whatsapp}`}
             target="_blank"
             rel="noreferrer"
             onClick={() => setIsOpen(false)}
-            className="w-full py-2.5 px-3 bg-[#25D366] hover:bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors shadow-xs"
+            className={`${contact.whatsapp ? '' : 'hidden '}w-full py-2.5 px-3 bg-[#25D366] hover:bg-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors shadow-xs`}
           >
             <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white shrink-0">
               <MessageCircle className="w-4 h-4 fill-white text-[#25D366]" />

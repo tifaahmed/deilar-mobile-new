@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   User, 
   CreditCard, 
@@ -33,35 +33,65 @@ import {
   FileText,
   Send,
   Languages,
-  Globe
+  Globe,
+  Lock,
+  LogOut,
 } from 'lucide-react';
-import { Beneficiary, UsageRecord } from '../types';
-import { OfficialDeilarCard } from './OfficialDeilarCard';
+import { Beneficiary } from '../types';
+import { MembershipCardImage } from './MembershipCardImage';
+import { downloadCardImageFile, fetchProfile, updateProfile } from '../api/auth';
+import { fetchLocations } from '../api/endpoints';
+import { ApiError, postContactMessage } from '../api/http';
+import { getSession } from '../utils/session';
+import { useApi } from '../hooks/useApi';
+import { fetchFamily } from '../api/family';
+import { AddMemberForm } from './AddMemberForm';
+import { useContact } from '../hooks/useCatalog';
 import { downloadDeilarCardImage } from '../utils/downloadCard';
 import { useLanguage } from '../context/LanguageContext';
 
 export type ProfileSubSection = 'card' | 'members' | 'support' | 'personal' | 'theme';
 
+export interface ProfileAccount {
+  name: string;
+  phone: string;
+  number: string;
+  validTo: string | null;
+  signedIn: boolean;
+}
+
 interface ProfileViewProps {
+  account: ProfileAccount;
+  onLogout: () => void;
   beneficiaries: Beneficiary[];
-  usageHistory: UsageRecord[];
   onOpenCard?: () => void;
   theme?: 'light' | 'dark';
   onThemeChange?: (theme: 'light' | 'dark') => void;
   onAddBeneficiary?: (newBen: Beneficiary) => void;
+  /** Opens the phone + code sign-in. */
+  onSignIn: () => void;
+  /** Open sub-section, driven by the URL (null = the card). */
+  section: Exclude<ProfileSubSection, 'card'> | null;
+  onSectionChange: (section: Exclude<ProfileSubSection, 'card'> | null) => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
+  account,
+  onLogout,
   beneficiaries,
-  usageHistory,
   theme = 'light',
   onThemeChange,
   onAddBeneficiary,
+  onSignIn,
+  section,
+  onSectionChange,
 }) => {
   const { language, setLanguage, t, isAr, brandName } = useLanguage();
+  const contact = useContact();
 
   // Active sub-section state (Default to 'card')
-  const [activeSection, setActiveSection] = useState<ProfileSubSection>('card');
+  const activeSection: ProfileSubSection = section ?? 'card';
+  const setActiveSection = (s: ProfileSubSection) => onSectionChange(s === 'card' ? null : s);
 
   // Card sub-section states
   const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState<string>(beneficiaries[0]?.id || 'ben-1');
@@ -72,31 +102,63 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   // Personal Info form state
   const [personalInfo, setPersonalInfo] = useState({
-    fullName: isAr ? 'مصطفى مرسي' : 'Mostafa Morsy',
-    phone: '01020709993',
-    email: 'mostafa.morsy3110@gmail.com',
-    governorate: isAr ? 'القاهرة - المعادي' : 'Cairo - Maadi',
-    nationalId: '29508150102345',
+    fullName: account.name,
+    phone: account.phone,
+    email: '',
+    governorateId: '' as string,
+    nationalId: '',
   });
   const [personalSaveSuccess, setPersonalSaveSuccess] = useState(false);
+  const [personalBusy, setPersonalBusy] = useState(false);
+  const [personalError, setPersonalError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
-  // New Beneficiary form state
+  // The member's saved details come from the backend once they are signed in (phone + code).
+  const personalOpen = activeSection === 'personal' && account.signedIn;
+  const token = getSession().token;
+  const family = useApi(token ? `family:${token}` : null, () => fetchFamily(token!));
+  const awaiting = (family.data ?? []).filter((p) => p.approval_status !== 'approved');
+  const governorates = useApi(personalOpen ? `all-governorates:${language}` : null, (signal) => fetchLocations(signal));
+
+  useEffect(() => {
+    const token = getSession().token;
+    if (!personalOpen || !token) return;
+    let cancelled = false;
+
+    fetchProfile(token).then(
+      (p) => {
+        if (cancelled) return;
+        setPersonalInfo((cur) => ({
+          fullName: p.name ?? cur.fullName,
+          phone: p.phone ?? cur.phone,
+          email: p.email ?? '',
+          governorateId: p.governorateId ? String(p.governorateId) : '',
+          nationalId: p.nationalId ?? '',
+        }));
+      },
+      (err) => {
+        if (!cancelled && err instanceof ApiError && err.status === 401) setSessionExpired(true);
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [personalOpen]);
+
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
-  const [newMemberName, setNewMemberName] = useState('');
-  const [newMemberRelation, setNewMemberRelation] = useState(isAr ? 'زوجة' : 'Wife');
-  const [newMemberNid, setNewMemberNid] = useState('');
-  const [addMemberSuccess, setAddMemberSuccess] = useState(false);
 
   // Support ticket form state
   const [ticketTopic, setTopic] = useState('ticketTopicGeneral');
   const [ticketMessage, setTicketMessage] = useState('');
   const [ticketSent, setTicketSent] = useState(false);
+  const [ticketPhone, setTicketPhone] = useState(account.phone);
+  const [ticketBusy, setTicketBusy] = useState(false);
+  const [ticketError, setTicketError] = useState<string | null>(null);
 
   const currentBeneficiary = beneficiaries.find((b) => b.id === selectedBeneficiaryId) || beneficiaries[0];
 
-  const memId = currentBeneficiary.cardNumber.startsWith('MEM')
-    ? currentBeneficiary.cardNumber
-    : `MEM-${1000 + parseInt(currentBeneficiary.id.replace(/\D/g, '') || '0')}`;
+  const memId = currentBeneficiary.cardNumber;
 
   const handleCopyCardId = () => {
     navigator.clipboard.writeText(memId);
@@ -107,7 +169,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const handleDownload = async (side: 'front' | 'back' = 'front') => {
     setIsDownloading(true);
     try {
-      await downloadDeilarCardImage(currentBeneficiary, side);
+      // The real artwork first; the locally drawn card only if the server cannot give it.
+      await downloadCardImageFile(account.number, side).catch(() => downloadDeilarCardImage(currentBeneficiary, side));
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 3000);
     } catch (err) {
@@ -120,53 +183,71 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const handleShareWhatsApp = () => {
     const cardTitle = isAr ? `بطاقة ${brandName} للخصم الطبي المعتمدة 🎫` : `${brandName} Certified Medical Discount Card 🎫`;
     const text = encodeURIComponent(
-      `${cardTitle}\n${isAr ? 'الاسم' : 'Name'}: ${currentBeneficiary.name}\n${isAr ? 'رقم العضوية' : 'Membership ID'}: ${memId}\n${isAr ? 'الصلاحية' : 'Validity'}: 31/12/2027\n${isAr ? 'خصومات تصل حتى 70% في المستشفيات والمعامل.' : 'Discounts up to 70% at hospitals & labs.'}\nhttps://deilar.com`
+      `${cardTitle}\n${isAr ? 'الاسم' : 'Name'}: ${currentBeneficiary.name}\n${isAr ? 'رقم العضوية' : 'Membership ID'}: ${memId}\n${isAr ? 'الصلاحية' : 'Validity'}: ${account.validTo ?? '-'}\n${isAr ? 'خصومات تصل حتى 70% في المستشفيات والمعامل.' : 'Discounts up to 70% at hospitals & labs.'}\nhttps://deilar.com`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
-  const handleSavePersonalInfo = (e: React.FormEvent) => {
+  const handleSavePersonalInfo = async (e: React.FormEvent) => {
     e.preventDefault();
-    setPersonalSaveSuccess(true);
-    setTimeout(() => setPersonalSaveSuccess(false), 3500);
+    const token = getSession().token;
+    if (!token || personalBusy) return;
+
+    setPersonalBusy(true);
+    setPersonalError(null);
+    setPersonalSaveSuccess(false);
+
+    try {
+      await updateProfile(token, {
+        name: personalInfo.fullName.trim(),
+        email: personalInfo.email.trim() || null,
+        national_id: personalInfo.nationalId.trim() || null,
+        governorate_id: personalInfo.governorateId ? Number(personalInfo.governorateId) : null,
+      });
+      setPersonalSaveSuccess(true);
+      setTimeout(() => setPersonalSaveSuccess(false), 3500);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setSessionExpired(true);
+      } else {
+        const first = err instanceof ApiError && err.status === 422 ? Object.values((err.body?.errors ?? {}) as Record<string, string[]>)[0]?.[0] : undefined;
+        setPersonalError(first ?? (isAr ? 'تعذر حفظ بياناتك، حاول مرة أخرى' : 'Could not save your details, please try again'));
+      }
+    } finally {
+      setPersonalBusy(false);
+    }
   };
 
-  const handleAddNewMember = (e: React.FormEvent) => {
+  // Lands in the Contact Us inbox of the back office, like the website's contact form.
+  const handleSendSupportTicket = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMemberName.trim()) return;
+    const message = ticketMessage.trim();
+    const phone = ticketPhone.replace(/[\s-]/g, '');
+    if (!message || ticketBusy) return;
 
-    const newId = `ben-${Date.now()}`;
-    const newCardNumber = `MEM-${Math.floor(1000 + Math.random() * 9000)}`;
-
-    const newBen: Beneficiary = {
-      id: newId,
-      name: newMemberName.trim(),
-      relation: newMemberRelation,
-      cardNumber: newCardNumber,
-      nationalId: newMemberNid.trim() || '29801010102345',
-      dob: '1998-01-01',
-      status: 'active',
-    };
-
-    if (onAddBeneficiary) {
-      onAddBeneficiary(newBen);
+    if (!/^\+?\d{8,15}$/.test(phone)) {
+      setTicketError(isAr ? 'أدخل رقم هاتف صحيح للتواصل معك' : 'Enter a valid phone number so we can reach you');
+      return;
     }
 
-    setAddMemberSuccess(true);
-    setNewMemberName('');
-    setNewMemberNid('');
-    setTimeout(() => {
-      setAddMemberSuccess(false);
-      setShowAddMemberModal(false);
-    }, 1500);
-  };
+    setTicketBusy(true);
+    setTicketError(null);
 
-  const handleSendSupportTicket = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!ticketMessage.trim()) return;
-    setTicketSent(true);
-    setTicketMessage('');
-    setTimeout(() => setTicketSent(false), 4000);
+    try {
+      await postContactMessage({
+        phone,
+        name: account.name || undefined,
+        message: `[${t(ticketTopic as Parameters<typeof t>[0])}] ${message}${account.number ? `\n${isAr ? 'رقم العضوية' : 'Membership'}: ${account.number}` : ''}`,
+        source: 'contact_form',
+      });
+      setTicketSent(true);
+      setTicketMessage('');
+      setTimeout(() => setTicketSent(false), 4000);
+    } catch (err) {
+      setTicketError(err instanceof ApiError && err.status === 429 ? (isAr ? 'محاولات كثيرة، حاول لاحقاً' : 'Too many attempts, try later') : isAr ? 'تعذر إرسال رسالتك، حاول مرة أخرى' : 'Could not send your message, please try again');
+    } finally {
+      setTicketBusy(false);
+    }
   };
 
   const isDark = theme === 'dark';
@@ -180,7 +261,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#941946] to-[#6d1132] text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
-              <span>{personalInfo.fullName.charAt(0) || 'M'}</span>
+              <span>{personalInfo.fullName.charAt(0) || 'D'}</span>
             </div>
 
             <div>
@@ -191,7 +272,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   {t('activeMember')}
                 </span>
               </div>
-              <p className="text-xs text-[#c89e43] font-bold mt-0.5">{t('membershipId')}: MEM-1000</p>
+              <p className="text-xs text-[#c89e43] font-bold mt-0.5">{t('membershipId')}: {account.number}</p>
               <p className={`text-[11px] font-mono ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{personalInfo.phone}</p>
             </div>
           </div>
@@ -204,6 +285,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <span>{t('downloadCardShort')}</span>
           </button>
         </div>
+
+        {account.signedIn ? (
+          <button
+            onClick={onLogout}
+            className={`mt-3 w-full py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+              isDark
+                ? 'border-rose-400/40 text-rose-300 hover:bg-rose-500/10'
+                : 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'
+            }`}
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>{isAr ? 'تسجيل الخروج' : 'Log out'}</span>
+          </button>
+        ) : (
+          <button
+            onClick={onLogout}
+            className={`mt-3 text-[11px] font-bold hover:underline cursor-pointer ${isDark ? 'text-rose-300' : 'text-[#941946]'}`}
+          >
+            {isAr ? 'إزالة الكرت من هذا الجهاز' : 'Remove card from this device'}
+          </button>
+        )}
       </section>
 
       {/* 2. Interactive Navigation Tabs (5 Sections) */}
@@ -310,7 +412,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
           {/* The 3D Realistic Interactive Deilar Card */}
           <div className="relative">
-            <OfficialDeilarCard
+            <MembershipCardImage
+              number={account.number}
               beneficiary={currentBeneficiary}
               isFlipped={isFlipped}
               onToggleFlip={() => setIsFlipped(!isFlipped)}
@@ -428,6 +531,40 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             {t('familyMembersDesc')}
           </p>
 
+          {awaiting.length > 0 && (
+            <div className="space-y-2">
+              {awaiting.map((p) => (
+                <div
+                  key={`pending-${p.id}`}
+                  className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
+                    p.approval_status === 'rejected'
+                      ? isDark ? 'bg-rose-500/10 border-rose-400/30' : 'bg-rose-50 border-rose-200'
+                      : isDark ? 'bg-amber-500/10 border-amber-400/30' : 'bg-amber-50 border-amber-200'
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold truncate">{p.name}</p>
+                    <p className={`text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
+                      {p.relationship_label ?? p.relationship}
+                      {p.approval_status === 'rejected' && p.rejection_reason ? ` • ${p.rejection_reason}` : ''}
+                    </p>
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                      p.approval_status === 'rejected'
+                        ? 'text-rose-600 bg-rose-500/10 border-rose-500/30'
+                        : 'text-amber-600 bg-amber-500/10 border-amber-500/30'
+                    }`}
+                  >
+                    {p.approval_status === 'rejected'
+                      ? isAr ? 'مرفوض' : 'Rejected'
+                      : isAr ? 'بانتظار موافقة الإدارة' : 'Awaiting admin approval'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="space-y-2 pt-1">
             {beneficiaries.map((b) => (
               <div
@@ -472,79 +609,24 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             ))}
           </div>
 
-          {/* Add Member Inline Modal */}
+          {/* Add member: every field + camera pictures, then waits for admin approval */}
           {showAddMemberModal && (
-            <div className={`p-4 rounded-2xl border space-y-3 mt-3 animate-in fade-in ${
-              isDark ? 'bg-[#1E2330] border-white/[0.08]' : 'bg-rose-50/40 border-rose-200'
-            }`}>
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold">{t('addMemberTitle')}</h4>
-                <button
-                  onClick={() => setShowAddMemberModal(false)}
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs cursor-pointer ${
-                    isDark ? 'bg-[#252c3d] text-[#94A3B8]' : 'bg-slate-200 text-slate-600'
-                  }`}
-                >
-                  ✕
-                </button>
-              </div>
-
-              <form onSubmit={handleAddNewMember} className="space-y-2.5">
-                <div>
-                  <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{t('memberNamePrompt')}</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder={isAr ? 'مثال: ياسمين مصطفى مرسي' : 'e.g. Yasmin Mostafa Morsy'}
-                    value={newMemberName}
-                    onChange={(e) => setNewMemberName(e.target.value)}
-                    className={`w-full px-3 py-2 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
-                      isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200 text-slate-900'
-                    }`}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{t('relationPrompt')}</label>
-                    <select
-                      value={newMemberRelation}
-                      onChange={(e) => setNewMemberRelation(e.target.value)}
-                      className={`w-full px-3 py-2 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
-                        isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200 text-slate-900'
-                      }`}
-                    >
-                      <option value={isAr ? 'زوجة' : 'Wife'}>{t('relWife')}</option>
-                      <option value={isAr ? 'ابن' : 'Son'}>{t('relSon')}</option>
-                      <option value={isAr ? 'ابنة' : 'Daughter'}>{t('relDaughter')}</option>
-                      <option value={isAr ? 'والد' : 'Father'}>{t('relFather')}</option>
-                      <option value={isAr ? 'والدة' : 'Mother'}>{t('relMother')}</option>
-                      <option value={isAr ? 'أخ / أخت' : 'Sibling'}>{t('relSibling')}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{t('nationalIdOptional')}</label>
-                    <input
-                      type="text"
-                      placeholder="14 digits"
-                      value={newMemberNid}
-                      onChange={(e) => setNewMemberNid(e.target.value)}
-                      className={`w-full px-3 py-2 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
-                        isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200 text-slate-900'
-                      }`}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-2.5 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer"
-                >
-                  {addMemberSuccess ? t('memberAddedSuccess') : t('confirmAddMember')}
-                </button>
-              </form>
-            </div>
+            token ? (
+              <AddMemberForm
+                token={token}
+                isAr={isAr}
+                isDark={isDark}
+                onCancel={() => setShowAddMemberModal(false)}
+                onSent={() => {
+                  setShowAddMemberModal(false);
+                  family.reload();
+                }}
+              />
+            ) : (
+              <p className={`p-3 rounded-xl text-[11px] font-bold ${isDark ? 'bg-[#1E2330] text-amber-300' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
+                {isAr ? 'سجّل الدخول برقم هاتفك أولاً لإضافة فرد جديد.' : 'Sign in with your phone number first to add a family member.'}
+              </p>
+            )
           )}
         </section>
       )}
@@ -571,24 +653,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           {/* Quick Direct Buttons */}
           <div className="grid grid-cols-2 gap-2">
             <a
-              href="https://wa.me/201020709993"
+              href={contact.whatsapp ? `https://wa.me/${contact.whatsapp}` : undefined}
               target="_blank"
               rel="noreferrer"
-              className="py-3 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-2xs"
+              className={`${contact.whatsapp ? '' : 'opacity-40 pointer-events-none '}py-3 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-2xs`}
             >
               <MessageCircle className="w-4 h-4" />
               <span>{t('directWhatsapp')}</span>
             </a>
 
             <a
-              href="tel:01020709993"
-              className={`py-3 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-2xs ${
+              href={contact.dial ? `tel:${contact.dial}` : undefined}
+              className={`${contact.dial ? '' : 'opacity-40 pointer-events-none '}py-3 px-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-2xs ${
                 isDark ? 'bg-[#1E2330] hover:bg-[#252c3d] text-white border border-white/[0.08]' : 'bg-slate-900 hover:bg-slate-800 text-white'
               }`}
             >
               <PhoneCall className="w-4 h-4 text-amber-400" />
               <span>{t('hotlineCall')}</span>
             </a>
+          </div>
+
+          {/* Company contact details */}
+          <div className={`rounded-2xl border divide-y ${isDark ? 'bg-[#1E2330] border-white/[0.08] divide-white/[0.08]' : 'bg-slate-50 border-slate-200/80 divide-slate-200/80'}`}>
+            {[
+              ...(contact.phone ? [{ href: `tel:${contact.dial ?? contact.phone}`, Icon: Phone, label: isAr ? 'هاتف الشركة' : 'Company phone', value: contact.phone, plain: false }] : []),
+              ...(contact.email ? [{ href: `mailto:${contact.email}`, Icon: Mail, label: isAr ? 'البريد الإلكتروني' : 'Email', value: contact.email, plain: false }] : []),
+              { href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('44ش عبد المنعم رياض من كورنيش النيل - الوراق - جيزة - الدور الاول')}`, Icon: MapPin, label: isAr ? 'العنوان' : 'Address', value: '44ش عبد المنعم رياض من كورنيش النيل - الوراق - جيزة - الدور الاول', plain: true },
+            ].map(({ href, Icon, label, value, plain }) => (
+              <a key={href} href={href} {...(plain ? { target: '_blank', rel: 'noreferrer' } : {})} className="flex items-center gap-3 px-3.5 py-3">
+                <span className="w-9 h-9 rounded-xl bg-[#941946]/10 text-[#941946] flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4" />
+                </span>
+                <span className="min-w-0">
+                  <span className={`block text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{label}</span>
+                  <span dir={plain ? undefined : 'ltr'} className={`block text-xs font-bold ${plain ? 'leading-relaxed' : 'font-mono truncate'}`}>{value}</span>
+                </span>
+              </a>
+            ))}
           </div>
 
           <div className="grid grid-cols-2 gap-2">
@@ -605,10 +706,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </a>
 
             <a
-              href="https://www.facebook.com/share/18F567x1yM/"
+              href={contact.facebook ?? undefined}
               target="_blank"
               rel="noreferrer"
-              className="py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
+              className={`${contact.facebook ? '' : 'opacity-40 pointer-events-none '}py-2.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs`}
             >
               <span>{t('facebookPage')}</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -638,6 +739,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <option value="ticketTopicSuggest">{t('ticketTopicSuggest')}</option>
               </select>
 
+              <input
+                type="tel"
+                required
+                dir="ltr"
+                inputMode="tel"
+                placeholder={isAr ? 'رقم هاتفك للتواصل' : 'Your phone number'}
+                value={ticketPhone}
+                onChange={(e) => { setTicketPhone(e.target.value); setTicketError(null); }}
+                className={`w-full px-3 py-2 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
+                  isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9] placeholder-[#94A3B8]' : 'bg-white border-slate-200 text-slate-900'
+                }`}
+              />
+
               <textarea
                 required
                 rows={3}
@@ -651,11 +765,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                disabled={ticketBusy}
+                className="w-full py-2.5 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>{t('sendTicketBtn')}</span>
               </button>
+
+              {ticketError && (
+                <p className="text-[11px] text-rose-500 font-bold" role="alert">
+                  {ticketError}
+                </p>
+              )}
 
               {ticketSent && (
                 <div className="p-2.5 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs text-emerald-400 flex items-center gap-2">
@@ -681,6 +802,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <span className={`text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{t('instantUpdate')}</span>
           </div>
 
+          {!account.signedIn || sessionExpired ? (
+            <div className="py-6 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#941946]/10 text-[#941946] flex items-center justify-center mx-auto">
+                <Lock className="w-6 h-6" />
+              </div>
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
+                {sessionExpired ? (isAr ? 'انتهت جلستك، سجّل الدخول مرة أخرى بكود التحقق.' : 'Your session expired, sign in again with a verification code.') : isAr ? 'سجّل الدخول برقم هاتفك وكود التحقق لتعديل بياناتك الشخصية.' : 'Sign in with your phone number and the verification code to edit your personal data.'}
+              </p>
+              <button type="button" onClick={onSignIn} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                <Phone className="w-4 h-4" />
+                <span>{isAr ? 'تسجيل الدخول برقم الهاتف' : 'Sign in with phone number'}</span>
+              </button>
+            </div>
+          ) : (
           <form onSubmit={handleSavePersonalInfo} className="space-y-3">
             <div>
               <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
@@ -709,9 +844,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   <Phone className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
                   <input
                     type="tel"
-                    required
+                    readOnly
+                    dir="ltr"
+                    title={isAr ? 'رقم الهاتف هو وسيلة تسجيل دخولك ولا يمكن تغييره من هنا' : 'Your phone is your sign-in and cannot be changed here'}
                     value={personalInfo.phone}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
                     className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
                       isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
                     }`}
@@ -727,7 +863,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   <Mail className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
                   <input
                     type="email"
-                    required
                     value={personalInfo.email}
                     onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
                     className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
@@ -745,14 +880,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </label>
                 <div className="relative">
                   <MapPin className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
-                  <input
-                    type="text"
-                    value={personalInfo.governorate}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, governorate: e.target.value })}
+                  <select
+                    value={personalInfo.governorateId}
+                    onChange={(e) => setPersonalInfo({ ...personalInfo, governorateId: e.target.value })}
                     className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
                       isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
                     }`}
-                  />
+                  >
+                    <option value="">{isAr ? 'اختر المحافظة' : 'Select governorate'}</option>
+                    {(governorates.data ?? []).map((g) => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
@@ -763,7 +902,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <input
                   type="text"
                   value={personalInfo.nationalId}
-                  onChange={(e) => setPersonalInfo({ ...personalInfo, nationalId: e.target.value })}
+                  maxLength={14}
+                  inputMode="numeric"
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, nationalId: e.target.value.replace(/\D/g, '') })}
                   className={`w-full px-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
                     isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
                   }`}
@@ -771,9 +912,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </div>
             </div>
 
+            {personalError && (
+              <p className="text-[11px] text-rose-500 font-bold" role="alert">
+                {personalError}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+              disabled={personalBusy}
+              className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>{t('saveChangesBtn')}</span>
@@ -786,6 +934,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </div>
             )}
           </form>
+          )}
         </section>
       )}
 

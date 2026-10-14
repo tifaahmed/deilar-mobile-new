@@ -1,10 +1,24 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
 import path from 'path';
 import {defineConfig} from 'vite';
 
+/** The Android build number baked into this bundle — `versionCode` in build.gradle is the single source of truth. */
+function appVersionCode(): number {
+  try {
+    const gradle = fs.readFileSync(path.resolve(__dirname, 'android/app/build.gradle'), 'utf8');
+    return Number(/versionCode\s+(\d+)/.exec(gradle)?.[1] ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
 export default defineConfig(() => {
   return {
+    define: {
+      __APP_VERSION_CODE__: JSON.stringify(appVersionCode()),
+    },
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {

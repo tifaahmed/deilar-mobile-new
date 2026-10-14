@@ -1,33 +1,41 @@
-import React from 'react';
-import { MapPin, Smartphone, Monitor, Navigation, ShoppingCart } from 'lucide-react';
+import React, { lazy, Suspense } from 'react';
+import { MapPin, Navigation, PackageSearch, ShoppingCart } from 'lucide-react';
 import { PRESET_LOCATIONS } from '../utils/geo';
+import { useStoredOrders } from '../utils/orders';
+import { Link } from '../router';
+import { useArea } from '../utils/area';
+const AreaModal = lazy(() => import('./AreaModal').then((m) => ({ default: m.AreaModal })));
 import { DeilarLogo } from './DeilarLogo';
 import { useLanguage } from '../context/LanguageContext';
 
 interface HeaderProps {
   currentLocationName: string;
+  /** Where the visitor is now; the city popup ranks cities by distance from it. */
+  currentPoint: { lat: number; lng: number };
   onLocationSelect: (location: typeof PRESET_LOCATIONS[0]) => void;
   onRequestGps: () => void;
   isGpsLoading: boolean;
-  isMobileFrame: boolean;
-  onToggleFrame: () => void;
   cartCount?: number;
   onOpenCart?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentLocationName,
+  currentPoint,
   onLocationSelect,
   onRequestGps,
   isGpsLoading,
-  isMobileFrame,
-  onToggleFrame,
   cartCount = 0,
   onOpenCart,
 }) => {
   const [showLocationDropdown, setShowLocationDropdown] = React.useState(false);
   const [isVisible, setIsVisible] = React.useState(true);
   const { language, brandName, t, isAr } = useLanguage();
+  const area = useArea();
+  const ordersCount = useStoredOrders().length;
+
+  const [showCityPopup, setShowCityPopup] = React.useState(false);
+  const areaLabel = area ? [area.governorate.name, area.city?.name].filter(Boolean).join(' - ') : currentLocationName;
 
   // Dynamic Scroll Direction Detection:
   // - Scroll DOWN -> Hide header smoothly
@@ -88,12 +96,12 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Middle: Geographic Location Selector */}
         <div className="relative">
           <button
-            onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+            onClick={() => (area ? setShowCityPopup(true) : setShowLocationDropdown(!showLocationDropdown))}
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/70 rounded-full transition-colors border border-slate-200/60 cursor-pointer"
             title={t('selectLocationPrompt')}
           >
             <MapPin className="w-3.5 h-3.5 text-[#931A47] shrink-0" />
-            <span className="max-w-[110px] sm:max-w-[140px] truncate text-[11px] font-semibold">{currentLocationName}</span>
+            <span className="max-w-[110px] sm:max-w-[140px] truncate text-[11px] font-semibold">{areaLabel}</span>
             <span className="text-[9px] text-slate-400">▼</span>
           </button>
 
@@ -136,6 +144,18 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Actions: Cart & Frame Toggle */}
         <div className="flex items-center gap-1.5">
+          <Link
+            to={{ orders: { code: null } }}
+            className="relative p-2 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 rounded-full transition-all border border-slate-200/80 cursor-pointer"
+            title={isAr ? 'طلباتي' : 'My orders'}
+            aria-label={isAr ? 'طلباتي' : 'My orders'}
+          >
+            <PackageSearch className="w-4 h-4 text-slate-700" />
+            {ordersCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-amber-400 text-slate-900 text-[10px] font-bold rounded-full flex items-center justify-center">{ordersCount}</span>
+            )}
+          </Link>
+
           {onOpenCart && (
             <button
               onClick={onOpenCart}
@@ -150,27 +170,13 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </button>
           )}
-
-          {/* Desktop/Tablet Mode Viewport Frame Switcher */}
-          <button
-            onClick={onToggleFrame}
-            className="hidden md:flex items-center gap-1 px-2.5 py-1 text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors border border-slate-200/80 cursor-pointer"
-            title={isMobileFrame ? t('expandedView') : t('phoneFrame')}
-          >
-            {isMobileFrame ? (
-              <>
-                <Monitor className="w-3.5 h-3.5 text-[#931A47]" />
-                <span className="text-[11px] font-medium">{t('expandedView')}</span>
-              </>
-            ) : (
-              <>
-                <Smartphone className="w-3.5 h-3.5 text-[#931A47]" />
-                <span className="text-[11px] font-medium">{t('phoneFrame')}</span>
-              </>
-            )}
-          </button>
         </div>
       </div>
+      {showCityPopup && area && (
+        <Suspense fallback={null}>
+          <AreaModal lat={(area.point ?? currentPoint).lat} lng={(area.point ?? currentPoint).lng} lockedGovernorateId={area.governorate.id} onClose={() => setShowCityPopup(false)} />
+        </Suspense>
+      )}
     </header>
   );
 };

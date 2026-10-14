@@ -16,58 +16,112 @@
  * 2. 🛒 GLOBAL SHOPPING CART (`cart` & `isGlobalCartOpen`):
  *    - Manages items gathered from stores.
  *    - Accessible from anywhere via Header cart icon or Store triggers.
- *    - Handled by `<CartCheckoutModal />` supporting Bank (InstaPay/IBAN) and Mobile Wallet (Vodafone Cash) transfers.
+ *    - A full page (`/cart`, `/checkout`) handled by `<CartCheckoutModal asPage />`: wallet transfer (Vodafone Cash etc.) or pay on delivery.
  * 
- * 3. 📍 GEOLOCATION (`userLocation` & `providersWithDistance`):
+ * 3. 📍 GEOLOCATION (`userLocation`):
  *    - Live GPS or Preset Egyptian governorates (Cairo, Giza, Alexandria, etc.).
- *    - Recalculates distances dynamically via Haversine formula (`utils/geo.ts`).
+ *    - Sent to the API as `lat`/`lng`; the server sorts by nearest branch and returns `distance_km`.
  * 
  * 4. 📱 RESPONSIVE CONTAINER:
- *    - Toggleable between simulated mobile device frame (`isMobileFrame = true`) and full desktop view.
+ *    - A single column: full width on phones, centred (max 768px) on tablets and larger.
  * ==============================================================================
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { lazy, Suspense, useCallback, useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BottomNav, NavTab } from './components/BottomNav';
 import { HomeView } from './components/HomeView';
-import { MapView } from './components/MapView';
-import { StoreView } from './components/StoreView';
-import { ProductsView } from './components/ProductsView';
-import { ProfileView } from './components/ProfileView';
-import { ProviderDetailView } from './components/ProviderDetailView';
-import { SearchModal } from './components/SearchModal';
+const MapView = lazy(() => import('./components/MapView').then((m) => ({ default: m.MapView })));
+const StoreView = lazy(() => import('./components/StoreView').then((m) => ({ default: m.StoreView })));
+const ProductsView = lazy(() => import('./components/ProductsView').then((m) => ({ default: m.ProductsView })));
+const ProfileView = lazy(() => import('./components/ProfileView').then((m) => ({ default: m.ProfileView })));
+const ProviderDetailView = lazy(() => import('./components/ProviderDetailView').then((m) => ({ default: m.ProviderDetailView })));
+const SearchModal = lazy(() => import('./components/SearchModal').then((m) => ({ default: m.SearchModal })));
 import { FloatingContactButton } from './components/FloatingContactButton';
-import { CartCheckoutModal } from './components/CartCheckoutModal';
-import { FreeCardRequestModal } from './components/FreeCardRequestModal';
-import { 
-  MEDICAL_PROVIDERS, 
-  INITIAL_BENEFICIARIES, 
-  INITIAL_USAGE_HISTORY 
-} from './data/mockData';
-import { MedicalProvider, ProviderCategory, Beneficiary, UsageRecord, Product, CartItem } from './types';
-import { calculateDistanceKm, PRESET_LOCATIONS } from './utils/geo';
-import { Smartphone, Monitor } from 'lucide-react';
+const CartCheckoutModal = lazy(() => import('./components/CartCheckoutModal').then((m) => ({ default: m.CartCheckoutModal })));
+const AccessModal = lazy(() => import('./components/AccessModal').then((m) => ({ default: m.AccessModal })));
+const AreaModal = lazy(() => import('./components/AreaModal').then((m) => ({ default: m.AreaModal })));
+const ProductPage = lazy(() => import('./components/ProductPage').then((m) => ({ default: m.ProductPage })));
+const OrdersPage = lazy(() => import('./components/OrdersPage').then((m) => ({ default: m.OrdersPage })));
+const AccountGate = lazy(() => import('./components/AccountGate').then((m) => ({ default: m.AccountGate })));
+import { Beneficiary, Product, CartItem } from './types';
+import { fetchCard, signOut } from './api/auth';
+import { useApi } from './hooks/useApi';
+import { useIsMember } from './utils/pricing';
+import { getArea, useArea } from './utils/area';
+import { clearSession, markPopupClosed, popupDueIn, popupSilenced, useSession } from './utils/session';
+import type { AccessStep } from './components/AccessModal';
+import type { FacilityCard } from './api/types';
+import { PRESET_LOCATIONS } from './utils/geo';
+import { getSavedGps, GpsPoint, saveGps } from './utils/gps';
+import { LocationGate, NearestPrompt } from './components/LocationGate';
 import { useLanguage } from './context/LanguageContext';
+import { navigate, routeHref, useRoute } from './router';
+import { ListSkeleton } from './components/ui/Feedback';
+import { useForceUpdate } from './utils/forceUpdate';
+import { ForceUpdateScreen } from './components/ForceUpdateScreen';
 
 export default function App() {
   const { isAr, t, brandName } = useLanguage();
-  const [activeTab, setActiveTab] = useState<NavTab>('home');
-  const [isMobileFrame, setIsMobileFrame] = useState<boolean>(true);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; name: string }>({
-    lat: 30.0444,
-    lng: 31.2357,
-    name: 'موقعي (القاهرة)',
+  // The URL is the source of truth for which page is open (see router.tsx).
+  const route = useRoute();
+  const forceUpdate = useForceUpdate();
+  const activeTab: NavTab = route.tab;
+  const selectedTypeId = route.typeId;
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; name: string }>(() => {
+    // A saved location (from an earlier GPS fix) beats the Cairo default.
+    const saved = getSavedGps() ?? getArea()?.point;
+    return saved ? { ...saved, name: 'موقعي المحفوظ' } : { lat: 30.0444, lng: 31.2357, name: 'موقعي (القاهرة)' };
   });
+  const area = useArea();
+  // Start-up flow: GPS gate (until a fix was ever saved) -> "find nearest" prompt -> map -> access popup.
+  const [stage, setStage] = useState<'gate' | 'nearest' | 'done'>(() => (getSavedGps() ? 'nearest' : 'gate'));
+  const [areaAsk, setAreaAsk] = useState(false);
+  const closeArea = useCallback(() => setAreaAsk(false), []);
   const [isGpsLoading, setIsGpsLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<ProviderCategory>('all');
-  const [selectedProvider, setSelectedProvider] = useState<(MedicalProvider & { distanceKm?: number }) | null>(null);
+  // The card the user tapped, shown instantly while the facility page (addressed by URL) loads.
+  const [previewCard, setPreviewCard] = useState<FacilityCard | null>(null);
+  const selectedProvider = route.facility ? { slug: route.facility, preview: previewCard?.slug === route.facility ? previewCard : undefined } : null;
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isGlobalCartOpen, setIsGlobalCartOpen] = useState(false);
+  const openCart = () => navigate(routeHref({ checkout: 'cart' }));
 
   // Beneficiaries & Usage History state
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>(INITIAL_BENEFICIARIES);
-  const [usageHistory, setUsageHistory] = useState<UsageRecord[]>(INITIAL_USAGE_HISTORY);
+  // Family members the user adds on this device, on top of the ones the card already has.
+  const [addedBeneficiaries, setAddedBeneficiaries] = useState<Beneficiary[]>([]);
+
+  // Who is using the app: signed in by phone, or just showing a card by its number.
+  const session = useSession();
+  const card = useApi(session.cardNumber ? `card:${session.cardNumber}` : null, (signal) => fetchCard(session.cardNumber!, signal));
+  const beneficiaries: Beneficiary[] = card.data
+    ? [
+        {
+          id: 'holder',
+          name: card.data.holder,
+          relation: isAr ? 'حامل الكرت الرئيسي' : 'Primary cardholder',
+          nationalId: '',
+          dob: '',
+          cardNumber: card.data.number,
+          status: card.data.active ? 'active' : 'pending',
+        },
+        ...card.data.members.map((m): Beneficiary => ({
+          id: `member-${m.id}`,
+          name: m.name,
+          relation: m.relationship,
+          nationalId: '',
+          dob: '',
+          cardNumber: card.data!.number,
+          status: 'active',
+        })),
+        ...addedBeneficiaries,
+      ]
+    : [];
+
+  const handleLogout = () => {
+    const token = session.token;
+    clearSession();
+    setAddedBeneficiaries([]);
+    if (token) signOut(token).catch(() => undefined); // the device is signed out either way
+  };
 
   // App Appearance Theme state ('light' | 'dark')
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -87,18 +141,42 @@ export default function App() {
     localStorage.setItem('deilar_theme', newTheme);
   };
 
-  // Free Card Request Modal for first-time / unregistered visitors
-  const [isFreeCardModalOpen, setIsFreeCardModalOpen] = useState<boolean>(() => {
-    try {
-      const isRegistered = localStorage.getItem('deilar_user_registered');
-      return !isRegistered;
-    } catch {
-      return true;
-    }
-  });
+  // Access popup (sign in by phone / view card by number). For a visitor with no session it opens
+  // a few seconds after load — so it never competes with the first paint — and again every
+  // 10 minutes after being closed. Signing in, adding a card number, or sending a phone through
+  // it silences it until sign-out. The Profile tab can also open it on demand.
+  const [accessStep, setAccessStep] = useState<AccessStep | null>(null);
+  const silenced = popupSilenced(session);
+  const [reminder, setReminder] = useState(false);
+
+  useEffect(() => {
+    if (silenced) return;
+    if (accessStep || areaAsk || stage !== 'done') return;
+    if (reminder) return;
+    // Randomly either the registration popup itself or a notification banner that opens it.
+    const id = setTimeout(() => (Math.random() < 0.5 ? setAccessStep('visitor') : setReminder(true)), Math.max(popupDueIn(), 4000));
+    return () => clearTimeout(id);
+  }, [silenced, accessStep, areaAsk, stage, reminder]);
+
+  // A guest opening Profile is asked for a name and number straight away.
+  useEffect(() => {
+    if (activeTab === 'profile' && stage === 'done' && !silenced && !areaAsk) setAccessStep('visitor');
+  }, [activeTab, stage, silenced, areaAsk]);
+
+  const closeAccess = () => {
+    markPopupClosed();
+    setAccessStep(null);
+  };
+  const dismissReminder = () => {
+    markPopupClosed();
+    setReminder(false);
+  };
 
   // Shopping Cart state for Store & Products
   const [cart, setCart] = useState<CartItem[]>([]);
+  // Guests pay the full price; a registered card brings the member price. The server re-prices at checkout.
+  const member = useIsMember();
+  const pricedCart = member ? cart : cart.map((item) => ({ ...item, product: { ...item.product, price: item.product.originalPrice } }));
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const handleAddToCart = (product: Product) => {
@@ -133,22 +211,6 @@ export default function App() {
 
   const handleClearCart = () => setCart([]);
 
-  // Calculate live distance from user location to all providers
-  const providersWithDistance = useMemo(() => {
-    return MEDICAL_PROVIDERS.map((provider) => {
-      const distanceKm = calculateDistanceKm(
-        userLocation.lat,
-        userLocation.lng,
-        provider.lat,
-        provider.lng
-      );
-      return {
-        ...provider,
-        distanceKm,
-      };
-    });
-  }, [userLocation]);
-
   // Request browser GPS position
   const handleRequestGps = () => {
     if (!navigator.geolocation) {
@@ -178,6 +240,34 @@ export default function App() {
     );
   };
 
+  // The first fix is forced by <LocationGate>. On later launches the saved point is used at once
+  // and refreshed quietly in the background.
+  useEffect(() => {
+    if (!getSavedGps() || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        saveGps(p);
+        setUserLocation({ ...p, name: 'موقعي الحالي (GPS مباشر)' });
+      },
+      () => undefined,
+      { timeout: 10000, maximumAge: 5 * 60_000 },
+    );
+  }, []);
+
+  const handleGateGranted = (p: GpsPoint) => {
+    setUserLocation({ ...p, name: 'موقعي الحالي (GPS مباشر)' });
+    setStage('nearest');
+  };
+
+  const handleFindNearest = () => {
+    setStage('done');
+    navigate(routeHref({ tab: 'map' }));
+    // Governorate/city are asked once; otherwise go straight to the three-button access popup.
+    if (!getArea()) setAreaAsk(true);
+    else if (!silenced) setAccessStep('choose');
+  };
+
   const handleLocationPresetSelect = (loc: typeof PRESET_LOCATIONS[0]) => {
     setUserLocation({
       lat: loc.lat,
@@ -194,187 +284,141 @@ export default function App() {
           id: `ben-${Date.now()}`,
           status: 'active',
         };
-    setBeneficiaries((prev) => [...prev, newBen]);
+    setAddedBeneficiaries((prev) => [...prev, newBen]);
   };
 
-  const handleNavigateToMap = (cat: ProviderCategory = 'all') => {
-    setSelectedCategory(cat);
-    setActiveTab('map');
+  const handleSelectProvider = (card: FacilityCard) => {
+    setPreviewCard(card);
+    navigate(routeHref({ facility: card.slug }));
   };
+
+  // A build older than the server's minimum can't be used until it is updated.
+  if (forceUpdate.required) return <ForceUpdateScreen storeUrl={forceUpdate.storeUrl} />;
 
   return (
-    <div className="relative min-h-screen text-slate-900 flex flex-col items-center justify-start py-0 md:py-6 px-0 md:px-4 overflow-x-hidden">
-      {/* 
-        CRITICAL USER REQUIREMENT:
-        "انا عايز اكون شايف فى الخلفيه صوره الكارت"
-        Rich Crimson Silk Background (matching user screenshot) + Floating 3D Deilar VIP Medical Cards
-      */}
-      <div 
-        className="fixed inset-0 -z-30 bg-cover bg-center pointer-events-none"
-        style={{ backgroundImage: `url('/src/assets/images/crimson_silk_backdrop_1791012317592.jpg')` }}
-      >
-        <div className="absolute inset-0 bg-black/35 backdrop-blur-[1px]" />
-      </div>
-
-      {/* Floating Official Deilar Cards visible in background left & right (Front & Back) */}
-      <div className="hidden lg:block fixed -left-12 top-24 w-88 h-56 -z-20 pointer-events-none opacity-60 rotate-[-14deg] drop-shadow-2xl transition-transform hover:scale-105 duration-500">
-        <img
-          src="/src/assets/images/deilar_card_front_official_1791012713788.jpg"
-          alt="Deilar Official Family Card Front"
-          className="w-full h-full object-cover rounded-2xl shadow-2xl border-2 border-amber-300/80"
-        />
-      </div>
-
-      <div className="hidden lg:block fixed -right-12 bottom-20 w-96 h-60 -z-20 pointer-events-none opacity-60 rotate-[12deg] drop-shadow-2xl transition-transform hover:scale-105 duration-500">
-        <img
-          src="/src/assets/images/deilar_card_back_official_1791012725831.jpg"
-          alt="Deilar Official Family Card Back"
-          className="w-full h-full object-cover rounded-2xl shadow-2xl border-2 border-amber-300/80"
-        />
-      </div>
-
-      {/* Top Banner Bar on desktop for device frame switch */}
-      <div className="hidden md:flex items-center justify-between w-full max-w-md px-3 py-1.5 text-xs text-white/90 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 mb-2 shadow-lg">
-        <div className="flex items-center gap-2">
-          <span className="font-bold text-amber-300">{t('brandPlatform')}</span>
-          <span>•</span>
-          <span className="text-white/80">{t('certifiedCard')}</span>
-        </div>
-
-        <button
-          onClick={() => setIsMobileFrame(!isMobileFrame)}
-          className="flex items-center gap-1.5 px-2.5 py-1 bg-white/15 hover:bg-white/25 border border-white/30 rounded-lg text-white font-semibold transition-colors cursor-pointer"
-        >
-          {isMobileFrame ? (
-            <>
-              <Monitor className="w-3.5 h-3.5 text-amber-300" />
-              <span>{t('expandedView')}</span>
-            </>
-          ) : (
-            <>
-              <Smartphone className="w-3.5 h-3.5 text-amber-300" />
-              <span>{t('phoneFrame')}</span>
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Main Container: Exact Smartphone Frame matching screenshot or Expanded layout */}
+    <div className="relative min-h-screen text-slate-900 flex flex-col items-center justify-start overflow-x-hidden">
+      {/* One responsive column: phones use the full width, tablets and larger get a centred 768px page. */}
       <div
-        className={`w-full transition-all duration-300 relative pb-20 ${
+        className={`w-full max-w-3xl relative pb-20 min-h-screen ${
           theme === 'dark' ? 'dark bg-[#0A0E17] text-[#F1F5F9]' : 'bg-white text-slate-900'
-        } ${
-          isMobileFrame
-            ? `max-w-[440px] rounded-none sm:rounded-[44px] border-0 sm:border-[10px] ${
-                theme === 'dark' ? 'sm:border-[#181B26]' : 'sm:border-slate-900'
-              } shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] overflow-hidden min-h-screen sm:min-h-[880px]`
-            : `max-w-4xl rounded-3xl border ${
-                theme === 'dark' ? 'border-white/[0.08]' : 'border-slate-300'
-              } shadow-2xl overflow-hidden min-h-screen`
         }`}
       >
-        {/* Smartphone top bezel & camera punch-hole (only in mobile frame mode on tablet/desktop) */}
-        {isMobileFrame && (
-          <div className="hidden sm:flex items-center justify-center h-6 bg-slate-900 w-full relative z-50">
-            <div className="w-3.5 h-3.5 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-950/70"></div>
-            </div>
-          </div>
-        )}
-
         {/* Global App Header */}
         <Header
           currentLocationName={userLocation.name}
+          currentPoint={userLocation}
           onLocationSelect={handleLocationPresetSelect}
           onRequestGps={handleRequestGps}
           isGpsLoading={isGpsLoading}
-          isMobileFrame={isMobileFrame}
-          onToggleFrame={() => setIsMobileFrame(!isMobileFrame)}
           cartCount={totalCartCount}
-          onOpenCart={() => setIsGlobalCartOpen(true)}
+          onOpenCart={openCart}
         />
 
         {/* Main Content View based on Active Tab or Selected Medical Provider Page */}
         <main className="p-3.5 sm:p-5">
+          <Suspense fallback={<ListSkeleton rows={4} />}>
           {selectedProvider ? (
             <ProviderDetailView
-              provider={selectedProvider}
-              onBack={() => setSelectedProvider(null)}
-              onNavigateToMap={() => {
-                setSelectedProvider(null);
-                setActiveTab('map');
-              }}
-              onNavigateToCard={() => {
-                setSelectedProvider(null);
-                setActiveTab('profile');
-              }}
+              slug={selectedProvider.slug}
+              preview={selectedProvider.preview}
+              userLocation={userLocation}
+              onBack={() => (history.length > 1 ? history.back() : navigate('/map'))}
+              onNavigateToMap={() => navigate(routeHref({ tab: 'map' }))}
+              onNavigateToCard={() => navigate(routeHref({ tab: 'profile' }))}
+            />
+          ) : route.checkout ? (
+            <CartCheckoutModal
+              asPage
+              isOpen
+              initialStep={route.checkout}
+              onClose={() => (history.length > 1 ? history.back() : navigate(routeHref({ tab: 'store' })))}
+              cart={pricedCart}
+              onUpdateCartQty={handleUpdateCartQty}
+              onRemoveFromCart={handleRemoveFromCart}
+              onClearCart={handleClearCart}
+            />
+          ) : route.orders ? (
+            <OrdersPage code={route.orders.code} />
+          ) : route.product ? (
+            <ProductPage
+              slug={route.product}
+              cartCount={totalCartCount}
+              onAddToCart={handleAddToCart}
+              onUpdateCartQty={handleUpdateCartQty}
+              onOpenCart={openCart}
             />
           ) : (
             <>
               {activeTab === 'home' && (
                 <HomeView
                   userLocation={userLocation}
-                  providersWithDistance={providersWithDistance}
-                  onSelectProvider={(p) => {
-                    const withDist = providersWithDistance.find((item) => item.id === p.id);
-                    setSelectedProvider(withDist || p);
-                  }}
-                  onNavigateToMap={handleNavigateToMap}
-                  onNavigateToCard={() => setActiveTab('profile')}
-                  onNavigateToStore={() => setActiveTab('store')}
-                  onNavigateToProducts={() => setActiveTab('products')}
+                  area={area}
+                  onSelectProvider={handleSelectProvider}
                   onSearchOpen={() => setIsSearchOpen(true)}
                 />
               )}
 
-              {activeTab === 'store' && (
+              {(activeTab === 'store' || activeTab === 'products') && (
                 <StoreView
-                  cart={cart}
+                  subTab={activeTab === 'products' ? 'products' : 'stores'}
+                  onSubTabChange={(sub) => navigate(routeHref({ tab: sub === 'products' ? 'products' : 'store' }))}
+                  userLocation={userLocation}
+                  cart={pricedCart}
                   onAddToCart={handleAddToCart}
                   onUpdateCartQty={handleUpdateCartQty}
                   onRemoveFromCart={handleRemoveFromCart}
                   onClearCart={handleClearCart}
-                  onOpenCart={() => setIsGlobalCartOpen(true)}
-                />
-              )}
-
-              {activeTab === 'products' && (
-                <ProductsView
-                  onBackToStore={() => setActiveTab('store')}
-                  cart={cart}
-                  onAddToCart={handleAddToCart}
-                  onUpdateCartQty={handleUpdateCartQty}
-                  onRemoveFromCart={handleRemoveFromCart}
-                  onClearCart={handleClearCart}
+                  onOpenCart={openCart}
                 />
               )}
 
               {activeTab === 'map' && (
                 <MapView
                   userLocation={userLocation}
-                  providers={providersWithDistance}
-                  selectedCategory={selectedCategory}
-                  onSelectCategory={setSelectedCategory}
-                  onSelectProvider={(p) => {
-                    const withDist = providersWithDistance.find((item) => item.id === p.id);
-                    setSelectedProvider(withDist || p);
-                  }}
+                  selectedTypeId={selectedTypeId}
+                  view={route.view}
+                  onViewChange={(view) => navigate(routeHref({ tab: 'map', typeId: selectedTypeId, view }), { replace: true })}
+                  onSelectType={(typeId) => navigate(routeHref({ tab: 'map', typeId, view: route.view }), { replace: true })}
+                  onSelectProvider={handleSelectProvider}
                   onRequestGps={handleRequestGps}
                   isGpsLoading={isGpsLoading}
                 />
               )}
 
               {activeTab === 'profile' && (
+                card.data && beneficiaries.length > 0 ? (
                 <ProfileView
+                  key={card.data.number}
+                  onSignIn={() => setAccessStep('phone')}
+                  section={route.section}
+                  onSectionChange={(section) => navigate(routeHref({ tab: 'profile', section }))}
+                  account={{
+                    name: card.data.holder || session.name || '',
+                    phone: session.phone ?? '',
+                    number: card.data.number,
+                    validTo: card.data.valid_to,
+                    signedIn: !!session.token,
+                  }}
+                  onLogout={handleLogout}
                   beneficiaries={beneficiaries}
-                  usageHistory={usageHistory}
                   theme={theme}
                   onThemeChange={handleThemeChange}
                   onAddBeneficiary={handleAddBeneficiary}
                 />
+                ) : (
+                  <AccountGate
+                    state={card.loading ? 'loading' : card.error ? 'error' : session.token && !session.cardNumber ? 'no-card' : 'guest'}
+                    signedIn={!!session.token}
+                    onSignIn={() => setAccessStep('phone')}
+                    onEnterCard={() => setAccessStep('card')}
+                    onLogout={handleLogout}
+                    onRetry={card.reload}
+                  />
+                )
               )}
             </>
           )}
+          </Suspense>
         </main>
 
         {/* Floating Side Contact Icon with Number */}
@@ -388,46 +432,47 @@ export default function App() {
         <BottomNav
           activeTab={activeTab}
           onTabChange={(tab) => {
-            setSelectedProvider(null);
-            setActiveTab(tab);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            navigate(routeHref({ tab }));
           }}
         />
       </div>
 
       {/* Global Quick Search Modal */}
-      <SearchModal
+      {reminder && !silenced && (
+        <div className="fixed top-2 inset-x-2 z-[55] flex justify-center" dir={isAr ? 'rtl' : 'ltr'}>
+          <div className="w-full max-w-md bg-slate-950 text-white border border-amber-400/50 rounded-2xl shadow-2xl p-3 flex items-center gap-2.5 animate-in slide-in-from-top duration-300">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            <p className="flex-1 text-[11px] font-bold leading-snug">
+              {isAr ? 'سجّل اسمك ورقمك معنا لتحصل على كرت ديلار وخصومات الخدمات.' : 'Register your name and number with us to get your Deilar card and service discounts.'}
+            </p>
+            <button
+              onClick={() => { setReminder(false); setAccessStep('visitor'); }}
+              className="px-3 py-1.5 bg-amber-400 text-slate-950 text-[11px] font-black rounded-lg cursor-pointer shrink-0"
+            >
+              {isAr ? 'سجّل الآن' : 'Register'}
+            </button>
+            <button onClick={dismissReminder} className="text-slate-400 text-lg leading-none cursor-pointer shrink-0">×</button>
+          </div>
+        </div>
+      )}
+      {stage === 'gate' && <LocationGate onGranted={handleGateGranted} />}
+      {stage === 'nearest' && <NearestPrompt onGo={handleFindNearest} />}
+      <Suspense fallback={null}>
+      {isSearchOpen && <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        providers={providersWithDistance}
+        userLocation={userLocation}
+        area={area}
         onSelectProvider={(p) => {
-          setSelectedProvider(p);
+          handleSelectProvider(p);
           setIsSearchOpen(false);
         }}
-      />
+      />}
 
       {/* Global Shopping Cart & Bank / Wallet Checkout Modal */}
-      <CartCheckoutModal
-        isOpen={isGlobalCartOpen}
-        onClose={() => setIsGlobalCartOpen(false)}
-        cart={cart}
-        onUpdateCartQty={handleUpdateCartQty}
-        onRemoveFromCart={handleRemoveFromCart}
-        onClearCart={handleClearCart}
-      />
-
-      {/* Free Card Request Modal for First-time / Unregistered Visitors */}
-      <FreeCardRequestModal
-        isOpen={isFreeCardModalOpen}
-        onClose={() => setIsFreeCardModalOpen(false)}
-        onSuccessRegister={(phone, name) => {
-          if (name) {
-            setBeneficiaries((prev) =>
-              prev.map((b, idx) => (idx === 0 ? { ...b, name } : b))
-            );
-          }
-        }}
-      />
+      {areaAsk && <AreaModal lat={userLocation.lat} lng={userLocation.lng} onClose={closeArea} />}
+      {accessStep && !areaAsk && <AccessModal initialStep={accessStep} onClose={closeAccess} />}
+      </Suspense>
     </div>
   );
 }

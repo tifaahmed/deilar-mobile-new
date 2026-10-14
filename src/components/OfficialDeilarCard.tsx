@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { RotateCw, QrCode, Globe, Phone, Facebook, Sparkles } from 'lucide-react';
 import { DeilarLogo } from './DeilarLogo';
+import cardFront from '../assets/images/deilar_card_front_official_1791012713788.jpg';
+import cardBack from '../assets/images/deilar_card_back_official_1791012725831.jpg';
 import { Beneficiary } from '../types';
 
 interface OfficialDeilarCardProps {
@@ -45,7 +47,7 @@ export const OfficialDeilarCard: React.FC<OfficialDeilarCardProps> = ({
           {/* Background image overlay using the generated official render */}
           <div className="absolute inset-0 opacity-15 pointer-events-none">
             <img
-              src="/src/assets/images/deilar_card_front_official_1791012713788.jpg"
+              src={cardFront}
               alt="Card Pattern"
               className="w-full h-full object-cover"
             />
@@ -152,7 +154,7 @@ export const OfficialDeilarCard: React.FC<OfficialDeilarCardProps> = ({
           {/* Background image overlay using the generated official render */}
           <div className="absolute inset-0 opacity-15 pointer-events-none">
             <img
-              src="/src/assets/images/deilar_card_back_official_1791012725831.jpg"
+              src={cardBack}
               alt="Card Back Pattern"
               className="w-full h-full object-cover"
             />

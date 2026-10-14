@@ -20,49 +20,57 @@ import {
   Store,
   Package
 } from 'lucide-react';
-import { SECTOR_CARDS, MEDICAL_PROVIDERS } from '../data/mockData';
-import { MedicalProvider, ProviderCategory } from '../types';
-import { formatDistance } from '../utils/geo';
+import type { FacilityCard } from '../api/types';
+import { api, PATHS } from '../api/endpoints';
+import { peek } from '../api/http';
+import { formatKm, roundCoord } from '../api/adapters';
+import { useApi } from '../hooks/useApi';
+import { useFacilityTypes } from '../hooks/useCatalog';
+import { useLazySection } from '../hooks/useLazySection';
+import { facilityTypeStyle } from '../utils/facilityTypeStyle';
+import { ListSkeleton, Skeleton } from './ui/Feedback';
+import { Thumb } from './ui/Thumb';
 import { useLanguage } from '../context/LanguageContext';
+import { Link } from '../router';
+
+import type { Area } from '../utils/area';
+
+const NEAREST_COUNT = 3;
+const TYPE_TILES = 6;
 
 interface HomeViewProps {
   userLocation: { lat: number; lng: number; name: string };
-  providersWithDistance: (MedicalProvider & { distanceKm: number })[];
-  onSelectProvider: (provider: MedicalProvider) => void;
-  onNavigateToMap: (category?: ProviderCategory) => void;
-  onNavigateToCard: () => void;
-  onNavigateToStore?: () => void;
-  onNavigateToProducts?: () => void;
+  area: Area | null;
+  onSelectProvider: (provider: FacilityCard) => void;
   onSearchOpen: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   userLocation,
-  providersWithDistance,
+  area,
   onSelectProvider,
-  onNavigateToMap,
-  onNavigateToCard,
-  onNavigateToStore,
-  onNavigateToProducts,
   onSearchOpen,
 }) => {
   const { isAr, t, brandName } = useLanguage();
 
-  // Nearest 3 providers sorted by distance
-  const nearestProviders = [...providersWithDistance].sort((a, b) => a.distanceKm - b.distanceKm).slice(0, 3);
+  // The server sorts by nearest branch; we ask for just the few cards this section draws.
+  const nearestParams = { lat: roundCoord(userLocation.lat), lng: roundCoord(userLocation.lng), per_page: NEAREST_COUNT, governorate_id: area?.governorate.id, city_id: area?.city?.id };
+  // Nothing is requested while the page paints: each section loads after the first scroll, as it nears the screen.
+  const [typesRef, typesNear] = useLazySection<HTMLElement>();
+  const [nearestRef, nearestNear] = useLazySection<HTMLElement>();
+
+  const nearest = useApi(
+    nearestNear ? `home-nearest:${JSON.stringify(nearestParams)}:${isAr}` : null,
+    (signal) => api.facilities(nearestParams, signal).then((r) => r.data),
+    () => peek<{ data: FacilityCard[] }>(PATHS.facilities, nearestParams)?.data,
+  );
+  const nearestProviders = nearest.data ?? [];
+
+  const types = useFacilityTypes(typesNear);
+  const typeTiles = (types.data ?? []).slice(0, TYPE_TILES);
 
   return (
     <div className={`relative space-y-5 pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
-      {/* Ambient background card watermark for visual depth */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-96 overflow-hidden opacity-10 -z-10">
-        <img
-          src="/src/assets/images/deilar_card_front_official_1791012713788.jpg"
-          alt="Deilar Card Background"
-          className="w-full h-full object-cover scale-125 blur-[1px] rotate-[-5deg]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white dark:via-[#0A0E17]/80 dark:to-[#0A0E17]" />
-      </div>
-
       {/* 2. Quick Location & Search Bar */}
       <section className="bg-white rounded-xl p-2.5 border border-slate-200/80 shadow-xs flex items-center gap-2">
         <button
@@ -75,20 +83,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </span>
         </button>
 
-        <button
-          onClick={() => onNavigateToMap()}
+        <Link
+          to={{ tab: 'map' }}
           className="flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-[#931A47] border border-rose-200/70 px-3 py-2.5 rounded-lg text-xs font-bold transition-colors shrink-0 cursor-pointer"
           title={t('navMap')}
+          aria-label={t('navMap')}
         >
           <MapPin className="w-3.5 h-3.5 text-rose-700" />
-          <span>{t('navMap')}</span>
-        </button>
+        </Link>
       </section>
 
       {/* PRIMARY ACTION BUTTONS: Store, Products, Card */}
       <section className="grid grid-cols-3 gap-2">
-        <button
-          onClick={onNavigateToStore}
+        <Link
+          to={{ tab: 'store' }}
           className="p-3 bg-gradient-to-br from-[#941946] to-[#6d1232] text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[96px] cursor-pointer"
         >
           <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -100,10 +108,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {isAr ? 'بن • عسل • زيت' : 'Coffee • Honey • Oil'}
             </span>
           </div>
-        </button>
+        </Link>
 
-        <button
-          onClick={onNavigateToProducts}
+        <Link
+          to={{ tab: 'products' }}
           className="p-3 bg-gradient-to-br from-amber-600 to-amber-700 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[96px] cursor-pointer"
         >
           <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -115,10 +123,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {isAr ? 'العروض والطلب' : 'Offers & Order'}
             </span>
           </div>
-        </button>
+        </Link>
 
-        <button
-          onClick={onNavigateToCard}
+        <Link
+          to={{ tab: 'profile' }}
           className="p-3 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[96px] cursor-pointer"
         >
           <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -130,11 +138,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {isAr ? 'عرض وتحميل' : 'View & Download'}
             </span>
           </div>
-        </button>
+        </Link>
       </section>
 
       {/* 6 MEDICAL FACILITIES BUTTONS WITH ICONS */}
-      <section className="space-y-2.5">
+      <section ref={typesRef} className="space-y-2.5">
         <div className="flex items-center justify-between px-1">
           <div>
             <h2 className="text-sm font-extrabold text-slate-900">{t('facilitiesTitle')}</h2>
@@ -142,94 +150,49 @@ export const HomeView: React.FC<HomeViewProps> = ({
               {isAr ? 'اختر نوع المنشأة الطبية للاطلاع على المستشفيات والمراكز ونسب الخصم' : 'Select facility type to view accredited hospitals & discount rates'}
             </p>
           </div>
-          <button
-            onClick={() => onNavigateToMap()}
+          <Link
+            to={{ tab: 'map' }}
             className="text-xs font-bold text-[#941946] hover:underline flex items-center gap-0.5 cursor-pointer"
           >
             <span>{isAr ? 'الكل' : 'All'}</span>
             <ChevronLeft className={`w-3.5 h-3.5 ${isAr ? '' : 'rotate-180'}`} />
-          </button>
+          </Link>
         </div>
 
-        {/* 6 Grid facility buttons with expressive medical icons */}
+        {/* Facility type tiles — the most populated types, straight from the API */}
         <div className="grid grid-cols-3 gap-2">
-          {[
-            {
-              id: 'hospitals' as ProviderCategory,
-              title: isAr ? 'المستشفيات' : 'Hospitals',
-              icon: Building2,
-              discount: isAr ? 'خصم حتى 35%' : 'Up to 35% OFF',
-              badgeColor: 'bg-rose-50 text-rose-700 border-rose-200',
-              iconBg: 'bg-rose-100 text-rose-800',
-            },
-            {
-              id: 'labs' as ProviderCategory,
-              title: isAr ? 'معامل التحاليل' : 'Clinical Labs',
-              icon: FlaskConical,
-              discount: isAr ? 'خصم حتى 50%' : 'Up to 50% OFF',
-              badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
-              iconBg: 'bg-blue-100 text-blue-800',
-            },
-            {
-              id: 'pharmacies' as ProviderCategory,
-              title: isAr ? 'الصيدليات' : 'Pharmacies',
-              icon: Pill,
-              discount: isAr ? 'خصم حتى 20%' : 'Up to 20% OFF',
-              badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-              iconBg: 'bg-emerald-100 text-emerald-800',
-            },
-            {
-              id: 'clinics' as ProviderCategory,
-              title: isAr ? 'عيادات الأطباء' : 'Clinics',
-              icon: Stethoscope,
-              discount: isAr ? 'خصم حتى 30%' : 'Up to 30% OFF',
-              badgeColor: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-              iconBg: 'bg-indigo-100 text-indigo-800',
-            },
-            {
-              id: 'radiology' as ProviderCategory,
-              title: isAr ? 'مراكز الأشعة' : 'Radiology',
-              icon: Activity,
-              discount: isAr ? 'خصم حتى 40%' : 'Up to 40% OFF',
-              badgeColor: 'bg-amber-50 text-amber-800 border-amber-200',
-              iconBg: 'bg-amber-100 text-amber-800',
-            },
-            {
-              id: 'dental_optical' as ProviderCategory,
-              title: isAr ? 'الأسنان والعيون' : 'Dental & Eye',
-              icon: Sparkles,
-              discount: isAr ? 'خصم حتى 45%' : 'Up to 45% OFF',
-              badgeColor: 'bg-purple-50 text-purple-700 border-purple-200',
-              iconBg: 'bg-purple-100 text-purple-800',
-            },
-          ].map((facility) => {
-            const Icon = facility.icon;
+          {(types.loading || !typesNear) &&
+            Array.from({ length: TYPE_TILES }).map((_, i) => <Skeleton key={i} className="min-h-[102px] rounded-2xl" />)}
+
+          {typeTiles.map((type, index) => {
+            const style = facilityTypeStyle(type, index);
+            const Icon = style.icon;
             return (
-              <button
-                key={facility.id}
-                onClick={() => onNavigateToMap(facility.id)}
+              <Link
+                key={type.id}
+                to={{ tab: 'map', typeId: type.id }}
                 className="p-2.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#941946]/40 active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[102px] cursor-pointer"
               >
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${facility.iconBg} shadow-2xs group-hover:scale-110 transition-transform`}>
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${style.iconBg} shadow-2xs group-hover:scale-110 transition-transform`}>
                   <Icon className="w-5 h-5" />
                 </div>
 
                 <div className="mt-1.5 space-y-1 w-full">
                   <span className="block text-[11px] font-extrabold text-slate-800 group-hover:text-[#941946] transition-colors truncate">
-                    {facility.title}
+                    {type.name}
                   </span>
-                  <span className={`inline-block text-[8.5px] font-bold px-1.5 py-0.2 rounded-md border ${facility.badgeColor}`}>
-                    {facility.discount}
+                  <span className={`inline-block text-[8.5px] font-bold px-1.5 py-0.2 rounded-md border ${style.badgeColor}`}>
+                    {isAr ? `${type.count} منشأة` : `${type.count} facilities`}
                   </span>
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>
       </section>
 
       {/* 5. Nearest Medical Providers to User Location */}
-      <section className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
+      <section ref={nearestRef} className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-rose-50 text-[#931A47] flex items-center justify-center">
@@ -237,75 +200,68 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900">
-                {isAr ? 'أقرب مقدم خدمة (القاهرة)' : 'Nearest Medical Providers (Cairo)'}
+                {isAr ? 'أقرب مقدمي الخدمة إليك' : 'Nearest Medical Providers'}
               </h2>
             </div>
           </div>
 
-          <button
-            onClick={() => onNavigateToMap()}
+          <Link
+            to={{ tab: 'map' }}
             className="text-xs font-bold text-[#931A47] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <span>{isAr ? 'فتح الخريطة' : 'Open Map'}</span>
             <ChevronLeft className={`w-3.5 h-3.5 ${isAr ? '' : 'rotate-180'}`} />
-          </button>
+          </Link>
         </div>
 
         {/* Nearest List Cards */}
         <div className="space-y-3">
-          {nearestProviders.map((provider) => {
-            const providerPhoto = provider.imageUrl || 
-              (provider.category === 'labs' ? '/src/assets/images/sector_medical_labs_1791011785809.jpg' :
-               provider.category === 'pharmacies' ? '/src/assets/images/sector_pharmacy_1791011795635.jpg' :
-               provider.category === 'dental_optical' ? '/src/assets/images/sector_dental_eye_1791011806216.jpg' :
-               '/src/assets/images/sector_health_care_1791011774979.jpg');
+          {(nearest.loading || !nearestNear) && <ListSkeleton rows={NEAREST_COUNT} />}
 
-            const displayName = isAr ? provider.name : (provider.nameEn || provider.name);
-            const displayCat = isAr ? provider.categoryAr : provider.category;
+          {nearestProviders.map((provider) => (
+            <div
+              key={provider.id}
+              onClick={() => onSelectProvider(provider)}
+              className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#941946]/40 transition-all cursor-pointer p-2.5 flex items-center gap-3 group overflow-hidden"
+            >
+              <Thumb
+                src={provider.logo}
+                alt={provider.name}
+                kind="facility"
+                fit="contain"
+                className="w-20 h-20 rounded-xl shrink-0 border border-slate-100"
+              />
 
-            return (
-              <div
-                key={provider.id}
-                onClick={() => onSelectProvider(provider)}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#941946]/40 transition-all cursor-pointer p-2.5 flex items-center gap-3 group overflow-hidden"
-              >
-                {/* 1. Image */}
-                <div className="relative w-20 h-20 sm:w-24 sm:h-20 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-100">
-                  <img
-                    src={providerPhoto}
-                    alt={displayName}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent" />
-                </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 space-y-1.5">
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-[#941946] transition-colors truncate leading-tight">
+                  {provider.name}
+                </h3>
 
-                {/* 2. Content */}
-                <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5 space-y-1.5">
-                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-[#941946] transition-colors truncate leading-tight">
-                    {displayName}
-                  </h3>
-
+                {provider.type && (
                   <div className="flex items-center gap-1.5">
                     <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 font-semibold rounded-md text-[10px]">
-                      {displayCat}
+                      {provider.type.name}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between gap-2 pt-0.5">
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-rose-700 min-w-0">
+                    <MapPin className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                    <span className="truncate">
+                      {formatKm(provider.distance_km, isAr) ?? provider.branch?.city ?? provider.branch?.governorate}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 pt-0.5">
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-rose-700 shrink-0">
-                      <MapPin className="w-3.5 h-3.5 text-rose-600" />
-                      <span>{provider.distanceKm?.toFixed(1) || '1.2'} {isAr ? 'كم' : 'km'}</span>
-                    </div>
-
+                  {provider.discount != null && (
                     <span className="text-[10px] sm:text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 shrink-0">
-                      {isAr ? `خصم ${provider.discountPercentage}%` : `${provider.discountPercentage}% OFF`}
+                      {isAr ? `خصم ${provider.discount}%` : `${provider.discount}% OFF`}
                     </span>
-                  </div>
+                  )}
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </section>
 
