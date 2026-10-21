@@ -74,7 +74,9 @@ export const BranchList: React.FC<BranchListProps> = ({ first, hasMore, loading,
             <div key={branch.id} className="py-3 flex items-start justify-between gap-3">
               <div className="min-w-0 space-y-0.5">
                 <p className="text-xs font-bold text-slate-900">{[branch.governorate, branch.city].filter(Boolean).join(' - ') || branch.name}</p>
-                {branch.address && <p className="text-[11px] text-slate-500 leading-relaxed">{branch.address}</p>}
+                {(branch.address || branch.area) && (
+                  <p className="text-[11px] text-slate-500 leading-relaxed">{[branch.area, branch.address].filter(Boolean).join(isAr ? '، ' : ', ')}</p>
+                )}
                 {(branch.phone || branch.whatsapp) && (
                   <p dir="ltr" className={`text-[11px] font-mono text-slate-600 ${isAr ? 'text-right' : 'text-left'}`}>
                     {branch.phone}

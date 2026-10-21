@@ -10,12 +10,15 @@ import type { NavTab } from './components/BottomNav';
  *   /products              products
  *   /map  /map?type=22     map / list, optionally filtered by facility type
  *   /map?view=list         the map's list view
+ *   /map?radius=50         search range in km (0 = everywhere; default 20)
+ *   /map?view=list&sort=discount   biggest discount first
  *   /card                  my card (profile)
  *   /card/members  /card/support  /card/personal  /card/theme   profile sections
  *   /products/:slug        one product
  *   /cart  /checkout       the basket / the payment page
  *   /orders  /orders/:code my orders / one order
  *   /facilities/:slug      one facility
+ *   /stores/:slug          one store
  */
 export interface Route {
   tab: NavTab;
@@ -25,6 +28,8 @@ export interface Route {
   facility: string | null;
   /** Set when a product page is open. */
   product: string | null;
+  /** Slug of the open store page (/stores/:slug); null/undefined on the stores list. */
+  store?: string | null;
   /** Set on the orders screens: `code` is null on the list. */
   orders: { code: string | null } | null;
   /** Set on the basket and the payment page. */
@@ -33,6 +38,10 @@ export interface Route {
   view: 'map' | 'list';
   /** Profile section; null = the card itself. */
   section: ProfileSection | null;
+  /** Map search range in km; 0 = no limit, null/undefined = the default. */
+  radius?: number | null;
+  /** Map list order; null/undefined = nearest first. */
+  sort?: 'discount' | null;
 }
 
 export const PROFILE_SECTIONS = ['members', 'support', 'personal', 'theme'] as const;
@@ -45,6 +54,10 @@ export function parseRoute(pathname: string, search: string): Route {
   const facility = path.match(/^\/facilities\/([^/]+)$/);
 
   if (facility) return { tab: 'map', typeId: null, facility: decodeURIComponent(facility[1]), product: null, orders: null, checkout: null, view: 'map', section: null };
+
+  const store = path.match(/^\/stores\/([^/]+)$/);
+
+  if (store) return { tab: 'store', typeId: null, facility: null, product: null, store: decodeURIComponent(store[1]), orders: null, checkout: null, view: 'map', section: null };
 
   const product = path.match(/^\/products\/([^/]+)$/);
 
@@ -64,13 +77,27 @@ export function parseRoute(pathname: string, search: string): Route {
   const tab = profile && section ? 'profile' : ((Object.keys(TAB_PATHS) as NavTab[]).find((t) => TAB_PATHS[t] === path) ?? 'home');
   const params = new URLSearchParams(search);
   const type = Number(params.get('type'));
+  const rawRadius = params.get('radius');
+  const radius = tab === 'map' && rawRadius !== null && [10, 20, 30, 50, 100, 0].includes(Number(rawRadius)) ? Number(rawRadius) : null;
 
-  return { tab, typeId: tab === 'map' && type > 0 ? type : null, facility: null, product: null, orders: null, checkout: null, view: tab === 'map' && params.get('view') === 'list' ? 'list' : 'map', section };
+  return {
+    tab,
+    typeId: tab === 'map' && type > 0 ? type : null,
+    facility: null,
+    product: null,
+    orders: null,
+    checkout: null,
+    view: tab === 'map' && params.get('view') === 'list' ? 'list' : 'map',
+    section,
+    radius,
+    sort: tab === 'map' && params.get('sort') === 'discount' ? 'discount' : null,
+  };
 }
 
 export function routeHref(route: Partial<Route> & { tab?: NavTab }): string {
   if (route.facility) return `/facilities/${encodeURIComponent(route.facility)}`;
   if (route.product) return `/products/${encodeURIComponent(route.product)}`;
+  if (route.store) return `/stores/${encodeURIComponent(route.store)}`;
   if (route.checkout) return route.checkout === 'cart' ? '/cart' : '/checkout';
   if (route.orders) return route.orders.code ? `/orders/${encodeURIComponent(route.orders.code)}` : '/orders';
 
@@ -82,6 +109,8 @@ export function routeHref(route: Partial<Route> & { tab?: NavTab }): string {
     const query = new URLSearchParams();
     if (route.typeId) query.set('type', String(route.typeId));
     if (route.view === 'list') query.set('view', 'list');
+    if (route.radius !== null && route.radius !== undefined) query.set('radius', String(route.radius));
+    if (route.sort === 'discount') query.set('sort', 'discount');
     return query.size ? `${base}?${query}` : base;
   }
 

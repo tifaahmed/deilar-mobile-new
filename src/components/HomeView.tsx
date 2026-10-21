@@ -56,17 +56,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
   // The server sorts by nearest branch; we ask for just the few cards this section draws.
   const nearestParams = { lat: roundCoord(userLocation.lat), lng: roundCoord(userLocation.lng), per_page: NEAREST_COUNT, governorate_id: area?.governorate.id, city_id: area?.city?.id };
   // Nothing is requested while the page paints: each section loads after the first scroll, as it nears the screen.
-  const [typesRef, typesNear] = useLazySection<HTMLElement>();
+  const [typesRef] = useLazySection<HTMLElement>();
   const [nearestRef, nearestNear] = useLazySection<HTMLElement>();
 
+  // What this device saw last time, if anything: painted at once, refreshed behind it.
+  const savedNearest = peek<{ data: FacilityCard[] }>(PATHS.facilities, nearestParams)?.data;
   const nearest = useApi(
-    nearestNear ? `home-nearest:${JSON.stringify(nearestParams)}:${isAr}` : null,
-    (signal) => api.facilities(nearestParams, signal).then((r) => r.data),
+    // Waits for a scroll only when there is nothing saved to show — otherwise the list is already on screen.
+    nearestNear || savedNearest ? `home-nearest:${JSON.stringify(nearestParams)}:${isAr}` : null,
+    (signal) => api.facilities(nearestParams, signal, true).then((r) => r.data),
     () => peek<{ data: FacilityCard[] }>(PATHS.facilities, nearestParams)?.data,
   );
   const nearestProviders = nearest.data ?? [];
 
-  const types = useFacilityTypes(typesNear);
+  // The tiles are tiny and sit at the top: load them straight away (and from the saved copy when there is one),
+  // not after the first scroll — that wait is what made the section look hidden.
+  const types = useFacilityTypes();
   const typeTiles = (types.data ?? []).slice(0, TYPE_TILES);
 
   return (
@@ -161,7 +166,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* Facility type tiles — the most populated types, straight from the API */}
         <div className="grid grid-cols-3 gap-2">
-          {(types.loading || !typesNear) &&
+          {types.loading &&
             Array.from({ length: TYPE_TILES }).map((_, i) => <Skeleton key={i} className="min-h-[102px] rounded-2xl" />)}
 
           {typeTiles.map((type, index) => {
@@ -216,9 +221,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* Nearest List Cards */}
         <div className="space-y-3">
-          {(nearest.loading || !nearestNear) && <ListSkeleton rows={NEAREST_COUNT} />}
+          {(nearest.loading || (!nearestNear && !nearestProviders.length)) && <ListSkeleton rows={NEAREST_COUNT} />}
 
-          {nearestProviders.map((provider) => (
+          {nearestProviders.map((provider, position) => (
             <div
               key={provider.id}
               onClick={() => onSelectProvider(provider)}
@@ -229,6 +234,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 alt={provider.name}
                 kind="facility"
                 fit="contain"
+                priority={position < 3}
                 className="w-20 h-20 rounded-xl shrink-0 border border-slate-100"
               />
 

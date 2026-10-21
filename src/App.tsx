@@ -49,7 +49,10 @@ import { fetchCard, signOut } from './api/auth';
 import { useApi } from './hooks/useApi';
 import { useIsMember } from './utils/pricing';
 import { getArea, useArea } from './utils/area';
-import { clearSession, markPopupClosed, popupDueIn, popupSilenced, useSession } from './utils/session';
+import { clearSession, markPopupClosed, popupDueIn, popupSilenced, updateSession, useSession } from './utils/session';
+import { ProfileReminder } from './components/ProfileReminder';
+import { MembershipReminder } from './components/MembershipReminder';
+import { SaveAreaPrompt } from './components/SaveAreaPrompt';
 import type { AccessStep } from './components/AccessModal';
 import type { FacilityCard } from './api/types';
 import { PRESET_LOCATIONS } from './utils/geo';
@@ -362,6 +365,9 @@ export default function App() {
                 <StoreView
                   subTab={activeTab === 'products' ? 'products' : 'stores'}
                   onSubTabChange={(sub) => navigate(routeHref({ tab: sub === 'products' ? 'products' : 'store' }))}
+                  storeSlug={route.store ?? null}
+                  onOpenStore={(slug) => navigate(routeHref({ store: slug }))}
+                  onCloseStore={() => navigate(routeHref({ tab: 'store' }))}
                   userLocation={userLocation}
                   cart={pricedCart}
                   onAddToCart={handleAddToCart}
@@ -377,8 +383,14 @@ export default function App() {
                   userLocation={userLocation}
                   selectedTypeId={selectedTypeId}
                   view={route.view}
-                  onViewChange={(view) => navigate(routeHref({ tab: 'map', typeId: selectedTypeId, view }), { replace: true })}
-                  onSelectType={(typeId) => navigate(routeHref({ tab: 'map', typeId, view: route.view }), { replace: true })}
+                  radius={route.radius ?? 20}
+                  sort={route.sort ?? null}
+                  // The map's filters live in the URL, so a link or a refresh keeps the type, range, view and order.
+                  onViewChange={(view) => navigate(routeHref({ ...route, tab: 'map', typeId: selectedTypeId, view }), { replace: true })}
+                  onSelectType={(typeId) => navigate(routeHref({ ...route, tab: 'map', typeId }), { replace: true })}
+                  onRadiusChange={(radius) => navigate(routeHref({ ...route, tab: 'map', radius }), { replace: true })}
+                  onSortChange={(sort) => navigate(routeHref({ ...route, tab: 'map', sort }), { replace: true })}
+                  onResetFilters={() => navigate(routeHref({ tab: 'map', view: route.view, radius: 0 }), { replace: true })}
                   onSelectProvider={handleSelectProvider}
                   onRequestGps={handleRequestGps}
                   isGpsLoading={isGpsLoading}
@@ -404,11 +416,15 @@ export default function App() {
                   theme={theme}
                   onThemeChange={handleThemeChange}
                   onAddBeneficiary={handleAddBeneficiary}
+                  status={card.data.status}
                 />
                 ) : (
                   <AccountGate
                     state={card.loading ? 'loading' : card.error ? 'error' : session.token && !session.cardNumber ? 'no-card' : 'guest'}
                     signedIn={!!session.token}
+                    token={session.token}
+                    defaultName={session.name}
+                    onTrialCreated={(number, name) => updateSession({ cardNumber: number, name })}
                     onSignIn={() => setAccessStep('phone')}
                     onEnterCard={() => setAccessStep('card')}
                     onLogout={handleLogout}
@@ -472,6 +488,10 @@ export default function App() {
       {/* Global Shopping Cart & Bank / Wallet Checkout Modal */}
       {areaAsk && <AreaModal lat={userLocation.lat} lng={userLocation.lng} onClose={closeArea} />}
       {accessStep && !areaAsk && <AccessModal initialStep={accessStep} onClose={closeAccess} />}
+      {/* Every minute while a signed-in member's profile is unfinished: how far along it is, and what is missing. */}
+      {stage === 'done' && <ProfileReminder />}
+      {stage === 'done' && <MembershipReminder />}
+      {stage === 'done' && !areaAsk && <SaveAreaPrompt />}
       </Suspense>
     </div>
   );

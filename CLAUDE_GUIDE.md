@@ -133,3 +133,7 @@
 - لو النسخة أقدم تظهر `ForceUpdateScreen` (بدون إغلاق) وزر «حدّث الآن» يفتح صفحة التطبيق في Google Play (`store_url`).
 - فشل الطلب لا يمنع التطبيق (fail-open).
 - خطوات الإصدار: ارفع `versionCode` → انشر على Google Play → بعد ظهور النسخة ارفع `min_version_code` في الباك إند لنفس الرقم.
+
+---
+
+> **Trial cards / subscriptions / relatives:** the binding rules for these (free 1-month card, one trial per phone + national ID, red expired sign, Paymob / cash / Vodafone Cash / Instapay, 15 first-degree relatives, 60-second profile reminder) are in `CLAUDE.md` in this folder — read them before touching the account, card or family screens.

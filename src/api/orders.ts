@@ -5,6 +5,18 @@ export interface PlacedOrder {
   total_amount: number;
   total_amount_before_discount: number | null;
   delivery_price: number;
+  /** The pay-on-delivery fee already inside `total_amount`; 0 = none. */
+  cod_fee: number;
+}
+
+/** The online-payment page a buyer is sent to; `checkout_url` is null when the gateway could not be reached. */
+export interface PaymentLink {
+  /** Paymob's hosted page — the fallback when the embedded form cannot load. */
+  checkout_url: string | null;
+  /** What the embedded card form (Paymob Pixel) mounts with: one order, valid for an hour. */
+  client_secret: string | null;
+  public_key: string | null;
+  message: string | null;
 }
 
 export interface NewOrder {
@@ -20,7 +32,9 @@ export interface NewOrder {
   apartmentNumber?: string;
   specialMark?: string;
   notes?: string;
-  payment: 'cod' | 'transfer-wallet';
+  payment: 'cod' | 'transfer-wallet' | 'paymob';
+  /** Where the purchase receipt is mailed. Optional. */
+  email?: string;
   /** The buyer's card: it, not this field, is what earns the member price — the server checks it. */
   membershipNumber?: string;
   items: { slug: string; quantity: number }[];
@@ -31,12 +45,13 @@ export interface NewOrder {
  * and quantities are sent. Throws `ApiError` (422 with a message when no product
  * in the basket is still available).
  */
-export async function placeOrder(order: NewOrder, token?: string): Promise<PlacedOrder> {
-  const res = await apiPost<{ order: PlacedOrder }>(
+export async function placeOrder(order: NewOrder, token?: string): Promise<PlacedOrder & { payment: PaymentLink | null }> {
+  const res = await apiPost<{ order: PlacedOrder; payment: PaymentLink | null }>(
     '/mobile/orders',
     {
       customer_full_name: order.name,
       customer_phone: order.phone,
+      customer_email: order.email?.trim() || null,
       // One line composed from the parts, smallest to largest — the same way the website writes it.
       customer_address: [order.street, order.buildingNumber, order.floorNumber, order.apartmentNumber, order.city, order.governorate, order.specialMark]
         .map((part) => part?.trim())
@@ -60,7 +75,13 @@ export async function placeOrder(order: NewOrder, token?: string): Promise<Place
     token,
   );
 
-  return res.order;
+  return { ...res.order, payment: res.payment ?? null };
+}
+
+/** Opens the online payment again for an order not paid yet (declined card, closed page). */
+export async function payOrder(orderCode: string): Promise<PaymentLink> {
+  const res = await apiPost<{ payment: PaymentLink }>(`/mobile/orders/${encodeURIComponent(orderCode)}/pay`, {});
+  return res.payment;
 }
 
 /** Attaches a transfer receipt (photo) to an order already placed. */
@@ -103,6 +124,9 @@ export interface OrderDetail {
   total_amount_before_discount: number | null;
   total_paid: number;
   delivery_price: number;
+  cod_fee?: number;
+  refunded_amount?: number;
+  can_pay_online?: boolean;
   delivery_free_reason: string | null;
   payment_type: Labelled;
   payment_status: Labelled;

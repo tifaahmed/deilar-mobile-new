@@ -29,10 +29,10 @@ export const PATHS = {
 
 export const api = {
   facilityTypes: (signal?: AbortSignal) =>
-    apiGet<{ data: FacilityType[] }>(PATHS.facilityTypes, {}, { signal, ttl: LOOKUP_TTL }).then((r) => r.data),
+    apiGet<{ data: FacilityType[] }>(PATHS.facilityTypes, {}, { signal, ttl: LOOKUP_TTL, persist: true }).then((r) => r.data),
 
   governorates: (signal?: AbortSignal) =>
-    apiGet<{ data: Named[] }>(PATHS.governorates, {}, { signal, ttl: LOOKUP_TTL }).then((r) => r.data),
+    apiGet<{ data: Named[] }>(PATHS.governorates, {}, { signal, ttl: LOOKUP_TTL, persist: true }).then((r) => r.data),
 
   storeCategories: (signal?: AbortSignal) =>
     apiGet<{ data: (Named & { count: number })[] }>(PATHS.storeCategories, {}, { signal, ttl: LOOKUP_TTL }).then((r) => r.data),
@@ -40,7 +40,8 @@ export const api = {
   productTypes: (signal?: AbortSignal) =>
     apiGet<{ data: (Named & { slug: string; count: number })[] }>(PATHS.productTypes, {}, { signal, ttl: LOOKUP_TTL }).then((r) => r.data),
 
-  facilities: (params: Params, signal?: AbortSignal) => apiGet<Paged<FacilityCard>>(PATHS.facilities, params, { signal }),
+  /** `persist`: keep the answer on the device, so the next visit paints from it at once (the home page's nearest list). */
+  facilities: (params: Params, signal?: AbortSignal, persist = false) => apiGet<Paged<FacilityCard>>(PATHS.facilities, params, { signal, persist }),
   facility: (slug: string, params: Params, signal?: AbortSignal) =>
     apiGet<FacilityDetail>(`${PATHS.facilities}/${encodeURIComponent(slug)}`, params, { signal }),
   facilityBranches: (slug: string, params: Params, signal?: AbortSignal) =>
@@ -80,6 +81,10 @@ export const fetchNearestAreas = (level: 'governorate' | 'city', lat: number, ln
 export interface ShopSettings {
   /** What delivery costs the buyer — the website's own shop setting. */
   delivery_price: number;
+  /** Extra fee added to a pay-on-delivery order (admin setting). 0 = none — show nothing. */
+  cod_fee: number;
+  /** Whether online card/wallet payment (Paymob) is set up on the backend. */
+  paymob_enabled: boolean;
   /** A basket at or above this ships free; null = never free. */
   free_delivery_threshold: number | null;
   /** The phone a wallet transfer goes to (the shop's setting); null when none is set. */

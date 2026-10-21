@@ -13,6 +13,8 @@ export interface Place {
   governorate: string | null;
   city: string | null;
   address: string | null;
+  /** The free-text neighbourhood the admin typed on the branch. Absent on an older backend. */
+  area?: string | null;
   lat: number | null;
   lng: number | null;
   phone: string | null;
@@ -93,6 +95,8 @@ export interface StoreDetail extends BranchPage {
   logo: string;
   cover: string | null;
   gallery: string[];
+  /** Videos from the gallery (mp4 and the like). Absent on a backend older than this field. */
+  videos?: string[];
   offer_from: number | null;
   offer_to: number | null;
   online_only: boolean;

@@ -79,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
     >
       <div className="max-w-6xl mx-auto px-3.5 py-2 flex items-center justify-between gap-2.5">
         {/* Brand Lockup with Official Deilar Ticket Logo */}
-        <div className="flex items-center gap-2">
+        <Link to={{ tab: 'home' }} aria-label={brandName} className="flex items-center gap-2 cursor-pointer">
           <DeilarLogo className="h-8 sm:h-9 w-auto" />
           <div>
             <div className="flex items-center gap-1.5">
@@ -91,7 +91,7 @@ export const Header: React.FC<HeaderProps> = ({
               {t('tagline')}
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Middle: Geographic Location Selector */}
         <div className="relative">

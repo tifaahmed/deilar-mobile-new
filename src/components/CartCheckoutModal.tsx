@@ -18,12 +18,16 @@ import {
   AlertCircle,
   Sparkles,
   ShoppingBag,
-  Download
+  Download,
+  CreditCard,
+  RefreshCw
 } from 'lucide-react';
 import { Product, CartItem } from '../types';
 import { ApiError } from '../api/http';
-import { placeOrder, uploadReceipt, type PlacedOrder } from '../api/orders';
+import { fetchOrder, payOrder, placeOrder, uploadReceipt, type PlacedOrder } from '../api/orders';
 import { useSession } from '../utils/session';
+import { PaymobPixel } from './PaymobPixel';
+import { reportClientError } from '../utils/reportError';
 import { fetchSavedAddress } from '../api/auth';
 import { fetchLocations, fetchShopSettings } from '../api/endpoints';
 import { useApi } from '../hooks/useApi';
@@ -68,12 +72,13 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   }, [asPage, initialStep]);
   
   // Payment Method: 'wallet' (محفظة إلكترونية / فودافون كاش) or 'cod' (الدفع عند الاستلام)
-  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'cod'>('wallet');
+  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'cod' | 'online'>('wallet');
   const session = useSession();
 
   // Customer shipping info
   const [customerName, setCustomerName] = useState(session.name ?? '');
   const [customerPhone, setCustomerPhone] = useState(session.phone ?? session.leadPhone ?? '');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [addressType, setAddressType] = useState<'home' | 'work' | 'other'>('home');
   // Opens on the area the visitor picked when the app first asked for their location.
   const [customerGovernorate, setCustomerGovernorate] = useState(() => getArea()?.governorate.name ?? '');
@@ -124,6 +129,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const [isPlacing, setIsPlacing] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [receiptFailed, setReceiptFailed] = useState(false);
+  // Online payment: the page the buyer pays on, and what the server last said about it.
+  // What the embedded card form (Paymob Pixel) mounts with, and the hosted page as its fallback.
+  const [pixel, setPixel] = useState<{ clientSecret: string; publicKey: string; checkoutUrl: string | null } | null>(null);
+  const [payMessage, setPayMessage] = useState<string | null>(null);
+  const [paidOnline, setPaidOnline] = useState(false);
+  const [payBusy, setPayBusy] = useState(false);
 
   if (!isOpen) return null;
 
@@ -141,13 +152,17 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const deliveryPrice = shop.data?.delivery_price ?? 35;
   const freeFrom = shop.data ? shop.data.free_delivery_threshold : 500;
   const shippingFee = freeFrom !== null && totalCartPrice >= freeFrom ? 0 : deliveryPrice;
+  // Pay-on-delivery fee from the admin; 0 means nothing is shown anywhere.
+  const codFee = paymentMethod === 'cod' ? shop.data?.cod_fee ?? 0 : 0;
+  const onlineAvailable = !!shop.data?.paymob_enabled;
   const remainingForFree = freeFrom !== null && shippingFee > 0 ? Math.max(0, freeFrom - totalCartPrice) : 0;
   // An estimate while shopping; once the order is placed the server's figures replace it.
-  const finalTotal = placed ? placed.total_amount : totalCartPrice + shippingFee;
+  const finalTotal = placed ? placed.total_amount : totalCartPrice + shippingFee + codFee;
 
   useEffect(() => {
     if (!walletAvailable && paymentMethod === 'wallet') setPaymentMethod('cod');
-  }, [walletAvailable, paymentMethod]);
+    if (!onlineAvailable && shop.data && paymentMethod === 'online') setPaymentMethod(walletAvailable ? 'wallet' : 'cod');
+  }, [walletAvailable, onlineAvailable, shop.data, paymentMethod]);
 
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -162,7 +177,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
         saved: totalCartSavings,
         delivery: placed ? placed.delivery_price : shippingFee,
         total: finalTotal,
-        payment: paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : 'الدفع عند الاستلام',
+        payment: paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : paymentMethod === 'online' ? 'دفع إلكتروني' : 'الدفع عند الاستلام',
         member: totalCartSavings > 0 ? session.cardNumber : null,
       });
     } catch {
@@ -176,6 +191,49 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
     if (walletNumber) navigator.clipboard.writeText(walletNumber);
     setCopiedWallet(true);
     setTimeout(() => setCopiedWallet(false), 2000);
+  };
+
+  // Re-reads the order: the server's signed callback is what decides whether the money arrived.
+  const checkPayment = async () => {
+    if (!placed) return;
+    setPayBusy(true);
+    try {
+      const fresh = await fetchOrder(placed.order_code);
+      if (fresh?.payment_status.value === 'accepted') {
+        setPaidOnline(true);
+      } else if (fresh?.payment_status.value === 'rejected') {
+        // A declined attempt needs a fresh form, not the old one.
+        setPixel(null);
+        setPayMessage('لم تتم عملية الدفع. يمكنك المحاولة مرة أخرى.');
+      } else {
+        setPayMessage('لم يصل تأكيد الدفع بعد. انتظر لحظات ثم اضغط «تحديث حالة الدفع».');
+      }
+    } catch (err) {
+      setPayMessage('تعذر التحقق من حالة الدفع الآن.');
+      reportClientError('Payment status check failed', err, { order: placed.order_code });
+    } finally {
+      setPayBusy(false);
+    }
+  };
+
+  // A new attempt at the gateway (declined card, closed form): a fresh one-hour form for the same order.
+  const retryPayment = async () => {
+    if (!placed) return;
+    setPayBusy(true);
+    try {
+      const link = await payOrder(placed.order_code);
+      if (link.client_secret && link.public_key) {
+        setPixel({ clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url });
+        setPayMessage(null);
+      } else {
+        setPayMessage('تعذر فتح نموذج الدفع. حاول مرة أخرى.');
+      }
+    } catch (err) {
+      setPayMessage('تعذر فتح نموذج الدفع. حاول مرة أخرى.');
+      reportClientError('Payment form could not be reopened', err, { order: placed.order_code });
+    } finally {
+      setPayBusy(false);
+    }
   };
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
@@ -204,14 +262,15 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
           apartmentNumber,
           specialMark,
           notes: [customerNotes.trim(), transferNote].filter(Boolean).join('\n'),
-          payment: paymentMethod === 'cod' ? 'cod' : 'transfer-wallet',
+          payment: paymentMethod === 'cod' ? 'cod' : paymentMethod === 'online' ? 'paymob' : 'transfer-wallet',
+          email: customerEmail,
           membershipNumber: session.cardNumber,
           items: cart.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
         },
         session.token,
       );
 
-      if (receiptFile && paymentMethod !== 'cod') {
+      if (receiptFile && paymentMethod === 'wallet') {
         await uploadReceipt(order.order_code, receiptFile).catch(() => setReceiptFailed(true));
       }
 
@@ -226,6 +285,8 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
       });
 
       setPlaced(order);
+      setPixel(order.payment?.client_secret && order.payment.public_key ? { clientSecret: order.payment.client_secret, publicKey: order.payment.public_key, checkoutUrl: order.payment.checkout_url } : null);
+      setPayMessage(order.payment?.message ?? null);
       setStep('success');
     } catch (err) {
       const errors = err instanceof ApiError ? (err.body?.errors as Record<string, string[]> | undefined) : undefined;
@@ -397,6 +458,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       <span>تكلفة الشحن والتوصيل:</span>
                       <span>{shippingFee === 0 ? `مجاناً (لطلبات ${freeFrom} ج.م فأكثر)` : `${shippingFee} ج.م`}</span>
                     </div>
+                    {codFee > 0 && (
+                      <div className="flex justify-between text-slate-600">
+                        <span>رسوم الدفع عند الاستلام:</span>
+                        <span>{codFee} ج.م</span>
+                      </div>
+                    )}
                     {remainingForFree > 0 && <p className="text-[10px] text-amber-700 font-bold">أضف منتجات بـ {remainingForFree} ج.م لتحصل على توصيل مجاني</p>}
                     <div className="flex justify-between text-slate-900 font-black border-t border-slate-200 pt-2 text-sm">
                       <span>المبلغ الإجمالي للدفع:</span>
@@ -492,8 +559,27 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <div>
                     <h4 className="text-xs font-bold text-slate-900">الدفع عند الاستلام</h4>
                     <p className="text-[9.5px] text-slate-500">ادفع للمندوب عند وصول الطلب</p>
+                    {(shop.data?.cod_fee ?? 0) > 0 && <p className="text-[9.5px] font-bold text-amber-700">+ {shop.data?.cod_fee} ج.م رسوم الدفع عند الاستلام</p>}
                   </div>
                 </div>
+
+                {/* Option C: pay online by card or mobile wallet (Paymob) */}
+                {onlineAvailable && (
+                  <div
+                    onClick={() => setPaymentMethod('online')}
+                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2 ${
+                      paymentMethod === 'online' ? 'border-[#941946] bg-rose-50/50 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
+                      <CreditCard className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">الدفع الإلكتروني</h4>
+                      <p className="text-[9.5px] text-slate-500">بطاقة بنكية / محفظة إلكترونية — دفع آمن عبر Paymob</p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* PAYMENT DETAILS ACCORDING TO SELECTION */}
@@ -591,6 +677,11 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       </div>
 
                       <div>
+                        <label className={label}>البريد الإلكتروني (لإرسال الإيصال)</label>
+                        <input type="email" inputMode="email" dir="ltr" autoComplete="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder="اختياري — name@example.com" className={`${input} text-right`} />
+                      </div>
+
+                      <div>
                         <span className={label}>نوع العنوان</span>
                         <div className="flex flex-wrap gap-2">
                           {kinds.map(([value, text]) => (
@@ -675,7 +766,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 className="disabled:opacity-60 w-full py-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all"
               >
                 {isPlacing ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
-                <span>{isPlacing ? 'جاري تسجيل الطلب...' : paymentMethod === 'cod' ? 'تأكيد الطلب' : 'تأكيد تسجيل الطلب وإرسال إشعار التحويل'}</span>
+                <span>{isPlacing ? 'جاري تسجيل الطلب...' : paymentMethod === 'cod' ? 'تأكيد الطلب' : paymentMethod === 'online' ? 'تأكيد الطلب والدفع الآن' : 'تأكيد تسجيل الطلب وإرسال إشعار التحويل'}</span>
               </button>
             </form>
           )}
@@ -712,9 +803,15 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 <div className="flex justify-between">
                   <span className="text-slate-500">طريقة السداد:</span>
                   <span className="font-bold text-[#941946]">
-                    {paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : 'الدفع عند الاستلام'}
+                    {paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : paymentMethod === 'online' ? 'دفع إلكتروني' : 'الدفع عند الاستلام'}
                   </span>
                 </div>
+                {placed && placed.cod_fee > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">رسوم الدفع عند الاستلام:</span>
+                    <span className="font-bold text-slate-800 font-mono">{placed.cod_fee} ج.م</span>
+                  </div>
+                )}
                 {placed && placed.delivery_price > 0 && (
                   <div className="flex justify-between">
                     <span className="text-slate-500">مصاريف الشحن:</span>
@@ -728,10 +825,50 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   </div>
                 )}
                 <div className="flex justify-between border-t border-slate-200 pt-1 font-bold">
-                  <span>{paymentMethod === 'cod' ? 'المبلغ المطلوب عند الاستلام:' : 'المبلغ المطلوب تحويله:'}</span>
+                  <span>{paymentMethod === 'cod' ? 'المبلغ المطلوب عند الاستلام:' : paymentMethod === 'online' ? 'المبلغ المطلوب دفعه:' : 'المبلغ المطلوب تحويله:'}</span>
                   <span className="text-emerald-700 font-mono">{finalTotal} ج.م</span>
                 </div>
               </div>
+
+              {paymentMethod === 'online' && (
+                <div className="p-3 rounded-2xl border border-indigo-200 bg-indigo-50 text-right space-y-3">
+                  {paidOnline ? (
+                    <p className="text-xs font-bold text-emerald-700">تم استلام الدفع بنجاح ✓ — سيصلك الإيصال على بريدك إن أضفته.</p>
+                  ) : (
+                    <>
+                      {pixel ? (
+                        // The card form is Paymob's, shown here: card details never reach our code or server.
+                        <PaymobPixel publicKey={pixel.publicKey} clientSecret={pixel.clientSecret} fallbackUrl={pixel.checkoutUrl} onComplete={checkPayment} />
+                      ) : (
+                        <p className="text-xs font-bold text-indigo-900">{payMessage ?? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.'}</p>
+                      )}
+                      {payMessage && pixel && <p className="text-[11px] font-bold text-indigo-900">{payMessage}</p>}
+                      <div className="flex gap-2">
+                        {!pixel && (
+                          <button
+                            type="button"
+                            disabled={payBusy}
+                            onClick={retryPayment}
+                            className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
+                          >
+                            <CreditCard className="w-4 h-4" />
+                            <span>حاول الدفع مرة أخرى</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          disabled={payBusy || !placed}
+                          onClick={checkPayment}
+                          className="flex-1 py-2.5 bg-white hover:bg-slate-50 disabled:opacity-60 border border-indigo-300 text-indigo-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          <span>تحديث حالة الدفع</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
 
               {receiptFailed && (
                 <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">

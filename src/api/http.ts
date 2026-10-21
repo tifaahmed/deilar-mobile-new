@@ -58,15 +58,55 @@ interface Entry {
 const cache = new Map<string, Entry>();
 const inflight = new Map<string, Promise<unknown>>();
 
+/**
+ * Answers worth keeping across visits (the facility types, the home page's nearest list…), saved on
+ * the device so the next visit paints from them at once and refreshes in the background — instead of
+ * showing a skeleton while the same list is fetched again. Only requests that ask for `persist`
+ * are saved, and only a handful, so this can never grow into a second database.
+ */
+const STORE_KEY = 'deilar_api_cache_v1';
+const STORE_MAX_ENTRIES = 24;
+/** A saved answer older than this is not shown at all (a week-old "nearest" is worse than a skeleton). */
+const STORE_MAX_AGE_MS = 7 * 24 * 60 * 60_000;
+
+let stored: Map<string, Entry> | null = null;
+
+function loadStored(): Map<string, Entry> {
+  if (stored) return stored;
+  stored = new Map();
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    for (const [url, entry] of Object.entries(raw ? (JSON.parse(raw) as Record<string, Entry>) : {})) {
+      if (Date.now() - entry.at < STORE_MAX_AGE_MS) stored.set(url, entry);
+    }
+  } catch {
+    /* storage unavailable or corrupt: behave as if nothing was saved */
+  }
+  return stored;
+}
+
+function saveStored(url: string, entry: Entry): void {
+  const map = loadStored();
+  map.delete(url);
+  map.set(url, entry);
+  while (map.size > STORE_MAX_ENTRIES) map.delete(map.keys().next().value as string);
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(Object.fromEntries(map)));
+  } catch {
+    /* full or blocked: the in-memory cache still works */
+  }
+}
+
 /** Fresh enough to skip the network entirely. */
 const DEFAULT_TTL_MS = 60_000;
 
 /** Whatever is already in memory for this request, however old — for instant paint. */
 export function peek<T>(path: string, params?: Params): T | undefined {
-  return cache.get(buildUrl(path, params))?.data as T | undefined;
+  const url = buildUrl(path, params);
+  return (cache.get(url) ?? loadStored().get(url))?.data as T | undefined;
 }
 
-export function apiGet<T>(path: string, params?: Params, opts: { signal?: AbortSignal; ttl?: number } = {}): Promise<T> {
+export function apiGet<T>(path: string, params?: Params, opts: { signal?: AbortSignal; ttl?: number; persist?: boolean } = {}): Promise<T> {
   const url = buildUrl(path, params);
   const hit = cache.get(url);
 
@@ -83,7 +123,9 @@ export function apiGet<T>(path: string, params?: Params, opts: { signal?: AbortS
         return (await res.json()) as T;
       })
       .then((data) => {
-        cache.set(url, { at: Date.now(), data });
+        const entry = { at: Date.now(), data };
+        cache.set(url, entry);
+        if (opts.persist) saveStored(url, entry);
         return data;
       })
       .finally(() => inflight.delete(url));

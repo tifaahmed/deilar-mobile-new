@@ -14,7 +14,9 @@ export const Thumb: React.FC<{
   kind: keyof typeof ICONS;
   className?: string;
   fit?: 'cover' | 'contain';
-}> = ({ src, alt, kind, className = '', fit = 'cover' }) => {
+  /** Above the fold: fetched at once instead of waiting to scroll near (the first cards of a list). */
+  priority?: boolean;
+}> = ({ src, alt, kind, className = '', fit = 'cover', priority = false }) => {
   const [failed, setFailed] = React.useState(false);
   const Icon = ICONS[kind];
 
@@ -30,7 +32,8 @@ export const Thumb: React.FC<{
     <img
       src={src}
       alt={alt}
-      loading="lazy"
+      loading={priority ? 'eager' : 'lazy'}
+      fetchPriority={priority ? 'high' : 'auto'}
       decoding="async"
       onError={() => setFailed(true)}
       className={`${fit === 'cover' ? 'object-cover' : 'object-contain bg-white'} ${className}`}

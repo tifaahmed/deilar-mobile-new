@@ -46,6 +46,10 @@ import { getSession } from '../utils/session';
 import { useApi } from '../hooks/useApi';
 import { fetchFamily } from '../api/family';
 import { AddMemberForm } from './AddMemberForm';
+import { CardStatusBanner } from './CardStatusBanner';
+import { SubscribePanel } from './SubscribePanel';
+import { fetchMembership, requestRelatives, type CardStatus } from '../api/membership';
+import { reportClientError } from '../utils/reportError';
 import { useContact } from '../hooks/useCatalog';
 import { downloadDeilarCardImage } from '../utils/downloadCard';
 import { useLanguage } from '../context/LanguageContext';
@@ -73,6 +77,8 @@ interface ProfileViewProps {
   /** Open sub-section, driven by the URL (null = the card). */
   section: Exclude<ProfileSubSection, 'card'> | null;
   onSectionChange: (section: Exclude<ProfileSubSection, 'card'> | null) => void;
+  /** The card's state from the backend (trial / expired / active, price, contacts). */
+  status?: CardStatus;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -85,6 +91,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onSignIn,
   section,
   onSectionChange,
+  status,
 }) => {
   const { language, setLanguage, t, isAr, brandName } = useLanguage();
   const contact = useContact();
@@ -118,6 +125,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const token = getSession().token;
   const family = useApi(token ? `family:${token}` : null, () => fetchFamily(token!));
   const awaiting = (family.data ?? []).filter((p) => p.approval_status !== 'approved');
+  // The signed-in member's own card state: the trial / relatives rules and the open payment. Never cached.
+  const membership = useApi(token ? `membership:${token}` : null, () => fetchMembership(token!));
+  const relatives = membership.data?.relatives;
+  const [relativesAsked, setRelativesAsked] = useState(false);
+  const [relativesError, setRelativesError] = useState(false);
+  const askRelatives = async () => {
+    if (!token) return;
+    setRelativesError(false);
+    try {
+      await requestRelatives(token);
+      setRelativesAsked(true);
+    } catch (err) {
+      setRelativesError(true);
+      reportClientError('Relatives request failed', err);
+    }
+  };
   const governorates = useApi(personalOpen ? `all-governorates:${language}` : null, (signal) => fetchLocations(signal));
 
   useEffect(() => {
@@ -254,6 +277,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   return (
     <div className={`space-y-4 pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
+      {/* A scan of an expired card says so first, in red, with every way to pay or call. */}
+      <CardStatusBanner status={status} number={account.number} />
+
+      {/* Subscribe or renew: while on trial, once expired, or within a month of the end. */}
+      {activeSection === 'card' && token && membership.data && (membership.data.is_trial || membership.data.expired || membership.data.days_left <= 30) && (
+        <SubscribePanel token={token} status={membership.data} onDone={membership.reload} />
+      )}
+
       {/* 1. Profile Identity Header */}
       <section className={`rounded-2xl p-4 border transition-colors shadow-2xs ${
         isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200/90 text-slate-900'
@@ -518,14 +549,44 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <h3 className="text-xs font-bold">{t('familyMembersCount')} ({beneficiaries.length})</h3>
             </div>
             
-            <button
-              onClick={() => setShowAddMemberModal(true)}
-              className="px-2.5 py-1 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{t('addNewMember')}</span>
-            </button>
+            {/* A trial card holds the owner alone; a full one takes up to the cap, first degree only. */}
+            {(!relatives || relatives.can_add) && (
+              <button
+                onClick={() => setShowAddMemberModal(true)}
+                className="px-2.5 py-1 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{t('addNewMember')}</span>
+              </button>
+            )}
           </div>
+
+          {relatives && (
+            <div className={`p-3 rounded-2xl border text-[11px] space-y-2 ${isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#CBD5E1]' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+              <p className="font-bold">
+                {isAr ? `${relatives.count} من ${relatives.max} مستخدم` : `${relatives.count} of ${relatives.max} used`}
+                {' · '}
+                {isAr ? 'أقارب الدرجة الأولى (الوالدان والزوج/الزوجة والأبناء)' : 'first-degree relatives (parents, spouse, children)'}
+              </p>
+              {relatives.must_contact_support ? (
+                <>
+                  <p>{isAr ? 'خلال التجربة يشملك الكارت وحدك. اضغط الزر وستتصل بك خدمة العملاء لإضافة أقاربك.' : 'During the trial your card holds you only. Press the button and customer service will call you to add your relatives.'}</p>
+                  <button
+                    onClick={askRelatives}
+                    disabled={relativesAsked}
+                    className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[11px] font-bold disabled:opacity-60 cursor-pointer"
+                  >
+                    {relativesAsked ? (isAr ? 'تم الإرسال — ستتصل بك خدمة العملاء' : 'Sent — customer service will call you') : isAr ? 'اتصلوا بي لإضافة أقاربي' : 'Call me to add my relatives'}
+                  </button>
+                  {relativesError && <p className="text-rose-600 font-bold">{isAr ? 'تعذر إرسال الطلب. حاول مرة أخرى.' : 'The request could not be sent. Please try again.'}</p>}
+                </>
+              ) : !relatives.can_add ? (
+                <p>{relatives.count >= relatives.max ? (isAr ? 'وصلت للحد الأقصى. تواصل مع خدمة العملاء.' : 'You have reached the limit. Contact customer service.') : isAr ? 'جدّد الكارت لإضافة أقارب.' : 'Renew your card to add relatives.'}</p>
+              ) : (
+                <p>{isAr ? 'الأقارب الذين تضيفهم ينتظرون موافقة فريقنا.' : 'Relatives you add wait for approval by our team.'}</p>
+              )}
+            </div>
+          )}
 
           <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
             {t('familyMembersDesc')}

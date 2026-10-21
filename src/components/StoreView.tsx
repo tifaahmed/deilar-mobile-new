@@ -49,6 +49,10 @@ interface StoreViewProps {
   onRemoveFromCart: (productId: string) => void;
   onClearCart: () => void;
   onOpenCart?: () => void;
+  /** The open store's slug, from the URL (/stores/:slug); null on the list. */
+  storeSlug: string | null;
+  onOpenStore: (slug: string) => void;
+  onCloseStore: () => void;
 }
 
 export const StoreView: React.FC<StoreViewProps> = ({
@@ -61,11 +65,16 @@ export const StoreView: React.FC<StoreViewProps> = ({
   onRemoveFromCart,
   onClearCart,
   onOpenCart,
+  storeSlug,
+  onOpenStore,
+  onCloseStore,
 }) => {
   const { isAr } = useLanguage();
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [storeSearchQuery, setStoreSearchQuery] = useState('');
-  const [selectedStore, setSelectedStore] = useState<StoreCard | null>(null);
+  // The card the user tapped, shown instantly while the store page (addressed by URL) loads.
+  const [tapped, setTapped] = useState<StoreCard | null>(null);
+  const selectedStore = storeSlug ? { slug: storeSlug, preview: tapped?.slug === storeSlug ? tapped : undefined } : null;
 
   const q = useDebounced(storeSearchQuery.trim(), 350);
   const categories = useStoreCategories();
@@ -86,9 +95,9 @@ export const StoreView: React.FC<StoreViewProps> = ({
     return (
       <StoreDetailView
         slug={selectedStore.slug}
-        preview={selectedStore}
+        preview={selectedStore.preview}
         userLocation={userLocation}
-        onBack={() => setSelectedStore(null)}
+        onBack={onCloseStore}
         onAddToCart={onAddToCart}
         cart={cart}
         onOpenCart={onOpenCart}
@@ -220,7 +229,10 @@ export const StoreView: React.FC<StoreViewProps> = ({
               return (
                 <div
                   key={store.id}
-                  onClick={() => setSelectedStore(store)}
+                  onClick={() => {
+                    setTapped(store);
+                    onOpenStore(store.slug);
+                  }}
                   className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group"
                 >
                   <div>

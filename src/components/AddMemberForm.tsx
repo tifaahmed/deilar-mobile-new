@@ -19,8 +19,7 @@ const RELATIONS: { value: string; ar: string; en: string }[] = [
   { value: 'daughter', ar: 'ابنة', en: 'Daughter' },
   { value: 'father', ar: 'والد', en: 'Father' },
   { value: 'mother', ar: 'والدة', en: 'Mother' },
-  { value: 'brother', ar: 'أخ', en: 'Brother' },
-  { value: 'sister', ar: 'أخت', en: 'Sister' },
+  // First degree only (parents, spouse, children). Siblings are second degree: customer service adds those.
 ];
 
 /** One required picture, taken with the device camera (never the gallery). */

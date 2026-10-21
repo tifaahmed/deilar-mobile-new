@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, CheckCircle2, CreditCard, Loader2, Phone, ShieldCheck, UserPlus, UserRound, X } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CreditCard, IdCard, Loader2, Phone, ShieldCheck, Sparkles, UserPlus, UserRound, X } from 'lucide-react';
 import { ApiError, postContactMessage } from '../api/http';
-import { fetchCard, requestOtp, verifyOtp } from '../api/auth';
+import { fetchCard, phoneHasCard, requestOtp, verifyOtp } from '../api/auth';
+import { startTrial } from '../api/membership';
+import { reportClientError } from '../utils/reportError';
 import { claimOrders } from '../api/orders';
 import { storedOrders } from '../utils/orders';
 import { getSession, updateSession } from '../utils/session';
@@ -11,7 +13,7 @@ import { useLanguage } from '../context/LanguageContext';
 const PHONE_RE = /^01\d{9}$/;
 const PHONE_LEN = 11;
 
-export type AccessStep = 'choose' | 'phone' | 'code' | 'card' | 'visitor';
+export type AccessStep = 'choose' | 'phone' | 'code' | 'card' | 'visitor' | 'offer' | 'confirm' | 'details';
 
 interface AccessModalProps {
   onClose: () => void;
@@ -42,6 +44,11 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [welcome, setWelcome] = useState<string | null>(null);
+  /** The visitor accepted the free trial card: after the code comes the gender + national ID step. */
+  const [trialFlow, setTrialFlow] = useState(false);
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
+  const [nationalId, setNationalId] = useState('');
+  const [daysLeft, setDaysLeft] = useState<number | null>(null);
   const codeInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -113,12 +120,20 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         name: result.user.name ?? undefined,
         leadPhone: cleanPhone,
         // A card number the visitor already typed wins; otherwise the member's own card comes with the sign-in.
-        cardNumber: session.cardNumber ?? result.membership?.membership_number,
+        // A `REG-` number is a placeholder from a sign-up that holds no card yet — it is not a card to look up.
+        cardNumber: session.cardNumber ?? (result.membership?.membership_number.startsWith('REG-') ? undefined : result.membership?.membership_number),
       });
       // Orders placed on this device as a guest now belong to the member (already-owned ones are left alone).
       const guestCodes = storedOrders().map((o) => o.code);
       if (guestCodes.length > 0) claimOrders(result.token, guestCodes).catch(() => undefined);
-      setWelcome(result.user.name || cleanPhone);
+      const hasRealCard = !!result.membership && !result.membership.membership_number.startsWith('REG-');
+
+      if (trialFlow && !hasRealCard) {
+        // Registered but not active yet: the card is issued once the gender and national ID are in.
+        setStep('details');
+      } else {
+        setWelcome(result.user.name || cleanPhone);
+      }
     } catch (e) {
       setCode('');
       setError(messageOf(e, 'الكود غير صحيح', 'That code is not right'));
@@ -150,9 +165,42 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         source: 'card_popup',
       });
       updateSession({ name, phone: cleanPhone, leadPhone: cleanPhone });
-      onClose();
+
+      // A number that holds no card yet is offered the free trial; a lookup that fails just ends the popup as before.
+      const hasCard = await phoneHasCard(cleanPhone).catch(() => true);
+      if (hasCard) onClose();
+      else setStep('offer');
     } catch (e) {
       setError(messageOf(e, 'تعذر إرسال بياناتك، حاول مرة أخرى', 'Could not send your details, please try again'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitTrial = async () => {
+    const token = getSession().token;
+    if (!token || !gender) return;
+
+    setBusy(true);
+    setError(null);
+
+    try {
+      const status = await startTrial(token, { name: visitorName.trim(), national_id: nationalId, gender });
+      if (status.membership_number) updateSession({ cardNumber: status.membership_number, name: visitorName.trim() });
+      setDaysLeft(status.days_left);
+      setWelcome(visitorName.trim() || cleanPhone);
+    } catch (e) {
+      const reason = e instanceof ApiError ? e.reason : undefined;
+      setError(
+        reason === 'national_id_taken'
+          ? isAr ? 'هذا الرقم القومي لديه كارت بالفعل. تواصل مع خدمة العملاء.' : 'This ID number already has a card. Please contact customer service.'
+          : reason === 'phone_taken'
+            ? isAr ? 'رقم الهاتف هذا لديه كارت بالفعل. تواصل مع خدمة العملاء.' : 'This phone number already has a card. Please contact customer service.'
+            : e instanceof ApiError && e.status === 422
+              ? isAr ? 'تحقق من الرقم القومي (١٤ رقماً).' : 'Check the national ID (14 digits).'
+              : isAr ? 'تعذر إنشاء الكارت الآن، حاول مرة أخرى' : 'The card could not be created, please try again',
+      );
+      if (!(e instanceof ApiError) || e.status >= 500) reportClientError('Trial card request failed', e);
     } finally {
       setBusy(false);
     }
@@ -229,6 +277,11 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   ? isAr ? `كرتك رقم ${getSession().cardNumber} جاهز` : `Your card ${getSession().cardNumber} is ready`
                   : isAr ? 'لا يوجد كرت مرتبط برقمك بعد' : 'No card is linked to your number yet'}
               </p>
+              {daysLeft !== null && (
+                <p className="text-[10px] text-slate-300 leading-relaxed">
+                  {isAr ? `كرتك التجريبي يعمل الآن لمدة ${daysLeft} يوماً. اشترك في الكرت الكامل في أي وقت من حسابي.` : `Your trial card is active for ${daysLeft} days. Subscribe to the full card any time from My account.`}
+                </p>
+              )}
               <button onClick={onClose} className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1 cursor-pointer">
                 <span>{isAr ? 'الدخول للتطبيق' : 'Enter app'}</span>
                 <ArrowLeft className={`w-3 h-3 ${isAr ? '' : 'rotate-180'}`} />
@@ -280,7 +333,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                     <span className="text-[11px] font-bold text-slate-200">
                       {isAr ? `أدخل الكود المرسل إلى ${maskedPhone || 'هاتفك'}` : `Enter the code sent to ${maskedPhone || 'your phone'}`}
                     </span>
-                    {back('phone')}
+                    {back(trialFlow ? 'confirm' : 'phone')}
                   </div>
                   <input
                     ref={codeInput}
@@ -327,6 +380,68 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   <button type="submit" disabled={busy || !visitorName.trim() || !phoneValid} className={primary}>
                     {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     <span>{isAr ? 'إرسال' : 'Submit'}</span>
+                  </button>
+                </form>
+              )}
+
+              {step === 'offer' && (
+                <div className="space-y-2.5 text-center">
+                  <div className="w-10 h-10 rounded-full bg-amber-400/20 border border-amber-400 text-amber-400 mx-auto flex items-center justify-center">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <h4 className="text-xs font-black">{isAr ? 'هل تريد إكمال الخطوات؟' : 'Do you want to complete the process?'}</h4>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    {isAr ? 'رقمك غير مسجل لدينا. أكمل الآن واحصل على كرت ديلار مجاناً لمدة شهر.' : 'Your number is not registered with us. Complete now and get your Deilar card free for one month.'}
+                  </p>
+                  <button onClick={() => { setTrialFlow(true); setStep('confirm'); }} className={primary}>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{isAr ? 'نعم، أريد الكرت المجاني' : 'Yes, get my free card'}</span>
+                  </button>
+                  <button onClick={onClose} className="w-full text-[10px] font-bold text-slate-400 hover:text-white cursor-pointer">
+                    {isAr ? 'ليس الآن' : 'Not now'}
+                  </button>
+                </div>
+              )}
+
+              {step === 'confirm' && (
+                <form onSubmit={(e) => { e.preventDefault(); sendCode(); }} className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-200">{isAr ? 'تأكيد بياناتك' : 'Confirm your details'}</span>
+                    {back('offer')}
+                  </div>
+                  <div className="relative">
+                    <UserRound className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <input type="text" required minLength={3} placeholder={isAr ? 'الاسم' : 'Name'} value={visitorName} onChange={(e) => { setVisitorName(e.target.value); setError(null); }} className={field.replace('font-mono tracking-wider', '')} />
+                  </div>
+                  <div className="relative">
+                    <Phone className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <input type="tel" inputMode="numeric" required dir="ltr" maxLength={PHONE_LEN} placeholder="010xxxxxxxx" value={phone} onChange={onPhoneChange} className={field} />
+                    {phoneCounter}
+                  </div>
+                  <button type="submit" disabled={busy || visitorName.trim().length < 3 || !phoneValid} className={primary}>
+                    {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    <span>{isAr ? 'تأكيد وإرسال كود التحقق' : 'Confirm & send verification code'}</span>
+                  </button>
+                </form>
+              )}
+
+              {step === 'details' && (
+                <form onSubmit={(e) => { e.preventDefault(); submitTrial(); }} className="space-y-2.5">
+                  <span className="text-[11px] font-bold text-slate-200 block">{isAr ? 'آخر خطوة: النوع والرقم القومي' : 'Last step: gender and national ID'}</span>
+                  <div className="flex gap-2" role="radiogroup" aria-label={isAr ? 'النوع' : 'Gender'}>
+                    {(['male', 'female'] as const).map((g) => (
+                      <button key={g} type="button" role="radio" aria-checked={gender === g} onClick={() => { setGender(g); setError(null); }} className={`flex-1 py-2.5 rounded-xl border text-xs font-bold cursor-pointer ${gender === g ? 'bg-amber-400 text-slate-950 border-amber-400' : 'bg-slate-900 text-slate-200 border-slate-700'}`}>
+                        {g === 'male' ? (isAr ? 'ذكر' : 'Male') : isAr ? 'أنثى' : 'Female'}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="relative">
+                    <IdCard className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <input type="text" required inputMode="numeric" dir="ltr" maxLength={14} placeholder={isAr ? 'الرقم القومي (١٤ رقماً)' : 'National ID (14 digits)'} value={nationalId} onChange={(e) => { setNationalId(e.target.value.replace(/\D/g, '')); setError(null); }} className={field} />
+                  </div>
+                  <button type="submit" disabled={busy || !gender || !/^[23]\d{13}$/.test(nationalId)} className={primary}>
+                    {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    <span>{isAr ? 'تفعيل كرتي المجاني' : 'Activate my free card'}</span>
                   </button>
                 </form>
               )}

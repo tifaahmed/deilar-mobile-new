@@ -1,13 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Navigation, Phone, Search, X, List, Compass, Loader2 } from 'lucide-react';
+import { MapPin, Navigation, Phone, Search, X, List, Compass, Loader2, Percent } from 'lucide-react';
 import type { FacilityCard, MapPin as Pin } from '../api/types';
 import { api, PATHS } from '../api/endpoints';
 import { directionsUrl, formatKm, roundCoord } from '../api/adapters';
 import { useApi } from '../hooks/useApi';
 import { useDebounced } from '../hooks/useDebounced';
 import { usePaged } from '../hooks/usePaged';
+import { isAbort } from '../api/http';
 import { useFacilityTypes } from '../hooks/useCatalog';
 import { useLanguage } from '../context/LanguageContext';
 import { ErrorState, ListSkeleton, LoadMore } from './ui/Feedback';
@@ -19,6 +20,14 @@ interface MapViewProps {
   onViewChange: (view: 'map' | 'list') => void;
   selectedTypeId: number | null;
   onSelectType: (typeId: number | null) => void;
+  /** Search range in km (0 = everywhere); kept in the URL by the caller. */
+  radius: number;
+  onRadiusChange: (radius: number) => void;
+  /** List order; kept in the URL by the caller. */
+  sort: 'discount' | null;
+  onSortChange: (sort: 'discount' | null) => void;
+  /** Clears type, range and order in one navigation (several at once would overwrite each other in the URL). */
+  onResetFilters: () => void;
   onSelectProvider: (provider: FacilityCard) => void;
   onRequestGps: () => void;
   isGpsLoading: boolean;
@@ -26,13 +35,15 @@ interface MapViewProps {
 
 /** "Within X km" steps the API accepts; 0 means no limit (nearest first, across the country). */
 const RADIUS_OPTIONS = [10, 20, 30, 50, 100, 0];
-/** One page of pins: the nearest ones. Everything beyond is out of sight at any sensible zoom. */
-const PIN_PAGE = 300;
+/** Pins fetched per request, nearest first. The backend allows up to 3000 and only ~2000 branches have coordinates, so with a wide radius the map shows them all (the pins are tiny and the map clusters them). */
+const PIN_PAGE = 2500;
+/** What every deployed backend accepts. */
+const PIN_PAGE_FALLBACK = 500;
 
 const escapeHtml = (value: string) =>
   value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
 
-export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChange, selectedTypeId, onSelectType, onSelectProvider, onRequestGps, isGpsLoading }) => {
+export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChange, selectedTypeId, onSelectType, radius: radiusProp, onRadiusChange, sort, onSortChange, onResetFilters, onSelectProvider, onRequestGps, isGpsLoading }) => {
   const { isAr } = useLanguage();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
@@ -40,7 +51,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
   const [activePin, setActivePin] = useState<Pin | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [maxRadiusKm, setMaxRadiusKm] = useState<number>(20);
+  const maxRadiusKm = radiusProp;
+  const setMaxRadiusKm = onRadiusChange;
   const viewMode = view;
   const setViewMode = onViewChange;
 
@@ -56,7 +68,12 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   const pinParams = { ...mapPoint, radius_km: radius, facility_type_id: selectedTypeId, limit: PIN_PAGE };
   const pinsQuery = useApi(
     viewMode === 'map' ? `pins:${JSON.stringify(pinParams)}` : null,
-    (signal) => api.mapPins(pinParams, signal),
+    // A server that predates the larger page refuses anything over 500: ask again for what it allows
+    // rather than leaving the map on an error screen.
+    (signal) => api.mapPins(pinParams, signal).catch((err) => {
+      if (isAbort(err) || PIN_PAGE_FALLBACK >= PIN_PAGE) throw err;
+      return api.mapPins({ ...pinParams, limit: PIN_PAGE_FALLBACK }, signal);
+    }),
   );
   const pins: Pin[] = useMemo(() => {
     const all = pinsQuery.data?.data ?? [];
@@ -70,7 +87,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   const popup = useApi<FacilityCard>(activePin ? `pin:${activePin.id}:${isAr}` : null, (signal) => api.branchCard(activePin!.id, signal));
 
   // ---- List mode: server-side search / filter / nearest-first, infinite scroll ---------------
-  const listParams = { ...listPoint, q, radius_km: radius, type: selectedTypeId, per_page: 12 };
+  const byDiscount = sort === 'discount';
+  const listParams = { ...listPoint, q, radius_km: radius, type: selectedTypeId, per_page: 12, sort: byDiscount ? 'discount' : undefined };
   const list = usePaged<FacilityCard>(PATHS.facilities, listParams, (page, signal) => api.facilities({ ...listParams, page }, signal), viewMode === 'list');
 
   // Initialize Leaflet Map (only while the map view is showing)
@@ -223,8 +241,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
   const resetFilters = () => {
     setSearchQuery('');
-    setMaxRadiusKm(0);
-    onSelectType(null);
+    onResetFilters();
   };
 
   const radiusSelect = (id: string) => (
@@ -411,6 +428,18 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
               <span>{isAr ? 'نطاق البحث:' : 'Search range:'}</span>
               {radiusSelect('list-radius-select')}
             </div>
+            {/* Biggest discount first; press again for nearest-first. */}
+            <button
+              type="button"
+              onClick={() => onSortChange(byDiscount ? null : 'discount')}
+              aria-pressed={byDiscount}
+              className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                byDiscount ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'
+              }`}
+            >
+              <Percent className="w-3.5 h-3.5" />
+              <span>{isAr ? 'الأعلى خصماً' : 'Top discount'}</span>
+            </button>
           </div>
 
           {list.loading && <ListSkeleton rows={5} />}

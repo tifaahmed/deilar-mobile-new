@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
-import {defineConfig} from 'vite';
+import {defineConfig} from 'vitest/config';
 
 /** The Android build number baked into this bundle — `versionCode` in build.gradle is the single source of truth. */
 function appVersionCode(): number {
@@ -20,6 +20,11 @@ export default defineConfig(() => {
       __APP_VERSION_CODE__: JSON.stringify(appVersionCode()),
     },
     plugins: [react(), tailwindcss()],
+    test: {
+      environment: 'jsdom',
+      setupFiles: ['./src/test/setup.ts'],
+      include: ['src/**/*.test.{ts,tsx}'],
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

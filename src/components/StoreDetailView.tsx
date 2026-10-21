@@ -143,9 +143,20 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
           </div>
         )}
 
-        <div className="absolute bottom-3 right-4 left-4 text-white">
-          <h1 className="text-lg sm:text-xl font-black text-white drop-shadow-md">{title}</h1>
-          {(store?.short_description ?? null) && <p className="text-[11px] text-slate-300 mt-0.5 line-clamp-1">{store?.short_description}</p>}
+        <div className="absolute bottom-3 right-4 left-4 text-white flex items-end gap-3">
+          {/* The store's logo, from the list card at once and the full record once it arrives. */}
+          <Thumb
+            src={store?.logo ?? preview?.logo}
+            alt={title}
+            kind="store"
+            fit="contain"
+            priority
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shrink-0 border-2 border-white/80 shadow-lg"
+          />
+          <div className="min-w-0">
+            <h1 className="text-lg sm:text-xl font-black text-white drop-shadow-md">{title}</h1>
+            {(store?.short_description ?? null) && <p className="text-[11px] text-slate-300 mt-0.5 line-clamp-1">{store?.short_description}</p>}
+          </div>
         </div>
       </div>
 
@@ -222,6 +233,14 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
             <a key={url} href={url} target="_blank" rel="noreferrer" className="snap-start shrink-0 w-40 aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200/90 bg-slate-100">
               <Thumb src={url} alt={title} kind="store" className="w-full h-full" />
             </a>
+          ))}
+        </div>
+      )}
+
+      {store && (store.videos?.length ?? 0) > 0 && (
+        <div className="space-y-2">
+          {store.videos!.map((url) => (
+            <video key={url} src={url} controls preload="metadata" playsInline className="w-full rounded-2xl border border-slate-200/90 bg-black max-h-72" />
           ))}
         </div>
       )}
