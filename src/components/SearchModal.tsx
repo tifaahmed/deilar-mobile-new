@@ -42,7 +42,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, userL
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-start justify-center p-3 sm:p-6 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-xs flex items-start justify-center p-3 sm:p-6 animate-in fade-in duration-150">
       <div className={`bg-white rounded-3xl max-w-xl w-full max-h-[85vh] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in-95 duration-150 ${isAr ? 'text-right' : 'text-left'}`}>
         {/* Header */}
         <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-3">
@@ -118,7 +118,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, userL
                         <span>•</span>
                       </>
                     )}
-                    <span className="truncate max-w-[200px]">{[provider.type?.name, provider.branch?.city].filter(Boolean).join(' • ')}</span>
+                    <span className="truncate max-w-[12.5rem]">{[provider.type?.name, provider.branch?.city].filter(Boolean).join(' • ')}</span>
                   </div>
                 </div>
               </div>

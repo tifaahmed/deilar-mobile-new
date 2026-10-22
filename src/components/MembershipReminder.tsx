@@ -68,7 +68,7 @@ export const MembershipReminder: React.FC = () => {
   return (
     <div
       role="status"
-      className={`fixed top-16 inset-x-3 z-40 max-w-md mx-auto rounded-2xl shadow-xl p-3 flex items-start gap-3 animate-in fade-in ${expired ? 'bg-red-600 text-white' : 'bg-amber-100 text-amber-950 border border-amber-300'} ${isAr ? 'text-right' : 'text-left'}`}
+      className={`fixed top-16 inset-x-3 z-[999] max-w-md mx-auto rounded-2xl shadow-xl p-3 flex items-start gap-3 animate-in fade-in ${expired ? 'bg-red-600 text-white' : 'bg-amber-100 text-amber-950 border border-amber-300'} ${isAr ? 'text-right' : 'text-left'}`}
     >
       <Icon className="w-5 h-5 shrink-0 mt-0.5" />
       <div className="min-w-0 flex-1 space-y-1">

@@ -77,10 +77,13 @@ describe('guest → free trial card', () => {
     // A correct code registers the user but issues no card yet: the next step is gender + ID.
     await user.type(await screen.findByPlaceholderText('••••'), '1234');
     await waitFor(() => expect(auth.verifyOtp).toHaveBeenCalledWith(PHONE, '1234'));
-    expect(await screen.findByText('Last step: gender and national ID')).toBeInTheDocument();
+    expect(await screen.findByText('Last step: phone, gender and national ID')).toBeInTheDocument();
     expect(membership.startTrial).not.toHaveBeenCalled();
     expect(getSession().token).toBe('tok-1');
     expect(getSession().cardNumber).toBeUndefined();
+
+    // The form shows the number the code just proved.
+    expect(screen.getByPlaceholderText('010xxxxxxxx')).toHaveValue(PHONE);
 
     const activate = screen.getByRole('button', { name: 'Activate my free card' });
     expect(activate).toBeDisabled();
@@ -100,6 +103,43 @@ describe('guest → free trial card', () => {
     expect(screen.getByText(/Your card 4821 is ready/)).toBeInTheDocument();
     expect(screen.getByText(/active for 30 days/)).toBeInTheDocument();
     expect(getSession().cardNumber).toBe('4821');
+  });
+
+  it('editing the phone in the last step asks for a new code before the card is made', async () => {
+    const user = userEvent.setup();
+    const OTHER = '01155556666';
+    auth.phoneHasCard.mockResolvedValue(false);
+    open();
+
+    await submitVisitor(user);
+    await user.click(await screen.findByRole('button', { name: /Yes, get my free card/ }));
+    await user.click(screen.getByRole('button', { name: /Confirm & send verification code/ }));
+    await user.type(await screen.findByPlaceholderText('••••'), '1234');
+    await screen.findByText('Last step: phone, gender and national ID');
+    expect(auth.requestOtp).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('radio', { name: 'Male' }));
+    await user.type(screen.getByPlaceholderText('National ID (14 digits)'), ID);
+    await user.clear(screen.getByPlaceholderText('010xxxxxxxx'));
+    await user.type(screen.getByPlaceholderText('010xxxxxxxx'), OTHER);
+
+    // A different number is a different proof: the button now verifies instead of activating.
+    expect(screen.queryByRole('button', { name: 'Activate my free card' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Verify the new number' }));
+
+    await waitFor(() => expect(auth.requestOtp).toHaveBeenLastCalledWith(OTHER));
+    expect(membership.startTrial).not.toHaveBeenCalled();
+
+    auth.verifyOtp.mockResolvedValueOnce({ token: 'tok-2', user: { id: 2, name: null, phone: OTHER }, membership: { membership_number: 'REG-XYZ', is_active: false, expiration_date: null } });
+    await user.type(await screen.findByPlaceholderText('••••'), '5678');
+    await waitFor(() => expect(auth.verifyOtp).toHaveBeenLastCalledWith(OTHER, '5678'));
+
+    // Back on the form with the proved number, and the card is made for THAT account.
+    expect(await screen.findByPlaceholderText('010xxxxxxxx')).toHaveValue(OTHER);
+    await user.click(screen.getByRole('radio', { name: 'Male' }));
+    await user.type(screen.getByPlaceholderText('National ID (14 digits)'), ID);
+    await user.click(screen.getByRole('button', { name: 'Activate my free card' }));
+    expect(membership.startTrial).toHaveBeenCalledWith('tok-2', expect.objectContaining({ national_id: ID }));
   });
 
   it('does not offer a trial to a phone that already holds a card', async () => {
@@ -147,7 +187,7 @@ describe('guest → free trial card', () => {
     await user.type(await screen.findByPlaceholderText('••••'), '0000');
 
     expect(await screen.findByRole('alert')).toHaveTextContent('wrong');
-    expect(screen.queryByText('Last step: gender and national ID')).not.toBeInTheDocument();
+    expect(screen.queryByText('Last step: phone, gender and national ID')).not.toBeInTheDocument();
     expect(membership.startTrial).not.toHaveBeenCalled();
   });
 
@@ -161,7 +201,7 @@ describe('guest → free trial card', () => {
     await user.click(await screen.findByRole('button', { name: /Yes, get my free card/ }));
     await user.click(screen.getByRole('button', { name: /Confirm & send verification code/ }));
     await user.type(await screen.findByPlaceholderText('••••'), '1234');
-    await screen.findByText('Last step: gender and national ID');
+    await screen.findByText('Last step: phone, gender and national ID');
     await user.click(screen.getByRole('radio', { name: 'Male' }));
     await user.type(screen.getByPlaceholderText('National ID (14 digits)'), ID);
     await user.click(screen.getByRole('button', { name: 'Activate my free card' }));

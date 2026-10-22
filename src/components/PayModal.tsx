@@ -14,7 +14,7 @@ export const PayModal: React.FC<{ session: PixelSession; onClose: () => void; on
   const { isAr } = useLanguage();
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[999] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
       <div
         role="dialog"
         aria-modal="true"

@@ -83,7 +83,7 @@ export const ProfileReminder: React.FC = () => {
   return (
     <div
       role="status"
-      className={`fixed bottom-24 inset-x-3 z-40 max-w-md mx-auto rounded-2xl bg-slate-900 text-white shadow-xl p-3 flex items-start gap-3 animate-in fade-in ${isAr ? 'text-right' : 'text-left'}`}
+      className={`fixed bottom-24 inset-x-3 z-[999] max-w-md mx-auto rounded-2xl bg-slate-900 text-white shadow-xl p-3 flex items-start gap-3 animate-in fade-in ${isAr ? 'text-right' : 'text-left'}`}
     >
       <UserRoundCheck className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
       <div className="min-w-0 flex-1 space-y-1">

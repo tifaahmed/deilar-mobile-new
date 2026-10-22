@@ -114,7 +114,7 @@ export const OfficialDeilarCard: React.FC<OfficialDeilarCardProps> = ({
             </h1>
 
             {/* Arabic Wordmark with flanking horizontal lines: "— ديلـر —" */}
-            <div className="flex items-center justify-center gap-2 mt-1 w-full max-w-[170px]">
+            <div className="flex items-center justify-center gap-2 mt-1 w-full max-w-[10.625rem]">
               <div className="h-[1.5px] bg-[#c89e43] flex-1"></div>
               <span className="text-sm font-extrabold text-[#112443] tracking-widest px-1">
                 ديلــــر
@@ -123,12 +123,12 @@ export const OfficialDeilarCard: React.FC<OfficialDeilarCardProps> = ({
             </div>
 
             {/* Slogan: "صحتك واكتر" */}
-            <div className="flex items-center justify-center gap-2 mt-0.5 w-full max-w-[140px]">
-              <div className="h-[1px] bg-[#c89e43] flex-1"></div>
+            <div className="flex items-center justify-center gap-2 mt-0.5 w-full max-w-[8.75rem]">
+              <div className="h-px bg-[#c89e43] flex-1"></div>
               <span className="text-[10px] font-bold text-[#112443] tracking-wider px-1">
                 صحتك واكتر
               </span>
-              <div className="h-[1px] bg-[#c89e43] flex-1"></div>
+              <div className="h-px bg-[#c89e43] flex-1"></div>
             </div>
 
             {/* Subtitles: "Family Card" & "deilar.com" */}
@@ -172,13 +172,13 @@ export const OfficialDeilarCard: React.FC<OfficialDeilarCardProps> = ({
                 <span className="text-[#c89e43]">ilar</span>
               </h2>
 
-              <div className="flex items-center justify-center gap-1 mt-1 w-full max-w-[90px]">
-                <div className="h-[1px] bg-[#c89e43] flex-1"></div>
+              <div className="flex items-center justify-center gap-1 mt-1 w-full max-w-[5.625rem]">
+                <div className="h-px bg-[#c89e43] flex-1"></div>
                 <span className="text-[11px] font-extrabold text-[#112443]">ديلــر</span>
-                <div className="h-[1px] bg-[#c89e43] flex-1"></div>
+                <div className="h-px bg-[#c89e43] flex-1"></div>
               </div>
 
-              <div className="flex items-center justify-center gap-1 mt-0.5 w-full max-w-[80px]">
+              <div className="flex items-center justify-center gap-1 mt-0.5 w-full max-w-[5rem]">
                 <div className="h-[0.5px] bg-[#c89e43] flex-1"></div>
                 <span className="text-[8px] font-bold text-[#112443]">صحتك واكثر</span>
                 <div className="h-[0.5px] bg-[#c89e43] flex-1"></div>

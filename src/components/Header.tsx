@@ -101,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
             title={t('selectLocationPrompt')}
           >
             <MapPin className="w-3.5 h-3.5 text-[#931A47] shrink-0" />
-            <span className="max-w-[110px] sm:max-w-[140px] truncate text-[11px] font-semibold">{areaLabel}</span>
+            <span className="max-w-[6.875rem] sm:max-w-[8.75rem] truncate text-[11px] font-semibold">{areaLabel}</span>
             <span className="text-[9px] text-slate-400">▼</span>
           </button>
 

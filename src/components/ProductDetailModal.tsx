@@ -37,7 +37,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in" onClick={onClose}>
+    <div className="fixed inset-0 z-[999] bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in" onClick={onClose}>
       <div
         className={`bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5 shadow-2xl space-y-3.5 ${isAr ? 'text-right' : 'text-left'}`}
         onClick={(e) => e.stopPropagation()}

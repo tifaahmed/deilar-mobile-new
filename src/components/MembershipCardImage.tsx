@@ -18,7 +18,7 @@ export const MembershipCardImage: React.FC<MembershipCardImageProps> = ({ number
   const [frontReady, setFrontReady] = useState(false);
   const [frontFailed, setFrontFailed] = useState(false);
   const [backFailed, setBackFailed] = useState(false);
-  // The back is rendered on demand by the server: only ask once someone actually flips.
+  // Front first: the back is only requested once the front has painted (or someone flips early), so the two never compete for the connection.
   const [backWanted, setBackWanted] = useState(false);
 
   useEffect(() => {
@@ -29,8 +29,8 @@ export const MembershipCardImage: React.FC<MembershipCardImageProps> = ({ number
   }, [number]);
 
   useEffect(() => {
-    if (isFlipped) setBackWanted(true);
-  }, [isFlipped]);
+    if (isFlipped || frontReady) setBackWanted(true);
+  }, [isFlipped, frontReady]);
 
   if (frontFailed) {
     return <OfficialDeilarCard beneficiary={beneficiary} isFlipped={isFlipped} onToggleFlip={onToggleFlip} className={className} />;
@@ -52,6 +52,7 @@ export const MembershipCardImage: React.FC<MembershipCardImageProps> = ({ number
             src={cardImageUrl(number, 'front')}
             alt="Membership card front"
             decoding="async"
+            fetchPriority="high"
             onLoad={() => setFrontReady(true)}
             onError={() => setFrontFailed(true)}
             className="w-full h-full object-contain"
@@ -64,6 +65,7 @@ export const MembershipCardImage: React.FC<MembershipCardImageProps> = ({ number
               src={cardImageUrl(number, 'back')}
               alt="Membership card back"
               decoding="async"
+              fetchPriority="low"
               onError={() => setBackFailed(true)}
               className="w-full h-full object-contain"
             />

@@ -21,7 +21,7 @@ import { updateSession } from '../utils/session';
 const wrap = (ui: React.ReactElement) => render(<LanguageProvider>{ui}</LanguageProvider>);
 
 const status = (over: Record<string, unknown>) => ({
-  has_card: true, state: 'trial', is_trial: true, expired: false, valid: true, expires_on: '2026-11-20', days_left: 12, price: 600, months: 12, can_pay_online: true,
+  has_card: true, state: 'trial', is_trial: true, expired: false, valid: true, expires_on: '2026-11-20', days_left: 12, price: 600, months: 12, can_pay_online: true, payment_methods: ['paymob'],
   contact: {}, progress: { overall: { complete: true, percent: 100, missing: [] } }, ...over,
 });
 

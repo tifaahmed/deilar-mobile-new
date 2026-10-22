@@ -124,7 +124,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
       </div>
 
       {addedNotice && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-4 py-2 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2 text-xs font-bold animate-in slide-in-from-top-3">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[999] bg-slate-900 text-white px-4 py-2 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2 text-xs font-bold animate-in slide-in-from-top-3">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{isAr ? `تمت إضافة «${addedNotice}» إلى السلة!` : `“${addedNotice}” added to the cart!`}</span>
         </div>
@@ -288,7 +288,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
                   {store.websites.map((url) => (
                     <a key={url} href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700">
                       <Globe className="w-3 h-3 text-[#941946]" />
-                      <span className="truncate max-w-[160px]">{url.replace(/^https?:\/\//, '')}</span>
+                      <span className="truncate max-w-[10rem]">{url.replace(/^https?:\/\//, '')}</span>
                     </a>
                   ))}
                   {store.social_links.map((link) => (

@@ -320,7 +320,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
 
       {drawerOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-150" onClick={() => setDrawerOpen(false)}>
+          <div className="fixed inset-0 z-[999] flex items-end justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-150" onClick={() => setDrawerOpen(false)}>
             <div
               onClick={(e) => e.stopPropagation()}
               className={`w-full max-w-3xl max-h-[85vh] bg-white rounded-t-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-200 ${isAr ? 'text-right' : 'text-left'}`}

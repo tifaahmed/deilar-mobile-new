@@ -9,6 +9,9 @@ export interface PlacedOrder {
   cod_fee: number;
 }
 
+/** The two ways to pay online with Paymob: its bank-card form, or a mobile wallet (Vodafone Cash…). */
+export type OnlineChannel = 'card' | 'wallet';
+
 /** The online-payment page a buyer is sent to; `checkout_url` is null when the gateway could not be reached. */
 export interface PaymentLink {
   /** Paymob's hosted page — the fallback when the embedded form cannot load. */
@@ -33,6 +36,8 @@ export interface NewOrder {
   specialMark?: string;
   notes?: string;
   payment: 'cod' | 'transfer-wallet' | 'paymob';
+  /** With `paymob`: which Paymob page opens — the bank card form or the mobile wallet. */
+  paymobChannel?: OnlineChannel;
   /** Where the purchase receipt is mailed. Optional. */
   email?: string;
   /** The buyer's card: it, not this field, is what earns the member price — the server checks it. */
@@ -68,6 +73,7 @@ export async function placeOrder(order: NewOrder, token?: string): Promise<Place
       customer_special_mark: order.specialMark?.trim() || null,
       notes: order.notes || null,
       payment_type: order.payment,
+      paymob_channel: order.payment === 'paymob' ? order.paymobChannel ?? null : null,
       membership_number: order.membershipNumber || null,
       items: order.items,
     },
@@ -79,8 +85,8 @@ export async function placeOrder(order: NewOrder, token?: string): Promise<Place
 }
 
 /** Opens the online payment again for an order not paid yet (declined card, closed page). */
-export async function payOrder(orderCode: string): Promise<PaymentLink> {
-  const res = await apiPost<{ payment: PaymentLink }>(`/mobile/orders/${encodeURIComponent(orderCode)}/pay`, {});
+export async function payOrder(orderCode: string, channel?: OnlineChannel): Promise<PaymentLink> {
+  const res = await apiPost<{ payment: PaymentLink }>(`/mobile/orders/${encodeURIComponent(orderCode)}/pay`, channel ? { paymob_channel: channel } : {});
   return res.payment;
 }
 

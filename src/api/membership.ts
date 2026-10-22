@@ -1,4 +1,5 @@
 import { apiGetAuth, apiPost } from './http';
+import type { OnlineChannel } from './orders';
 
 /**
  * The card's state, as the backend decides it (`MembershipStatus` in ibusiness_medical).
@@ -17,6 +18,10 @@ export interface CardStatus {
   price: number;
   months: number;
   can_pay_online: boolean;
+  /** The ways of paying the admin shows (/admin/setting), in order. Draw exactly these. */
+  payment_methods: PayMethod[];
+  /** Which online buttons to draw: `card`, `wallet` or both. */
+  online_channels?: OnlineChannel[];
   contact: { phone: string | null; phone_international: string | null; whatsapp: string | null; facebook_url: string | null; email: string | null };
 }
 
@@ -42,9 +47,10 @@ export const startTrial = (token: string, body: { name: string; national_id: str
   apiPost<{ data: MemberStatus }>('/membership/trial', body, undefined, token).then((r) => r.data);
 
 /** Pays for the card. Paymob answers with a `checkout_url`; the other methods reach customer services (receipts are files). */
-export function subscribe(token: string, body: { method: PayMethod; email?: string; reference?: string; receipt?: File | null }) {
+export function subscribe(token: string, body: { method: PayMethod; paymobChannel?: OnlineChannel; email?: string; reference?: string; receipt?: File | null }) {
   const form = new FormData();
   form.append('method', body.method);
+  if (body.paymobChannel) form.append('paymob_channel', body.paymobChannel);
   if (body.email) form.append('email', body.email);
   if (body.reference) form.append('reference', body.reference);
   if (body.receipt) form.append('receipts[]', body.receipt);
@@ -56,7 +62,7 @@ export function subscribe(token: string, body: { method: PayMethod; email?: stri
 export const requestRelatives = (token: string) => apiPost<{ data: { requested: boolean; already_open: boolean } }>('/membership/relatives-request', {}, undefined, token).then((r) => r.data);
 
 /** Pays for a card from its scan screen, with no sign-in. Resolves to what the embedded card form needs, or null when it could not be opened. */
-export const subscribeByNumber = (number: string) =>
-  apiPost<{ data: { checkout_url: string | null; client_secret: string | null; public_key: string | null } }>(`/card/${encodeURIComponent(number)}/subscribe`, {})
+export const subscribeByNumber = (number: string, channel?: OnlineChannel) =>
+  apiPost<{ data: { checkout_url: string | null; client_secret: string | null; public_key: string | null } }>(`/card/${encodeURIComponent(number)}/subscribe`, channel ? { paymob_channel: channel } : {})
     .then((r) => r.data)
     .catch(() => null);

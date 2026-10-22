@@ -121,8 +121,8 @@ export const AreaModal: React.FC<AreaModalProps> = ({ lat, lng, lockedGovernorat
 
   // Portalled to <body>: inside the header, its transform/blur would make `fixed` relative to the header.
   return createPortal(
-    <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className={`bg-white text-slate-900 rounded-3xl max-w-[340px] w-full max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 ${isAr ? 'text-right' : 'text-left'}`}>
+    <div className="fixed inset-0 z-[999] bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className={`bg-white text-slate-900 rounded-3xl max-w-[21.25rem] w-full max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 ${isAr ? 'text-right' : 'text-left'}`}>
         <div className="relative bg-gradient-to-br from-[#931A47] to-[#6d1235] text-white px-4 pt-4 pb-3.5">
           <button onClick={onClose} className="absolute top-3 end-3 w-7 h-7 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center cursor-pointer" title={isAr ? 'إغلاق' : 'Close'}>
             <X className="w-4 h-4" />

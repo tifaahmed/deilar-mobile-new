@@ -80,7 +80,7 @@ export const SaveAreaPrompt: React.FC = () => {
   const place = [area.city?.name, area.governorate.name].filter(Boolean).join('، ');
 
   return (
-    <div role="dialog" className={`fixed bottom-24 inset-x-3 z-40 max-w-md mx-auto rounded-2xl bg-white border border-slate-200 shadow-xl p-3 flex items-start gap-3 animate-in fade-in ${isAr ? 'text-right' : 'text-left'}`}>
+    <div role="dialog" className={`fixed bottom-24 inset-x-3 z-[999] max-w-md mx-auto rounded-2xl bg-white border border-slate-200 shadow-xl p-3 flex items-start gap-3 animate-in fade-in ${isAr ? 'text-right' : 'text-left'}`}>
       <MapPin className="w-5 h-5 text-[#941946] shrink-0 mt-0.5" />
       <div className="min-w-0 flex-1 space-y-2">
         <p className="text-xs font-extrabold text-slate-900">{isAr ? 'حفظ موقعك في بيانات كرتك؟' : 'Save your location to your card?'}</p>

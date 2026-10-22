@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { Product, CartItem } from '../types';
 import { ApiError } from '../api/http';
-import { fetchOrder, payOrder, placeOrder, uploadReceipt, type PlacedOrder } from '../api/orders';
+import { fetchOrder, payOrder, placeOrder, uploadReceipt, type OnlineChannel, type PlacedOrder } from '../api/orders';
 import { useSession } from '../utils/session';
 import { PaymobPixel } from './PaymobPixel';
 import { reportClientError } from '../utils/reportError';
@@ -72,7 +72,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   }, [asPage, initialStep]);
   
   // Payment Method: 'wallet' (محفظة إلكترونية / فودافون كاش) or 'cod' (الدفع عند الاستلام)
-  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'cod' | 'online'>('wallet');
+  const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'cod' | 'online'>('online');
+  // With `online`: Paymob's bank-card form or its mobile-wallet page.
+  const [onlineChannel, setOnlineChannel] = useState<OnlineChannel>('card');
   const session = useSession();
 
   // Customer shipping info
@@ -147,22 +149,33 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   // The website's own shipping rule (its shop settings): a flat fee, free from the threshold up. The server decides for real.
   const walletNumber = shop.data?.wallet_number ?? null;
   // No wallet number set in the backend (/admin/setting): a transfer has nowhere to go, so only pay-on-delivery is offered.
-  const walletAvailable = !shop.data || !!walletNumber;
+  // The admin's payment switches (/admin/setting) decide what is drawn; before the answer arrives nothing is offered.
+  const methods = shop.data?.payment_methods;
+  const walletAvailable = !!methods?.wallet && !!walletNumber;
+  const codAvailable = !!methods?.cod;
   const whatsappTo = (shop.data?.contact.whatsapp ?? '').replace(/\D/g, '');
   const deliveryPrice = shop.data?.delivery_price ?? 35;
   const freeFrom = shop.data ? shop.data.free_delivery_threshold : 500;
   const shippingFee = freeFrom !== null && totalCartPrice >= freeFrom ? 0 : deliveryPrice;
   // Pay-on-delivery fee from the admin; 0 means nothing is shown anywhere.
   const codFee = paymentMethod === 'cod' ? shop.data?.cod_fee ?? 0 : 0;
-  const onlineAvailable = !!shop.data?.paymob_enabled;
+  const cardAvailable = !!methods?.online_card;
+  const onlineWalletAvailable = !!methods?.online_wallet;
+  const onlineAvailable = cardAvailable || onlineWalletAvailable;
   const remainingForFree = freeFrom !== null && shippingFee > 0 ? Math.max(0, freeFrom - totalCartPrice) : 0;
   // An estimate while shopping; once the order is placed the server's figures replace it.
   const finalTotal = placed ? placed.total_amount : totalCartPrice + shippingFee + codFee;
 
   useEffect(() => {
-    if (!walletAvailable && paymentMethod === 'wallet') setPaymentMethod('cod');
-    if (!onlineAvailable && shop.data && paymentMethod === 'online') setPaymentMethod(walletAvailable ? 'wallet' : 'cod');
-  }, [walletAvailable, onlineAvailable, shop.data, paymentMethod]);
+    if (!shop.data) return;
+    if (onlineChannel === 'card' && !cardAvailable && onlineWalletAvailable) setOnlineChannel('wallet');
+    if (onlineChannel === 'wallet' && !onlineWalletAvailable && cardAvailable) setOnlineChannel('card');
+    const ok = { online: onlineAvailable, wallet: walletAvailable, cod: codAvailable };
+    if (!ok[paymentMethod]) {
+      const first = (['online', 'wallet', 'cod'] as const).find((m) => ok[m]);
+      if (first) setPaymentMethod(first);
+    }
+  }, [walletAvailable, onlineAvailable, codAvailable, shop.data, paymentMethod, cardAvailable, onlineWalletAvailable, onlineChannel]);
 
   const [pdfBusy, setPdfBusy] = useState(false);
 
@@ -221,7 +234,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
     if (!placed) return;
     setPayBusy(true);
     try {
-      const link = await payOrder(placed.order_code);
+      const link = await payOrder(placed.order_code, onlineChannel);
       if (link.client_secret && link.public_key) {
         setPixel({ clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url });
         setPayMessage(null);
@@ -263,6 +276,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
           specialMark,
           notes: [customerNotes.trim(), transferNote].filter(Boolean).join('\n'),
           payment: paymentMethod === 'cod' ? 'cod' : paymentMethod === 'online' ? 'paymob' : 'transfer-wallet',
+          paymobChannel: paymentMethod === 'online' ? onlineChannel : undefined,
           email: customerEmail,
           membershipNumber: session.cardNumber,
           items: cart.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
@@ -332,7 +346,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   };
 
   return (
-    <div className={asPage ? 'animate-in fade-in duration-200' : 'fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in'}>
+    <div className={asPage ? 'animate-in fade-in duration-200' : 'fixed inset-0 z-[999] bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in'}>
       <div className={asPage ? 'bg-white rounded-3xl border border-slate-200/90 shadow-2xs flex flex-col' : 'bg-white rounded-3xl max-w-lg w-full max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col'}>
         {/* Header */}
         <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-10">
@@ -547,6 +561,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 </div>
 
                 {/* Option B: pay the courier */}
+                {codAvailable && (
                 <div
                   onClick={() => setPaymentMethod('cod')}
                   className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2 ${
@@ -562,24 +577,30 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     {(shop.data?.cod_fee ?? 0) > 0 && <p className="text-[9.5px] font-bold text-amber-700">+ {shop.data?.cod_fee} ج.م رسوم الدفع عند الاستلام</p>}
                   </div>
                 </div>
-
-                {/* Option C: pay online by card or mobile wallet (Paymob) */}
-                {onlineAvailable && (
-                  <div
-                    onClick={() => setPaymentMethod('online')}
-                    className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2 ${
-                      paymentMethod === 'online' ? 'border-[#941946] bg-rose-50/50 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
-                      <CreditCard className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">الدفع الإلكتروني</h4>
-                      <p className="text-[9.5px] text-slate-500">بطاقة بنكية / محفظة إلكترونية — دفع آمن عبر Paymob</p>
-                    </div>
-                  </div>
                 )}
+
+                {/* Option C: pay online with Paymob — its bank-card form, or a mobile wallet (Vodafone Cash…) */}
+                {([
+                  { channel: 'card' as const, on: cardAvailable, icon: <CreditCard className="w-4 h-4" />, title: 'الدفع بالبطاقة', note: 'فيزا / ماستركارد / ميزة — دفع آمن عبر Paymob', tone: 'bg-indigo-100 text-indigo-700' },
+                  { channel: 'wallet' as const, on: onlineWalletAvailable, icon: <Smartphone className="w-4 h-4" />, title: 'الدفع بالمحفظة الإلكترونية', note: 'فودافون كاش وباقي المحافظ — دفع آمن عبر Paymob', tone: 'bg-rose-100 text-[#941946]' },
+                ]).filter((o) => o.on).map((o) => {
+                  const selected = paymentMethod === 'online' && onlineChannel === o.channel;
+                  return (
+                    <div
+                      key={o.channel}
+                      onClick={() => { setPaymentMethod('online'); setOnlineChannel(o.channel); }}
+                      className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2 ${
+                        selected ? 'border-[#941946] bg-rose-50/50 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${o.tone}`}>{o.icon}</div>
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900">{o.title}</h4>
+                        <p className="text-[9.5px] text-slate-500">{o.note}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* PAYMENT DETAILS ACCORDING TO SELECTION */}

@@ -10,6 +10,8 @@
  *   `Cache-Control` + `ETag` let the browser revalidate with a body-less `304`.
  */
 
+import seed from '../seed/lookups.json';
+
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'https://card.deilar.com/api/v1';
 
 export type Param = string | number | boolean | null | undefined;
@@ -103,7 +105,11 @@ const DEFAULT_TTL_MS = 60_000;
 /** Whatever is already in memory for this request, however old — for instant paint. */
 export function peek<T>(path: string, params?: Params): T | undefined {
   const url = buildUrl(path, params);
-  return (cache.get(url) ?? loadStored().get(url))?.data as T | undefined;
+  const known = (cache.get(url) ?? loadStored().get(url))?.data as T | undefined;
+  if (known !== undefined) return known;
+
+  // First launch: the small lookup lists that shipped inside the app (`npm run seed`), until the live answer arrives.
+  return (seed as Record<string, Record<string, unknown>>)[language]?.[path] as T | undefined;
 }
 
 export function apiGet<T>(path: string, params?: Params, opts: { signal?: AbortSignal; ttl?: number; persist?: boolean } = {}): Promise<T> {

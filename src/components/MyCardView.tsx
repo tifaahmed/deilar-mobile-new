@@ -184,7 +184,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
 
       {/* 5. Full-Screen Digital Pass Modal (for reception desk scanning) */}
       {showFullPassModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
+        <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150">
           <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl relative">
             <button
               onClick={() => setShowFullPassModal(false)}
@@ -232,7 +232,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
 
       {/* 6. Add Beneficiary Modal */}
       {showAddMemberModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl relative animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900">إضافة فرد عائلة للكرت الطبي</h3>

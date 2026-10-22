@@ -49,6 +49,10 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const [nationalId, setNationalId] = useState('');
   const [daysLeft, setDaysLeft] = useState<number | null>(null);
+  /** The number the last code proved, and the one shown in the final form: editing it there means proving the new one. */
+  const [confirmedPhone, setConfirmedPhone] = useState('');
+  const [detailsPhone, setDetailsPhone] = useState('');
+  const [changingPhone, setChangingPhone] = useState(false);
   const codeInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -66,8 +70,8 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
 
   const cleanPhone = phone;
 
-  const sendCode = async () => {
-    if (!PHONE_RE.test(cleanPhone)) {
+  const sendCode = async (target: string = cleanPhone) => {
+    if (!PHONE_RE.test(target)) {
       setError(isAr ? 'أدخل رقم هاتف صحيح من 11 رقم يبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
       return;
     }
@@ -76,18 +80,18 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
     setError(null);
 
     // Best effort and only once per number: a failure here must never block signing in.
-    if (getSession().leadPhone !== cleanPhone) {
+    if (getSession().leadPhone !== target) {
       postContactMessage({
-        phone: cleanPhone,
+        phone: target,
         message: isAr ? 'طلب كرت ديلار مجاناً من تطبيق الموبايل' : 'Free Deilar card request from the mobile app',
         source: 'card_popup',
       })
-        .then(() => updateSession({ leadPhone: cleanPhone }))
+        .then(() => updateSession({ leadPhone: target }))
         .catch(() => undefined);
     }
 
     try {
-      const sent = await requestOtp(cleanPhone);
+      const sent = await requestOtp(target);
       setCodeLength(sent.code_length);
       setMaskedPhone(sent.phone_masked);
       setResendIn(sent.resend_after);
@@ -130,6 +134,9 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
 
       if (trialFlow && !hasRealCard) {
         // Registered but not active yet: the card is issued once the gender and national ID are in.
+        setConfirmedPhone(cleanPhone);
+        setDetailsPhone(cleanPhone);
+        setChangingPhone(false);
         setStep('details');
       } else {
         setWelcome(result.user.name || cleanPhone);
@@ -180,6 +187,18 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   const submitTrial = async () => {
     const token = getSession().token;
     if (!token || !gender) return;
+
+    // A different number than the one the code proved: it has to be proved too, so ask for its own code first.
+    if (detailsPhone !== confirmedPhone) {
+      if (!PHONE_RE.test(detailsPhone)) {
+        setError(isAr ? 'أدخل رقم هاتف صحيح من 11 رقم يبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
+        return;
+      }
+      setPhone(detailsPhone);
+      setChangingPhone(true);
+      await sendCode(detailsPhone);
+      return;
+    }
 
     setBusy(true);
     setError(null);
@@ -253,8 +272,8 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150">
-      <div className={`bg-slate-950 text-white rounded-3xl max-w-[330px] w-full border border-amber-400/40 shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-150 ${isAr ? 'text-right' : 'text-left'}`}>
+    <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150">
+      <div className={`bg-slate-950 text-white rounded-3xl max-w-[20.625rem] w-full border border-amber-400/40 shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-150 ${isAr ? 'text-right' : 'text-left'}`}>
         <div className="px-3.5 pt-3 pb-2 flex items-center justify-between border-b border-slate-800/80">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
@@ -333,7 +352,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                     <span className="text-[11px] font-bold text-slate-200">
                       {isAr ? `أدخل الكود المرسل إلى ${maskedPhone || 'هاتفك'}` : `Enter the code sent to ${maskedPhone || 'your phone'}`}
                     </span>
-                    {back(trialFlow ? 'confirm' : 'phone')}
+                    {back(changingPhone ? 'details' : trialFlow ? 'confirm' : 'phone')}
                   </div>
                   <input
                     ref={codeInput}
@@ -356,7 +375,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                     {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                     <span>{isAr ? 'تأكيد ودخول' : 'Verify & sign in'}</span>
                   </button>
-                  <button type="button" disabled={resendIn > 0 || busy} onClick={sendCode} className="w-full text-[10px] font-bold text-slate-400 hover:text-white disabled:opacity-50 cursor-pointer">
+                  <button type="button" disabled={resendIn > 0 || busy} onClick={() => sendCode()} className="w-full text-[10px] font-bold text-slate-400 hover:text-white disabled:opacity-50 cursor-pointer">
                     {resendIn > 0 ? (isAr ? `إعادة الإرسال بعد ${resendIn} ث` : `Resend in ${resendIn}s`) : isAr ? 'إعادة إرسال الكود' : 'Resend code'}
                   </button>
                 </form>
@@ -427,7 +446,14 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
 
               {step === 'details' && (
                 <form onSubmit={(e) => { e.preventDefault(); submitTrial(); }} className="space-y-2.5">
-                  <span className="text-[11px] font-bold text-slate-200 block">{isAr ? 'آخر خطوة: النوع والرقم القومي' : 'Last step: gender and national ID'}</span>
+                  <span className="text-[11px] font-bold text-slate-200 block">{isAr ? 'آخر خطوة: الهاتف والنوع والرقم القومي' : 'Last step: phone, gender and national ID'}</span>
+                  <div className="relative">
+                    <Phone className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <input type="tel" inputMode="numeric" required dir="ltr" maxLength={PHONE_LEN} placeholder="010xxxxxxxx" value={detailsPhone} onChange={(e) => { setDetailsPhone(e.target.value.replace(/\D/g, '').slice(0, PHONE_LEN)); setError(null); }} className={field} />
+                  </div>
+                  {detailsPhone !== confirmedPhone && (
+                    <p className="text-[10px] text-amber-300 leading-relaxed">{isAr ? 'رقم جديد — سنرسل إليه كود تحقق جديد قبل إنشاء الكارت.' : 'A new number — we will send it a new verification code before the card is created.'}</p>
+                  )}
                   <div className="flex gap-2" role="radiogroup" aria-label={isAr ? 'النوع' : 'Gender'}>
                     {(['male', 'female'] as const).map((g) => (
                       <button key={g} type="button" role="radio" aria-checked={gender === g} onClick={() => { setGender(g); setError(null); }} className={`flex-1 py-2.5 rounded-xl border text-xs font-bold cursor-pointer ${gender === g ? 'bg-amber-400 text-slate-950 border-amber-400' : 'bg-slate-900 text-slate-200 border-slate-700'}`}>
@@ -439,9 +465,9 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                     <IdCard className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                     <input type="text" required inputMode="numeric" dir="ltr" maxLength={14} placeholder={isAr ? 'الرقم القومي (١٤ رقماً)' : 'National ID (14 digits)'} value={nationalId} onChange={(e) => { setNationalId(e.target.value.replace(/\D/g, '')); setError(null); }} className={field} />
                   </div>
-                  <button type="submit" disabled={busy || !gender || !/^[23]\d{13}$/.test(nationalId)} className={primary}>
+                  <button type="submit" disabled={busy || !gender || !PHONE_RE.test(detailsPhone) || !/^[23]\d{13}$/.test(nationalId)} className={primary}>
                     {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>{isAr ? 'تفعيل كرتي المجاني' : 'Activate my free card'}</span>
+                    <span>{detailsPhone !== confirmedPhone ? (isAr ? 'تأكيد الرقم الجديد' : 'Verify the new number') : isAr ? 'تفعيل كرتي المجاني' : 'Activate my free card'}</span>
                   </button>
                 </form>
               )}

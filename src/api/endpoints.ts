@@ -85,6 +85,8 @@ export interface ShopSettings {
   cod_fee: number;
   /** Whether online card/wallet payment (Paymob) is set up on the backend. */
   paymob_enabled: boolean;
+  /** Which ways of paying the admin shows (/admin/setting): draw exactly these. `online` = Paymob card + wallets. */
+  payment_methods: { online: boolean; online_card: boolean; online_wallet: boolean; cod: boolean; wallet: boolean; instapay: boolean };
   /** A basket at or above this ships free; null = never free. */
   free_delivery_threshold: number | null;
   /** The phone a wallet transfer goes to (the shop's setting); null when none is set. */

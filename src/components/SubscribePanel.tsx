@@ -3,6 +3,7 @@ import { CreditCard } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/http';
 import { subscribe, type MemberStatus, type PayMethod } from '../api/membership';
+import type { OnlineChannel } from '../api/orders';
 import { reportClientError } from '../utils/reportError';
 import { PayModal, type PixelSession } from './PayModal';
 
@@ -26,6 +27,8 @@ const MANUAL: { value: Exclude<PayMethod, 'paymob'>; ar: string; en: string; rec
  */
 export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, onDone }) => {
   const { isAr } = useLanguage();
+  // Only what the admin shows; customer services stays reachable through the card's contact buttons.
+  const manual = MANUAL.filter((m) => status.payment_methods?.includes(m.value));
   const [method, setMethod] = useState<Exclude<PayMethod, 'paymob'>>('cash_on_delivery');
   const [email, setEmail] = useState('');
   const [reference, setReference] = useState('');
@@ -34,7 +37,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [pixel, setPixel] = useState<PixelSession | null>(null);
 
-  const chosen = MANUAL.find((m) => m.value === method) ?? MANUAL[0];
+  const chosen = manual.find((m) => m.value === method) ?? manual[0];
 
   const fail = (err: unknown) => {
     setMessage({
@@ -44,11 +47,11 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     if (!(err instanceof ApiError) || err.status >= 500) reportClientError('Subscription request failed', err, { method });
   };
 
-  const payOnline = async () => {
+  const payOnline = async (channel: OnlineChannel) => {
     setBusy('online');
     setMessage(null);
     try {
-      const result = await subscribe(token, { method: 'paymob', email });
+      const result = await subscribe(token, { method: 'paymob', paymobChannel: channel, email });
       if (result.client_secret && result.public_key) setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
       else if (result.checkout_url) window.open(result.checkout_url, '_blank');
       else setMessage({ ok: false, text: isAr ? 'تعذر فتح صفحة الدفع.' : 'The payment page could not be opened.' });
@@ -65,7 +68,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     setBusy('manual');
     setMessage(null);
     try {
-      await subscribe(token, { method, email, reference, receipt });
+      await subscribe(token, { method: chosen.value, email, reference, receipt });
       setMessage({ ok: true, text: isAr ? 'شكراً — ستراجع خدمة العملاء الدفع وتفعّل كارتك.' : 'Thanks — customer service will check and activate your card.' });
       setReceipt(null);
       onDone();
@@ -94,21 +97,22 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
 
       {pixel && <PayModal session={pixel} onClose={() => setPixel(null)} onComplete={() => { setPixel(null); onDone(); }} />}
 
-      {status.can_pay_online && (
-        <button type="button" onClick={payOnline} disabled={busy !== null} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold cursor-pointer">
-          {busy === 'online' ? '…' : isAr ? 'ادفع الآن بالبطاقة أو المحفظة' : 'Pay now by card or wallet'}
+      {status.can_pay_online && (status.online_channels?.length ? status.online_channels : (['card'] as OnlineChannel[])).map((channel) => (
+        <button key={channel} type="button" onClick={() => payOnline(channel)} disabled={busy !== null} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold cursor-pointer">
+          {busy === 'online' ? '…' : channel === 'wallet' ? (isAr ? 'ادفع الآن بالمحفظة الإلكترونية' : 'Pay now by mobile wallet') : isAr ? 'ادفع الآن بالبطاقة' : 'Pay now by card'}
         </button>
-      )}
+      ))}
 
+      {manual.length > 0 && (
       <form onSubmit={sendManual} className="space-y-2">
-        {MANUAL.map((m) => (
+        {manual.map((m) => (
           <label key={m.value} className="flex items-center gap-2 text-xs cursor-pointer">
-            <input type="radio" checked={method === m.value} onChange={() => setMethod(m.value)} className="accent-[#941946]" />
+            <input type="radio" checked={chosen?.value === m.value} onChange={() => setMethod(m.value)} className="accent-[#941946]" />
             {isAr ? m.ar : m.en}
           </label>
         ))}
 
-        {chosen.receipt && (
+        {chosen?.receipt && (
           <>
             <input type="file" required accept="image/*,application/pdf" onChange={(e) => setReceipt(e.target.files?.[0] ?? null)} className={field} />
             <input type="text" dir="ltr" placeholder={isAr ? 'مرجع التحويل (اختياري)' : 'Transfer reference (optional)'} value={reference} onChange={(e) => setReference(e.target.value)} className={field} />
@@ -126,6 +130,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
           {busy === 'manual' ? '…' : isAr ? 'إرسال الطلب' : 'Send request'}
         </button>
       </form>
+      )}
     </section>
   );
 };

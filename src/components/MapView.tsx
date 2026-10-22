@@ -50,6 +50,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [activePin, setActivePin] = useState<Pin | null>(null);
+  const [inView, setInView] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const maxRadiusKm = radiusProp;
   const setMaxRadiusKm = onRadiusChange;
@@ -134,11 +135,12 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
         const circle = L.circle([userLocation.lat, userLocation.lng], {
           radius: maxRadiusKm * 1000,
           color: '#941946',
-          weight: 1.5,
-          opacity: 0.85,
-          dashArray: '6, 6',
+          weight: 3,
+          opacity: 1,
+          dashArray: '8, 6',
           fillColor: '#941946',
-          fillOpacity: 0.08,
+          fillOpacity: 0.12,
+          interactive: false,
         });
         circle.bindTooltip(escapeHtml(`${isAr ? 'نطاق البحث' : 'Search range'}: ${maxRadiusKm} ${isAr ? 'كم' : 'km'}`), { direction: 'top', offset: [0, -10] });
         layer.addLayer(circle);
@@ -237,6 +239,35 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   // A popup belongs to the pin set it was tapped in.
   useEffect(() => setActivePin(null), [selectedTypeId, maxRadiusKm, viewMode]);
 
+  // Branches inside the part of the map on screen right now (updates as the map is moved or zoomed).
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (viewMode !== 'map' || !map) return;
+    const count = () => { const b = map.getBounds(); setInView(pins.filter((p) => b.contains([p.lat, p.lng])).length); };
+    count();
+    map.on('moveend zoomend', count);
+    return () => { map.off('moveend zoomend', count); };
+  }, [viewMode, pins]);
+
+  // Picking a wider range (or the type) must actually show what it found: zoom the map out to
+  // the search circle, or to every pin when there is no limit. Runs once per choice, not per pan.
+  const fittedKey = useRef('');
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const key = `${selectedTypeId}:${maxRadiusKm}`;
+    if (viewMode !== 'map' || !map || fittedKey.current === key) return;
+    // A fixed range fits its circle straight away; "no limit" waits for the pins it must frame.
+    if (maxRadiusKm === 0 && (pinsQuery.loading || !pinsQuery.data)) return;
+    fittedKey.current = key;
+    const points: L.LatLngExpression[] = [[userLocation.lat, userLocation.lng]];
+    pins.forEach((p) => points.push([p.lat, p.lng]));
+    const bounds = maxRadiusKm > 0
+      ? L.latLng(userLocation.lat, userLocation.lng).toBounds(maxRadiusKm * 2000)
+      : L.latLngBounds(points);
+    map.invalidateSize();
+    map.fitBounds(bounds, { padding: [24, 24], maxZoom: 15, animate: true });
+  }, [viewMode, pinsQuery.loading, pinsQuery.data, pins, maxRadiusKm, selectedTypeId, userLocation.lat, userLocation.lng]);
+
   const handleCenterOnUser = () => mapInstanceRef.current?.setView([userLocation.lat, userLocation.lng], 14, { animate: true });
 
   const resetFilters = () => {
@@ -319,7 +350,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
       {/* 2. Map or list */}
       {viewMode === 'map' ? (
-        <div className="relative w-full h-[480px] sm:h-[540px] rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
+        <div className="relative w-full h-[30rem] sm:h-[33.75rem] rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
           <div ref={mapContainerRef} className="w-full h-full" />
 
           <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-1.5 shadow-md border border-slate-200/90 text-xs font-bold text-slate-800">
@@ -328,8 +359,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
               {isAr ? 'النطاق:' : 'Range:'}
             </label>
             {radiusSelect('map-radius-select')}
-            <span className="text-[10px] text-slate-500 font-semibold px-1.5 border-x border-slate-200 whitespace-nowrap">
-              {pinsQuery.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : `${pins.length}${capped && !q ? '+' : ''} ${isAr ? 'فرع' : 'br.'}`}
+            <span title={isAr ? 'في الشاشة / الإجمالي' : 'on screen / total'} className="text-[10px] text-slate-500 font-semibold px-1.5 border-x border-slate-200 whitespace-nowrap">
+              {pinsQuery.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : `${inView}/${pins.length}${capped && !q ? '+' : ''} ${isAr ? 'فرع' : 'br.'}`}
             </span>
           </div>
 
@@ -476,7 +507,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                         <span>•</span>
                       </>
                     )}
-                    <span className="truncate max-w-[200px]">{provider.branch?.address ?? provider.branch?.city}</span>
+                    <span className="truncate max-w-[12.5rem]">{provider.branch?.address ?? provider.branch?.city}</span>
                   </div>
                 </div>
               </div>

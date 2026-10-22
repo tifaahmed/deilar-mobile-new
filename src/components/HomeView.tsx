@@ -102,7 +102,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section className="grid grid-cols-3 gap-2">
         <Link
           to={{ tab: 'store' }}
-          className="p-3 bg-gradient-to-br from-[#941946] to-[#6d1232] text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[96px] cursor-pointer"
+          className="p-3 bg-gradient-to-br from-[#941946] to-[#6d1232] text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[6rem] cursor-pointer"
         >
           <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
             <Store className="w-5 h-5 text-amber-300" />
@@ -117,7 +117,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         <Link
           to={{ tab: 'products' }}
-          className="p-3 bg-gradient-to-br from-amber-600 to-amber-700 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[96px] cursor-pointer"
+          className="p-3 bg-gradient-to-br from-amber-600 to-amber-700 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[6rem] cursor-pointer"
         >
           <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
             <Package className="w-5 h-5 text-white" />
@@ -132,7 +132,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         <Link
           to={{ tab: 'profile' }}
-          className="p-3 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[96px] cursor-pointer"
+          className="p-3 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[6rem] cursor-pointer"
         >
           <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
             <CreditCard className="w-5 h-5 text-amber-400" />
@@ -167,7 +167,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {/* Facility type tiles — the most populated types, straight from the API */}
         <div className="grid grid-cols-3 gap-2">
           {types.loading &&
-            Array.from({ length: TYPE_TILES }).map((_, i) => <Skeleton key={i} className="min-h-[102px] rounded-2xl" />)}
+            Array.from({ length: TYPE_TILES }).map((_, i) => <Skeleton key={i} className="min-h-[6.375rem] rounded-2xl" />)}
 
           {typeTiles.map((type, index) => {
             const style = facilityTypeStyle(type, index);
@@ -176,7 +176,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <Link
                 key={type.id}
                 to={{ tab: 'map', typeId: type.id }}
-                className="p-2.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#941946]/40 active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[102px] cursor-pointer"
+                className="p-2.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-[#941946]/40 active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[6.375rem] cursor-pointer"
               >
                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${style.iconBg} shadow-2xs group-hover:scale-110 transition-transform`}>
                   <Icon className="w-5 h-5" />

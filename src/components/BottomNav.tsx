@@ -82,8 +82,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
       <nav
-        className={`w-full max-w-3xl bg-white border-t border-slate-200/90 shadow-[0_-4px_22px_rgba(0,0,0,0.06)] pointer-events-auto px-1 flex items-stretch justify-around relative overflow-visible transition-all duration-300 ease-out ${
-          isSlim ? 'h-[50px] sm:h-[52px]' : 'h-[66px] sm:h-[70px]'
+        className={`w-full max-w-3xl pb-[env(safe-area-inset-bottom)] bg-white border-t border-slate-200/90 shadow-[0_-4px_22px_rgba(0,0,0,0.06)] pointer-events-auto px-1 flex items-stretch justify-around relative overflow-visible transition-all duration-300 ease-out ${
+          isSlim ? 'h-[3.125rem] sm:h-[3.25rem]' : 'h-[4.125rem] sm:h-[4.375rem]'
         }`}
       >
         {/* 
@@ -109,7 +109,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
               <svg
                 viewBox="0 0 110 70"
                 className={`text-[#941946] drop-shadow-xs transition-all duration-300 ease-out ${
-                  isSlim ? 'w-[74px] h-[48px]' : 'w-[96px] h-[64px]'
+                  isSlim ? 'w-[4.625rem] h-[3rem]' : 'w-[6rem] h-[4rem]'
                 }`}
                 fill="currentColor"
               >
@@ -137,7 +137,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className="relative z-10 flex flex-col items-center justify-center flex-1 h-full focus:outline-none select-none group min-h-[44px] cursor-pointer"
+              className="relative z-10 flex flex-col items-center justify-center flex-1 h-full focus:outline-none select-none group min-h-[2.75rem] cursor-pointer"
             >
               {/* Icon */}
               <div

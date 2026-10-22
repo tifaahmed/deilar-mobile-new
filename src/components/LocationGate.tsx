@@ -33,7 +33,7 @@ export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void }> = ({ o
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] bg-slate-950 text-white flex items-center justify-center p-6" dir={isAr ? 'rtl' : 'ltr'}>
+    <div className="fixed inset-0 z-[999] bg-slate-950 text-white flex items-center justify-center p-6" dir={isAr ? 'rtl' : 'ltr'}>
       <div className="max-w-xs w-full text-center space-y-4">
         <div className="w-20 h-20 mx-auto rounded-full bg-amber-400/15 border border-amber-400/50 flex items-center justify-center">
           <MapPin className="w-10 h-10 text-amber-400 animate-bounce" />
@@ -69,8 +69,8 @@ export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void }> = ({ o
 export const NearestPrompt: React.FC<{ onGo: () => void }> = ({ onGo }) => {
   const { isAr } = useLanguage();
   return createPortal(
-    <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150" dir={isAr ? 'rtl' : 'ltr'}>
-      <div className="bg-slate-950 text-white rounded-3xl max-w-[330px] w-full border border-amber-400/40 shadow-2xl p-5 text-center space-y-4 animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150" dir={isAr ? 'rtl' : 'ltr'}>
+      <div className="bg-slate-950 text-white rounded-3xl max-w-[20.625rem] w-full border border-amber-400/40 shadow-2xl p-5 text-center space-y-4 animate-in zoom-in-95 duration-150">
         <div className="w-14 h-14 mx-auto rounded-full bg-amber-400/15 border border-amber-400/50 flex items-center justify-center">
           <MapPin className="w-7 h-7 text-amber-400" />
         </div>

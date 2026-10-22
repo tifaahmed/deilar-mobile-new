@@ -57,6 +57,7 @@ import type { AccessStep } from './components/AccessModal';
 import type { FacilityCard } from './api/types';
 import { PRESET_LOCATIONS } from './utils/geo';
 import { getSavedGps, GpsPoint, saveGps } from './utils/gps';
+import { trackVisit } from './utils/trackVisit';
 import { LocationGate, NearestPrompt } from './components/LocationGate';
 import { useLanguage } from './context/LanguageContext';
 import { navigate, routeHref, useRoute } from './router';
@@ -70,6 +71,9 @@ export default function App() {
   const route = useRoute();
   const forceUpdate = useForceUpdate();
   const activeTab: NavTab = route.tab;
+
+  // Every screen the member opens is filed with the backend's visitors (see utils/trackVisit.ts).
+  const routeKey = `${route.tab}|${route.product}|${route.facility}|${route.store}|${route.orders?.code}|${route.checkout}|${route.section}`;
   const selectedTypeId = route.typeId;
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; name: string }>(() => {
     // A saved location (from an earlier GPS fix) beats the Cairo default.
@@ -94,6 +98,11 @@ export default function App() {
 
   // Who is using the app: signed in by phone, or just showing a card by its number.
   const session = useSession();
+  // Re-fires when the member signs in, so that visit carries the token and the visitor row becomes the member.
+  useEffect(() => {
+    trackVisit(route, session.token);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [routeKey, session.token]);
   const card = useApi(session.cardNumber ? `card:${session.cardNumber}` : null, (signal) => fetchCard(session.cardNumber!, signal));
   const beneficiaries: Beneficiary[] = card.data
     ? [
@@ -299,10 +308,10 @@ export default function App() {
   if (forceUpdate.required) return <ForceUpdateScreen storeUrl={forceUpdate.storeUrl} />;
 
   return (
-    <div className="relative min-h-screen text-slate-900 flex flex-col items-center justify-start overflow-x-hidden">
+    <div className="relative min-h-dvh w-full text-slate-900 flex flex-col items-center justify-start overflow-x-clip">
       {/* One responsive column: phones use the full width, tablets and larger get a centred 768px page. */}
       <div
-        className={`w-full max-w-3xl relative pb-20 min-h-screen ${
+        className={`w-full max-w-3xl relative pb-20 min-h-dvh ${
           theme === 'dark' ? 'dark bg-[#0A0E17] text-[#F1F5F9]' : 'bg-white text-slate-900'
         }`}
       >
@@ -455,7 +464,7 @@ export default function App() {
 
       {/* Global Quick Search Modal */}
       {reminder && !silenced && (
-        <div className="fixed top-2 inset-x-2 z-[55] flex justify-center" dir={isAr ? 'rtl' : 'ltr'}>
+        <div className="fixed top-2 inset-x-2 z-[999] flex justify-center" dir={isAr ? 'rtl' : 'ltr'}>
           <div className="w-full max-w-md bg-slate-950 text-white border border-amber-400/50 rounded-2xl shadow-2xl p-3 flex items-center gap-2.5 animate-in slide-in-from-top duration-300">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
             <p className="flex-1 text-[11px] font-bold leading-snug">

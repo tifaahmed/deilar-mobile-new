@@ -119,7 +119,7 @@ export const PaymobPixel: React.FC<PaymobPixelProps> = ({ publicKey, clientSecre
         </div>
       )}
 
-      <div id={elementId} dir="ltr" className="min-h-[1px]" />
+      <div id={elementId} dir="ltr" className="min-h-px" />
 
       {state === 'failed' && (
         <div className="rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold p-3 space-y-2">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Clock, MessageCircle, Phone, XCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { subscribeByNumber, type CardStatus } from '../api/membership';
+import type { OnlineChannel } from '../api/orders';
 import { PayModal, type PixelSession } from './PayModal';
 
 interface CardStatusBannerProps {
@@ -27,10 +28,10 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
   const phone = status.contact.phone_international ?? status.contact.phone;
   const whatsapp = (status.contact.whatsapp ?? '').replace(/\D/g, '');
 
-  const buy = async () => {
+  const buy = async (channel: OnlineChannel) => {
     setBusy(true);
     setFailed(false);
-    const result = await subscribeByNumber(number);
+    const result = await subscribeByNumber(number, channel);
     setBusy(false);
     if (result?.client_secret && result.public_key) setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
     else if (result?.checkout_url) window.open(result.checkout_url, '_blank');
@@ -48,12 +49,12 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
         </p>
 
         <div className="space-y-2 pt-1">
-          {status.can_pay_online && (
-            <button onClick={buy} disabled={busy} className="w-full py-3 bg-white text-red-700 rounded-2xl text-sm font-extrabold disabled:opacity-60 cursor-pointer">
-              {busy ? '…' : isAr ? 'اشترك الآن (دفع إلكتروني)' : 'Subscribe now (pay online)'}
+          {status.can_pay_online && (status.online_channels?.length ? status.online_channels : (['card'] as OnlineChannel[])).map((channel) => (
+            <button key={channel} onClick={() => buy(channel)} disabled={busy} className="w-full py-3 bg-white text-red-700 rounded-2xl text-sm font-extrabold disabled:opacity-60 cursor-pointer">
+              {busy ? '…' : channel === 'wallet' ? (isAr ? 'اشترك الآن — الدفع بالمحفظة' : 'Subscribe now — pay by wallet') : isAr ? 'اشترك الآن — الدفع بالبطاقة' : 'Subscribe now — pay by card'}
               {status.price > 0 && <span dir="ltr"> — {status.price} {isAr ? 'ج.م' : 'EGP'}</span>}
             </button>
-          )}
+          ))}
           {phone && (
             <a href={`tel:${phone}`} className="w-full py-3 border-2 border-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2">
               <Phone className="w-4 h-4" />
