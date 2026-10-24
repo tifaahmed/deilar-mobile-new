@@ -33,7 +33,8 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
     setFailed(false);
     const result = await subscribeByNumber(number, channel);
     setBusy(false);
-    if (result?.client_secret && result.public_key) setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
+    // Wallets (Vodafone Cash…) cannot be drawn by Pixel: they always go to Paymob's own checkout page.
+    if (channel !== 'wallet' && result?.client_secret && result.public_key) setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
     else if (result?.checkout_url) window.open(result.checkout_url, '_blank');
     else setFailed(true);
   };

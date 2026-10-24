@@ -39,7 +39,14 @@ export const MembershipReminder: React.FC = () => {
 
       try {
         const current = await fetchMembership(token);
-        if (!alive || !current.has_card || (!current.expired && !current.is_trial)) return;
+        if (!alive) return;
+
+        // Paid (or no card): the trial/expired notice must go away now, not whenever its timer runs out.
+        if (!current.has_card || (!current.expired && !current.is_trial)) {
+          clearTimeout(hide);
+          setStatus(null);
+          return;
+        }
 
         setStatus(current);
         clearTimeout(hide);
@@ -50,11 +57,15 @@ export const MembershipReminder: React.FC = () => {
     };
 
     const first = setTimeout(tick, 8_000);
+    // Coming back from the payment page: re-read straight away so a paid card stops showing the trial notice.
+    const onVisible = () => { if (document.visibilityState === 'visible') void tick(); };
+    document.addEventListener('visibilitychange', onVisible);
     const timer = setInterval(tick, EVERY_MS);
 
     return () => {
       alive = false;
       clearTimeout(first);
+      document.removeEventListener('visibilitychange', onVisible);
       clearInterval(timer);
       clearTimeout(hide);
     };

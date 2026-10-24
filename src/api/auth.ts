@@ -1,3 +1,4 @@
+import { saveImage } from '../utils/saveImage';
 import { apiGet, apiGetAuth, apiPost, apiPut, apiUrl } from './http';
 import type { CardStatus } from './membership';
 
@@ -58,12 +59,7 @@ export async function downloadCardImageFile(number: string, side: 'front' | 'bac
   const res = await fetch(cardImageUrl(number, side));
   if (!res.ok) throw new Error(`Card image unavailable (${res.status})`);
 
-  const url = URL.createObjectURL(await res.blob());
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `deilar-card-${number}-${side}.png`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  await saveImage(await res.blob(), `deilar-card-${number}-${side}.png`);
 }
 
 
@@ -74,6 +70,8 @@ export interface Profile {
   phone: string | null;
   nationalId: string | null;
   gender: 'male' | 'female' | null;
+  /** `YYYY-MM-DD`, or null when not given. */
+  dob: string | null;
   jobTitle: string | null;
   /** How complete the profile is, as the backend counts it (`RegistrationProgress`) — never counted here. */
   progress: { percent: number; missing: string[] } | null;
@@ -87,7 +85,7 @@ export interface Profile {
 
 interface ProfileResponse {
   data: {
-    user: { name: string | null; email: string | null; phone: string | null; gender?: string | null; membership: { national_id: string | null; job_title?: string | null; governorate_id: number | null; city_id: number | null } | null };
+    user: { name: string | null; email: string | null; phone: string | null; gender?: string | null; date_of_birth?: string | null; membership: { national_id: string | null; job_title?: string | null; governorate_id: number | null; city_id: number | null } | null };
     registration?: { overall?: { percent: number; missing: string[] } };
     national_id_change?: Profile['idChange'];
   };
@@ -99,6 +97,7 @@ export const fetchProfile = (token: string): Promise<Profile> =>
     email: user.email,
     phone: user.phone,
     nationalId: user.membership?.national_id ?? null,
+    dob: user.date_of_birth ?? null,
     jobTitle: user.membership?.job_title ?? null,
     progress: registration?.overall ? { percent: registration.overall.percent, missing: registration.overall.missing } : null,
     gender: user.gender === 'male' || user.gender === 'female' ? user.gender : null,
@@ -109,7 +108,7 @@ export const fetchProfile = (token: string): Promise<Profile> =>
   }));
 
 /** Saves the editable details. The phone is the login, so it is never changed from here. Throws `ApiError` (422 carries `errors`). */
-export const updateProfile = (token: string, body: { name: string; email: string | null; gender?: 'male' | 'female' | null; job_title?: string | null; national_id?: string | null; governorate_id: number | null; city_id?: number | null }) =>
+export const updateProfile = (token: string, body: { name: string; email: string | null; gender?: 'male' | 'female' | null; date_of_birth?: string | null; job_title?: string | null; national_id?: string | null; governorate_id: number | null; city_id?: number | null }) =>
   apiPut('/profile', body, token);
 
 /** Saves the governorate (and city) on the member's card — the permanent copy of the area picked on this device. */

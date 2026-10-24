@@ -143,7 +143,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div>
             <h2 className="text-sm font-extrabold text-slate-900">{t('facilitiesTitle')}</h2>
             <p className="text-[11px] text-slate-500">
-              {isAr ? 'اختر نوع المنشأة الطبية للاطلاع على المستشفيات والمراكز ونسب الخصم' : 'Select facility type to view accredited hospitals & discount rates'}
+              {isAr ? 'اختر نوع المنشأة للاطلاع على المستشفيات والمراكز ونسب الخصم' : 'Select facility type to view accredited hospitals & discount rates'}
             </p>
           </div>
           <Link

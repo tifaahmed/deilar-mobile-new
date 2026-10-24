@@ -88,7 +88,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
       <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-base font-bold text-slate-900">كارت العيله الطبي الرقمي</h2>
+            <h2 className="text-base font-bold text-slate-900">كارت العيله الرقمي</h2>
             <p className="text-xs text-slate-500">انقر على الكارت لقلبه بين الوجه الأمامي والخلفي والباركود</p>
           </div>
           <button
@@ -179,7 +179,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
             <span className="w-5 h-5 rounded-full bg-rose-50 text-rose-700 font-bold text-[11px] flex items-center justify-center shrink-0">
               3
             </span>
-            <p>احصل على الخصم الفوري مباشرة من قيمة الفاتورة دون أي موافقات طبية مسبقة.</p>
+            <p>احصل على الخصم الفوري مباشرة من قيمة الفاتورة دون أي موافقات مسبقة.</p>
           </div>
         </div>
       </div>
@@ -198,7 +198,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
             {/* Live Verification Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span>كرت طبي نشط وموثق رسمي</span>
+              <span>كرت نشط وموثق رسمي</span>
             </div>
 
             <div>
@@ -237,7 +237,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
         <div className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl relative animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-900">إضافة فرد عائلة للكرت الطبي</h3>
+              <h3 className="text-sm font-bold text-slate-900">إضافة فرد عائلة للكرت</h3>
               <button
                 onClick={() => setShowAddMemberModal(false)}
                 className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"

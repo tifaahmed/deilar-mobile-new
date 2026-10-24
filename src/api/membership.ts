@@ -40,10 +40,10 @@ export type PayMethod = 'paymob' | 'cash_on_delivery' | 'vodafone_cash' | 'insta
 export const fetchMembership = (token: string) => apiGetAuth<{ data: MemberStatus }>('/membership', token).then((r) => r.data);
 
 /**
- * Asks for the free trial card (a name and a national ID; the phone is the one signed in with).
- * Throws `ApiError` (422) whose `reason` is `national_id_taken`, `phone_taken` or `already_has_card`.
+ * Asks for the free trial card (a name; the phone is the one signed in with).
+ * Throws `ApiError` (422) whose `reason` is `phone_taken` or `already_has_card`.
  */
-export const startTrial = (token: string, body: { name: string; national_id: string; gender?: 'male' | 'female' }) =>
+export const startTrial = (token: string, body: { name: string; gender?: 'male' | 'female' }) =>
   apiPost<{ data: MemberStatus }>('/membership/trial', body, undefined, token).then((r) => r.data);
 
 /** Pays for the card. Paymob answers with a `checkout_url`; the other methods reach customer services (receipts are files). */

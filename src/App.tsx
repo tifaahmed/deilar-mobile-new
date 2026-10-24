@@ -27,6 +27,7 @@
  * ==============================================================================
  */
 
+import { useSwipeBack } from './hooks/useSwipeBack';
 import React, { lazy, Suspense, useCallback, useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BottomNav, NavTab } from './components/BottomNav';
@@ -68,6 +69,7 @@ import { ForceUpdateScreen } from './components/ForceUpdateScreen';
 import { usePopupHash } from './utils/popupHash';
 
 export default function App() {
+  useSwipeBack();
   const { isAr, t, brandName } = useLanguage();
   // The URL is the source of truth for which page is open (see router.tsx).
   const route = useRoute();

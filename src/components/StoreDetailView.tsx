@@ -29,6 +29,7 @@ import { Product, CartItem } from '../types';
 import { ErrorState, ListSkeleton, LoadMore, Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
 import { BranchList } from './BranchList';
+import { ImageViewer } from './ImageViewer';
 import { ProductDetailModal } from './ProductDetailModal';
 import { navigate, routeHref } from '../router';
 
@@ -66,6 +67,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
   const member = useIsMember();
   const [selectedProduct, setSelectedProduct] = useState<ProductCard | null>(null);
   const [addedNotice, setAddedNotice] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<number | null>(null);
 
   const point = userLocation ? { lat: roundCoord(userLocation.lat), lng: roundCoord(userLocation.lng) } : {};
   const detail = useApi<StoreDetail>(`store:${slug}:${userLocation ? `${point.lat},${point.lng}` : ''}:${isAr}`, (signal) => api.store(slug, { ...point, per_page: BRANCH_PAGE }, signal));
@@ -86,7 +88,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
   const handleWhatsApp = () => {
     const text = encodeURIComponent(
       isAr
-        ? `مرحباً ${title}، أنا من مشتركي كرت ديلار الطبي وأرغب في الاستفسار عن منتجاتكم والعروض المتاحة.`
+        ? `مرحباً ${title}، أنا من مشتركي كرت ديلار وأرغب في الاستفسار عن منتجاتكم والعروض المتاحة.`
         : `Hello ${title}, I am a Deilar medical cardholder and would like to ask about your products and offers.`,
     );
     const target = whatsappNumber(lead?.whatsapp);
@@ -169,7 +171,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
             <div className="w-9 h-9 rounded-xl bg-[#941946] text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">%</div>
             <div>
               <p className="text-xs font-black text-[#941946]">{offer}</p>
-              <p className="text-[10.5px] text-slate-600 font-medium">{isAr ? 'خصم معتمد وحصري لحاملي كرت ديلار الطبي' : 'Approved, exclusive discount for Deilar cardholders'}</p>
+              <p className="text-[10.5px] text-slate-600 font-medium">{isAr ? 'خصم معتمد وحصري لحاملي كرت ديلار' : 'Approved, exclusive discount for Deilar cardholders'}</p>
             </div>
           </div>
         )}
@@ -229,13 +231,14 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
       {/* 3b. Gallery */}
       {store && store.gallery.length > 1 && (
         <div className="flex gap-2 overflow-x-auto snap-x pb-1 -mx-1 px-1">
-          {store.gallery.map((url) => (
-            <a key={url} href={url} target="_blank" rel="noreferrer" className="snap-start shrink-0 w-40 aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200/90 bg-slate-100">
+          {store.gallery.map((url, i) => (
+            <button type="button" key={url} onClick={() => setViewing(i)} className="snap-start shrink-0 w-40 aspect-[4/3] rounded-2xl overflow-hidden border border-slate-200/90 bg-slate-100 cursor-pointer">
               <Thumb src={url} alt={title} kind="store" className="w-full h-full" />
-            </a>
+            </button>
           ))}
         </div>
       )}
+      {store && viewing !== null && <ImageViewer images={store.gallery} index={viewing} onIndexChange={setViewing} onClose={() => setViewing(null)} />}
 
       {store && (store.videos?.length ?? 0) > 0 && (
         <div className="space-y-2">
@@ -422,7 +425,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
               {isAr
-                ? `يمكنك الاستفادة من خصم كرت ديلار الطبي${offer ? ` (${offer})` : ''} مباشرة عند زيارة أي من فروع المتجر بإبراز كرتك الرقمي من التطبيق.`
+                ? `يمكنك الاستفادة من خصم كرت ديلار${offer ? ` (${offer})` : ''} مباشرة عند زيارة أي من فروع المتجر بإبراز كرتك الرقمي من التطبيق.`
                 : `Use your Deilar card discount${offer ? ` (${offer})` : ''} directly at any branch by showing your digital card.`}
             </p>
             {lead?.phone && (

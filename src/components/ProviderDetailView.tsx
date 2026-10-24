@@ -64,7 +64,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
     if (!target) return;
     const text = encodeURIComponent(
       isAr
-        ? `مرحباً ${name}، أنا من حاملي كرت ديلار الطبي وأود الاستفسار عن كشف/فحص بنسبة الخصم المعتمدة${discount != null ? ` (${discount}%)` : ''}.`
+        ? `مرحباً ${name}، أنا من حاملي كرت ديلار وأود الاستفسار عن كشف/فحص بنسبة الخصم المعتمدة${discount != null ? ` (${discount}%)` : ''}.`
         : `Hello ${name}, I hold a Deilar medical card and would like to ask about the approved discount${discount != null ? ` (${discount}%)` : ''}.`,
     );
     window.open(`https://wa.me/${target}?text=${text}`, '_blank');
@@ -81,7 +81,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-[#941946] hover:bg-rose-50/50 rounded-xl transition-all"
         >
           <ArrowRight className={`w-4 h-4 text-[#941946] ${isAr ? '' : 'rotate-180'}`} />
-          <span>{isAr ? 'الرجوع إلى المنشآت الطبية' : 'Back to facilities'}</span>
+          <span>{isAr ? 'الرجوع إلى المنشآت' : 'Back to facilities'}</span>
         </button>
 
         {typeName && <span className="text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-100">{typeName}</span>}
@@ -119,7 +119,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
               <div>
                 <p className="text-sm font-black text-[#941946]">{isAr ? `خصم ${discount}%` : `${discount}% discount`}</p>
                 <p className="text-[11px] text-slate-600 font-medium">
-                  {isAr ? 'خصم فوري مباشر لحاملي كرت ديلار الطبي' : 'Instant discount for Deilar medical cardholders'}
+                  {isAr ? 'خصم فوري مباشر لحاملي كرت ديلار' : 'Instant discount for Deilar medical cardholders'}
                 </p>
               </div>
             </div>
@@ -250,7 +250,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
           className="w-full py-3.5 bg-gradient-to-r from-[#941946] to-[#6d1132] text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-rose-950/20 active:scale-98 transition-all"
         >
           <CreditCard className="w-4 h-4 text-amber-300" />
-          <span>{isAr ? 'عرض كرتي الطبي للاستفادة من الخصم الآن' : 'Show my medical card to get the discount'}</span>
+          <span>{isAr ? 'عرض كرتي للاستفادة من الخصم الآن' : 'Show my medical card to get the discount'}</span>
         </button>
       </div>
     </div>

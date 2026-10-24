@@ -59,6 +59,7 @@ import { navigate, routeHref } from '../router';
 import { NationalIdChange } from './NationalIdChange';
 import { reportClientError } from '../utils/reportError';
 import { useContact } from '../hooks/useCatalog';
+import { DobPicker } from './DobPicker';
 import { downloadDeilarCardImage } from '../utils/downloadCard';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -139,6 +140,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     nationalId: '',
     gender: '' as '' | 'male' | 'female',
     jobTitle: '',
+    dob: '',
     address: '',
     building: '',
   });
@@ -194,6 +196,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           nationalId: p.nationalId ?? '',
           gender: p.gender ?? '',
           jobTitle: p.jobTitle ?? '',
+          dob: p.dob ?? '',
           address: cur.address,
           building: cur.building,
         }));
@@ -250,7 +253,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   const handleShareWhatsApp = () => {
-    const cardTitle = isAr ? `بطاقة ${brandName} للخصم الطبي المعتمدة 🎫` : `${brandName} Certified Medical Discount Card 🎫`;
+    const cardTitle = isAr ? `بطاقة ${brandName} المعتمدة للخصم 🎫` : `${brandName} Certified Medical Discount Card 🎫`;
     const text = encodeURIComponent(
       `${cardTitle}\n${isAr ? 'الاسم' : 'Name'}: ${currentBeneficiary.name}\n${isAr ? 'رقم العضوية' : 'Membership ID'}: ${memId}\n${isAr ? 'الصلاحية' : 'Validity'}: ${account.validTo ?? '-'}\n${isAr ? 'خصومات تصل حتى 70% في المستشفيات والمعامل.' : 'Discounts up to 70% at hospitals & labs.'}\nhttps://deilar.com`
     );
@@ -284,6 +287,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         email: personalInfo.email.trim() || null,
         ...(personalInfo.gender ? { gender: personalInfo.gender } : {}),
         job_title: personalInfo.jobTitle.trim() || null,
+        date_of_birth: personalInfo.dob || null,
         // An ID that is already on the card is changed only through a request (see <NationalIdChange>).
         ...(idLocked ? {} : { national_id: personalInfo.nationalId.trim() || null }),
         governorate_id: personalInfo.governorateId ? Number(personalInfo.governorateId) : null,
@@ -1193,6 +1197,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 />
               </div>
             )}
+
+            <div>
+              <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'تاريخ الميلاد' : 'Date of birth'}</label>
+              <DobPicker dark={isDark} value={personalInfo.dob} onChange={(dob) => setPersonalInfo({ ...personalInfo, dob })} />
+            </div>
 
             <div>
               <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'المسمى الوظيفي' : 'Job title'}</label>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IdCard, Phone, Sparkles, UserRound } from 'lucide-react';
+import { Phone, Sparkles, UserRound } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/http';
 import { startTrial } from '../api/membership';
@@ -16,8 +16,8 @@ interface TrialCardFormProps {
 }
 
 /**
- * The free 1-month card: a name and a national ID, nothing else — the phone is the one already
- * signed in. Whether this person may have one (a single trial per phone and per ID, ever) is the
+ * The free 1-month card: a name, nothing else — the phone is the one already
+ * signed in. Whether this person may have one (a single trial per phone, ever) is the
  * backend's call; every refusal comes back with a `reason` and is worded here.
  */
 const PHONE_RE = /^01\d{9}$/;
@@ -30,7 +30,6 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
   const [firstName, setFirstName] = useState(() => defaultName.trim().split(/\s+/)[0] ?? '');
   const [lastName, setLastName] = useState(() => defaultName.trim().split(/\s+/).slice(1).join(' '));
   const name = `${firstName.trim()} ${lastName.trim()}`.trim();
-  const [nationalId, setNationalId] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
   // The number the sign-in code proved, shown in the form. Changing it means proving the new one with its own code.
   const [token, setToken] = useState(signedInToken);
@@ -51,10 +50,9 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
     firstName: firstName.trim().length < 2,
     lastName: lastName.trim().length < 2,
     phone: !PHONE_RE.test(phone),
-    nationalId: !/^[23]\d{13}$/.test(nationalId.trim()),
     gender: !gender,
   };
-  const labels = { firstName: isAr ? 'الاسم الأول' : 'first name', lastName: isAr ? 'الاسم الثاني' : 'second name', phone: isAr ? 'رقم الهاتف' : 'phone number', nationalId: nationalId.length === 14 ? (isAr ? 'الرقم القومي يجب أن يبدأ بـ 2 أو 3' : 'national ID must start with 2 or 3') : isAr ? 'الرقم القومي (١٤ رقماً)' : 'national ID (14 digits)', gender: isAr ? 'النوع' : 'gender' };
+  const labels = { firstName: isAr ? 'الاسم الأول' : 'first name', lastName: isAr ? 'الاسم الثاني' : 'second name', phone: isAr ? 'رقم الهاتف' : 'phone number', gender: isAr ? 'النوع' : 'gender' };
   const missing = (Object.keys(bad) as (keyof typeof bad)[]).filter((k) => bad[k]);
   const show = (k: keyof typeof bad) => tried && bad[k];
 
@@ -119,19 +117,17 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
     setError(null);
 
     try {
-      const status = await startTrial(token, { name, national_id: nationalId.trim(), gender: gender ?? undefined });
+      const status = await startTrial(token, { name, gender: gender ?? undefined });
       onCreated(status.membership_number ?? '', name);
     } catch (err) {
       const reason = err instanceof ApiError ? err.reason : undefined;
       setError(
-        reason === 'national_id_taken'
-          ? isAr ? 'هذا الرقم القومي لديه كارت بالفعل. يرجى التواصل مع خدمة العملاء.' : 'This ID number already has a card. Please contact customer service.'
-          : reason === 'phone_taken'
+        reason === 'phone_taken'
             ? isAr ? 'رقم الهاتف هذا لديه كارت بالفعل. يرجى التواصل مع خدمة العملاء.' : 'This phone number already has a card. Please contact customer service.'
             : reason === 'already_has_card'
               ? isAr ? 'لديك كارت بالفعل.' : 'You already have a card.'
               : err instanceof ApiError && err.status === 422
-                ? isAr ? 'تحقق من الاسم والرقم القومي (١٤ رقماً).' : 'Check your name and national ID (14 digits).'
+                ? isAr ? 'تحقق من الاسم والبيانات المدخلة.' : 'Check your name and details.'
                 : isAr ? 'تعذر إنشاء الكارت الآن. حاول مرة أخرى.' : 'The card could not be created. Please try again.',
       );
       if (!(err instanceof ApiError) || err.status >= 500) reportClientError('Trial card request failed', err);
@@ -170,7 +166,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
         </div>
         <h2 className="text-sm font-black text-slate-900">{isAr ? 'احصل على كارت ديلار مجاني لمدة شهر' : 'Get your free 1-month Deilar card'}</h2>
         <p className="text-xs text-slate-500 leading-relaxed">
-          {isAr ? 'اسمك ورقمك القومي فقط. الكارت يعمل فوراً لمدة شهر.' : 'Only your name and national ID. The card works straight away for one month.'}
+          {isAr ? 'اسمك فقط. الكارت يعمل فوراً لمدة شهر.' : 'Only your name. The card works straight away for one month.'}
         </p>
       </div>
 
@@ -189,16 +185,6 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
         <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{isAr ? 'رقم الهاتف' : 'Phone number'} {star}</span>
         <input type="tel" required inputMode="numeric" dir="ltr" maxLength={11} placeholder="010xxxxxxxx" autoComplete="tel" value={phone} onChange={(e) => { setPhone(asDigits(e.target.value).slice(0, 11)); setError(null); }} aria-invalid={show('phone')} className={`${field} font-mono ${show('phone') ? red : ''}`} />
         {changed && <span className="block text-[10px] text-amber-700">{isAr ? 'رقم جديد — سنرسل إليه كود تحقق جديد قبل إنشاء الكارت.' : 'A new number — we will send it a new verification code before the card is created.'}</span>}
-      </label>
-
-      <label className="block space-y-1">
-        <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1"><IdCard className="w-3.5 h-3.5" />{isAr ? 'الرقم القومي' : 'National ID number'} {star}</span>
-        <div className="relative">
-          <input type="text" required inputMode="numeric" dir="ltr" maxLength={14} pattern="[23][0-9]{13}" placeholder="14" value={nationalId} onChange={(e) => { setNationalId(asDigits(e.target.value).slice(0, 14)); setError(null); }} aria-invalid={show('nationalId')} className={`${field} font-mono ${isAr ? 'pl-14' : 'pr-14'} ${show('nationalId') ? red : ''}`} />
-          <span dir="ltr" className={`absolute ${isAr ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-[11px] font-mono font-bold ${/^[23]\d{13}$/.test(nationalId) ? 'text-emerald-600' : nationalId.length ? 'text-amber-600' : 'text-slate-400'}`}>
-            {nationalId.length}/14
-          </span>
-        </div>
       </label>
 
       <div className={`flex gap-2 rounded-2xl ${show('gender') ? 'ring-1 ring-red-400 bg-red-50 p-1' : ''}`} role="radiogroup" aria-label={isAr ? 'النوع' : 'Gender'}>

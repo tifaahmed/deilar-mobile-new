@@ -277,7 +277,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         <div className="px-3.5 pt-3 pb-2 flex items-center justify-between border-b border-slate-800/80">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <h3 className="text-base font-black text-amber-300">{isAr ? `كرت ${brandName} الطبي` : `${brandName} medical card`}</h3>
+            <h3 className="text-base font-black text-amber-300">{isAr ? `كرت ${brandName}` : `${brandName} medical card`}</h3>
           </div>
           <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center cursor-pointer" title={isAr ? 'إغلاق' : 'Close'}>
             <X className="w-5 h-5" />

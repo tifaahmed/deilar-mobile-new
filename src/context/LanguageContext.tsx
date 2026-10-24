@@ -17,11 +17,11 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'deilar',
   },
   brandPlatform: {
-    ar: 'منصة ديلر الطبية',
+    ar: 'منصة ديلر',
     en: 'deilar Medical Platform',
   },
   tagline: {
-    ar: 'كرت الخصومات الطبية',
+    ar: 'كرت الخصومات',
     en: 'Medical Discount Card',
   },
   certifiedCard: {
@@ -83,7 +83,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
 
   // Profile Sub-tabs
   tabCard: {
-    ar: 'الكرت الطبي',
+    ar: 'الكرت',
     en: 'Medical Card',
   },
   tabMembers: {
@@ -105,7 +105,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
 
   // Card Tab
   userCardTitle: {
-    ar: 'كرت ديلر الطبي الخاص بحسابك',
+    ar: 'كرت ديلر الخاص بحسابك',
     en: 'Your deilar Medical Card',
   },
   officialCertified: {
@@ -149,7 +149,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Tap card to flip between front & back',
   },
   cardDownloadSuccess: {
-    ar: 'تم حفظ كرت ديلر الطبي عالي الدقة على جهازك بنجاح!',
+    ar: 'تم حفظ كرت ديلر عالي الدقة على جهازك بنجاح!',
     en: 'High-res deilar card saved to your device successfully!',
   },
   activeMember: {
@@ -171,7 +171,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Add New Member',
   },
   familyMembersDesc: {
-    ar: 'جميع الأفراد أدناه مشمولين بنسب الخصم الطبية، اضغط على أي فرد لعرض بطاقته الشخصية.',
+    ar: 'جميع الأفراد أدناه مشمولين بنسب الخصم، اضغط على أي فرد لعرض بطاقته الشخصية.',
     en: 'All members below are covered by medical discounts. Tap any member to view their card.',
   },
   activeStatus: {
@@ -187,7 +187,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Primary Account',
   },
   addMemberTitle: {
-    ar: 'إضافة فرد جديد إلى الكرت الطبي',
+    ar: 'إضافة فرد جديد إلى الكرت',
     en: 'Add New Family Member to Card',
   },
   memberNamePrompt: {
@@ -289,7 +289,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Instant Update',
   },
   fullNamePrompt: {
-    ar: 'الاسم بالكامل (كما يظهر على الكرت الطبي):',
+    ar: 'الاسم بالكامل (كما يظهر على الكرت):',
     en: 'Full Name (as shown on medical card):',
   },
   phonePrompt: {
@@ -403,7 +403,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Save up to 50% on medical expenses with deilar card',
   },
   heroSubtitle: {
-    ar: 'شبكة طبية معتمدة تضم كبرى المستشفيات والمعامل والصيدليات في مصر',
+    ar: 'شبكة معتمدة تضم كبرى المستشفيات والمعامل والصيدليات في مصر',
     en: 'Accredited medical network covering top hospitals, labs and pharmacies across Egypt',
   },
   quickBtnStore: {
@@ -415,11 +415,11 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Products',
   },
   quickBtnCard: {
-    ar: 'كرتي الطبي',
+    ar: 'كرتي',
     en: 'My Card',
   },
   facilitiesTitle: {
-    ar: 'المنشآت والخدمات الطبية المعتمدة',
+    ar: 'المنشآت والخدمات المعتمدة',
     en: 'Certified Medical Facilities & Services',
   },
   catHospitals: {
@@ -467,7 +467,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'EGP',
   },
   nearestTitle: {
-    ar: 'أقرب الفروع الطبية لموقعك',
+    ar: 'أقرب الفروع لموقعك',
     en: 'Nearest Medical Branches to You',
   },
   viewAllMap: {
@@ -522,7 +522,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.title = language === 'ar'
-      ? 'ديلر - كرت الخصومات الطبية'
+      ? 'ديلر - كرت الخصومات'
       : 'deilar - Medical Discount Card';
   }, [language]);
 

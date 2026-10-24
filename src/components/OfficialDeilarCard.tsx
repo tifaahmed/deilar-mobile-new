@@ -145,7 +145,7 @@ export const OfficialDeilarCard: React.FC<OfficialDeilarCardProps> = ({
           {/* Bottom Card Footer Info */}
           <div className="relative z-10 flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
             <span className="font-mono font-bold text-slate-700">{memNumber}</span>
-            <span className="text-[#c89e43] font-bold">بطاقة الخصم الطبي المعتمدة</span>
+            <span className="text-[#c89e43] font-bold">بطاقة الخصم المعتمدة</span>
           </div>
         </div>
 

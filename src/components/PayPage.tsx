@@ -59,10 +59,10 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
     setError(null);
     try {
       const result = await subscribe(token, { method: 'paymob', paymobChannel: channel, email: email.trim() || undefined });
-      if (result.client_secret && result.public_key) {
+      if (channel !== 'wallet' && result.client_secret && result.public_key) {
         setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
       } else if (result.checkout_url) {
-        // Paymob's own page (wallets always, and the card form when the embedded one is unavailable).
+        // Paymob's own page (wallets always — Pixel cannot draw mobile wallets — and the card form when the embedded one is unavailable).
         window.location.assign(result.checkout_url);
         return;
       } else {

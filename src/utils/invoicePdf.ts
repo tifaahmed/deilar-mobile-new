@@ -45,7 +45,7 @@ function build(inv: InvoiceData, isAr: boolean): HTMLElement {
 
   const head = el('div', `display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid ${BRAND};padding-bottom:14px;margin-bottom:18px;`);
   const brand = el('div', '');
-  brand.append(el('div', `font-size:28px;font-weight:900;color:${BRAND};`, 'Deilar'), el('div', 'font-size:12px;color:#64748b;', t('كرت ديلار الطبي', 'Deilar medical card')));
+  brand.append(el('div', `font-size:28px;font-weight:900;color:${BRAND};`, 'Deilar'), el('div', 'font-size:12px;color:#64748b;', t('كرت ديلار', 'Deilar medical card')));
   const meta = el('div', `text-align:${isAr ? 'left' : 'right'};`);
   meta.append(
     el('div', 'font-size:18px;font-weight:800;', inv.code ? t('فاتورة الطلب', 'Order invoice') : t('ملخص الطلب', 'Order summary')),

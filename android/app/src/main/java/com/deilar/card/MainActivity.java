@@ -3,6 +3,7 @@ package com.deilar.card;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -26,6 +27,7 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(GallerySaverPlugin.class);
         super.onCreate(savedInstanceState);
         updateManager = AppUpdateManagerFactory.create(this);
         padForSystemBars();
@@ -41,7 +43,7 @@ public class MainActivity extends BridgeActivity {
             Insets bars = windowInsets.getInsets(
                     WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             Insets nav = windowInsets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars());
-            v.setPadding(bars.left, bars.top, bars.right, Math.max(bars.bottom, nav.bottom));
+            setMargins(v, bars.left, bars.top, bars.right, Math.max(bars.bottom, nav.bottom));
             return WindowInsetsCompat.CONSUMED;
         });
         ViewCompat.requestApplyInsets(webView);
@@ -49,10 +51,21 @@ public class MainActivity extends BridgeActivity {
     }
 
     /**
+     * Margins, not padding: a WebView ignores its own padding when drawing the page, so the page would still
+     * run under the status bar and the navigation keys.
+     */
+    private static void setMargins(View v, int left, int top, int right, int bottom) {
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+        if (lp.leftMargin == left && lp.topMargin == top && lp.rightMargin == right && lp.bottomMargin == bottom) return;
+        lp.setMargins(left, top, right, bottom);
+        v.setLayoutParams(lp);
+    }
+
+    /**
      * Some phones (OEM skins, 3-button navigation, gesture pill) report the
      * navigation bar late or not at all, so the bottom tab bar ends up behind
      * the system keys. Measure where the WebView really ends on screen and, if
-     * it overlaps the navigation bar, push its bottom padding up by the overlap.
+     * it overlaps the navigation bar, push its bottom margin up by the overlap.
      */
     private void guardAgainstOverlap(View webView) {
         View decor = getWindow().getDecorView();
@@ -65,11 +78,11 @@ public class MainActivity extends BridgeActivity {
                     root.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars()).bottom);
             int[] loc = new int[2];
             webView.getLocationInWindow(loc);
-            int contentBottom = loc[1] + webView.getHeight() - webView.getPaddingBottom();
+            int contentBottom = loc[1] + webView.getHeight();
             int overlap = contentBottom - (decor.getHeight() - navInset);
             if (overlap > 0) {
-                webView.setPadding(webView.getPaddingLeft(), webView.getPaddingTop(),
-                        webView.getPaddingRight(), webView.getPaddingBottom() + overlap);
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) webView.getLayoutParams();
+                setMargins(webView, lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin + overlap);
             }
         });
     }

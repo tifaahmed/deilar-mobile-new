@@ -87,10 +87,6 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
           <CreditCard className="w-3.5 h-3.5" />
           <span>{isAr ? 'لدي كارت — عرضه برقم العضوية' : 'I already have a card — view it by number'}</span>
         </button>
-        <button onClick={onLogout} className="w-full py-2 text-xs font-bold text-slate-500 flex items-center justify-center gap-1.5 cursor-pointer">
-          <LogOut className="w-3.5 h-3.5" />
-          <span>{isAr ? 'تسجيل الخروج' : 'Sign out'}</span>
-        </button>
         <ContactUs />
       </div>
     );

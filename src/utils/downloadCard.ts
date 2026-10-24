@@ -1,5 +1,7 @@
 import { Beneficiary } from '../types';
 
+import { saveImage } from './saveImage';
+
 /**
  * Generates and downloads a high-resolution, print-ready digital PNG image 
  * of the official Deilar Medical Discount Card.
@@ -49,7 +51,7 @@ export const downloadDeilarCardImage = async (
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 26px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('بطاقة الخصم الطبي', 995, 100);
+    ctx.fillText('بطاقة الخصم', 995, 100);
 
     // Left Logo DEILAR
     ctx.fillStyle = '#112443';
@@ -170,10 +172,10 @@ export const downloadDeilarCardImage = async (
     ctx.fillStyle = '#475569';
     ctx.font = '22px sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText('شروط الاستخدام والخدمة الطبية:', 1080, 390);
+    ctx.fillText('شروط الاستخدام والخدمة:', 1080, 390);
 
     const rules = [
-      '• يبرز هذا الكرت قبل إصدار الفاتورة أو طلب الخدمة لدى مقدم الرعاية الطبية.',
+      '• يبرز هذا الكرت قبل إصدار الفاتورة أو طلب الخدمة لدى مقدم الرعاية.',
       '• الكرت شخصي ومخصص لحامله أو التابع المسجل لدى شبكة ديلار.',
       '• للحصول على الدعم الفوري أو حجز العمليات اتصل على: 01020709993',
       '• موقع شبكة ديلار الرسمية: www.deilar.com'
@@ -194,12 +196,7 @@ export const downloadDeilarCardImage = async (
     ctx.fillText(memId, 80, 700);
   }
 
-  // Convert canvas to image and trigger download
-  const imageURL = canvas.toDataURL('image/png');
-  const downloadLink = document.createElement('a');
-  downloadLink.href = imageURL;
-  downloadLink.download = `deilar-card-${memId}-${side}.png`;
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+  if (!blob) throw new Error('The card image could not be drawn');
+  await saveImage(blob, `deilar-card-${memId}-${side}.png`);
 };
