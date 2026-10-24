@@ -102,46 +102,37 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section className="grid grid-cols-3 gap-2">
         <Link
           to={{ tab: 'store' }}
-          className="p-3 bg-gradient-to-br from-[#941946] to-[#6d1232] text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[6rem] cursor-pointer"
+          className="py-3 px-2 bg-gradient-to-br from-[#941946] to-[#6d1232] text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-center gap-1.5 group cursor-pointer"
         >
-          <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Store className="w-5 h-5 text-amber-300" />
+          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Store className="w-7 h-7 text-amber-300" />
           </div>
-          <div className="mt-1.5">
-            <span className="block text-xs font-black leading-tight">{t('quickBtnStore')}</span>
-            <span className="block text-[9px] text-rose-200 leading-tight mt-0.5">
-              {isAr ? 'بن • عسل • زيت' : 'Coffee • Honey • Oil'}
-            </span>
+          <div>
+            <span className="block text-sm font-black leading-tight">{t('quickBtnStore')}</span>
           </div>
         </Link>
 
         <Link
           to={{ tab: 'products' }}
-          className="p-3 bg-gradient-to-br from-amber-600 to-amber-700 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[6rem] cursor-pointer"
+          className="py-3 px-2 bg-gradient-to-br from-amber-600 to-amber-700 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-center gap-1.5 group cursor-pointer"
         >
-          <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Package className="w-5 h-5 text-white" />
+          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Package className="w-7 h-7 text-white" />
           </div>
-          <div className="mt-1.5">
-            <span className="block text-xs font-black leading-tight">{t('quickBtnProducts')}</span>
-            <span className="block text-[9px] text-amber-100 leading-tight mt-0.5">
-              {isAr ? 'العروض والطلب' : 'Offers & Order'}
-            </span>
+          <div>
+            <span className="block text-sm font-black leading-tight">{t('quickBtnProducts')}</span>
           </div>
         </Link>
 
         <Link
           to={{ tab: 'profile' }}
-          className="p-3 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-between group min-h-[6rem] cursor-pointer"
+          className="py-3 px-2 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-center gap-1.5 group cursor-pointer"
         >
-          <div className="w-9 h-9 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
-            <CreditCard className="w-5 h-5 text-amber-400" />
+          <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
+            <CreditCard className="w-7 h-7 text-amber-400" />
           </div>
-          <div className="mt-1.5">
-            <span className="block text-xs font-black leading-tight">{t('quickBtnCard')}</span>
-            <span className="block text-[9px] text-slate-300 leading-tight mt-0.5">
-              {isAr ? 'عرض وتحميل' : 'View & Download'}
-            </span>
+          <div>
+            <span className="block text-sm font-black leading-tight">{t('quickBtnCard')}</span>
           </div>
         </Link>
       </section>

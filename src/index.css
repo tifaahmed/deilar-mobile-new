@@ -33,6 +33,18 @@ html {
   html { font-size: 16px; }
 }
 
+/* Arabic letterforms read smaller at the same size: scale every rem-based size up ~12%,
+   and lift the fixed-px micro labels (text-[10px] …) that rem scaling cannot reach. */
+html[lang="ar"] { font-size: clamp(7.8px, 4.8vw, 18px); }
+@media (min-width: 375px) {
+  html[lang="ar"] { font-size: 18px; }
+}
+html[lang="ar"] .text-\[8\.5px\] { font-size: 0.6875rem; }
+html[lang="ar"] .text-\[9px\]   { font-size: 0.6875rem; }
+html[lang="ar"] .text-\[10px\]  { font-size: 0.75rem; }
+html[lang="ar"] .text-\[11px\]  { font-size: 0.8125rem; }
+html[lang="ar"] .text-\[12px\]  { font-size: 0.875rem; }
+
 /* Keep content out of notches, home bar and rounded corners. */
 #root {
   padding-left: env(safe-area-inset-left);

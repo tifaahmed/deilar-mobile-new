@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { fetchMembership, type MemberStatus } from '../api/membership';
 import { navigate, routeHref } from '../router';
 import { useSession } from '../utils/session';
+import { usePopupHash } from '../utils/popupHash';
 
 /** How often the reminder comes back while the card is on trial or expired. */
 const EVERY_MS = 60_000;
@@ -59,6 +60,7 @@ export const MembershipReminder: React.FC = () => {
     };
   }, [token]);
 
+  usePopupHash('membership-popup', !!status);
   if (!status) return null;
 
   const expired = status.expired;

@@ -2,6 +2,7 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { PaymobPixel } from './PaymobPixel';
+import { usePopupHash } from '../utils/popupHash';
 
 export interface PixelSession {
   clientSecret: string;
@@ -11,10 +12,11 @@ export interface PixelSession {
 
 /** The embedded Paymob card form in a sheet over the current screen (subscribing / renewing a card). */
 export const PayModal: React.FC<{ session: PixelSession; onClose: () => void; onComplete: () => void }> = ({ session, onClose, onComplete }) => {
+  usePopupHash('pay-popup');
   const { isAr } = useLanguage();
 
   return (
-    <div className="fixed inset-0 z-[999] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[999] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div
         role="dialog"
         aria-modal="true"

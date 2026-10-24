@@ -40,10 +40,38 @@ public class MainActivity extends BridgeActivity {
         ViewCompat.setOnApplyWindowInsetsListener(webView, (v, windowInsets) -> {
             Insets bars = windowInsets.getInsets(
                     WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            Insets nav = windowInsets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars());
+            v.setPadding(bars.left, bars.top, bars.right, Math.max(bars.bottom, nav.bottom));
             return WindowInsetsCompat.CONSUMED;
         });
         ViewCompat.requestApplyInsets(webView);
+        guardAgainstOverlap(webView);
+    }
+
+    /**
+     * Some phones (OEM skins, 3-button navigation, gesture pill) report the
+     * navigation bar late or not at all, so the bottom tab bar ends up behind
+     * the system keys. Measure where the WebView really ends on screen and, if
+     * it overlaps the navigation bar, push its bottom padding up by the overlap.
+     */
+    private void guardAgainstOverlap(View webView) {
+        View decor = getWindow().getDecorView();
+        decor.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            WindowInsetsCompat root = ViewCompat.getRootWindowInsets(decor);
+            if (root == null || decor.getHeight() == 0) return;
+            // Ignoring visibility also covers bars the OEM reports as hidden but still draws.
+            int navInset = Math.max(
+                    root.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom,
+                    root.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars()).bottom);
+            int[] loc = new int[2];
+            webView.getLocationInWindow(loc);
+            int contentBottom = loc[1] + webView.getHeight() - webView.getPaddingBottom();
+            int overlap = contentBottom - (decor.getHeight() - navInset);
+            if (overlap > 0) {
+                webView.setPadding(webView.getPaddingLeft(), webView.getPaddingTop(),
+                        webView.getPaddingRight(), webView.getPaddingBottom() + overlap);
+            }
+        });
     }
 
     @Override

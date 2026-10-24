@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { CreditCard } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CreditCard, MessageCircle, PhoneCall } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/http';
 import { subscribe, type MemberStatus, type PayMethod } from '../api/membership';
-import type { OnlineChannel } from '../api/orders';
 import { reportClientError } from '../utils/reportError';
-import { PayModal, type PixelSession } from './PayModal';
+import { navigate, routeHref } from '../router';
 
 interface SubscribePanelProps {
   token: string;
@@ -33,9 +32,10 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
   const [email, setEmail] = useState('');
   const [reference, setReference] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
-  const [busy, setBusy] = useState<'online' | 'manual' | null>(null);
+  const [busy, setBusy] = useState<'manual' | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const [pixel, setPixel] = useState<PixelSession | null>(null);
+
+  const formRef = React.useRef<HTMLFormElement>(null);
 
   const chosen = manual.find((m) => m.value === method) ?? manual[0];
 
@@ -45,22 +45,6 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
       text: err instanceof ApiError && err.status === 422 ? err.message : isAr ? 'تعذر إتمام الطلب. حاول مرة أخرى.' : 'The request could not be completed. Please try again.',
     });
     if (!(err instanceof ApiError) || err.status >= 500) reportClientError('Subscription request failed', err, { method });
-  };
-
-  const payOnline = async (channel: OnlineChannel) => {
-    setBusy('online');
-    setMessage(null);
-    try {
-      const result = await subscribe(token, { method: 'paymob', paymobChannel: channel, email });
-      if (result.client_secret && result.public_key) setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
-      else if (result.checkout_url) window.open(result.checkout_url, '_blank');
-      else setMessage({ ok: false, text: isAr ? 'تعذر فتح صفحة الدفع.' : 'The payment page could not be opened.' });
-      onDone();
-    } catch (err) {
-      fail(err);
-    } finally {
-      setBusy(null);
-    }
   };
 
   const sendManual = async (e: React.FormEvent) => {
@@ -79,15 +63,34 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     }
   };
 
+  // Tapping the title goes straight to paying: the online payment page when it is on, else the manual form.
+  const nothingToPayWith = !status.can_pay_online && manual.length === 0;
+  // The status may have been read before the admin switched payments on: ask the server once more.
+  React.useEffect(() => {
+    if (nothingToPayWith) onDone();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const toPayPage = () => navigate(routeHref({ tab: 'profile', section: 'pay' }));
+  const goPay = () => {
+    if (busy !== null) return;
+    if (status.can_pay_online) toPayPage();
+    else if (formRef.current) formRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    else setMessage({ ok: false, text: isAr ? 'الدفع الإلكتروني غير متاح حالياً. تواصل مع خدمة العملاء لتفعيل اشتراكك.' : 'Online payment is not available right now. Contact customer service to activate your subscription.' });
+  };
+  const phone = status.contact?.phone_international ?? status.contact?.phone ?? null;
+  const whatsapp = (status.contact?.whatsapp ?? '').replace(/\D/g, '');
+  const Chevron = isAr ? ChevronLeft : ChevronRight;
+
   const field = 'w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs focus:outline-none focus:border-[#941946]';
 
   return (
     <section className={`rounded-2xl p-4 border bg-white border-slate-200/90 space-y-3 ${isAr ? 'text-right' : 'text-left'}`}>
-      <h3 className="text-xs font-bold flex items-center gap-2 text-slate-900">
+      <button type="button" onClick={goPay} className="w-full flex items-center gap-2 text-xs font-bold text-slate-900 text-start cursor-pointer">
         <CreditCard className="w-4 h-4 text-[#941946]" />
-        {isAr ? 'اشترك في الكارت الكامل' : 'Subscribe to the full card'}
+        <span>{isAr ? 'اشترك في الكارت الكامل' : 'Subscribe to the full card'}</span>
         {status.price > 0 && <span className="text-slate-500 font-mono" dir="ltr">{status.price} {isAr ? 'ج.م' : 'EGP'}</span>}
-      </h3>
+        <Chevron className="w-4 h-4 text-[#941946] ms-auto" />
+      </button>
 
       {status.open_subscription && (
         <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
@@ -95,16 +98,39 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
         </p>
       )}
 
-      {pixel && <PayModal session={pixel} onClose={() => setPixel(null)} onComplete={() => { setPixel(null); onDone(); }} />}
+      {nothingToPayWith && (
+        <div className="space-y-2">
+          <p role="alert" className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+            {message?.text ?? (isAr ? 'الدفع الإلكتروني غير متاح حالياً. تواصل مع خدمة العملاء لتفعيل اشتراكك.' : 'Online payment is not available right now. Contact customer service to activate your subscription.')}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {phone && (
+              <a href={`tel:${phone}`} className="py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold flex items-center justify-center gap-1.5">
+                <PhoneCall className="w-4 h-4 text-amber-400" />{isAr ? 'اتصل بنا' : 'Call us'}
+              </a>
+            )}
+            {whatsapp && (
+              <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="py-2.5 rounded-2xl bg-[#25D366] text-white text-xs font-bold flex items-center justify-center gap-1.5">
+                <MessageCircle className="w-4 h-4" />{isAr ? 'واتساب' : 'WhatsApp'}
+              </a>
+            )}
+          </div>
+        </div>
+      )}
 
-      {status.can_pay_online && (status.online_channels?.length ? status.online_channels : (['card'] as OnlineChannel[])).map((channel) => (
-        <button key={channel} type="button" onClick={() => payOnline(channel)} disabled={busy !== null} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold cursor-pointer">
-          {busy === 'online' ? '…' : channel === 'wallet' ? (isAr ? 'ادفع الآن بالمحفظة الإلكترونية' : 'Pay now by mobile wallet') : isAr ? 'ادفع الآن بالبطاقة' : 'Pay now by card'}
+      {/* A failed online attempt must be visible even when no manual form is drawn. */}
+      {!nothingToPayWith && manual.length === 0 && message && (
+        <p role="alert" className="text-[11px] font-bold rounded-xl px-3 py-2 border text-rose-600 bg-rose-50 border-rose-200">{message.text}</p>
+      )}
+
+      {status.can_pay_online && (
+        <button type="button" onClick={toPayPage} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] text-white rounded-2xl text-xs font-extrabold cursor-pointer">
+          {isAr ? 'ادفع الآن — بطاقة أو محفظة إلكترونية' : 'Pay now — card or mobile wallet'}
         </button>
-      ))}
+      )}
 
       {manual.length > 0 && (
-      <form onSubmit={sendManual} className="space-y-2">
+      <form ref={formRef} onSubmit={sendManual} className="space-y-2">
         {manual.map((m) => (
           <label key={m.value} className="flex items-center gap-2 text-xs cursor-pointer">
             <input type="radio" checked={chosen?.value === m.value} onChange={() => setMethod(m.value)} className="accent-[#941946]" />

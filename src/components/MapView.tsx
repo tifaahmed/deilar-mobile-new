@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { MapPin, Navigation, Phone, Search, X, List, Compass, Loader2, Percent } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { SlidersHorizontal, MapPin, Navigation, Phone, Search, X, List, Compass, Loader2, Percent } from 'lucide-react';
 import type { FacilityCard, MapPin as Pin } from '../api/types';
 import { api, PATHS } from '../api/endpoints';
 import { directionsUrl, formatKm, roundCoord } from '../api/adapters';
@@ -10,6 +11,9 @@ import { useDebounced } from '../hooks/useDebounced';
 import { usePaged } from '../hooks/usePaged';
 import { isAbort } from '../api/http';
 import { useFacilityTypes } from '../hooks/useCatalog';
+import { useArea } from '../utils/area';
+import { usePopupHash } from '../utils/popupHash';
+import { fetchLocations, fetchNearestAreas, searchDirectory, type Locations, type SearchGroup } from '../api/endpoints';
 import { useLanguage } from '../context/LanguageContext';
 import { ErrorState, ListSkeleton, LoadMore } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
@@ -60,13 +64,85 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   const q = useDebounced(searchQuery.trim(), 350);
   const types = useFacilityTypes();
 
+  // List-only area filter: browse other governorates/cities, with the member's own one marked.
+  const myArea = useArea();
+  const [govId, setGovId] = useState<number | null>(null);
+  const [cityId, setCityId] = useState<number | null>(null);
+  const [locations, setLocations] = useState<Locations['governorates']>([]);
+  useEffect(() => {
+    const c = new AbortController();
+    fetchLocations(c.signal).then(setLocations, () => undefined);
+    return () => c.abort();
+  }, []);
+  // Suggestions under the search box: facilities, branches, cities, governorates and types matching what is typed.
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const suggestions = useApi<SearchGroup[]>(
+    suggestOpen && q.length >= 2 ? `suggest:${q}:${isAr}` : null,
+    (signal) => searchDirectory(q, signal),
+  );
+  const pickSuggestion = (g: SearchGroup['type'], item: SearchGroup['items'][number]) => {
+    setSuggestOpen(false);
+    if (g === 'facility' || g === 'branch') {
+      const slug = g === 'facility' ? item.slug : item.facility_slug;
+      if (!slug) return;
+      onSelectProvider({ id: g === 'facility' ? item.id : item.facility_id ?? item.id, slug, name: (g === 'facility' ? item.name : item.facility_name) ?? item.name, logo: item.logo ?? '', discount: item.discount_percent ?? null, type: null, distance_km: null, branch: null });
+      return;
+    }
+    setSearchQuery('');
+    if (g === 'facility_type') { onSelectType(item.id); return; }
+    onViewChange('list');
+    if (g === 'governorate') { setGovId(item.id); setCityId(null); return; }
+    const gov = locations.find((x) => x.cities.some((c) => c.id === item.id));
+    if (gov) { setGovId(gov.id); setCityId(item.id); }
+  };
+  const groupLabel: Record<SearchGroup['type'], string> = {
+    facility: isAr ? 'المنشآت' : 'Facilities',
+    branch: isAr ? 'الفروع' : 'Branches',
+    city: isAr ? 'المدن' : 'Cities',
+    governorate: isAr ? 'المحافظات' : 'Governorates',
+    facility_type: isAr ? 'التخصصات' : 'Types',
+  };
+
+  // Distance from the visitor to each governorate / city, so the chips run closest first.
+  const [govDist, setGovDist] = useState<Map<number, number>>(new Map());
+  const [cityDist, setCityDist] = useState<Map<number, number>>(new Map());
+  useEffect(() => {
+    if (viewMode !== 'list') return;
+    const c = new AbortController();
+    fetchNearestAreas('governorate', userLocation.lat, userLocation.lng, 40, c.signal).then((r) => setGovDist(new Map(r.map((x) => [x.id, x.distance_km]))), () => undefined);
+    return () => c.abort();
+  }, [viewMode, userLocation.lat, userLocation.lng]);
+  useEffect(() => {
+    setCityDist(new Map());
+    if (viewMode !== 'list' || !govId) return;
+    const c = new AbortController();
+    fetchNearestAreas('city', userLocation.lat, userLocation.lng, 200, c.signal, govId).then((r) => setCityDist(new Map(r.map((x) => [x.id, x.distance_km]))), () => undefined);
+    return () => c.abort();
+  }, [viewMode, govId, userLocation.lat, userLocation.lng]);
+  /** Own area first, then nearest, then the rest by name. */
+  const byCloseness = <T extends { id: number; name: string }>(items: T[], dist: Map<number, number>, mineId?: number) =>
+    [...items].sort((a, b) =>
+      Number(b.id === mineId) - Number(a.id === mineId) ||
+      (dist.get(a.id) ?? Infinity) - (dist.get(b.id) ?? Infinity) ||
+      a.name.localeCompare(b.name, isAr ? 'ar' : 'en'));
+  const sortedGovs = useMemo(() => byCloseness(locations, govDist, myArea?.governorate.id), [locations, govDist, myArea, isAr]); // eslint-disable-line react-hooks/exhaustive-deps
+  const cities = useMemo(
+    () => byCloseness(locations.find((g) => g.id === govId)?.cities ?? [], cityDist, govId === myArea?.governorate.id ? myArea?.city?.id : undefined),
+    [locations, govId, cityDist, myArea, isAr], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const atMyArea = govId === (myArea?.governorate.id ?? null) && cityId === (myArea?.city?.id ?? null);
+  const resetToMyArea = () => {
+    setGovId(myArea?.governorate.id ?? null);
+    setCityId(myArea?.city?.id ?? null);
+  };
+
   // ~1 km grid for the map, ~110 m for the list: nearby positions share one cached URL.
   const mapPoint = { lat: roundCoord(userLocation.lat, 2), lng: roundCoord(userLocation.lng, 2) };
   const listPoint = { lat: roundCoord(userLocation.lat), lng: roundCoord(userLocation.lng) };
   const radius = maxRadiusKm || null;
 
   // ---- Map mode: only light pins, fetched for the visible mode alone -------------------------
-  const pinParams = { ...mapPoint, radius_km: radius, facility_type_id: selectedTypeId, limit: PIN_PAGE };
+  const pinParams = { ...mapPoint, radius_km: radius, facility_type_id: selectedTypeId, q: q || undefined, limit: PIN_PAGE };
   const pinsQuery = useApi(
     viewMode === 'map' ? `pins:${JSON.stringify(pinParams)}` : null,
     // A server that predates the larger page refuses anything over 500: ask again for what it allows
@@ -76,12 +152,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
       return api.mapPins({ ...pinParams, limit: PIN_PAGE_FALLBACK }, signal);
     }),
   );
-  const pins: Pin[] = useMemo(() => {
-    const all = pinsQuery.data?.data ?? [];
-    if (!q) return all;
-    const needle = q.toLowerCase();
-    return all.filter((p) => p.name.toLowerCase().includes(needle));
-  }, [pinsQuery.data, q]);
+  const pins: Pin[] = useMemo(() => pinsQuery.data?.data ?? [], [pinsQuery.data]);
   const capped = !!pinsQuery.data?.has_more;
 
   // The popup card is fetched when a pin is tapped — never shipped with every pin.
@@ -89,7 +160,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
   // ---- List mode: server-side search / filter / nearest-first, infinite scroll ---------------
   const byDiscount = sort === 'discount';
-  const listParams = { ...listPoint, q, radius_km: radius, type: selectedTypeId, per_page: 12, sort: byDiscount ? 'discount' : undefined };
+  const listParams = { ...listPoint, q, radius_km: govId ? null : radius, governorate_id: govId, city_id: cityId, home_governorate_id: myArea?.governorate.id, home_city_id: myArea?.city?.id, type: selectedTypeId, per_page: 12, sort: byDiscount ? 'discount' : undefined };
   const list = usePaged<FacilityCard>(PATHS.facilities, listParams, (page, signal) => api.facilities({ ...listParams, page }, signal), viewMode === 'list');
 
   // Initialize Leaflet Map (only while the map view is showing)
@@ -292,6 +363,83 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
   const popupCard = popup.data;
 
+  const listFilters = (
+    <>
+          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs space-y-2 text-[11px]">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-bold text-slate-800 flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-rose-600" />{isAr ? 'المحافظة والمدينة' : 'Governorate & city'}</span>
+              <button
+                type="button"
+                onClick={resetToMyArea}
+                disabled={atMyArea}
+                className="px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-bold flex items-center gap-1 disabled:opacity-40 cursor-pointer"
+              >
+                <Navigation className="w-3 h-3" />
+                {isAr ? 'موقعي الحالي' : 'My location'}
+              </button>
+            </div>
+            {[
+              { items: [{ id: null as number | null, name: isAr ? 'كل المحافظات' : 'All governorates' }, ...sortedGovs], value: govId, mine: myArea?.governorate.id, pick: (id: number | null) => { setGovId(id); setCityId(null); } },
+              ...(govId ? [{ items: [{ id: null as number | null, name: isAr ? 'كل المدن' : 'All cities' }, ...cities], value: cityId, mine: govId === myArea?.governorate.id ? myArea?.city?.id : undefined, pick: (id: number | null) => setCityId(id) }] : []),
+            ].map((row, i) => (
+              <div key={i} className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+                {row.items.map((o) => {
+                  const isMine = o.id != null && o.id === row.mine;
+                  const isOn = row.value === o.id;
+                  return (
+                    <button
+                      key={o.id ?? 'all'}
+                      type="button"
+                      onClick={() => row.pick(o.id)}
+                      className={`px-2.5 py-1 rounded-lg font-bold shrink-0 border transition-colors ${
+                        isMine
+                          ? isOn ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-emerald-50 border-emerald-400 text-emerald-700'
+                          : isOn ? 'bg-rose-700 border-rose-700 text-white' : 'bg-slate-100 border-transparent text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {isMine && '★ '}{o.name}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs font-bold text-slate-800">
+            <div className="flex items-center gap-1.5">
+              <Navigation className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+              <span>{isAr ? 'نطاق البحث:' : 'Search range:'}</span>
+              {radiusSelect('list-radius-select')}
+            </div>
+            {/* Biggest discount first; press again for nearest-first. */}
+            <button
+              type="button"
+              onClick={() => onSortChange(byDiscount ? null : 'discount')}
+              aria-pressed={byDiscount}
+              className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                byDiscount ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'
+              }`}
+            >
+              <Percent className="w-3.5 h-3.5" />
+              <span>{isAr ? 'الأعلى خصماً' : 'Top discount'}</span>
+            </button>
+          </div>
+
+    </>
+  );
+
+  // Once the list is scrolled, a fixed button on the left opens the same filters in a drawer.
+  const [scrolled, setScrolled] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  usePopupHash('filter-popup', drawerOpen);
+  useEffect(() => {
+    if (viewMode !== 'list') { setScrolled(false); setDrawerOpen(false); return; }
+    const onScroll = () => setScrolled(window.scrollY > 240);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [viewMode]);
+  const activeFilters = (selectedTypeId ? 1 : 0) + (govId ? 1 : 0) + (cityId ? 1 : 0) + (byDiscount ? 1 : 0);
+
   return (
     <div className="space-y-3 pb-20 animate-in fade-in duration-200">
       {/* 1. Search & type filters */}
@@ -301,15 +449,46 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder={isAr ? 'ابحث باسم المستشفى، المعمل، أو المنطقة...' : 'Search hospital, lab or area...'}
+              placeholder={isAr ? 'اسم أو فرع أو عنوان أو رقم أو مدينة…' : 'Name, branch, address, phone or city…'}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setSuggestOpen(true); }}
+              onFocus={() => setSuggestOpen(true)}
+              onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
               className="w-full pl-8 pr-9 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-600 transition-colors"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                 <X className="w-3.5 h-3.5" />
               </button>
+            )}
+            {suggestOpen && q.length >= 2 && (suggestions.data?.length ?? 0) > 0 && (
+              <div className="absolute z-[450] mt-1 inset-x-0 max-h-80 overflow-y-auto bg-white rounded-2xl border border-slate-200 shadow-xl divide-y divide-slate-100 text-xs">
+                {suggestions.data!.map((group) => (
+                  <div key={group.type} className="py-1">
+                    <div className="px-3 py-1 text-[11px] font-black text-slate-400">{groupLabel[group.type]}</div>
+                    {group.items.map((item) => (
+                      <button
+                        key={`${group.type}-${item.id}`}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => pickSuggestion(group.type, item)}
+                        className="w-full px-3 py-2 flex items-center gap-2.5 text-start hover:bg-rose-50 cursor-pointer"
+                      >
+                        {(group.type === 'facility' || group.type === 'branch') && <Thumb src={item.logo ?? undefined} alt={item.name} kind="facility" fit="contain" className="w-8 h-8 rounded-lg border border-slate-200 shrink-0" />}
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-bold text-slate-900 truncate">{item.name}</span>
+                          {(item.address || item.governorate || item.type_name) && (
+                            <span className="block text-[11px] text-slate-500 truncate">{item.address ?? [item.city, item.governorate].filter(Boolean).join(' - ') ?? item.type_name}</span>
+                          )}
+                        </span>
+                      </button>
+                    ))}
+                    {group.total > group.items.length && (
+                      <div className="px-3 pb-1 text-[11px] text-slate-400">{isAr ? `+${group.total - group.items.length} أخرى` : `+${group.total - group.items.length} more`}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -453,25 +632,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
         </div>
       ) : (
         <div className="space-y-2.5">
-          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs font-bold text-slate-800">
-            <div className="flex items-center gap-1.5">
-              <Navigation className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <span>{isAr ? 'نطاق البحث:' : 'Search range:'}</span>
-              {radiusSelect('list-radius-select')}
-            </div>
-            {/* Biggest discount first; press again for nearest-first. */}
-            <button
-              type="button"
-              onClick={() => onSortChange(byDiscount ? null : 'discount')}
-              aria-pressed={byDiscount}
-              className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
-                byDiscount ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'
-              }`}
-            >
-              <Percent className="w-3.5 h-3.5" />
-              <span>{isAr ? 'الأعلى خصماً' : 'Top discount'}</span>
-            </button>
-          </div>
+          {listFilters}
 
           {list.loading && <ListSkeleton rows={5} />}
           {list.error && <ErrorState onRetry={list.reload} />}
@@ -547,6 +708,60 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
             </div>
           )}
         </div>
+      )}
+
+      {viewMode === 'list' && scrolled && !drawerOpen && createPortal(
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className="fixed z-40 bottom-40 left-4 w-12 h-12 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer animate-in fade-in zoom-in-90 duration-150"
+          style={{ left: 'max(1rem, calc(50% - 384px + 1rem))' }}
+          title={isAr ? 'تصفية' : 'Filters'}
+          aria-label={isAr ? 'تصفية' : 'Filters'}
+        >
+          <SlidersHorizontal className="w-5 h-5" />
+          {activeFilters > 0 && (
+            <span className="absolute -top-1 -end-1 min-w-5 h-5 px-1 rounded-full bg-amber-400 text-slate-900 text-[10px] font-black flex items-center justify-center border-2 border-white">{activeFilters}</span>
+          )}
+        </button>,
+        document.body,
+      )}
+
+      {drawerOpen && createPortal(
+        <div className="fixed inset-0 z-[999] flex items-end justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-150" onClick={() => setDrawerOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} dir={isAr ? 'rtl' : 'ltr'} className="bg-white w-full max-w-md max-h-[88dvh] rounded-t-3xl flex flex-col animate-in slide-in-from-bottom duration-200">
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-[#941946]" />
+                {isAr ? 'تصفية الفروع' : 'Filter branches'}
+              </h3>
+              <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer" aria-label={isAr ? 'إغلاق' : 'Close'}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-4 space-y-3 overflow-y-auto text-xs">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[{ id: null as number | null, name: isAr ? 'الكل' : 'All' }, ...(types.data ?? [])].map((type) => (
+            <button
+              key={type.id ?? 'all'}
+              onClick={() => onSelectType(type.id)}
+              className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors ${
+                selectedTypeId === type.id ? 'bg-rose-700 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {type.name}
+            </button>
+          ))}
+              </div>
+              {listFilters}
+            </div>
+            <div className="p-4 border-t border-slate-100">
+              <button onClick={() => setDrawerOpen(false)} className="w-full py-3 rounded-2xl bg-[#941946] text-white font-black text-sm cursor-pointer">
+                {isAr ? 'عرض النتائج' : 'Show results'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

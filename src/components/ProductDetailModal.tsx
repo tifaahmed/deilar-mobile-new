@@ -8,6 +8,7 @@ import { useContact } from '../hooks/useCatalog';
 import { useLanguage } from '../context/LanguageContext';
 import { Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
+import { usePopupHash } from '../utils/popupHash';
 
 interface ProductDetailModalProps {
   /** The card that was tapped — shown at once; description and gallery load behind it. */
@@ -18,6 +19,7 @@ interface ProductDetailModalProps {
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClose, onAddToCart, onOpenStore }) => {
+  usePopupHash('product-popup');
   const { isAr } = useLanguage();
   const contact = useContact();
   const member = useIsMember();

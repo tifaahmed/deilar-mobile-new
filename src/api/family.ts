@@ -13,8 +13,16 @@ export interface FamilyPerson {
   rejection_reason: string | null;
 }
 
+/** The card's people, plus whether the signed-in member may add children (the backend: a male member). */
 export const fetchFamily = (token: string) =>
-  apiGetAuth<{ data: { family_members: FamilyPerson[] } }>('/family', token).then((r) => r.data.family_members);
+  apiGetAuth<{ data: { family_members: FamilyPerson[]; can_add_children?: boolean } }>('/family', token).then((r) => ({
+    members: r.data.family_members,
+    canAddChildren: r.data.can_add_children === true,
+  }));
+
+/** A father adds a child by FIRST name only: the backend appends his own name. Waits for staff approval. */
+export const addFamilyChild = (token: string, body: { first_name: string; relationship: 'son' | 'daughter' }) =>
+  apiPost<{ data: { family_member: FamilyPerson } }>('/family/children', body, undefined, token);
 
 /**
  * Sends a relative for staff approval. `body` carries name, relationship, national_id and the

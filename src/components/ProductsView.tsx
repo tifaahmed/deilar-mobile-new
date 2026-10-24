@@ -30,6 +30,7 @@ import { Product, CartItem } from '../types';
 import { ErrorState, ListSkeleton, LoadMore } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
 import { StoreDetailView } from './StoreDetailView';
+import { usePopupHash } from '../utils/popupHash';
 
 type Sort = 'newest' | 'price_asc' | 'price_desc' | 'discount';
 
@@ -59,6 +60,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
   const [sort, setSort] = useState<Sort>('newest');
   const [storeId, setStoreId] = useState<number | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  usePopupHash('filter-popup', drawerOpen);
   // What is being edited in the drawer; it only takes effect on "Apply".
   const [draft, setDraft] = useState<{ type: number | null; store: number | null; sort: Sort }>({ type: null, store: null, sort: 'newest' });
 
@@ -305,7 +307,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
       {createPortal(
         <button
           onClick={openDrawer}
-          className="fixed z-40 bottom-24 end-4 w-12 h-12 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+          className="fixed z-40 bottom-40 end-4 w-12 h-12 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
           style={{ insetInlineEnd: 'max(1rem, calc(50% - 384px + 1rem))' }}
           title={isAr ? 'تصفية المنتجات' : 'Filter products'}
           aria-label={isAr ? 'تصفية المنتجات' : 'Filter products'}

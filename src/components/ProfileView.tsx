@@ -8,6 +8,7 @@ import {
   MessageCircle, 
   Check, 
   ChevronRight, 
+  ChevronDown,
   ChevronLeft,
   Users, 
   Clock,
@@ -28,6 +29,7 @@ import {
   Plus,
   Save,
   MapPin,
+  TriangleAlert,
   Mail,
   Phone,
   FileText,
@@ -45,16 +47,22 @@ import { ApiError, postContactMessage } from '../api/http';
 import { getSession } from '../utils/session';
 import { useApi } from '../hooks/useApi';
 import { fetchFamily } from '../api/family';
-import { AddMemberForm } from './AddMemberForm';
+import { AddChildForm } from './AddChildForm';
 import { CardStatusBanner } from './CardStatusBanner';
 import { SubscribePanel } from './SubscribePanel';
 import { fetchMembership, requestRelatives, type CardStatus } from '../api/membership';
+import { AreaPicker } from './AreaPicker';
+import { PayPage } from './PayPage';
+import { AddressesTab } from './AddressesTab';
+import { saveHomeAddress, uploadAvatar, fetchSavedAddress } from '../api/auth';
+import { navigate, routeHref } from '../router';
+import { NationalIdChange } from './NationalIdChange';
 import { reportClientError } from '../utils/reportError';
 import { useContact } from '../hooks/useCatalog';
 import { downloadDeilarCardImage } from '../utils/downloadCard';
 import { useLanguage } from '../context/LanguageContext';
 
-export type ProfileSubSection = 'card' | 'members' | 'support' | 'personal' | 'theme';
+export type ProfileSubSection = 'card' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay';
 
 export interface ProfileAccount {
   name: string;
@@ -81,6 +89,19 @@ interface ProfileViewProps {
   status?: CardStatus;
 }
 
+const FIELD_LABELS: Record<string, { ar: string; en: string }> = {
+  name: { ar: 'الاسم', en: 'name' },
+  email: { ar: 'البريد الإلكتروني', en: 'email' },
+  gender: { ar: 'النوع', en: 'gender' },
+  governorate_id: { ar: 'المحافظة', en: 'governorate' },
+  city_id: { ar: 'المدينة', en: 'city' },
+  national_id: { ar: 'الرقم القومي', en: 'national ID' },
+  job_title: { ar: 'المسمى الوظيفي', en: 'job title' },
+  company_name: { ar: 'جهة العمل', en: 'company' },
+  address: { ar: 'العنوان', en: 'address' },
+  avatar: { ar: 'الصورة الشخصية', en: 'profile photo' },
+};
+
 export const ProfileView: React.FC<ProfileViewProps> = ({
   account,
   onLogout,
@@ -106,6 +127,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Personal Info form state
   const [personalInfo, setPersonalInfo] = useState({
@@ -113,18 +135,30 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     phone: account.phone,
     email: '',
     governorateId: '' as string,
+    cityId: '' as string,
     nationalId: '',
+    gender: '' as '' | 'male' | 'female',
+    jobTitle: '',
+    address: '',
+    building: '',
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState<{ percent: number; missing: string[] } | null>(null);
+  const [idChange, setIdChange] = useState<import('../api/auth').Profile['idChange']>(null);
   const [personalSaveSuccess, setPersonalSaveSuccess] = useState(false);
   const [personalBusy, setPersonalBusy] = useState(false);
   const [personalError, setPersonalError] = useState<string | null>(null);
+  const [nameTried, setNameTried] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
 
   // The member's saved details come from the backend once they are signed in (phone + code).
   const personalOpen = activeSection === 'personal' && account.signedIn;
   const token = getSession().token;
   const family = useApi(token ? `family:${token}` : null, () => fetchFamily(token!));
-  const awaiting = (family.data ?? []).filter((p) => p.approval_status !== 'approved');
+  const people = family.data?.members ?? [];
+  // Only a male member adds children (by first name); anyone else asks customer service.
+  const canAddChildren = family.data?.canAddChildren === true;
+  const awaiting = people.filter((p) => p.approval_status !== 'approved');
   // The signed-in member's own card state: the trial / relatives rules and the open payment. Never cached.
   const membership = useApi(token ? `membership:${token}` : null, () => fetchMembership(token!));
   const relatives = membership.data?.relatives;
@@ -156,8 +190,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           phone: p.phone ?? cur.phone,
           email: p.email ?? '',
           governorateId: p.governorateId ? String(p.governorateId) : '',
+          cityId: p.cityId ? String(p.cityId) : '',
           nationalId: p.nationalId ?? '',
+          gender: p.gender ?? '',
+          jobTitle: p.jobTitle ?? '',
+          address: cur.address,
+          building: cur.building,
         }));
+        setProgress(p.progress);
+        setIdChange(p.idChange);
+        setSavedNationalId(p.nationalId ?? '');
+        fetchSavedAddress(token).then(
+          (a) => { if (!cancelled && a) setPersonalInfo((cur) => ({ ...cur, address: a.street ?? '', building: a.building_number ?? '' })); },
+          () => undefined,
+        );
       },
       (err) => {
         if (!cancelled && err instanceof ApiError && err.status === 401) setSessionExpired(true);
@@ -211,10 +257,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
+  // Once the card carries a national ID it is read-only here.
+  const [savedNationalId, setSavedNationalId] = useState('');
+  const idLocked = savedNationalId !== '';
+
   const handleSavePersonalInfo = async (e: React.FormEvent) => {
     e.preventDefault();
     const token = getSession().token;
     if (!token || personalBusy) return;
+
+    // Spaces alone are not a name.
+    if (personalInfo.fullName.trim().length < 3) {
+      setNameTried(true);
+      setPersonalSaveSuccess(false);
+      setPersonalError(isAr ? 'الاسم مطلوب (٣ أحرف على الأقل). أكمل البيانات الناقصة ثم احفظ.' : 'Your name is required (at least 3 characters). Fill in what is missing, then save.');
+      return;
+    }
 
     setPersonalBusy(true);
     setPersonalError(null);
@@ -224,9 +282,32 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       await updateProfile(token, {
         name: personalInfo.fullName.trim(),
         email: personalInfo.email.trim() || null,
-        national_id: personalInfo.nationalId.trim() || null,
+        ...(personalInfo.gender ? { gender: personalInfo.gender } : {}),
+        job_title: personalInfo.jobTitle.trim() || null,
+        // An ID that is already on the card is changed only through a request (see <NationalIdChange>).
+        ...(idLocked ? {} : { national_id: personalInfo.nationalId.trim() || null }),
         governorate_id: personalInfo.governorateId ? Number(personalInfo.governorateId) : null,
+        city_id: personalInfo.cityId ? Number(personalInfo.cityId) : null,
       });
+      // The address belongs to a governorate (the backend requires it); the photo is its own upload.
+      if (personalInfo.address.trim()) {
+        if (!personalInfo.governorateId) {
+          setPersonalError(isAr ? 'اختر المحافظة أولاً ليُحفظ العنوان' : 'Choose your governorate first so the address can be saved');
+          return;
+        }
+        await saveHomeAddress(token, {
+          governorate_id: Number(personalInfo.governorateId),
+          city_id: personalInfo.cityId ? Number(personalInfo.cityId) : null,
+          street: personalInfo.address.trim(),
+          building_number: personalInfo.building.trim() || undefined,
+        });
+      }
+      if (avatarFile) {
+        await uploadAvatar(token, avatarFile);
+        setAvatarFile(null);
+      }
+      // The percentage is the backend's count; ask it again rather than guessing what changed.
+      fetchProfile(token).then((p) => setProgress(p.progress), () => undefined);
       setPersonalSaveSuccess(true);
       setTimeout(() => setPersonalSaveSuccess(false), 3500);
     } catch (err) {
@@ -274,14 +355,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   const isDark = theme === 'dark';
+  // Red once the name is empty or too short, and from the first failed save.
+  const nameBad = personalInfo.fullName.trim().length < 3 && (nameTried || !personalInfo.fullName.trim());
+
+  // /card/pay is the payment form and nothing else: no banners, tabs or card around it.
+  if (activeSection === 'pay') {
+    return (
+      <div className={`pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
+        {token && membership.data ? (
+          <PayPage token={token} status={membership.data} onDone={membership.reload} />
+        ) : (
+          <div className="py-10 flex justify-center text-slate-400" aria-hidden><span className="w-6 h-6 rounded-full border-2 border-slate-300 border-t-[#941946] animate-spin" /></div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={`space-y-4 pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
       {/* A scan of an expired card says so first, in red, with every way to pay or call. */}
       <CardStatusBanner status={status} number={account.number} />
 
+      {/* The name is required: say what is missing and take the member straight to the field. */}
+      {account.signedIn && !account.name.trim() && (
+        <div role="alert" className="rounded-2xl border border-red-300 bg-red-50 p-3.5 flex items-start gap-3 text-red-800">
+          <TriangleAlert className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-2">
+            <p className="text-sm font-black">{isAr ? 'بيانات ناقصة: الاسم مطلوب' : 'Missing details: your name is required'}</p>
+            <p className="text-xs leading-relaxed">{isAr ? 'أضف اسمك بالكامل ليظهر على كرتك.' : 'Add your full name so it appears on your card.'}</p>
+            <button type="button" onClick={() => setActiveSection('personal')} className="px-3.5 py-2 rounded-xl bg-red-700 text-white text-xs font-bold cursor-pointer">
+              {isAr ? 'إضافة الاسم الآن' : 'Add my name now'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Subscribe or renew: while on trial, once expired, or within a month of the end. */}
-      {activeSection === 'card' && token && membership.data && (membership.data.is_trial || membership.data.expired || membership.data.days_left <= 30) && (
+      {(activeSection === 'card' || activeSection === 'support') && token && membership.data && (membership.data.is_trial || membership.data.expired || membership.data.days_left <= 30) && (
         <SubscribePanel token={token} status={membership.data} onDone={membership.reload} />
       )}
 
@@ -392,6 +502,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         >
           <UserCheck className="w-3.5 h-3.5" />
           <span>{t('tabPersonal')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSection('addresses')}
+          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
+            activeSection === 'addresses'
+              ? 'bg-[#941946] text-white shadow-xs'
+              : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <MapPin className="w-3.5 h-3.5" />
+          <span>{isAr ? 'عناويني' : 'Addresses'}</span>
         </button>
 
         <button
@@ -539,6 +661,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       )}
 
       {/* 4. Section 2: مكان تانى اشوف الاعضاء (Family Members / Beneficiaries) */}
+      {activeSection === 'addresses' && (token ? <AddressesTab token={token} dark={isDark} /> : (
+        <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل الدخول برقم هاتفك أولاً لإضافة عناوينك.' : 'Sign in with your phone first to add your addresses.'}</p>
+      ))}
+
       {activeSection === 'members' && (
         <section className={`rounded-2xl p-4 border transition-colors shadow-2xs space-y-3 animate-in fade-in duration-150 ${
           isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200/90 text-slate-900'
@@ -550,7 +676,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
             
             {/* A trial card holds the owner alone; a full one takes up to the cap, first degree only. */}
-            {(!relatives || relatives.can_add) && (
+            {/* A trial card cannot take members: the button is there but locked, and leads to payment. */}
+            {relatives?.must_contact_support && (
+              <button
+                onClick={() => navigate(routeHref({ tab: 'profile', section: 'pay' }))}
+                className="px-2.5 py-1 bg-slate-200 text-slate-600 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                title={isAr ? 'يلزم الدفع لإضافة أفراد' : 'Payment is required to add members'}
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>{t('addNewMember')}</span>
+              </button>
+            )}
+            {(!relatives || relatives.can_add) && canAddChildren && (
               <button
                 onClick={() => setShowAddMemberModal(true)}
                 className="px-2.5 py-1 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
@@ -570,7 +707,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </p>
               {relatives.must_contact_support ? (
                 <>
+                  <div role="alert" className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 space-y-2">
+                    <p className="font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'يلزم الدفع لإضافة أفراد العائلة' : 'You need to pay to add family members'}</p>
+                    <p>{isAr ? 'الكارت التجريبي يشملك وحدك. اشترك في الكارت الكامل لتتمكن من إضافة أبنائك وأقاربك من الدرجة الأولى.' : 'The trial card covers only you. Subscribe to the full card to add your children and first-degree relatives.'}</p>
+                    <button onClick={() => navigate(routeHref({ tab: 'profile', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white text-[11px] font-bold cursor-pointer">
+                      {isAr ? 'ادفع الآن لإضافة الأفراد' : 'Pay now to add members'}
+                    </button>
+                  </div>
                   <p>{isAr ? 'خلال التجربة يشملك الكارت وحدك. اضغط الزر وستتصل بك خدمة العملاء لإضافة أقاربك.' : 'During the trial your card holds you only. Press the button and customer service will call you to add your relatives.'}</p>
+                  <button
+                    onClick={askRelatives}
+                    disabled={relativesAsked}
+                    className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[11px] font-bold disabled:opacity-60 cursor-pointer"
+                  >
+                    {relativesAsked ? (isAr ? 'تم الإرسال — ستتصل بك خدمة العملاء' : 'Sent — customer service will call you') : isAr ? 'اتصلوا بي لإضافة أقاربي' : 'Call me to add my relatives'}
+                  </button>
+                  {relativesError && <p className="text-rose-600 font-bold">{isAr ? 'تعذر إرسال الطلب. حاول مرة أخرى.' : 'The request could not be sent. Please try again.'}</p>}
+                </>
+              ) : !canAddChildren && relatives.can_add ? (
+                <>
+                  <p>{isAr ? 'لإضافة أقاربك تواصل مع خدمة العملاء. اضغط الزر وسنتصل بك.' : 'To add your relatives, contact customer service. Press the button and we will call you.'}</p>
                   <button
                     onClick={askRelatives}
                     disabled={relativesAsked}
@@ -583,7 +739,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               ) : !relatives.can_add ? (
                 <p>{relatives.count >= relatives.max ? (isAr ? 'وصلت للحد الأقصى. تواصل مع خدمة العملاء.' : 'You have reached the limit. Contact customer service.') : isAr ? 'جدّد الكارت لإضافة أقارب.' : 'Renew your card to add relatives.'}</p>
               ) : (
-                <p>{isAr ? 'الأقارب الذين تضيفهم ينتظرون موافقة فريقنا.' : 'Relatives you add wait for approval by our team.'}</p>
+                <p>{isAr ? 'أضف أبناءك بالاسم الأول فقط — يُضاف اسمك تلقائياً، وينتظر الابن موافقة فريقنا.' : 'Add your children by first name only — your name is added automatically, and each child waits for our team to approve.'}</p>
               )}
             </div>
           )}
@@ -627,56 +783,88 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           )}
 
           <div className="space-y-2 pt-1">
-            {beneficiaries.map((b) => (
-              <div
-                key={b.id}
-                onClick={() => {
-                  setSelectedBeneficiaryId(b.id);
-                  setActiveSection('card');
-                }}
-                className={`p-3 rounded-2xl border flex items-center justify-between transition-all cursor-pointer ${
-                  selectedBeneficiaryId === b.id
-                    ? isDark ? 'bg-[#941946]/20 border-[#941946]' : 'bg-rose-50/80 border-[#941946]/40 shadow-xs'
-                    : isDark ? 'bg-[#1E2330] hover:bg-[#252c3d] border-white/[0.08]' : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200/70'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#941946]/15 text-[#941946] flex items-center justify-center font-bold text-sm shrink-0">
-                    {b.name.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs font-bold">{b.name}</p>
-                      <span className={`text-[10px] px-2 py-0.2 rounded-md ${
-                        isDark ? 'bg-[#252c3d] text-[#94A3B8]' : 'bg-slate-200/80 text-slate-500'
-                      }`}>
-                        {b.relation || t('primaryAccount')}
-                      </span>
+            {beneficiaries.map((b) => {
+              const open = expandedId === b.id;
+              const fam = b.id.startsWith('member-') ? people.find((f) => `member-${f.id}` === b.id) : undefined;
+              const rows: [string, string | null | undefined][] = [
+                [isAr ? 'الاسم' : 'Name', b.name],
+                [isAr ? 'الصلة' : 'Relation', b.relation || t('primaryAccount')],
+                [isAr ? 'رقم الكرت' : 'Card number', b.cardNumber],
+                [isAr ? 'الرقم القومي' : 'National ID', b.nationalId],
+                [isAr ? 'تاريخ الميلاد' : 'Date of birth', b.dob],
+                [isAr ? 'الحالة' : 'Status', fam ? (fam.is_active ? (isAr ? 'مفعل' : 'Active') : isAr ? 'غير مفعل' : 'Inactive') : b.status === 'active' ? t('activeStatus') : isAr ? 'بانتظار الموافقة' : 'Awaiting approval'],
+              ];
+              return (
+                <div
+                  key={b.id}
+                  className={`rounded-2xl border transition-all ${
+                    selectedBeneficiaryId === b.id
+                      ? isDark ? 'bg-[#941946]/20 border-[#941946]' : 'bg-rose-50/80 border-[#941946]/40 shadow-xs'
+                      : isDark ? 'bg-[#1E2330] hover:bg-[#252c3d] border-white/[0.08]' : 'bg-slate-50 hover:bg-slate-100/80 border-slate-200/70'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    aria-expanded={open}
+                    onClick={() => { setExpandedId(open ? null : b.id); setSelectedBeneficiaryId(b.id); }}
+                    className="w-full p-3 flex items-center justify-between cursor-pointer text-start"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-[#941946]/15 text-[#941946] flex items-center justify-center font-bold text-sm shrink-0">
+                        {b.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-bold truncate">{b.name}</p>
+                          <span className={`text-[10px] px-2 py-0.2 rounded-md shrink-0 ${isDark ? 'bg-[#252c3d] text-[#94A3B8]' : 'bg-slate-200/80 text-slate-500'}`}>
+                            {b.relation || t('primaryAccount')}
+                          </span>
+                        </div>
+                        <p className={`text-[10px] font-mono mt-0.5 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{b.cardNumber}</p>
+                      </div>
                     </div>
-                    <p className={`text-[10px] font-mono mt-0.5 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{b.cardNumber}</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    {t('activeStatus')}
-                  </span>
-                  <span className="text-xs font-bold text-[#941946] flex items-center gap-0.5">
-                    <span>{t('viewCardAction')}</span>
-                    <ChevronLeft className={`w-3.5 h-3.5 ${isAr ? '' : 'rotate-180'}`} />
-                  </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        {t('activeStatus')}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-[#941946] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+                    </div>
+                  </button>
+
+                  {open && (
+                    <div className={`px-3 pb-3 pt-1 space-y-2 border-t animate-in fade-in slide-in-from-top-1 duration-150 ${isDark ? 'border-white/[0.08]' : 'border-slate-200/70'}`}>
+                      <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-[11px]">
+                        {rows.filter(([, v]) => v).map(([k, v]) => (
+                          <div key={k} className="min-w-0">
+                            <dt className={isDark ? 'text-[#94A3B8]' : 'text-slate-500'}>{k}</dt>
+                            <dd className="font-bold truncate" dir={k === 'Name' || k === 'الاسم' || k === 'Relation' || k === 'الصلة' || k === 'Status' || k === 'الحالة' ? undefined : 'ltr'}>{v}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedBeneficiaryId(b.id); setActiveSection('card'); }}
+                        className="w-full py-2.5 rounded-xl bg-[#941946] hover:bg-[#7b1439] text-white text-xs font-bold flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <span>{t('viewCardAction')}</span>
+                        <ChevronLeft className={`w-3.5 h-3.5 ${isAr ? '' : 'rotate-180'}`} />
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Add member: every field + camera pictures, then waits for admin approval */}
           {showAddMemberModal && (
             token ? (
-              <AddMemberForm
+              <AddChildForm
                 token={token}
                 isAr={isAr}
                 isDark={isDark}
+                fatherName={account.name}
                 onCancel={() => setShowAddMemberModal(false)}
                 onSent={() => {
                   setShowAddMemberModal(false);
@@ -739,7 +927,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             {[
               ...(contact.phone ? [{ href: `tel:${contact.dial ?? contact.phone}`, Icon: Phone, label: isAr ? 'هاتف الشركة' : 'Company phone', value: contact.phone, plain: false }] : []),
               ...(contact.email ? [{ href: `mailto:${contact.email}`, Icon: Mail, label: isAr ? 'البريد الإلكتروني' : 'Email', value: contact.email, plain: false }] : []),
-              { href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('44ش عبد المنعم رياض من كورنيش النيل - الوراق - جيزة - الدور الاول')}`, Icon: MapPin, label: isAr ? 'العنوان' : 'Address', value: '44ش عبد المنعم رياض من كورنيش النيل - الوراق - جيزة - الدور الاول', plain: true },
             ].map(({ href, Icon, label, value, plain }) => (
               <a key={href} href={href} {...(plain ? { target: '_blank', rel: 'noreferrer' } : {})} className="flex items-center gap-3 px-3.5 py-3">
                 <span className="w-9 h-9 rounded-xl bg-[#941946]/10 text-[#941946] flex items-center justify-center shrink-0">
@@ -878,22 +1065,40 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           ) : (
           <form onSubmit={handleSavePersonalInfo} className="space-y-3">
+            {progress && progress.percent < 100 && (
+              <div className={`p-3 rounded-2xl border space-y-2 ${isDark ? 'bg-[#1E2330] border-white/[0.08]' : 'bg-amber-50 border-amber-200'}`}>
+                <div className="flex items-center justify-between text-[11px] font-bold">
+                  <span>{isAr ? 'اكتمال بياناتك' : 'Your profile'}</span>
+                  <span dir="ltr">{progress.percent}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-slate-200 overflow-hidden"><div className="h-full bg-[#941946] transition-all" style={{ width: `${progress.percent}%` }} /></div>
+                <p className="text-[11px] leading-relaxed">
+                  {isAr ? 'الناقص: ' : 'Missing: '}
+                  {progress.missing.map((k) => (FIELD_LABELS[k] ? (isAr ? FIELD_LABELS[k].ar : FIELD_LABELS[k].en) : k)).join(isAr ? '، ' : ', ')}
+                </p>
+              </div>
+            )}
             <div>
               <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                {t('fullNamePrompt')}
+                {t('fullNamePrompt')} <span className="text-red-600 font-black" aria-hidden>*</span>
               </label>
               <div className="relative">
                 <User className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
                 <input
                   type="text"
                   required
+                  minLength={3}
+                  aria-invalid={nameBad}
                   value={personalInfo.fullName}
                   onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
-                  className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
-                    isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
+                  className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none ${
+                    nameBad
+                      ? 'border-red-500 bg-red-50 text-red-900 focus:border-red-600 ring-1 ring-red-400'
+                      : `focus:border-[#941946] ${isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'}`
                   }`}
                 />
               </div>
+              {nameBad && <p className="mt-1 text-[11px] font-bold text-red-600">{isAr ? 'الاسم مطلوب' : 'Name is required'}</p>}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -934,28 +1139,44 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                  {t('governoratePrompt')}
-                </label>
-                <div className="relative">
-                  <MapPin className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
-                  <select
-                    value={personalInfo.governorateId}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, governorateId: e.target.value })}
-                    className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${
-                      isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
+            <div>
+              <span className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'النوع' : 'Gender'}</span>
+              <div className="flex gap-2" role="radiogroup" aria-label={isAr ? 'النوع' : 'Gender'}>
+                {(['male', 'female'] as const).map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    role="radio"
+                    aria-checked={personalInfo.gender === g}
+                    onClick={() => setPersonalInfo({ ...personalInfo, gender: g })}
+                    className={`flex-1 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-colors ${
+                      personalInfo.gender === g
+                        ? 'bg-[#941946] text-white border-[#941946]'
+                        : isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-700'
                     }`}
                   >
-                    <option value="">{isAr ? 'اختر المحافظة' : 'Select governorate'}</option>
-                    {(governorates.data ?? []).map((g) => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
-                </div>
+                    {g === 'male' ? (isAr ? 'ذكر' : 'Male') : isAr ? 'أنثى' : 'Female'}
+                  </button>
+                ))}
               </div>
+            </div>
 
+            <AreaPicker
+              dark={isDark}
+              governorateId={personalInfo.governorateId ? Number(personalInfo.governorateId) : null}
+              cityId={personalInfo.cityId ? Number(personalInfo.cityId) : null}
+              onChange={(gov, city) => setPersonalInfo({ ...personalInfo, governorateId: gov ? String(gov) : '', cityId: city ? String(city) : '' })}
+            />
+
+            {idLocked ? (
+              <NationalIdChange
+                dark={isDark}
+                current={savedNationalId}
+                request={idChange}
+                token={getSession().token ?? ''}
+                onSent={() => setIdChange({ status: 'pending', new_national_id: '', review_note: null })}
+              />
+            ) : (
               <div>
                 <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
                   {t('nationalIdPrompt')}
@@ -971,6 +1192,51 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   }`}
                 />
               </div>
+            )}
+
+            <div>
+              <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'المسمى الوظيفي' : 'Job title'}</label>
+              <input
+                type="text"
+                value={personalInfo.jobTitle}
+                maxLength={255}
+                onChange={(e) => setPersonalInfo({ ...personalInfo, jobTitle: e.target.value })}
+                className={`w-full px-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="col-span-2">
+                <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'العنوان (الشارع والمنطقة)' : 'Address (street and area)'}</label>
+                <input
+                  type="text"
+                  value={personalInfo.address}
+                  maxLength={255}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, address: e.target.value })}
+                  className={`w-full px-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                />
+              </div>
+              <div>
+                <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'رقم العقار' : 'Building no.'}</label>
+                <input
+                  type="text"
+                  value={personalInfo.building}
+                  maxLength={50}
+                  onChange={(e) => setPersonalInfo({ ...personalInfo, building: e.target.value })}
+                  className={`w-full px-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'الصورة الشخصية' : 'Profile photo'}</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
+                className="w-full text-[11px] file:mr-2 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-[11px] file:font-bold"
+              />
+              {avatarFile && <span className="block mt-1 text-[10px] text-emerald-700 truncate">{avatarFile.name}</span>}
             </div>
 
             {personalError && (

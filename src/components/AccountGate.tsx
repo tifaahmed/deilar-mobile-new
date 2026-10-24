@@ -1,5 +1,6 @@
 import React from 'react';
-import { CreditCard, LogOut, Phone, UserRound } from 'lucide-react';
+import { CreditCard, Facebook, LogOut, Mail, MessageCircle, Phone, PhoneCall, UserRound } from 'lucide-react';
+import { useContact } from '../hooks/useCatalog';
 import { useLanguage } from '../context/LanguageContext';
 import { ErrorState, Skeleton } from './ui/Feedback';
 import { TrialCardForm } from './TrialCardForm';
@@ -18,6 +19,37 @@ interface AccountGateProps {
   /** The trial card was created: show it. */
   onTrialCreated?: (number: string, name: string) => void;
 }
+
+/** Customer-service details, shown while there is no card to show. Numbers come from the admin settings. */
+const ContactUs: React.FC = () => {
+  const { isAr } = useLanguage();
+  const contact = useContact();
+  const rows = [
+    contact.phone && { href: `tel:${contact.dial ?? contact.phone}`, icon: PhoneCall, label: isAr ? 'اتصل بنا' : 'Call us', value: contact.phone, tone: 'bg-slate-900 text-white', ltr: true },
+    contact.whatsapp && { href: `https://wa.me/${contact.whatsapp}`, icon: MessageCircle, label: isAr ? 'واتساب' : 'WhatsApp', value: `+${contact.whatsapp}`, tone: 'bg-[#25D366] text-white', ltr: true },
+    contact.email && { href: `mailto:${contact.email}`, icon: Mail, label: isAr ? 'البريد الإلكتروني' : 'Email', value: contact.email, tone: 'bg-slate-100 text-slate-800', ltr: true },
+    contact.facebook && { href: contact.facebook, icon: Facebook, label: 'Facebook', value: isAr ? 'صفحتنا' : 'Our page', tone: 'bg-slate-100 text-slate-800', ltr: false },
+  ].filter(Boolean) as { href: string; icon: React.ElementType; label: string; value: string; tone: string; ltr: boolean }[];
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className={`bg-white rounded-3xl p-4 border border-slate-200/90 shadow-2xs space-y-2.5 mt-3 ${isAr ? 'text-right' : 'text-left'}`}>
+      <h3 className="text-sm font-black text-slate-900">{isAr ? 'تواصل معنا' : 'Contact us'}</h3>
+      <div className="grid gap-2">
+        {rows.map((r) => (
+          <a key={r.label} href={r.href} target={r.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className={`${r.tone} rounded-2xl px-4 py-3 flex items-center gap-3 active:scale-[0.99] transition-transform`}>
+            <r.icon className="w-5 h-5 shrink-0" />
+            <span className="flex-1 min-w-0">
+              <span className="block text-sm font-bold leading-tight">{r.label}</span>
+              <span dir={r.ltr ? 'ltr' : undefined} className={`block text-xs opacity-80 truncate ${r.ltr && isAr ? 'text-right' : ''}`}>{r.value}</span>
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 /** The Profile tab before there is a card to show: both ways in, or what is still missing. */
 export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSignIn, onEnterCard, onLogout, onRetry, token, defaultName, onTrialCreated }) => {
@@ -59,11 +91,13 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
           <LogOut className="w-3.5 h-3.5" />
           <span>{isAr ? 'تسجيل الخروج' : 'Sign out'}</span>
         </button>
+        <ContactUs />
       </div>
     );
   }
 
   return (
+    <>
     <div className={`bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-4 text-center mt-2 ${isAr ? 'text-right' : 'text-left'}`}>
       <div className="w-14 h-14 rounded-2xl bg-[#941946]/10 text-[#941946] flex items-center justify-center mx-auto">
         <UserRound className="w-7 h-7" />
@@ -101,5 +135,7 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
         )}
       </div>
     </div>
+    <ContactUs />
+    </>
   );
 };

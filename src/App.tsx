@@ -45,7 +45,8 @@ const ProductPage = lazy(() => import('./components/ProductPage').then((m) => ({
 const OrdersPage = lazy(() => import('./components/OrdersPage').then((m) => ({ default: m.OrdersPage })));
 const AccountGate = lazy(() => import('./components/AccountGate').then((m) => ({ default: m.AccountGate })));
 import { Beneficiary, Product, CartItem } from './types';
-import { fetchCard, signOut } from './api/auth';
+import { fetchCard, fetchProfile, signOut } from './api/auth';
+import { ApiError } from './api/http';
 import { useApi } from './hooks/useApi';
 import { useIsMember } from './utils/pricing';
 import { getArea, useArea } from './utils/area';
@@ -64,6 +65,7 @@ import { navigate, routeHref, useRoute } from './router';
 import { ListSkeleton } from './components/ui/Feedback';
 import { useForceUpdate } from './utils/forceUpdate';
 import { ForceUpdateScreen } from './components/ForceUpdateScreen';
+import { usePopupHash } from './utils/popupHash';
 
 export default function App() {
   const { isAr, t, brandName } = useLanguage();
@@ -103,7 +105,28 @@ export default function App() {
     trackVisit(route, session.token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeKey, session.token]);
-  const card = useApi(session.cardNumber ? `card:${session.cardNumber}` : null, (signal) => fetchCard(session.cardNumber!, signal));
+  const card = useApi(
+    session.cardNumber ? `card:${session.cardNumber}` : null,
+    (signal) =>
+      fetchCard(session.cardNumber!, signal).catch((err) => {
+        // A card number the server no longer knows (deleted, or the server was restored) is forgotten, so the visitor
+        // gets the sign-in / free-card screen instead of an error they cannot get out of.
+        if (err instanceof ApiError && err.status === 404) updateSession({ cardNumber: undefined });
+        throw err;
+      }),
+  );
+  // A sign-in the server no longer recognises (expired, revoked, restored database) ends here rather than 401-ing every screen.
+  useEffect(() => {
+    const token = session.token;
+    if (!token) return;
+    let alive = true;
+    fetchProfile(token).catch((err) => {
+      if (alive && err instanceof ApiError && err.status === 401) clearSession();
+    });
+    return () => {
+      alive = false;
+    };
+  }, [session.token]);
   const beneficiaries: Beneficiary[] = card.data
     ? [
         {
@@ -160,6 +183,7 @@ export default function App() {
   const [accessStep, setAccessStep] = useState<AccessStep | null>(null);
   const silenced = popupSilenced(session);
   const [reminder, setReminder] = useState(false);
+  usePopupHash('new-visit-reminder-popup', reminder && !silenced);
 
   useEffect(() => {
     if (silenced) return;
@@ -447,7 +471,7 @@ export default function App() {
         </main>
 
         {/* Floating Side Contact Icon with Number */}
-        <FloatingContactButton />
+        {route.section !== 'pay' && <FloatingContactButton />}
 
         {/* 
           CRITICAL USER REQUIREMENT:
@@ -498,9 +522,10 @@ export default function App() {
       {areaAsk && <AreaModal lat={userLocation.lat} lng={userLocation.lng} onClose={closeArea} />}
       {accessStep && !areaAsk && <AccessModal initialStep={accessStep} onClose={closeAccess} />}
       {/* Every minute while a signed-in member's profile is unfinished: how far along it is, and what is missing. */}
-      {stage === 'done' && <ProfileReminder />}
-      {stage === 'done' && <MembershipReminder />}
-      {stage === 'done' && !areaAsk && <SaveAreaPrompt />}
+      {/* Nothing floats over the payment form. */}
+      {stage === 'done' && route.section !== 'pay' && <ProfileReminder />}
+      {stage === 'done' && route.section !== 'pay' && <MembershipReminder />}
+      {stage === 'done' && !areaAsk && route.section !== 'pay' && <SaveAreaPrompt />}
       </Suspense>
     </div>
   );

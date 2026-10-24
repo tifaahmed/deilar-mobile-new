@@ -1,19 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, CheckCircle2, CreditCard, IdCard, Loader2, Phone, ShieldCheck, Sparkles, UserPlus, UserRound, X } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CreditCard, Loader2, Phone, ShieldCheck, Sparkles, UserPlus, UserRound, X } from 'lucide-react';
 import { ApiError, postContactMessage } from '../api/http';
 import { fetchCard, phoneHasCard, requestOtp, verifyOtp } from '../api/auth';
-import { startTrial } from '../api/membership';
-import { reportClientError } from '../utils/reportError';
+import { navigate, routeHref } from '../router';
 import { claimOrders } from '../api/orders';
 import { storedOrders } from '../utils/orders';
 import { getSession, updateSession } from '../utils/session';
 import { useLanguage } from '../context/LanguageContext';
+import { usePopupHash } from '../utils/popupHash';
 
 /** Egyptian mobile: 11 digits starting with 01. */
 const PHONE_RE = /^01\d{9}$/;
 const PHONE_LEN = 11;
 
-export type AccessStep = 'choose' | 'phone' | 'code' | 'card' | 'visitor' | 'offer' | 'confirm' | 'details';
+export type AccessStep = 'choose' | 'phone' | 'code' | 'card' | 'visitor' | 'offer' | 'confirm';
 
 interface AccessModalProps {
   onClose: () => void;
@@ -32,6 +32,8 @@ interface AccessModalProps {
  * so the team can call people who started but never finished.
  */
 export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep = 'choose' }) => {
+  // Shrinks the whole card to the screen when its content is taller than the viewport, so nothing ever scrolls.
+  const fitRef = useRef<HTMLDivElement>(null);
   const { isAr, brandName } = useLanguage();
   const [step, setStep] = useState<AccessStep>(initialStep);
   const [phone, setPhone] = useState('');
@@ -44,15 +46,23 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [welcome, setWelcome] = useState<string | null>(null);
-  /** The visitor accepted the free trial card: after the code comes the gender + national ID step. */
+
+  // The URL names the form on screen (/map#otp-popup), so a link, a refresh or a bug report says where the visitor is.
+  usePopupHash(
+    welcome !== null
+      ? 'welcome-popup'
+      : ({
+          choose: 'new-visit-popup',
+          phone: 'sign-in-popup',
+          code: 'otp-popup',
+          visitor: 'new-visitor-popup',
+          offer: 'free-card-offer-popup',
+          confirm: 'free-card-confirm-popup',
+          card: 'card-number-popup',
+        } satisfies Record<AccessStep, string>)[step],
+  );
+  /** The visitor accepted the free trial card: after the code the card page (/card) takes over. */
   const [trialFlow, setTrialFlow] = useState(false);
-  const [gender, setGender] = useState<'male' | 'female' | null>(null);
-  const [nationalId, setNationalId] = useState('');
-  const [daysLeft, setDaysLeft] = useState<number | null>(null);
-  /** The number the last code proved, and the one shown in the final form: editing it there means proving the new one. */
-  const [confirmedPhone, setConfirmedPhone] = useState('');
-  const [detailsPhone, setDetailsPhone] = useState('');
-  const [changingPhone, setChangingPhone] = useState(false);
   const codeInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -64,6 +74,13 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   useEffect(() => {
     if (step === 'code') codeInput.current?.focus();
   }, [step]);
+
+  // An existing member is signed in as soon as the code is right: show who they are for a moment, then close.
+  useEffect(() => {
+    if (welcome === null || !getSession().cardNumber) return;
+    const id = setTimeout(onClose, 1600);
+    return () => clearTimeout(id);
+  }, [welcome, onClose]);
 
   const messageOf = (e: unknown, fallbackAr: string, fallbackEn: string) =>
     e instanceof ApiError && e.status !== 0 && e.reason ? e.message : isAr ? fallbackAr : fallbackEn;
@@ -132,12 +149,13 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
       if (guestCodes.length > 0) claimOrders(result.token, guestCodes).catch(() => undefined);
       const hasRealCard = !!result.membership && !result.membership.membership_number.startsWith('REG-');
 
-      if (trialFlow && !hasRealCard) {
-        // Registered but not active yet: the card is issued once the gender and national ID are in.
-        setConfirmedPhone(cleanPhone);
-        setDetailsPhone(cleanPhone);
-        setChangingPhone(false);
-        setStep('details');
+      if (!hasRealCard) {
+        // A new member (signed in with the code but holding no card): the free card is made on the card page, not in
+        // this popup. The name typed so far travels with the session; an existing member is simply signed in.
+        const typed = visitorName.trim() || result.user.name || undefined;
+        if (typed) updateSession({ name: typed });
+        onClose();
+        navigate(routeHref({ tab: 'profile' }));
       } else {
         setWelcome(result.user.name || cleanPhone);
       }
@@ -173,53 +191,20 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
       });
       updateSession({ name, phone: cleanPhone, leadPhone: cleanPhone });
 
-      // A number that holds no card yet is offered the free trial; a lookup that fails just ends the popup as before.
-      const hasCard = await phoneHasCard(cleanPhone).catch(() => true);
-      if (hasCard) onClose();
-      else setStep('offer');
+      // A number that holds no card yet is offered the free trial. One that already has a card is signed in with
+      // its code. A failed lookup says so — the popup never closes without an answer.
+      const hasCard = await phoneHasCard(cleanPhone).then((v) => v, () => null);
+      if (hasCard === null) {
+        setError(isAr ? 'تعذر التحقق من الرقم الآن، حاول مرة أخرى' : 'Could not check the number right now, please try again');
+      } else if (hasCard) {
+        setBusy(false);
+        await sendCode();
+        return;
+      } else {
+        setStep('offer');
+      }
     } catch (e) {
       setError(messageOf(e, 'تعذر إرسال بياناتك، حاول مرة أخرى', 'Could not send your details, please try again'));
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const submitTrial = async () => {
-    const token = getSession().token;
-    if (!token || !gender) return;
-
-    // A different number than the one the code proved: it has to be proved too, so ask for its own code first.
-    if (detailsPhone !== confirmedPhone) {
-      if (!PHONE_RE.test(detailsPhone)) {
-        setError(isAr ? 'أدخل رقم هاتف صحيح من 11 رقم يبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
-        return;
-      }
-      setPhone(detailsPhone);
-      setChangingPhone(true);
-      await sendCode(detailsPhone);
-      return;
-    }
-
-    setBusy(true);
-    setError(null);
-
-    try {
-      const status = await startTrial(token, { name: visitorName.trim(), national_id: nationalId, gender });
-      if (status.membership_number) updateSession({ cardNumber: status.membership_number, name: visitorName.trim() });
-      setDaysLeft(status.days_left);
-      setWelcome(visitorName.trim() || cleanPhone);
-    } catch (e) {
-      const reason = e instanceof ApiError ? e.reason : undefined;
-      setError(
-        reason === 'national_id_taken'
-          ? isAr ? 'هذا الرقم القومي لديه كارت بالفعل. تواصل مع خدمة العملاء.' : 'This ID number already has a card. Please contact customer service.'
-          : reason === 'phone_taken'
-            ? isAr ? 'رقم الهاتف هذا لديه كارت بالفعل. تواصل مع خدمة العملاء.' : 'This phone number already has a card. Please contact customer service.'
-            : e instanceof ApiError && e.status === 422
-              ? isAr ? 'تحقق من الرقم القومي (١٤ رقماً).' : 'Check the national ID (14 digits).'
-              : isAr ? 'تعذر إنشاء الكارت الآن، حاول مرة أخرى' : 'The card could not be created, please try again',
-      );
-      if (!(e instanceof ApiError) || e.status >= 500) reportClientError('Trial card request failed', e);
     } finally {
       setBusy(false);
     }
@@ -255,104 +240,114 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   };
   const phoneValid = PHONE_RE.test(phone);
   const phoneCounter = (
-    <span dir="ltr" className={`absolute ${isAr ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold ${phoneValid ? 'text-emerald-400' : phone.length ? 'text-amber-400' : 'text-slate-500'}`}>
+    <span dir="ltr" className={`absolute ${isAr ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-base font-mono font-bold ${phoneValid ? 'text-emerald-400' : phone.length ? 'text-amber-400' : 'text-slate-500'}`}>
       {phone.length}/{PHONE_LEN}
     </span>
   );
 
-  const field = `w-full ${isAr ? 'pr-8 pl-3 text-right' : 'pl-8 pr-3 text-left'} py-2.5 text-xs rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 font-mono tracking-wider focus:outline-none focus:border-amber-400 transition-colors`;
+  const field = `w-full ${isAr ? 'pr-11 pl-3 text-right' : 'pl-11 pr-3 text-left'} py-3.5 text-base rounded-2xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 font-mono tracking-wider focus:outline-none focus:border-amber-400 transition-colors`;
   const primary =
-    'w-full py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer';
+    'w-full py-3.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black rounded-2xl text-base flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-[0.99] transition-all disabled:opacity-50 cursor-pointer';
   const secondary =
-    'w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer';
+    'w-full py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-1.5 transition-colors cursor-pointer';
   const back = (to: AccessStep) => (
-    <button onClick={() => { setStep(to); setError(null); }} className="text-[10px] text-slate-400 hover:text-white font-bold cursor-pointer">
+    <button onClick={() => { setStep(to); setError(null); }} className="text-base text-slate-400 hover:text-white font-bold cursor-pointer">
       {isAr ? '← رجوع' : '← Back'}
     </button>
   );
 
+  useEffect(() => {
+    const el = fitRef.current;
+    if (!el) return;
+    const fit = () => {
+      el.style.zoom = '1';
+      const room = window.innerHeight - 24;
+      el.style.zoom = el.offsetHeight > room ? String(Math.max(0.5, room / el.offsetHeight)) : '1';
+    };
+    fit();
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fit);
+    ro?.observe(el);
+    window.addEventListener('resize', fit);
+    return () => { ro?.disconnect(); window.removeEventListener('resize', fit); };
+  });
+
   return (
-    <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150">
-      <div className={`bg-slate-950 text-white rounded-3xl max-w-[20.625rem] w-full border border-amber-400/40 shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-150 ${isAr ? 'text-right' : 'text-left'}`}>
+    <div onClick={(e) => e.stopPropagation()} className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-150">
+      <div ref={fitRef} className={`bg-slate-950 text-white rounded-3xl max-w-md w-full border border-amber-400/40 shadow-2xl overflow-hidden relative animate-in zoom-in-95 duration-150 ${isAr ? 'text-right' : 'text-left'}`}>
         <div className="px-3.5 pt-3 pb-2 flex items-center justify-between border-b border-slate-800/80">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <h3 className="text-xs font-black text-amber-300">{isAr ? `كرت ${brandName} الطبي` : `${brandName} medical card`}</h3>
+            <h3 className="text-base font-black text-amber-300">{isAr ? `كرت ${brandName} الطبي` : `${brandName} medical card`}</h3>
           </div>
-          <button onClick={onClose} className="w-6 h-6 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center cursor-pointer" title={isAr ? 'إغلاق' : 'Close'}>
-            <X className="w-3.5 h-3.5" />
+          <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center cursor-pointer" title={isAr ? 'إغلاق' : 'Close'}>
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-3.5 space-y-3">
           {welcome ? (
-            <div className="py-2 text-center space-y-2.5 animate-in fade-in">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-400 mx-auto flex items-center justify-center">
+            <div className="py-3 text-center space-y-3.5 animate-in fade-in">
+              <div className="w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-400 text-emerald-400 mx-auto flex items-center justify-center">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h4 className="text-xs font-black">{isAr ? `أهلاً ${welcome}` : `Welcome ${welcome}`}</h4>
-              <p className="text-[10px] text-amber-300 font-bold">
+              <h4 className="text-base font-black">{isAr ? `أهلاً ${welcome}` : `Welcome ${welcome}`}</h4>
+              <p className="text-base text-amber-300 font-bold">
                 {getSession().cardNumber
                   ? isAr ? `كرتك رقم ${getSession().cardNumber} جاهز` : `Your card ${getSession().cardNumber} is ready`
                   : isAr ? 'لا يوجد كرت مرتبط برقمك بعد' : 'No card is linked to your number yet'}
               </p>
-              {daysLeft !== null && (
-                <p className="text-[10px] text-slate-300 leading-relaxed">
-                  {isAr ? `كرتك التجريبي يعمل الآن لمدة ${daysLeft} يوماً. اشترك في الكرت الكامل في أي وقت من حسابي.` : `Your trial card is active for ${daysLeft} days. Subscribe to the full card any time from My account.`}
-                </p>
-              )}
-              <button onClick={onClose} className="w-full py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1 cursor-pointer">
+              <button onClick={onClose} className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-1 cursor-pointer">
                 <span>{isAr ? 'الدخول للتطبيق' : 'Enter app'}</span>
-                <ArrowLeft className={`w-3 h-3 ${isAr ? '' : 'rotate-180'}`} />
+                <ArrowLeft className={`w-4 h-4 ${isAr ? '' : 'rotate-180'}`} />
               </button>
             </div>
           ) : (
             <>
               {step === 'choose' && (
-                <div className="space-y-2.5">
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                <div className="space-y-3.5">
+                  <p className="text-sm text-slate-300 leading-relaxed">
                     {isAr ? 'سجّل الدخول برقم هاتفك لتصل إلى كرتك تلقائياً، أو اعرض بيانات كرتك برقم العضوية.' : 'Sign in with your phone to get your card automatically, or view your card with its membership number.'}
                   </p>
                   <button onClick={() => setStep('phone')} className={primary}>
-                    <Phone className="w-3.5 h-3.5" />
+                    <Phone className="w-5 h-5" />
                     <span>{isAr ? 'تسجيل الدخول برقم الهاتف' : 'Sign in with phone number'}</span>
                   </button>
                   <button onClick={() => setStep('card')} className={secondary}>
-                    <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                    <CreditCard className="w-7 h-7 text-amber-400" />
                     <span>{isAr ? 'عرض بيانات الكرت برقم العضوية' : 'View card with membership number'}</span>
                   </button>
                   <button onClick={() => setStep('visitor')} className={secondary}>
-                    <UserPlus className="w-3.5 h-3.5 text-amber-400" />
+                    <UserPlus className="w-7 h-7 text-amber-400" />
                     <span>{isAr ? 'زائر جديد' : 'New visitor'}</span>
                   </button>
                 </div>
               )}
 
               {step === 'phone' && (
-                <form onSubmit={(e) => { e.preventDefault(); sendCode(); }} className="space-y-2.5">
+                <form onSubmit={(e) => { e.preventDefault(); sendCode(); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-200">{isAr ? 'أدخل رقم هاتفك' : 'Enter your phone number'}</span>
+                    <span className="text-sm font-bold text-slate-200">{isAr ? 'أدخل رقم هاتفك' : 'Enter your phone number'}</span>
                     {back('choose')}
                   </div>
                   <div className="relative">
-                    <Phone className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <Phone className={`w-7 h-7 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                     <input type="tel" inputMode="numeric" required autoFocus dir="ltr" maxLength={PHONE_LEN} placeholder="010xxxxxxxx" value={phone} onChange={onPhoneChange} className={field} />
                     {phoneCounter}
                   </div>
                   <button type="submit" disabled={busy || !phoneValid} className={primary}>
-                    {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
                     <span>{isAr ? 'إرسال كود التحقق' : 'Send verification code'}</span>
                   </button>
                 </form>
               )}
 
               {step === 'code' && (
-                <form onSubmit={(e) => { e.preventDefault(); if (code.length === codeLength) verify(code); }} className="space-y-2.5">
+                <form onSubmit={(e) => { e.preventDefault(); if (code.length === codeLength) verify(code); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-200">
+                    <span className="text-sm font-bold text-slate-200">
                       {isAr ? `أدخل الكود المرسل إلى ${maskedPhone || 'هاتفك'}` : `Enter the code sent to ${maskedPhone || 'your phone'}`}
                     </span>
-                    {back(changingPhone ? 'details' : trialFlow ? 'confirm' : 'phone')}
+                    {back(trialFlow ? 'confirm' : 'phone')}
                   </div>
                   <input
                     ref={codeInput}
@@ -369,131 +364,103 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                       setError(null);
                       if (value.length === codeLength && !busy) verify(value);
                     }}
-                    className="w-full text-center text-lg py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono tracking-[0.6em] focus:outline-none focus:border-amber-400"
+                    className="w-full text-center text-2xl py-4 rounded-2xl bg-slate-900 border border-slate-700 text-white font-mono tracking-[0.6em] focus:outline-none focus:border-amber-400"
                   />
                   <button type="submit" disabled={busy || code.length !== codeLength} className={primary}>
-                    {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {busy && <Loader2 className="w-5 h-5 animate-spin" />}
                     <span>{isAr ? 'تأكيد ودخول' : 'Verify & sign in'}</span>
                   </button>
-                  <button type="button" disabled={resendIn > 0 || busy} onClick={() => sendCode()} className="w-full text-[10px] font-bold text-slate-400 hover:text-white disabled:opacity-50 cursor-pointer">
+                  <button type="button" disabled={resendIn > 0 || busy} onClick={() => sendCode()} className="w-full text-base font-bold text-slate-400 hover:text-white disabled:opacity-50 cursor-pointer">
                     {resendIn > 0 ? (isAr ? `إعادة الإرسال بعد ${resendIn} ث` : `Resend in ${resendIn}s`) : isAr ? 'إعادة إرسال الكود' : 'Resend code'}
                   </button>
                 </form>
               )}
 
               {step === 'visitor' && (
-                <form onSubmit={(e) => { e.preventDefault(); submitVisitor(); }} className="space-y-2.5">
+                <form onSubmit={(e) => { e.preventDefault(); submitVisitor(); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-200">{isAr ? 'زائر جديد' : 'New visitor'}</span>
+                    <span className="text-sm font-bold text-slate-200">{isAr ? 'زائر جديد' : 'New visitor'}</span>
                     {back('choose')}
                   </div>
                   <div className="relative">
-                    <UserRound className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <UserRound className={`w-7 h-7 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                     <input type="text" required autoFocus placeholder={isAr ? 'الاسم' : 'Name'} value={visitorName} onChange={(e) => { setVisitorName(e.target.value); setError(null); }} className={field.replace('font-mono tracking-wider', '')} />
                   </div>
                   <div className="relative">
-                    <Phone className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <Phone className={`w-7 h-7 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                     <input type="tel" inputMode="numeric" required dir="ltr" maxLength={PHONE_LEN} placeholder="010xxxxxxxx" value={phone} onChange={onPhoneChange} className={field} />
                     {phoneCounter}
                   </div>
                   <button type="submit" disabled={busy || !visitorName.trim() || !phoneValid} className={primary}>
-                    {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {busy && <Loader2 className="w-5 h-5 animate-spin" />}
                     <span>{isAr ? 'إرسال' : 'Submit'}</span>
                   </button>
                 </form>
               )}
 
               {step === 'offer' && (
-                <div className="space-y-2.5 text-center">
-                  <div className="w-10 h-10 rounded-full bg-amber-400/20 border border-amber-400 text-amber-400 mx-auto flex items-center justify-center">
+                <div className="space-y-3.5 text-center">
+                  <div className="w-14 h-14 rounded-full bg-amber-400/20 border border-amber-400 text-amber-400 mx-auto flex items-center justify-center">
                     <Sparkles className="w-5 h-5" />
                   </div>
-                  <h4 className="text-xs font-black">{isAr ? 'هل تريد إكمال الخطوات؟' : 'Do you want to complete the process?'}</h4>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <h4 className="text-base font-black">{isAr ? 'هل تريد إكمال الخطوات؟' : 'Do you want to complete the process?'}</h4>
+                  <p className="text-sm text-slate-300 leading-relaxed">
                     {isAr ? 'رقمك غير مسجل لدينا. أكمل الآن واحصل على كرت ديلار مجاناً لمدة شهر.' : 'Your number is not registered with us. Complete now and get your Deilar card free for one month.'}
                   </p>
                   <button onClick={() => { setTrialFlow(true); setStep('confirm'); }} className={primary}>
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <Sparkles className="w-5 h-5" />
                     <span>{isAr ? 'نعم، أريد الكرت المجاني' : 'Yes, get my free card'}</span>
                   </button>
-                  <button onClick={onClose} className="w-full text-[10px] font-bold text-slate-400 hover:text-white cursor-pointer">
+                  <button onClick={onClose} className="w-full text-base font-bold text-slate-400 hover:text-white cursor-pointer">
                     {isAr ? 'ليس الآن' : 'Not now'}
                   </button>
                 </div>
               )}
 
               {step === 'confirm' && (
-                <form onSubmit={(e) => { e.preventDefault(); sendCode(); }} className="space-y-2.5">
+                <form onSubmit={(e) => { e.preventDefault(); sendCode(); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-200">{isAr ? 'تأكيد بياناتك' : 'Confirm your details'}</span>
+                    <span className="text-sm font-bold text-slate-200">{isAr ? 'تأكيد بياناتك' : 'Confirm your details'}</span>
                     {back('offer')}
                   </div>
                   <div className="relative">
-                    <UserRound className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <UserRound className={`w-7 h-7 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                     <input type="text" required minLength={3} placeholder={isAr ? 'الاسم' : 'Name'} value={visitorName} onChange={(e) => { setVisitorName(e.target.value); setError(null); }} className={field.replace('font-mono tracking-wider', '')} />
                   </div>
                   <div className="relative">
-                    <Phone className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <Phone className={`w-7 h-7 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                     <input type="tel" inputMode="numeric" required dir="ltr" maxLength={PHONE_LEN} placeholder="010xxxxxxxx" value={phone} onChange={onPhoneChange} className={field} />
                     {phoneCounter}
                   </div>
                   <button type="submit" disabled={busy || visitorName.trim().length < 3 || !phoneValid} className={primary}>
-                    {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
                     <span>{isAr ? 'تأكيد وإرسال كود التحقق' : 'Confirm & send verification code'}</span>
                   </button>
                 </form>
               )}
 
-              {step === 'details' && (
-                <form onSubmit={(e) => { e.preventDefault(); submitTrial(); }} className="space-y-2.5">
-                  <span className="text-[11px] font-bold text-slate-200 block">{isAr ? 'آخر خطوة: الهاتف والنوع والرقم القومي' : 'Last step: phone, gender and national ID'}</span>
-                  <div className="relative">
-                    <Phone className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
-                    <input type="tel" inputMode="numeric" required dir="ltr" maxLength={PHONE_LEN} placeholder="010xxxxxxxx" value={detailsPhone} onChange={(e) => { setDetailsPhone(e.target.value.replace(/\D/g, '').slice(0, PHONE_LEN)); setError(null); }} className={field} />
-                  </div>
-                  {detailsPhone !== confirmedPhone && (
-                    <p className="text-[10px] text-amber-300 leading-relaxed">{isAr ? 'رقم جديد — سنرسل إليه كود تحقق جديد قبل إنشاء الكارت.' : 'A new number — we will send it a new verification code before the card is created.'}</p>
-                  )}
-                  <div className="flex gap-2" role="radiogroup" aria-label={isAr ? 'النوع' : 'Gender'}>
-                    {(['male', 'female'] as const).map((g) => (
-                      <button key={g} type="button" role="radio" aria-checked={gender === g} onClick={() => { setGender(g); setError(null); }} className={`flex-1 py-2.5 rounded-xl border text-xs font-bold cursor-pointer ${gender === g ? 'bg-amber-400 text-slate-950 border-amber-400' : 'bg-slate-900 text-slate-200 border-slate-700'}`}>
-                        {g === 'male' ? (isAr ? 'ذكر' : 'Male') : isAr ? 'أنثى' : 'Female'}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="relative">
-                    <IdCard className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
-                    <input type="text" required inputMode="numeric" dir="ltr" maxLength={14} placeholder={isAr ? 'الرقم القومي (١٤ رقماً)' : 'National ID (14 digits)'} value={nationalId} onChange={(e) => { setNationalId(e.target.value.replace(/\D/g, '')); setError(null); }} className={field} />
-                  </div>
-                  <button type="submit" disabled={busy || !gender || !PHONE_RE.test(detailsPhone) || !/^[23]\d{13}$/.test(nationalId)} className={primary}>
-                    {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>{detailsPhone !== confirmedPhone ? (isAr ? 'تأكيد الرقم الجديد' : 'Verify the new number') : isAr ? 'تفعيل كرتي المجاني' : 'Activate my free card'}</span>
-                  </button>
-                </form>
-              )}
-
               {step === 'card' && (
-                <form onSubmit={(e) => { e.preventDefault(); showCard(); }} className="space-y-2.5">
+                <form onSubmit={(e) => { e.preventDefault(); showCard(); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-200">{isAr ? 'أدخل رقم العضوية' : 'Enter the membership number'}</span>
+                    <span className="text-sm font-bold text-slate-200">{isAr ? 'أدخل رقم العضوية' : 'Enter the membership number'}</span>
                     {back('choose')}
                   </div>
                   <div className="relative">
-                    <CreditCard className={`w-3.5 h-3.5 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+                    <CreditCard className={`w-7 h-7 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
                     <input type="text" required autoFocus dir="ltr" placeholder="1234" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setError(null); }} className={field} />
                   </div>
                   <button type="submit" disabled={busy || !cardNumber.trim()} className={primary}>
-                    {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    {busy && <Loader2 className="w-5 h-5 animate-spin" />}
                     <span>{isAr ? 'عرض بيانات الكرت' : 'Show my card'}</span>
                   </button>
-                  <p className="text-[10px] text-slate-500 text-center">
+                  <p className="text-base text-slate-500 text-center">
                     {isAr ? 'يمكنك تسجيل الدخول برقم الهاتف لاحقاً في أي وقت' : 'You can still sign in with your phone later'}
                   </p>
                 </form>
               )}
 
               {error && (
-                <p className="text-[10px] text-rose-400 font-bold" role="alert">
+                <p className="text-base text-rose-400 font-bold" role="alert">
                   {error}
                 </p>
               )}

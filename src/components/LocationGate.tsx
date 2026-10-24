@@ -3,9 +3,11 @@ import { createPortal } from 'react-dom';
 import { Loader2, MapPin, Navigation } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { saveGps, GpsPoint } from '../utils/gps';
+import { usePopupHash } from '../utils/popupHash';
 
 /** Blocks the app until a GPS fix has been obtained once. There is no way to dismiss it. */
 export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void }> = ({ onGranted }) => {
+  usePopupHash('location-popup');
   const { isAr } = useLanguage();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -67,6 +69,7 @@ export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void }> = ({ o
 
 /** Shown once the location is known: one button that sends the visitor to the map. */
 export const NearestPrompt: React.FC<{ onGo: () => void }> = ({ onGo }) => {
+  usePopupHash('nearest-popup');
   const { isAr } = useLanguage();
   return createPortal(
     <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150" dir={isAr ? 'rtl' : 'ltr'}>

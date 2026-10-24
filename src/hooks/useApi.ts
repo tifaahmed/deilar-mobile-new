@@ -32,7 +32,9 @@ export function useApi<T>(
 
     const controller = new AbortController();
     const cached = initialRef.current?.();
-    setState({ key, data: cached, error: false });
+    // A reload of the same request keeps what is on screen until the new answer arrives (the UI must not blink away
+    // — or unmount a payment form that is open); a different request starts from its cached answer, if any.
+    setState((prev) => ({ key, data: prev.key === key ? prev.data : cached, error: false }));
 
     fetcherRef.current(controller.signal).then(
       (data) => setState({ key, data, error: false }),

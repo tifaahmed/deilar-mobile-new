@@ -4,6 +4,7 @@ import { Check, Loader2, MapPin, X } from 'lucide-react';
 import { fetchLocations, fetchNearestAreas, Locations } from '../api/endpoints';
 import { getArea, saveArea } from '../utils/area';
 import { useLanguage } from '../context/LanguageContext';
+import { usePopupHash } from '../utils/popupHash';
 
 interface AreaModalProps {
   lat: number;
@@ -26,6 +27,7 @@ const SUGGESTED = 4;
  * then the cities of the chosen governorate, closest first. The answer is remembered.
  */
 export const AreaModal: React.FC<AreaModalProps> = ({ lat, lng, lockedGovernorateId, onClose }) => {
+  usePopupHash('area-popup');
   const { isAr } = useLanguage();
   const [locations, setLocations] = useState<Locations['governorates'] | null>(null);
   const [nearGov, setNearGov] = useState<{ id: number; distance_km: number }[]>([]);

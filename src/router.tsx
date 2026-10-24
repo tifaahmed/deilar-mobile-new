@@ -14,6 +14,7 @@ import type { NavTab } from './components/BottomNav';
  *   /map?view=list&sort=discount   biggest discount first
  *   /card                  my card (profile)
  *   /card/members  /card/support  /card/personal  /card/theme   profile sections
+ *   /card/pay              pay for the card with Paymob (card or mobile wallet)
  *   /products/:slug        one product
  *   /cart  /checkout       the basket / the payment page
  *   /orders  /orders/:code my orders / one order
@@ -44,7 +45,7 @@ export interface Route {
   sort?: 'discount' | null;
 }
 
-export const PROFILE_SECTIONS = ['members', 'support', 'personal', 'theme'] as const;
+export const PROFILE_SECTIONS = ['members', 'support', 'personal', 'addresses', 'theme', 'pay'] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 
 const TAB_PATHS: Record<NavTab, string> = { home: '/', store: '/store', products: '/products', map: '/map', profile: '/card' };

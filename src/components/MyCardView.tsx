@@ -20,6 +20,7 @@ import { Beneficiary } from '../types';
 import { DeilarLogo } from './DeilarLogo';
 import cardFront from '../assets/images/deilar_card_front_official_1791012713788.jpg';
 import { OfficialDeilarCard } from './OfficialDeilarCard';
+import { usePopupHash } from '../utils/popupHash';
 
 interface MyCardViewProps {
   beneficiaries: Beneficiary[];
@@ -34,6 +35,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showFullPassModal, setShowFullPassModal] = useState(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  usePopupHash('card-popup', showFullPassModal || showAddMemberModal);
   const [copiedId, setCopiedId] = useState(false);
 
   // New member form state

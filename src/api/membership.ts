@@ -66,3 +66,16 @@ export const subscribeByNumber = (number: string, channel?: OnlineChannel) =>
   apiPost<{ data: { checkout_url: string | null; client_secret: string | null; public_key: string | null } }>(`/card/${encodeURIComponent(number)}/subscribe`, channel ? { paymob_channel: channel } : {})
     .then((r) => r.data)
     .catch(() => null);
+
+/**
+ * Asks an admin to change the national ID on the card (it can no longer be edited directly). The photos of both
+ * sides of the ID card are optional; nothing changes until the admin approves it in the dashboard.
+ */
+export function requestNationalIdChange(token: string, body: { nationalId: string; front?: File | null; back?: File | null; note?: string }) {
+  const form = new FormData();
+  form.append('national_id', body.nationalId);
+  if (body.front) form.append('front', body.front);
+  if (body.back) form.append('back', body.back);
+  if (body.note?.trim()) form.append('note', body.note.trim());
+  return apiPost<{ data: { requested: boolean; status: string } }>('/membership/national-id-change', form, undefined, token).then((r) => r.data);
+}

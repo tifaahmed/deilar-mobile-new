@@ -26,7 +26,7 @@ import { getSession } from '../utils/session';
 const PHONE = '01012345678';
 const ID = '29001011234567';
 
-const open = (onClose = vi.fn(), step: 'visitor' | 'choose' = 'visitor') => {
+const open = (onClose = vi.fn(), step: 'visitor' | 'choose' | 'phone' = 'visitor') => {
   render(
     <LanguageProvider>
       <AccessModal onClose={onClose} initialStep={step} />
@@ -51,7 +51,7 @@ beforeEach(() => {
 });
 
 describe('guest → free trial card', () => {
-  it('walks a new number through offer, confirm, code, gender + ID and an active trial', async () => {
+  it('walks a new number through offer, confirm and code, then sends them to the card page', async () => {
     const user = userEvent.setup();
     auth.phoneHasCard.mockResolvedValue(false);
     const onClose = open();
@@ -74,72 +74,16 @@ describe('guest → free trial card', () => {
     await user.click(screen.getByRole('button', { name: /Confirm & send verification code/ }));
     expect(auth.requestOtp).toHaveBeenCalledWith(PHONE);
 
-    // A correct code registers the user but issues no card yet: the next step is gender + ID.
+    // A correct code signs the user in but issues no card: the popup closes and the card PAGE takes over (no form in the popup).
     await user.type(await screen.findByPlaceholderText('••••'), '1234');
     await waitFor(() => expect(auth.verifyOtp).toHaveBeenCalledWith(PHONE, '1234'));
-    expect(await screen.findByText('Last step: phone, gender and national ID')).toBeInTheDocument();
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(window.location.pathname).toBe('/card');
+    expect(screen.queryByText('Last step: phone, gender and national ID')).not.toBeInTheDocument();
     expect(membership.startTrial).not.toHaveBeenCalled();
     expect(getSession().token).toBe('tok-1');
+    expect(getSession().name).toBe('Mona Hassan');
     expect(getSession().cardNumber).toBeUndefined();
-
-    // The form shows the number the code just proved.
-    expect(screen.getByPlaceholderText('010xxxxxxxx')).toHaveValue(PHONE);
-
-    const activate = screen.getByRole('button', { name: 'Activate my free card' });
-    expect(activate).toBeDisabled();
-
-    await user.click(screen.getByRole('radio', { name: 'Female' }));
-    expect(activate).toBeDisabled(); // an ID is still missing
-    await user.type(screen.getByPlaceholderText('National ID (14 digits)'), '123');
-    expect(activate).toBeDisabled(); // too short
-    await user.clear(screen.getByPlaceholderText('National ID (14 digits)'));
-    await user.type(screen.getByPlaceholderText('National ID (14 digits)'), ID);
-    expect(activate).toBeEnabled();
-
-    await user.click(activate);
-
-    expect(membership.startTrial).toHaveBeenCalledWith('tok-1', { name: 'Mona Hassan', national_id: ID, gender: 'female' });
-    expect(await screen.findByText('Welcome Mona Hassan')).toBeInTheDocument();
-    expect(screen.getByText(/Your card 4821 is ready/)).toBeInTheDocument();
-    expect(screen.getByText(/active for 30 days/)).toBeInTheDocument();
-    expect(getSession().cardNumber).toBe('4821');
-  });
-
-  it('editing the phone in the last step asks for a new code before the card is made', async () => {
-    const user = userEvent.setup();
-    const OTHER = '01155556666';
-    auth.phoneHasCard.mockResolvedValue(false);
-    open();
-
-    await submitVisitor(user);
-    await user.click(await screen.findByRole('button', { name: /Yes, get my free card/ }));
-    await user.click(screen.getByRole('button', { name: /Confirm & send verification code/ }));
-    await user.type(await screen.findByPlaceholderText('••••'), '1234');
-    await screen.findByText('Last step: phone, gender and national ID');
-    expect(auth.requestOtp).toHaveBeenCalledTimes(1);
-
-    await user.click(screen.getByRole('radio', { name: 'Male' }));
-    await user.type(screen.getByPlaceholderText('National ID (14 digits)'), ID);
-    await user.clear(screen.getByPlaceholderText('010xxxxxxxx'));
-    await user.type(screen.getByPlaceholderText('010xxxxxxxx'), OTHER);
-
-    // A different number is a different proof: the button now verifies instead of activating.
-    expect(screen.queryByRole('button', { name: 'Activate my free card' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Verify the new number' }));
-
-    await waitFor(() => expect(auth.requestOtp).toHaveBeenLastCalledWith(OTHER));
-    expect(membership.startTrial).not.toHaveBeenCalled();
-
-    auth.verifyOtp.mockResolvedValueOnce({ token: 'tok-2', user: { id: 2, name: null, phone: OTHER }, membership: { membership_number: 'REG-XYZ', is_active: false, expiration_date: null } });
-    await user.type(await screen.findByPlaceholderText('••••'), '5678');
-    await waitFor(() => expect(auth.verifyOtp).toHaveBeenLastCalledWith(OTHER, '5678'));
-
-    // Back on the form with the proved number, and the card is made for THAT account.
-    expect(await screen.findByPlaceholderText('010xxxxxxxx')).toHaveValue(OTHER);
-    await user.click(screen.getByRole('radio', { name: 'Male' }));
-    await user.type(screen.getByPlaceholderText('National ID (14 digits)'), ID);
-    await user.click(screen.getByRole('button', { name: 'Activate my free card' }));
-    expect(membership.startTrial).toHaveBeenCalledWith('tok-2', expect.objectContaining({ national_id: ID }));
   });
 
   it('does not offer a trial to a phone that already holds a card', async () => {
@@ -149,18 +93,22 @@ describe('guest → free trial card', () => {
 
     await submitVisitor(user);
 
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    // No silent close: the number is asked for its code so the member is signed in, and no trial is offered.
+    expect(await screen.findByPlaceholderText('••••')).toBeInTheDocument();
+    expect(auth.requestOtp).toHaveBeenCalledWith(PHONE);
+    expect(onClose).not.toHaveBeenCalled();
     expect(screen.queryByText('Do you want to complete the process?')).not.toBeInTheDocument();
   });
 
-  it('just closes when the phone lookup fails, never trapping the visitor', async () => {
+  it('says so when the phone lookup fails, instead of closing without an answer', async () => {
     const user = userEvent.setup();
     auth.phoneHasCard.mockRejectedValue(new ApiError('down', 0));
     const onClose = open();
 
     await submitVisitor(user);
 
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(await screen.findByRole('alert')).toHaveTextContent('Could not check the number right now');
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('"Not now" ends the offer without sending a code', async () => {
@@ -191,25 +139,6 @@ describe('guest → free trial card', () => {
     expect(membership.startTrial).not.toHaveBeenCalled();
   });
 
-  it('shows the backend refusal when the ID already has a card', async () => {
-    const user = userEvent.setup();
-    auth.phoneHasCard.mockResolvedValue(false);
-    membership.startTrial.mockRejectedValue(new ApiError('taken', 422, 'national_id_taken'));
-    open();
-
-    await submitVisitor(user);
-    await user.click(await screen.findByRole('button', { name: /Yes, get my free card/ }));
-    await user.click(screen.getByRole('button', { name: /Confirm & send verification code/ }));
-    await user.type(await screen.findByPlaceholderText('••••'), '1234');
-    await screen.findByText('Last step: phone, gender and national ID');
-    await user.click(screen.getByRole('radio', { name: 'Male' }));
-    await user.type(screen.getByPlaceholderText('National ID (14 digits)'), ID);
-    await user.click(screen.getByRole('button', { name: 'Activate my free card' }));
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('This ID number already has a card');
-    expect(getSession().cardNumber).toBeUndefined();
-  });
-
   it('a number that turns out to hold a real card at sign-in skips the trial steps', async () => {
     const user = userEvent.setup();
     auth.phoneHasCard.mockResolvedValue(false);
@@ -223,5 +152,33 @@ describe('guest → free trial card', () => {
 
     expect(await screen.findByText('Welcome Mona')).toBeInTheDocument();
     expect(membership.startTrial).not.toHaveBeenCalled();
+  });
+  it('sign in with a phone: an existing member is logged in automatically after the code', async () => {
+    const user = userEvent.setup();
+    auth.verifyOtp.mockResolvedValue({ token: 'tok-9', user: { id: 9, name: 'Mona Hassan', phone: PHONE }, membership: { membership_number: '4821', is_active: true, expiration_date: '2027-01-01' } });
+    const onClose = open(vi.fn(), 'phone');
+
+    await user.type(screen.getByPlaceholderText('010xxxxxxxx'), PHONE);
+    await user.click(screen.getByRole('button', { name: /Send verification code/ }));
+    expect(auth.requestOtp).toHaveBeenCalledWith(PHONE);
+    await user.type(await screen.findByPlaceholderText('••••'), '1234');
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled(), { timeout: 4000 });
+    expect(getSession().token).toBe('tok-9');
+    expect(membership.startTrial).not.toHaveBeenCalled();
+  });
+
+  it('sign in with a phone: a new number goes straight to the card page after the code', async () => {
+    const user = userEvent.setup();
+    const onClose = open(vi.fn(), 'phone');
+
+    await user.type(screen.getByPlaceholderText('010xxxxxxxx'), PHONE);
+    await user.click(screen.getByRole('button', { name: /Send verification code/ }));
+    await user.type(await screen.findByPlaceholderText('••••'), '1234');
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(window.location.pathname).toBe('/card');
+    expect(membership.startTrial).not.toHaveBeenCalled();
+    expect(getSession().token).toBe('tok-1');
   });
 });

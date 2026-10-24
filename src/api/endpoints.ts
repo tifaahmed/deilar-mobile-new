@@ -64,6 +64,29 @@ export const api = {
   mapPins: (params: Params, signal?: AbortSignal) => apiGet<Paged<MapPin>>(PATHS.mapPins, params, { signal }),
 };
 
+/** One typed phrase answered across the whole directory, grouped by kind (the website's suggestion box). */
+export interface SearchGroup {
+  type: 'facility' | 'branch' | 'city' | 'governorate' | 'facility_type';
+  total: number;
+  items: {
+    id: number;
+    name: string;
+    slug?: string;
+    logo?: string | null;
+    discount_percent?: number | null;
+    type_name?: string | null;
+    address?: string | null;
+    city?: string | null;
+    governorate?: string | null;
+    facility_id?: number;
+    facility_name?: string | null;
+    facility_slug?: string | null;
+    facility_count?: number;
+  }[];
+}
+export const searchDirectory = (q: string, signal?: AbortSignal) =>
+  apiGet<{ query: string; groups: SearchGroup[] }>('/facilities/search', { q, per_group: 4 }, { signal }).then((r) => r.groups);
+
 export interface Locations {
   governorates: { id: number; name: string; cities: Named[] }[];
 }

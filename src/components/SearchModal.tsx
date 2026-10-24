@@ -10,6 +10,7 @@ import { useGovernorates } from '../hooks/useCatalog';
 import { useLanguage } from '../context/LanguageContext';
 import { ErrorState, ListSkeleton, LoadMore } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
+import { usePopupHash } from '../utils/popupHash';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface SearchModalProps {
 }
 
 export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, userLocation, area, onSelectProvider }) => {
+  usePopupHash('search-popup', isOpen);
   const { isAr } = useLanguage();
   const [query, setQuery] = useState('');
   const [governorateId, setGovernorateId] = useState<number | null>(area?.governorate.id ?? null);

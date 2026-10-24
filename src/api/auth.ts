@@ -21,8 +21,12 @@ export const requestOtp = (phone: string) => apiPost<{ data: OtpSent }>('/mobile
 /** Trades phone + code for a token. Throws `ApiError` (`reason`: invalid_code, expired, too_many_attempts, unknown_phone). */
 export const verifyOtp = (phone: string, code: string) => apiPost<{ data: Verified }>('/mobile/auth/otp/verify', { phone, code }).then((r) => r.data);
 
-/** Whether this phone already holds a card (no code is sent). Used to offer the free trial to a new number. */
-export const phoneHasCard = (phone: string) => apiPost<{ data: { has_card: boolean } }>('/mobile/auth/phone-check', { phone }).then((r) => r.data.has_card);
+/**
+ * Whether this phone is already known — it holds a card, or is registered (an account with no card yet). No code is sent.
+ * A known phone is signed in with its code; only a stranger is offered the free card first.
+ */
+export const phoneHasCard = (phone: string) =>
+  apiPost<{ data: { has_card: boolean; registered?: boolean } }>('/mobile/auth/phone-check', { phone }).then((r) => r.data.has_card || r.data.registered === true);
 
 export const signOut = (token: string) => apiPost('/auth/logout', {}, undefined, token);
 
@@ -69,31 +73,43 @@ export interface Profile {
   email: string | null;
   phone: string | null;
   nationalId: string | null;
+  gender: 'male' | 'female' | null;
+  jobTitle: string | null;
+  /** How complete the profile is, as the backend counts it (`RegistrationProgress`) — never counted here. */
+  progress: { percent: number; missing: string[] } | null;
   governorateId: number | null;
   cityId: number | null;
   /** False when the member has no membership row at all, so there is nowhere to save an area. */
   hasMembership: boolean;
+  /** The latest national-ID change request, if the member ever filed one. */
+  idChange: { status: 'pending' | 'approved' | 'rejected'; new_national_id: string; review_note: string | null } | null;
 }
 
 interface ProfileResponse {
   data: {
-    user: { name: string | null; email: string | null; phone: string | null; membership: { national_id: string | null; governorate_id: number | null; city_id: number | null } | null };
+    user: { name: string | null; email: string | null; phone: string | null; gender?: string | null; membership: { national_id: string | null; job_title?: string | null; governorate_id: number | null; city_id: number | null } | null };
+    registration?: { overall?: { percent: number; missing: string[] } };
+    national_id_change?: Profile['idChange'];
   };
 }
 
 export const fetchProfile = (token: string): Promise<Profile> =>
-  apiGetAuth<ProfileResponse>('/profile', token).then(({ data: { user } }) => ({
+  apiGetAuth<ProfileResponse>('/profile', token).then(({ data: { user, national_id_change, registration } }) => ({
     name: user.name,
     email: user.email,
     phone: user.phone,
     nationalId: user.membership?.national_id ?? null,
+    jobTitle: user.membership?.job_title ?? null,
+    progress: registration?.overall ? { percent: registration.overall.percent, missing: registration.overall.missing } : null,
+    gender: user.gender === 'male' || user.gender === 'female' ? user.gender : null,
     governorateId: user.membership?.governorate_id ?? null,
     cityId: user.membership?.city_id ?? null,
     hasMembership: !!user.membership,
+    idChange: national_id_change ?? null,
   }));
 
 /** Saves the editable details. The phone is the login, so it is never changed from here. Throws `ApiError` (422 carries `errors`). */
-export const updateProfile = (token: string, body: { name: string; email: string | null; national_id: string | null; governorate_id: number | null }) =>
+export const updateProfile = (token: string, body: { name: string; email: string | null; gender?: 'male' | 'female' | null; job_title?: string | null; national_id?: string | null; governorate_id: number | null; city_id?: number | null }) =>
   apiPut('/profile', body, token);
 
 /** Saves the governorate (and city) on the member's card — the permanent copy of the area picked on this device. */
@@ -112,3 +128,41 @@ export interface SavedAddress {
 }
 
 export const fetchSavedAddress = (token: string) => apiGetAuth<{ address: SavedAddress | null }>('/mobile/me', token).then((r) => r.address);
+
+export type AddressType = 'home' | 'work' | 'other';
+
+/** One address on the member's card, as the backend returns it (names in the current language). */
+export interface MemberAddress {
+  id: number;
+  type: AddressType;
+  street: string | null;
+  building_number: string | null;
+  floor_number: string | null;
+  apartment_number: string | null;
+  special_mark: string | null;
+  governorate_id: number | null;
+  governorate_name: string | null;
+  city_id: number | null;
+  city_name: string | null;
+}
+
+/** The addresses on the member's card (one per type). The same rows show in the admin dashboard on the member's page. */
+export const fetchAddresses = (token: string) =>
+  apiGetAuth<{ data: { addresses: MemberAddress[] } }>('/addresses', token).then((r) => r.data.addresses);
+
+/** Saves (adds or updates) the address of one type. The governorate is required by the backend; the city is optional. */
+export const saveAddress = (token: string, body: {
+  type: AddressType; governorate_id: number; city_id: number | null; street: string;
+  building_number?: string; floor_number?: string; apartment_number?: string; special_mark?: string;
+}) => apiPost('/addresses', body, undefined, token);
+
+/** Saves the member's home address on the card (used by the personal-details form). */
+export const saveHomeAddress = (token: string, body: { governorate_id: number; city_id: number | null; street: string; building_number?: string }) =>
+  saveAddress(token, { type: 'home', ...body });
+
+/** Uploads the profile photo (an image up to 2 MB). */
+export const uploadAvatar = (token: string, file: File) => {
+  const form = new FormData();
+  form.append('avatar', file);
+  return apiPost('/profile/avatar', form, undefined, token);
+};

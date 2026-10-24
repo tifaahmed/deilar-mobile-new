@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { fetchMembership, type MemberStatus } from '../api/membership';
 import { navigate, routeHref } from '../router';
 import { useSession } from '../utils/session';
+import { usePopupHash } from '../utils/popupHash';
 
 /** How often the reminder appears while a signed-in member's profile is unfinished. */
 const EVERY_MS = 60_000;
@@ -75,6 +76,7 @@ export const ProfileReminder: React.FC = () => {
     };
   }, [token]);
 
+  usePopupHash('profile-popup', !!status);
   if (!status) return null;
 
   const { percent, missing } = status.progress.overall;

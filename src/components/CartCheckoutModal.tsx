@@ -28,7 +28,7 @@ import { fetchOrder, payOrder, placeOrder, uploadReceipt, type OnlineChannel, ty
 import { useSession } from '../utils/session';
 import { PaymobPixel } from './PaymobPixel';
 import { reportClientError } from '../utils/reportError';
-import { fetchSavedAddress } from '../api/auth';
+import { fetchAddresses, type MemberAddress } from '../api/auth';
 import { fetchLocations, fetchShopSettings } from '../api/endpoints';
 import { useApi } from '../hooks/useApi';
 import { rememberOrder } from '../utils/orders';
@@ -93,24 +93,34 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const [customerNotes, setCustomerNotes] = useState('');
   // The address as one line, smallest to largest — for the WhatsApp summary and the review.
   const customerAddress = [customerStreet, buildingNumber, floorNumber, apartmentNumber, customerCity, customerGovernorate, specialMark].map((part) => part.trim()).filter(Boolean).join('، ');
-  // A signed-in member's saved address opens the form filled in; the buyer can still change any of it.
-  const saved = useApi(isOpen && session.token ? `saved-address:${session.token}` : null, () => fetchSavedAddress(session.token!));
+  // A signed-in member's saved addresses (home, work, other — managed in the profile's Addresses tab). The home one,
+  // else the first, opens the form filled in; picking another type fills it from that address. All of it stays editable.
+  const saved = useApi(isOpen && session.token ? `saved-addresses:${session.token}` : null, () => fetchAddresses(session.token!));
   const [prefilled, setPrefilled] = useState(false);
 
-  useEffect(() => {
-    const address = saved.data;
-    if (!address || prefilled) return;
+  const fillFrom = (address: MemberAddress) => {
+    setAddressType(address.type);
+    setCustomerGovernorate(address.governorate_name ?? '');
+    setCustomerCity(address.city_name ?? '');
+    setCustomerStreet(address.street ?? '');
+    setBuildingNumber(address.building_number ?? '');
+    setFloorNumber(address.floor_number ?? '');
+    setApartmentNumber(address.apartment_number ?? '');
+    setSpecialMark(address.special_mark ?? '');
+  };
 
+  useEffect(() => {
+    const list = saved.data;
+    if (!list || list.length === 0 || prefilled) return;
     setPrefilled(true);
-    if (address.type) setAddressType(address.type);
-    if (address.governorate) setCustomerGovernorate(address.governorate);
-    if (address.city) setCustomerCity(address.city);
-    if (address.street) setCustomerStreet(address.street);
-    if (address.building_number) setBuildingNumber(address.building_number);
-    if (address.floor_number) setFloorNumber(address.floor_number);
-    if (address.apartment_number) setApartmentNumber(address.apartment_number);
-    if (address.special_mark) setSpecialMark(address.special_mark);
+    fillFrom(list.find((a) => a.type === 'home') ?? list[0]);
   }, [saved.data, prefilled]);
+
+  const chooseAddressType = (value: 'home' | 'work' | 'other') => {
+    setAddressType(value);
+    const match = saved.data?.find((a) => a.type === value);
+    if (match) fillFrom(match);
+  };
 
   const governorates = useApi(isOpen ? 'all-governorates-checkout' : null, (signal) => fetchLocations(signal));
 
@@ -583,20 +593,22 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 {([
                   { channel: 'card' as const, on: cardAvailable, icon: <CreditCard className="w-4 h-4" />, title: 'الدفع بالبطاقة', note: 'فيزا / ماستركارد / ميزة — دفع آمن عبر Paymob', tone: 'bg-indigo-100 text-indigo-700' },
                   { channel: 'wallet' as const, on: onlineWalletAvailable, icon: <Smartphone className="w-4 h-4" />, title: 'الدفع بالمحفظة الإلكترونية', note: 'فودافون كاش وباقي المحافظ — دفع آمن عبر Paymob', tone: 'bg-rose-100 text-[#941946]' },
-                ]).filter((o) => o.on).map((o) => {
+                ]).map((o) => {
                   const selected = paymentMethod === 'online' && onlineChannel === o.channel;
                   return (
                     <div
                       key={o.channel}
-                      onClick={() => { setPaymentMethod('online'); setOnlineChannel(o.channel); }}
-                      className={`p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2 ${
-                        selected ? 'border-[#941946] bg-rose-50/50 shadow-xs' : 'border-slate-200 hover:border-slate-300 bg-white'
+                      aria-disabled={!o.on}
+                      onClick={() => { if (!o.on) return; setPaymentMethod('online'); setOnlineChannel(o.channel); }}
+                      className={`p-3 rounded-2xl border-2 transition-all flex items-center gap-2 ${
+                        !o.on ? 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'
+                          : selected ? 'border-[#941946] bg-rose-50/50 shadow-xs cursor-pointer' : 'border-slate-200 hover:border-slate-300 bg-white cursor-pointer'
                       }`}
                     >
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${o.tone}`}>{o.icon}</div>
                       <div>
                         <h4 className="text-xs font-bold text-slate-900">{o.title}</h4>
-                        <p className="text-[9.5px] text-slate-500">{o.note}</p>
+                        <p className="text-[9.5px] text-slate-500">{o.on ? o.note : 'غير متاحة حالياً'}</p>
                       </div>
                     </div>
                   );
@@ -655,13 +667,20 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     />
                   </div>
                 </div>
+              ) : paymentMethod === 'online' ? (
+                /* PAYING ONLINE WITH PAYMOB */
+                <div className="p-3 bg-indigo-50 rounded-2xl border border-indigo-200 text-[11px] text-indigo-900 leading-relaxed">
+                  {onlineChannel === 'wallet'
+                    ? 'ستدفع بالمحفظة الإلكترونية (فودافون كاش وغيرها) عبر Paymob بعد تأكيد الطلب. لا حاجة لأي تحويل يدوي ولا لرفع إيصال.'
+                    : 'ستدفع بالبطاقة (فيزا / ماستركارد / ميزة) عبر Paymob بعد تأكيد الطلب. بيانات بطاقتك تُدخل لدى Paymob ولا تصل إلى خوادمنا، ولا حاجة لرفع إيصال.'}
+                </div>
               ) : (
                 <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-[11px] text-emerald-900 leading-relaxed">
                   ستدفع قيمة الطلب للمندوب عند الاستلام. لا حاجة لأي تحويل الآن.
                 </div>
               )}
 
-              {paymentMethod !== 'cod' && (
+              {paymentMethod === 'wallet' && (
                 <div>
                   <label className="text-[11px] font-bold text-slate-700 block mb-1">صورة إيصال التحويل (اختياري - يمكن إرسالها لاحقاً):</label>
                   <input
@@ -707,7 +726,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                         <div className="flex flex-wrap gap-2">
                           {kinds.map(([value, text]) => (
                             <label key={value} className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold transition-colors ${addressType === value ? 'border-[#941946] bg-rose-50 text-[#941946]' : 'border-slate-200 text-slate-500 hover:border-[#941946]/40'}`}>
-                              <input type="radio" name="address_type" value={value} checked={addressType === value} onChange={() => setAddressType(value)} className="accent-[#941946]" />
+                              <input type="radio" name="address_type" value={value} checked={addressType === value} onChange={() => chooseAddressType(value)} className="accent-[#941946]" />
                               {text}
                             </label>
                           ))}

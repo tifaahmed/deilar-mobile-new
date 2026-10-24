@@ -5,6 +5,7 @@ import { fetchProfile, saveMemberArea } from '../api/auth';
 import { useArea } from '../utils/area';
 import { useSession } from '../utils/session';
 import { reportClientError } from '../utils/reportError';
+import { usePopupHash } from '../utils/popupHash';
 
 const DISMISSED_KEY = 'deilar_area_save_dismissed';
 
@@ -52,6 +53,7 @@ export const SaveAreaPrompt: React.FC = () => {
     };
   }, [token, areaKey]);
 
+  usePopupHash('save-area-popup', !(!token || !area || !areaKey || !missing || hidden));
   if (!token || !area || !areaKey || !missing || hidden) return null;
 
   const dismiss = () => {
