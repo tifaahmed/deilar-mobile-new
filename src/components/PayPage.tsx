@@ -2,12 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowRight, CreditCard, Loader2, MessageCircle, PhoneCall, ShieldCheck, Smartphone } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/http';
-import { subscribe, type MemberStatus } from '../api/membership';
+import { fetchMembership, subscribe, type MemberStatus } from '../api/membership';
 import { fetchProfile } from '../api/auth';
 import type { OnlineChannel } from '../api/orders';
 import { navigate, routeHref } from '../router';
 import { reportClientError } from '../utils/reportError';
 import { PaymobPixel } from './PaymobPixel';
+import { PaymobFrame } from './PaymobFrame';
+import { PlanPicker, plansOf, planName } from './PlanPicker';
+import { formatNumber } from '../utils/formatNumber';
 import type { PixelSession } from './PayModal';
 
 interface PayPageProps {
@@ -34,6 +37,9 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
   const [error, setError] = useState<string | null>(null);
   const [pixel, setPixel] = useState<PixelSession | null>(null);
   const Back = isAr ? ArrowRight : ArrowLeft;
+  const plans = plansOf(status);
+  const [planKey, setPlanKey] = useState<string | undefined>(plans[0]?.key);
+  const plan = plans.find((p) => p.key === planKey) ?? plans[0];
 
   // The email saved on the member's profile is already filled in; typing a different one here wins.
   useEffect(() => {
@@ -58,13 +64,13 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
     setBusy(channel);
     setError(null);
     try {
-      const result = await subscribe(token, { method: 'paymob', paymobChannel: channel, email: email.trim() || undefined });
+      const result = await subscribe(token, { method: 'paymob', plan: plan?.key, paymobChannel: channel, email: email.trim() || undefined });
       if (channel !== 'wallet' && result.client_secret && result.public_key) {
         setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
       } else if (result.checkout_url) {
-        // Paymob's own page (wallets always — Pixel cannot draw mobile wallets — and the card form when the embedded one is unavailable).
-        window.location.assign(result.checkout_url);
-        return;
+        // Paymob's own page (wallets always — Pixel cannot draw mobile wallets — and the card form when the embedded one is unavailable),
+        // drawn in a frame inside the app; the frame offers the in-app browser if it will not show.
+        setPixel({ clientSecret: result.client_secret ?? '', publicKey: result.public_key ?? '', checkoutUrl: result.checkout_url, mode: 'frame' });
       } else {
         setError(isAr ? 'تعذر فتح صفحة الدفع. حاول مرة أخرى.' : 'The payment page could not be opened. Please try again.');
       }
@@ -78,7 +84,7 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
     }
   };
 
-  const toCard = () => navigate(routeHref({ tab: 'profile' }));
+  const toCard = () => navigate(routeHref({ tab: 'mycard' }));
 
   return (
     <section className={`rounded-2xl p-4 border bg-white border-slate-200/90 space-y-4 ${isAr ? 'text-right' : 'text-left'}`}>
@@ -89,10 +95,10 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
 
       <div className="space-y-1">
         <h2 className="text-base font-black text-slate-900">{isAr ? 'الدفع للاشتراك في الكارت الكامل' : 'Pay for the full card'}</h2>
-        {status.price > 0 && (
-          <p className="text-sm font-bold text-[#941946]" dir="ltr">
-            {status.price} {isAr ? 'ج.م' : 'EGP'}
-            <span className="text-slate-500 font-medium"> · {isAr ? `${status.months} شهراً` : `${status.months} months`}</span>
+        {plan && (
+          <p className="text-sm font-bold text-[#941946]">
+            {formatNumber(plan.price, isAr)} {isAr ? 'ج.م' : 'EGP'}
+            <span className="text-slate-500 font-medium"> · {planName(plan, isAr)} · {isAr ? `${formatNumber(plan.months, true)} شهراً` : `${plan.months} months`}</span>
           </p>
         )}
         <p className="text-xs text-slate-500">{isAr ? 'اختر طريقة الدفع. تتم العملية بأمان عبر Paymob ويُفعَّل كرتك تلقائياً بعد نجاحها.' : 'Choose how to pay. The payment is handled securely by Paymob and your card is activated automatically once it succeeds.'}</p>
@@ -109,6 +115,8 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
           </div>
         </div>
       )}
+
+      {!pixel && <PlanPicker plans={plans} value={plan?.key} onChange={setPlanKey} />}
 
       <div className={`grid gap-3 ${pixel ? 'hidden' : ''}`}>
         {CHANNELS.map(({ id, icon: Icon, ar, en, arHint, enHint }) => {
@@ -144,12 +152,24 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
       {/* The card form is Paymob's, drawn right here in the page (like checkout) — card details never reach our servers. */}
       {pixel && (
         <div className="rounded-2xl border border-slate-200 p-3 space-y-2">
-          <PaymobPixel
-            publicKey={pixel.publicKey}
-            clientSecret={pixel.clientSecret}
-            fallbackUrl={pixel.checkoutUrl}
-            onComplete={() => { onDone(); toCard(); }}
-          />
+          {pixel.mode === 'frame' && pixel.checkoutUrl ? (
+            <PaymobFrame
+              url={pixel.checkoutUrl}
+              // The server decides: paid means the card is no longer a trial or expired.
+              check={async () => {
+                const current = await fetchMembership(token);
+                return current.has_card && !current.expired && !current.is_trial;
+              }}
+              onComplete={() => { onDone(); toCard(); }}
+            />
+          ) : (
+            <PaymobPixel
+              publicKey={pixel.publicKey}
+              clientSecret={pixel.clientSecret}
+              fallbackUrl={pixel.checkoutUrl}
+              onComplete={() => { onDone(); toCard(); }}
+            />
+          )}
           <button type="button" onClick={() => setPixel(null)} className="w-full text-[11px] font-bold text-slate-500 hover:text-[#941946] cursor-pointer">
             {isAr ? 'إلغاء والرجوع لاختيار طريقة الدفع' : 'Cancel and choose another way to pay'}
           </button>

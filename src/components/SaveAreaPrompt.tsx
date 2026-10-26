@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Loader2, MapPin, X } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchProfile, saveMemberArea } from '../api/auth';
 import { useArea } from '../utils/area';
 import { useSession } from '../utils/session';
 import { reportClientError } from '../utils/reportError';
 import { usePopupHash } from '../utils/popupHash';
+import { Notice } from './Notice';
 
 const DISMISSED_KEY = 'deilar_area_save_dismissed';
 
@@ -82,27 +83,21 @@ export const SaveAreaPrompt: React.FC = () => {
   const place = [area.city?.name, area.governorate.name].filter(Boolean).join('، ');
 
   return (
-    <div role="dialog" className={`fixed bottom-24 inset-x-3 z-[999] max-w-md mx-auto rounded-2xl bg-white border border-slate-200 shadow-xl p-3 flex items-start gap-3 animate-in fade-in ${isAr ? 'text-right' : 'text-left'}`}>
-      <MapPin className="w-5 h-5 text-[#941946] shrink-0 mt-0.5" />
-      <div className="min-w-0 flex-1 space-y-2">
-        <p className="text-xs font-extrabold text-slate-900">{isAr ? 'حفظ موقعك في بيانات كرتك؟' : 'Save your location to your card?'}</p>
-        <p className="text-[11px] text-slate-600 leading-relaxed">
-          {isAr ? `لا توجد محافظة/مدينة في بياناتك. هل نسجّل «${place}» كبيانات دائمة؟` : `Your card has no governorate/city yet. Save “${place}” as your permanent data?`}
-        </p>
-        {failed && <p role="alert" className="text-[11px] font-bold text-rose-600">{isAr ? 'تعذر الحفظ، حاول مرة أخرى.' : 'Could not save, please try again.'}</p>}
-        <div className="flex gap-2">
-          <button onClick={save} disabled={busy} className="flex-1 py-2 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-xl text-[11px] font-extrabold flex items-center justify-center gap-1 cursor-pointer">
-            {busy && <Loader2 className="w-3 h-3 animate-spin" />}
-            <span>{isAr ? 'نعم، احفظ' : 'Yes, save'}</span>
-          </button>
-          <button onClick={dismiss} disabled={busy} className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-[11px] font-bold cursor-pointer">
-            {isAr ? 'ليس الآن' : 'Not now'}
-          </button>
-        </div>
-      </div>
-      <button onClick={dismiss} aria-label={isAr ? 'إغلاق' : 'Close'} className="text-slate-400 hover:text-slate-700 cursor-pointer">
-        <X className="w-4 h-4" />
-      </button>
-    </div>
+    <Notice
+      role="dialog"
+      icon={<MapPin className="w-4 h-4 text-[#941946]" />}
+      tone="bg-white border border-slate-200 text-slate-900"
+      onOpen={save}
+      onClose={dismiss}
+      closeLabel={isAr ? 'ليس الآن' : 'Not now'}
+    >
+      {busy ? (
+        <span className="inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />{isAr ? 'جارٍ الحفظ...' : 'Saving...'}</span>
+      ) : failed ? (
+        <span role="alert" className="text-rose-600">{isAr ? 'تعذر الحفظ، اضغط للمحاولة مرة أخرى' : 'Could not save, tap to try again'}</span>
+      ) : (
+        isAr ? `حفظ موقعك (${place}) في كرتك؟ اضغط للحفظ` : `Save your location (${place}) to your card? Tap to save`
+      )}
+    </Notice>
   );
 };

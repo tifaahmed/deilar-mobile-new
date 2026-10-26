@@ -172,6 +172,47 @@ html.dark, .dark {
   color: #94A3B8 !important;
 }
 
+/* Pale tinted notices keep a readable dark-amber look in the dark theme. */
+.dark .bg-amber-50 {
+  background-color: rgba(245, 158, 11, 0.14) !important;
+}
+
+.dark .border-amber-200 {
+  border-color: rgba(251, 191, 36, 0.35) !important;
+}
+
+.dark .text-amber-800,
+.dark .text-amber-900 {
+  color: #FDE68A !important;
+}
+
+.dark .from-rose-50 {
+  --tw-gradient-from: rgba(190, 24, 93, 0.22) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(190, 24, 93, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.dark .to-amber-50\/60 {
+  --tw-gradient-to: rgba(245, 158, 11, 0.14) var(--tw-gradient-to-position) !important;
+}
+
+.dark .border-rose-200\/80 {
+  border-color: rgba(251, 113, 133, 0.35) !important;
+}
+
+.dark .text-\[\#941946\] {
+  color: #FDA4AF !important;
+}
+
+.dark .bg-rose-50\/60,
+.dark .bg-rose-50 {
+  background-color: rgba(190, 24, 93, 0.18) !important;
+}
+
+.dark .text-rose-700 {
+  color: #FDA4AF !important;
+}
+
 .dark .border-slate-200,
 .dark .border-slate-300,
 .dark .border-slate-100,
@@ -209,3 +250,37 @@ html.dark, .dark {
 .map-icon-bounce { animation: map-bounce 1s ease-in-out infinite; }
 .map-icon-color { animation: map-color 3s linear infinite; }
 .map-icon-color-active { animation: map-color-active 1.5s ease-in-out infinite; }
+
+/* Facility-type tiles: pastel chips (-50/-100 with dark -700/-800 text) become tinted glass with light text. */
+.dark .bg-rose-100 { background-color: rgb(244 63 94 / 0.18); }
+.dark .bg-blue-50, .dark .bg-blue-100 { background-color: rgb(59 130 246 / 0.18); }
+.dark .bg-emerald-50, .dark .bg-emerald-100 { background-color: rgb(16 185 129 / 0.18); }
+.dark .bg-indigo-50, .dark .bg-indigo-100 { background-color: rgb(99 102 241 / 0.2); }
+.dark .bg-amber-100 { background-color: rgb(245 158 11 / 0.18); }
+.dark .bg-purple-50, .dark .bg-purple-100 { background-color: rgb(168 85 247 / 0.2); }
+.dark .text-rose-800 { color: #fda4af; }
+.dark .text-blue-700, .dark .text-blue-800 { color: #93c5fd; }
+.dark .text-emerald-700, .dark .text-emerald-800 { color: #6ee7b7; }
+.dark .text-indigo-700, .dark .text-indigo-800 { color: #a5b4fc; }
+.dark .text-purple-700, .dark .text-purple-800 { color: #d8b4fe; }
+.dark .border-blue-200 { border-color: rgb(59 130 246 / 0.35); }
+.dark .border-emerald-200 { border-color: rgb(16 185 129 / 0.35); }
+.dark .border-indigo-200 { border-color: rgb(99 102 241 / 0.35); }
+.dark .border-purple-200 { border-color: rgb(168 85 247 / 0.35); }
+
+/* The membership card is a printed object: it keeps its light colours in the dark theme (navy/gold on white). */
+.dark .card-print .bg-white { background-color: #ffffff !important; border-color: rgb(252 211 77 / 0.6) !important; color: #112443 !important; }
+.dark .card-print .bg-slate-50 { background-color: #f8fafc !important; border-color: #e2e8f0 !important; color: #0f172a !important; }
+.dark .card-print .bg-slate-100\/90 { background-color: rgb(241 245 249 / 0.9) !important; }
+.dark .card-print .text-slate-700 { color: #334155 !important; }
+.dark .card-print .text-slate-500 { color: #64748b !important; }
+.dark .card-print .bg-amber-50 { background-color: #fffbeb !important; }
+.dark .card-print .text-amber-700 { color: #b45309 !important; }
+.dark .card-print .border-slate-100 { border-color: #f1f5f9 !important; }
+.dark .card-print .border-slate-200,
+.dark .card-print .border-slate-200\/80 { border-color: #e2e8f0 !important; }
+
+/* Trial notice (amber-100 bar, amber-950 text): dark amber glass with light text. */
+.dark .text-amber-950 { color: #fde68a !important; }
+.dark .border-amber-300 { border-color: rgb(245 158 11 / 0.45) !important; }
+.dark .bg-amber-100 { background-color: rgb(120 53 15 / 0.85); }

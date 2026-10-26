@@ -112,6 +112,11 @@ export function peek<T>(path: string, params?: Params): T | undefined {
   return (seed as Record<string, Record<string, unknown>>)[language]?.[path] as T | undefined;
 }
 
+/** Drops cached answers whose URL contains `part`, so the next read goes to the server. */
+export function forgetCached(part: string): void {
+  for (const url of [...cache.keys()]) if (url.includes(part)) cache.delete(url);
+}
+
 export function apiGet<T>(path: string, params?: Params, opts: { signal?: AbortSignal; ttl?: number; persist?: boolean } = {}): Promise<T> {
   const url = buildUrl(path, params);
   const hit = cache.get(url);
@@ -155,6 +160,17 @@ function abortable<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
 }
 
 export const isAbort = (e: unknown): boolean => e instanceof DOMException && e.name === 'AbortError';
+
+/** The server's address (scheme + host), for file paths the backend returns without one (`/storage/12/avatar.png`). */
+export function absoluteUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (/^(https?:|data:|blob:)/i.test(path)) return path;
+  try {
+    return new URL(path, API_URL).href;
+  } catch {
+    return path;
+  }
+}
 
 /** Public site root (the API base without its `/v1`), for the few endpoints that live outside `/v1`. */
 const SITE_API_URL = API_URL.replace(/\/v1\/?$/, '');

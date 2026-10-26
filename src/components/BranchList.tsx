@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader2, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
 import type { BranchPage, BranchRow } from '../api/types';
 import { directionsUrl, formatKm, whatsappNumber } from '../api/adapters';
@@ -15,10 +15,12 @@ interface BranchListProps {
   loadPage: (page: number) => Promise<BranchPage>;
   /** A new owner / position means a new list. */
   resetKey: string;
+  /** A branch to scroll to and outline (opened from a map pin). */
+  focusId?: number;
 }
 
 /** A card of an owner's branches: the first page is free, the rest is one tap each. */
-export const BranchList: React.FC<BranchListProps> = ({ first, hasMore, loading, loadPage, resetKey }) => {
+export const BranchList: React.FC<BranchListProps> = ({ first, hasMore, loading, loadPage, resetKey, focusId }) => {
   const { isAr } = useLanguage();
   const [extra, setExtra] = useState<BranchRow[]>([]);
   const [page, setPage] = useState(1);
@@ -49,6 +51,18 @@ export const BranchList: React.FC<BranchListProps> = ({ first, hasMore, loading,
   };
 
   const branches = [...(first ?? []), ...extra];
+  const focusRef = useRef<HTMLDivElement | null>(null);
+  const found = focusId != null && branches.some((b) => b.id === focusId);
+
+  // The wanted branch may sit on a later page: keep loading until it shows up.
+  useEffect(() => {
+    if (focusId != null && !found && more && !busy && !failed && !loading) loadMore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusId, found, more, busy, failed, loading, page]);
+
+  useEffect(() => {
+    if (found) focusRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [found, focusId]);
 
   // Nothing to list (e.g. an online-only store): no empty "Branches" card.
   if (!loading && branches.length === 0) return null;
@@ -71,7 +85,11 @@ export const BranchList: React.FC<BranchListProps> = ({ first, hasMore, loading,
         {branches.map((branch) => {
           const dir = directionsUrl(branch.lat, branch.lng, branch.maps_url);
           return (
-            <div key={branch.id} className="py-3 flex items-start justify-between gap-3">
+            <div
+              key={branch.id}
+              ref={branch.id === focusId ? focusRef : undefined}
+              className={`py-3 flex items-start justify-between gap-3 ${branch.id === focusId ? 'border-2 border-rose-600 bg-rose-50/60 rounded-xl px-3 my-1.5' : ''}`}
+            >
               <div className="min-w-0 space-y-0.5">
                 <p className="text-xs font-bold text-slate-900">{[branch.governorate, branch.city].filter(Boolean).join(' - ') || branch.name}</p>
                 {(branch.address || branch.area) && (

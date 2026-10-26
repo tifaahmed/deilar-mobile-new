@@ -116,6 +116,10 @@ export const TRANSLATIONS: TranslationsDictionary = {
     ar: 'تحميل وجه الكارت (PNG)',
     en: 'Download Front (PNG)',
   },
+  downloadFamilyCard: {
+    ar: 'تحميل الكارت العائلي',
+    en: 'Download Family Card',
+  },
   downloadBack: {
     ar: 'تحميل ظهر الكارت (PNG)',
     en: 'Download Back (PNG)',

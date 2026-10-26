@@ -1,19 +1,29 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, CheckCircle2, ChevronLeft, Download, Loader2, PackageSearch, Search, Trash2, Upload } from 'lucide-react';
-import { fetchMyOrders, fetchOrder, uploadReceipt, type OrderDetail } from '../api/orders';
+import { ArrowRight, CheckCircle2, ChevronLeft, Download, Loader2, PackageSearch, Search, Upload } from 'lucide-react';
+import { fetchMyOrders, fetchOrder, requestOrderRefund, uploadReceipt, type OrderDetail } from '../api/orders';
 import { useApi } from '../hooks/useApi';
 import { useLanguage } from '../context/LanguageContext';
-import { forgetOrder, rememberOrder, snapshotOf, useStoredOrders, type StoredOrder } from '../utils/orders';
+import { rememberOrder, snapshotOf, useStoredOrders, type StoredOrder } from '../utils/orders';
 import { useSession } from '../utils/session';
 import { navigate, routeHref } from '../router';
 import { downloadInvoicePdf } from '../utils/invoicePdf';
 import { ErrorState, ListSkeleton, Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
+import { OrderStatusSheet, statusTone, type StatusKind } from './OrderStatusSheet';
 
 const toRow = (o: OrderDetail): StoredOrder => ({ ...snapshotOf(o), savedAt: o.placed_at ?? '' });
 
-const statusTone = (value?: string) =>
-  value === 'delivered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : value === 'cancelled' || value === 'canceled' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-800 border-amber-200';
+/** A status chip that opens its explanation and history when tapped. */
+const StatusChip: React.FC<{ kind: StatusKind; value?: string; label?: string; onOpen: (kind: StatusKind) => void; size?: 'sm' | 'md' }> = ({ kind, value, label, onOpen, size = 'sm' }) =>
+  label && value ? (
+    <button
+      type="button"
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpen(kind); }}
+      className={`font-bold rounded-full border cursor-pointer ${size === 'sm' ? 'text-[10px] px-2 py-0.5' : 'text-[11px] px-2.5 py-1'} ${statusTone(kind, value)}`}
+    >
+      {label}
+    </button>
+  ) : null;
 
 /** "My orders": this device's orders (kept locally, found again by their code) plus, when signed in, the member's own list from the server. */
 const OrdersList: React.FC = () => {
@@ -21,6 +31,7 @@ const OrdersList: React.FC = () => {
   const session = useSession();
   const local = useStoredOrders();
   const [code, setCode] = useState('');
+  const [sheet, setSheet] = useState<{ code: string; kind: StatusKind; value: string; label: string } | null>(null);
   const currency = isAr ? 'ج.م' : 'EGP';
 
   const mine = useApi(session.token ? `my-orders:${session.token}:${isAr}` : null, () => fetchMyOrders(session.token!));
@@ -93,7 +104,10 @@ const OrdersList: React.FC = () => {
               <div className="flex-1 min-w-0 space-y-1">
                 <div className="flex items-center justify-between gap-2">
                   <span dir="ltr" className="text-xs font-black font-mono text-slate-900">{o.code}</span>
-                  {o.deliveryStatus && <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusTone(o.deliveryValue)}`}>{o.deliveryStatus}</span>}
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  <StatusChip kind="delivery" value={o.deliveryValue} label={o.deliveryStatus} onOpen={(kind) => setSheet({ code: o.code, kind, value: o.deliveryValue ?? '', label: o.deliveryStatus ?? '' })} />
+                  <StatusChip kind="payment" value={o.paymentValue} label={o.paymentStatus} onOpen={(kind) => setSheet({ code: o.code, kind, value: o.paymentValue ?? '', label: o.paymentStatus ?? '' })} />
                 </div>
                 <p className="text-[11px] text-slate-600 line-clamp-1">
                   {o.summary}
@@ -110,6 +124,8 @@ const OrdersList: React.FC = () => {
 
         </div>
       )}
+
+      {sheet && <OrderStatusSheet {...sheet} onClose={() => setSheet(null)} />}
     </div>
   );
 };
@@ -125,6 +141,26 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
   const [uploadMsg, setUploadMsg] = useState<'ok' | 'fail' | null>(null);
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfFailed, setPdfFailed] = useState(false);
+  const session = useSession();
+  const [sheetKind, setSheetKind] = useState<StatusKind | null>(null);
+  const [refundBusy, setRefundBusy] = useState(false);
+  const [refundMsg, setRefundMsg] = useState<'ok' | 'fail' | null>(null);
+
+  const askRefund = async () => {
+    if (!session.token) return;
+    if (!window.confirm(isAr ? 'إرسال طلب استرداد المبلغ لخدمة العملاء؟' : 'Send a refund request to customer service?')) return;
+    setRefundBusy(true);
+    setRefundMsg(null);
+    try {
+      await requestOrderRefund(session.token, code);
+      setRefundMsg('ok');
+      detail.reload();
+    } catch {
+      setRefundMsg('fail');
+    } finally {
+      setRefundBusy(false);
+    }
+  };
 
   // Opening an order refreshes this device's snapshot, so the list follows the order as it moves along.
   useEffect(() => {
@@ -199,7 +235,7 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
           <PackageSearch className="w-12 h-12 text-slate-300 mx-auto" />
           <h3 className="text-sm font-bold text-slate-800">{isAr ? 'لا يوجد طلب بهذا الرقم' : 'No order with that code'}</h3>
           <p className="text-xs text-slate-500">{isAr ? 'تأكد من كتابة الرقم بشكل صحيح.' : 'Check the code and try again.'}</p>
-          <button onClick={() => { forgetOrder(code); navigate(routeHref({ orders: { code: null } })); }} className="text-xs font-bold text-[#941946] cursor-pointer">
+          <button onClick={() => navigate(routeHref({ orders: { code: null } }))} className="text-xs font-bold text-[#941946] cursor-pointer">
             {isAr ? 'العودة للقائمة' : 'Back to the list'}
           </button>
         </div>
@@ -209,9 +245,9 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
         <>
           <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
             <div className="flex flex-wrap gap-1.5">
-              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${statusTone(order.delivery_status.value)}`}>{order.delivery_status.label}</span>
+              <StatusChip size="md" kind="delivery" value={order.delivery_status.value} label={order.delivery_status.label} onOpen={setSheetKind} />
               <span className="text-[11px] font-bold px-2.5 py-1 rounded-full border bg-slate-50 text-slate-600 border-slate-200">{order.payment_type.label}</span>
-              <span className="text-[11px] font-bold px-2.5 py-1 rounded-full border bg-slate-50 text-slate-600 border-slate-200">{order.payment_status.label}</span>
+              <StatusChip size="md" kind="payment" value={order.payment_status.value} label={order.payment_status.label} onOpen={setSheetKind} />
             </div>
             {order.cancel_reason && <p className="text-xs text-rose-600">{order.cancel_reason}</p>}
             {order.placed_at && <p className="text-[11px] text-slate-400">{new Date(order.placed_at).toLocaleString(isAr ? 'ar-EG' : 'en-GB')}</p>}
@@ -262,11 +298,41 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
             </div>
           )}
 
+          {sheetKind && order && (
+            <OrderStatusSheet
+              code={code}
+              kind={sheetKind}
+              value={sheetKind === 'payment' ? order.payment_status.value : order.delivery_status.value}
+              label={sheetKind === 'payment' ? order.payment_status.label : order.delivery_status.label}
+              onClose={() => setSheetKind(null)}
+            />
+          )}
+
           <button onClick={downloadPdf} disabled={pdfBusy} className="w-full py-3 bg-white hover:bg-slate-50 disabled:opacity-60 border border-slate-300 text-slate-800 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
             {pdfBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             <span>{isAr ? 'تحميل الفاتورة PDF' : 'Download invoice (PDF)'}</span>
           </button>
           {pdfFailed && <p className="text-[11px] text-rose-500 font-bold text-center">{isAr ? 'تعذر إنشاء ملف PDF، حاول مرة أخرى' : 'Could not create the PDF, try again'}</p>}
+
+          {(order.can_request_refund || order.refund_requested) && (
+            <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-2.5">
+              <h2 className="text-xs font-black text-slate-900">{isAr ? 'استرداد المبلغ' : 'Refund'}</h2>
+              {order.refund_requested || refundMsg === 'ok' ? (
+                <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />{isAr ? 'تم إرسال طلب الاسترداد، سيتواصل معك فريقنا.' : 'Refund requested — customer service will contact you.'}</p>
+              ) : session.token ? (
+                <>
+                  <p className="text-[11px] text-slate-500">{isAr ? 'طلبك مدفوع ولم يُشحن بعد، يمكنك طلب استرداد المبلغ.' : 'Your order is paid and has not shipped yet, so you can ask for your money back.'}</p>
+                  <button onClick={askRefund} disabled={refundBusy} className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                    {refundBusy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    <span>{isAr ? 'طلب استرداد المبلغ' : 'Request a refund'}</span>
+                  </button>
+                  {refundMsg === 'fail' && <p className="text-[11px] text-rose-500 font-bold">{isAr ? 'تعذر إرسال الطلب، حاول مرة أخرى' : 'Could not send the request, try again'}</p>}
+                </>
+              ) : (
+                <p className="text-[11px] text-slate-500">{isAr ? 'سجّل الدخول لطلب استرداد المبلغ.' : 'Sign in to request a refund.'}</p>
+              )}
+            </div>
+          )}
 
           {order.accepts_receipts && (
             <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-2.5">
@@ -287,11 +353,6 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
               {uploadMsg === 'fail' && <p className="text-[11px] text-rose-500 font-bold">{isAr ? 'تعذر رفع الإيصال، حاول مرة أخرى' : 'Could not send the receipt, try again'}</p>}
             </div>
           )}
-
-          <button onClick={() => { forgetOrder(code); navigate(routeHref({ orders: { code: null } })); }} className="w-full py-2 text-[11px] font-bold text-slate-400 hover:text-rose-600 flex items-center justify-center gap-1 cursor-pointer">
-            <Trash2 className="w-3 h-3" />
-            {isAr ? 'إزالة من قائمة هذا الجهاز' : 'Remove from this device’s list'}
-          </button>
         </>
       )}
     </div>

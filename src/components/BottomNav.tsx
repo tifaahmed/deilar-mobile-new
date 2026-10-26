@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Store, MapPin, User } from 'lucide-react';
+import { Home, Store, MapPin, User, CreditCard } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
-export type NavTab = 'home' | 'store' | 'products' | 'map' | 'profile';
+export type NavTab = 'home' | 'store' | 'products' | 'map' | 'mycard' | 'profile';
 
 interface BottomNavProps {
   activeTab: NavTab;
@@ -33,8 +33,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
       icon: MapPin,
     },
     {
+      id: 'mycard' as NavTab,
+      labelEn: 'My card',
+      labelAr: 'كارتي',
+      icon: CreditCard,
+    },
+    {
       id: 'profile' as NavTab,
-      labelEn: 'Profile',
+      labelEn: 'Account',
       labelAr: 'حسابي',
       icon: User,
     },
@@ -95,8 +101,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
         <div
           className="absolute top-0 bottom-0 pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1)]"
           style={{
-            width: '25%',
-            ...(isAr ? { right: `${safeIndex * 25}%` } : { left: `${safeIndex * 25}%` }),
+            width: `${100 / tabs.length}%`,
+            ...(isAr ? { right: `${(safeIndex * 100) / tabs.length}%` } : { left: `${(safeIndex * 100) / tabs.length}%` }),
           }}
         >
           <div className="w-full h-full flex flex-col items-center justify-start relative">
@@ -127,7 +133,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           </div>
         </div>
 
-        {/* 4 Tab Buttons */}
+        {/* Tab buttons */}
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id || (activeTab === 'products' && tab.id === 'store');
           const Icon = tab.icon;

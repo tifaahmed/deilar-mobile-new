@@ -29,7 +29,7 @@ function describe(route: Route): { page: string; subject_type?: 'product' | 'fac
   if (route.checkout) return { page: route.checkout };
   if (route.section) return { page: `card.${route.section}` };
 
-  return { page: { home: 'home', store: 'stores.index', products: 'products.index', map: 'facility.map', profile: 'card' }[route.tab] ?? route.tab };
+  return { page: { home: 'home', store: 'stores.index', products: 'products.index', map: 'facility.map', mycard: 'card', profile: 'account' }[route.tab] ?? route.tab };
 }
 
 /**

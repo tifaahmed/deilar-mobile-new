@@ -4,6 +4,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/http';
 import { subscribe, type MemberStatus, type PayMethod } from '../api/membership';
 import { reportClientError } from '../utils/reportError';
+import { PlanPicker, plansOf } from './PlanPicker';
+import { formatNumber } from '../utils/formatNumber';
 import { navigate, routeHref } from '../router';
 
 interface SubscribePanelProps {
@@ -38,6 +40,9 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
   const formRef = React.useRef<HTMLFormElement>(null);
 
   const chosen = manual.find((m) => m.value === method) ?? manual[0];
+  const plans = plansOf(status);
+  const [planKey, setPlanKey] = useState<string | undefined>(plans[0]?.key);
+  const plan = plans.find((p) => p.key === planKey) ?? plans[0];
 
   const fail = (err: unknown) => {
     setMessage({
@@ -52,7 +57,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     setBusy('manual');
     setMessage(null);
     try {
-      await subscribe(token, { method: chosen.value, email, reference, receipt });
+      await subscribe(token, { method: chosen.value, plan: plan?.key, email, reference, receipt });
       setMessage({ ok: true, text: isAr ? 'شكراً — ستراجع خدمة العملاء الدفع وتفعّل كارتك.' : 'Thanks — customer service will check and activate your card.' });
       setReceipt(null);
       onDone();
@@ -70,7 +75,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     if (nothingToPayWith) onDone();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const toPayPage = () => navigate(routeHref({ tab: 'profile', section: 'pay' }));
+  const toPayPage = () => navigate(routeHref({ tab: 'mycard', section: 'pay' }));
   const goPay = () => {
     if (busy !== null) return;
     if (status.can_pay_online) toPayPage();
@@ -88,7 +93,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
       <button type="button" onClick={goPay} className="w-full flex items-center gap-2 text-xs font-bold text-slate-900 text-start cursor-pointer">
         <CreditCard className="w-4 h-4 text-[#941946]" />
         <span>{isAr ? 'اشترك في الكارت الكامل' : 'Subscribe to the full card'}</span>
-        {status.price > 0 && <span className="text-slate-500 font-mono" dir="ltr">{status.price} {isAr ? 'ج.م' : 'EGP'}</span>}
+        {plan && <span className="text-slate-500">{plans.length > 1 ? `${isAr ? 'من' : 'from'} ${formatNumber(Math.min(...plans.map((p) => p.price)), isAr)}` : formatNumber(plan.price, isAr)} {isAr ? 'ج.م' : 'EGP'}</span>}
         <Chevron className="w-4 h-4 text-[#941946] ms-auto" />
       </button>
 
@@ -131,6 +136,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
 
       {manual.length > 0 && (
       <form ref={formRef} onSubmit={sendManual} className="space-y-2">
+        <PlanPicker plans={plans} value={plan?.key} onChange={setPlanKey} />
         {manual.map((m) => (
           <label key={m.value} className="flex items-center gap-2 text-xs cursor-pointer">
             <input type="radio" checked={chosen?.value === m.value} onChange={() => setMethod(m.value)} className="accent-[#941946]" />

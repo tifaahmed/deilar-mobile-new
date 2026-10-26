@@ -18,6 +18,7 @@ export interface StoredOrder {
   summary: string;
   image: string | null;
   paymentStatus?: string;
+  paymentValue?: string;
   deliveryStatus?: string;
   deliveryValue?: string;
 }
@@ -76,12 +77,10 @@ export const snapshotOf = (order: OrderDetail): Omit<StoredOrder, 'savedAt'> => 
   summary: order.items[0]?.name ?? '',
   image: order.items[0]?.image ?? null,
   paymentStatus: order.payment_status.label,
+  paymentValue: order.payment_status.value,
   deliveryStatus: order.delivery_status.label,
   deliveryValue: order.delivery_status.value,
 });
-
-export const forgetOrder = (code: string) => write(storedOrders().filter((o) => o.code !== code));
-export const forgetAllOrders = () => write([]);
 
 export const useStoredOrders = (): StoredOrder[] =>
   useSyncExternalStore(

@@ -10,11 +10,14 @@ import type { NavTab } from './components/BottomNav';
  *   /products              products
  *   /map  /map?type=22     map / list, optionally filtered by facility type
  *   /map?view=list         the map's list view
- *   /map?radius=50         search range in km (0 = everywhere; default 20)
+ *   /map?radius=50         search range in km (0 = everywhere; default 1, widened step by step until a facility is found)
  *   /map?view=list&sort=discount   biggest discount first
- *   /card                  my card (profile)
- *   /card/members  /card/support  /card/personal  /card/theme   profile sections
+ *   /card                  my card (the «كارتي» tab: the card, relatives, subscription)
+ *   /card/members          the card's relatives
  *   /card/pay              pay for the card with Paymob (card or mobile wallet)
+ *   /account               the account list («حسابي» tab): one row per page
+ *   /account/personal  /account/addresses  /account/support  /account/theme   the account's pages
+ *                          (the old /card/personal etc. still open the same pages)
  *   /products/:slug        one product
  *   /cart  /checkout       the basket / the payment page
  *   /orders  /orders/:code my orders / one order
@@ -45,10 +48,17 @@ export interface Route {
   sort?: 'discount' | null;
 }
 
-export const PROFILE_SECTIONS = ['members', 'support', 'personal', 'addresses', 'theme', 'pay'] as const;
+/** Pages of the «كارتي» tab. */
+export const CARD_SECTIONS = ['members', 'pay'] as const;
+/** Pages of the account list. */
+export const ACCOUNT_SECTIONS = ['personal', 'addresses', 'support', 'theme'] as const;
+export const PROFILE_SECTIONS = [...CARD_SECTIONS, ...ACCOUNT_SECTIONS] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 
-const TAB_PATHS: Record<NavTab, string> = { home: '/', store: '/store', products: '/products', map: '/map', profile: '/card' };
+/** The tab a profile page belongs to. */
+export const tabOfSection = (section: ProfileSection): NavTab => ((CARD_SECTIONS as readonly string[]).includes(section) ? 'mycard' : 'profile');
+
+const TAB_PATHS: Record<NavTab, string> = { home: '/', store: '/store', products: '/products', map: '/map', mycard: '/card', profile: '/account' };
 
 export function parseRoute(pathname: string, search: string): Route {
   const path = pathname.replace(/\/+$/, '') || '/';
@@ -72,14 +82,14 @@ export function parseRoute(pathname: string, search: string): Route {
 
   if (orders) return { tab: 'profile', typeId: null, facility: null, product: null, orders: { code: orders[1] ? decodeURIComponent(orders[1]).toUpperCase() : null }, checkout: null, view: 'map', section: null };
 
-  const profile = path.match(/^\/card\/([^/]+)$/);
+  const profile = path.match(/^\/(?:card|account)\/([^/]+)$/);
   const section = profile && (PROFILE_SECTIONS as readonly string[]).includes(profile[1]) ? (profile[1] as ProfileSection) : null;
 
-  const tab = profile && section ? 'profile' : ((Object.keys(TAB_PATHS) as NavTab[]).find((t) => TAB_PATHS[t] === path) ?? 'home');
+  const tab = profile && section ? tabOfSection(section) : ((Object.keys(TAB_PATHS) as NavTab[]).find((t) => TAB_PATHS[t] === path) ?? 'home');
   const params = new URLSearchParams(search);
   const type = Number(params.get('type'));
   const rawRadius = params.get('radius');
-  const radius = tab === 'map' && rawRadius !== null && [10, 20, 30, 50, 100, 0].includes(Number(rawRadius)) ? Number(rawRadius) : null;
+  const radius = tab === 'map' && rawRadius !== null && [1, 2, 3, 4, 5, 10, 20, 30, 50, 100, 0].includes(Number(rawRadius)) ? Number(rawRadius) : null;
 
   return {
     tab,
@@ -104,7 +114,7 @@ export function routeHref(route: Partial<Route> & { tab?: NavTab }): string {
 
   const base = TAB_PATHS[route.tab ?? 'home'];
 
-  if (route.tab === 'profile' && route.section) return `${base}/${route.section}`;
+  if ((route.tab === 'profile' || route.tab === 'mycard') && route.section) return `${TAB_PATHS[tabOfSection(route.section)]}/${route.section}`;
 
   if (route.tab === 'map') {
     const query = new URLSearchParams();

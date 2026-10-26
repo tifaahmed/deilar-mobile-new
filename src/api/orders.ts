@@ -116,6 +116,14 @@ interface Labelled {
   label: string;
 }
 
+/** One change of the payment or delivery status. */
+export interface StatusMove {
+  kind: 'payment' | 'delivery';
+  from: Labelled | null;
+  to: Labelled | null;
+  at: string | null;
+}
+
 /** One order as the tracking screen shows it (the API's own snapshot, never the live catalogue). */
 export interface OrderDetail {
   order_code: string;
@@ -133,11 +141,16 @@ export interface OrderDetail {
   cod_fee?: number;
   refunded_amount?: number;
   can_pay_online?: boolean;
+  /** Paid and not shipped yet: the buyer may ask for the money back (an admin decides). */
+  can_request_refund?: boolean;
+  refund_requested?: boolean;
   delivery_free_reason: string | null;
   payment_type: Labelled;
   payment_status: Labelled;
   delivery_status: Labelled;
   cancel_reason: string | null;
+  /** How the payment and delivery statuses moved, oldest first (only on the one-order screen). */
+  status_history?: StatusMove[];
   awaiting_receipt: boolean;
   accepts_receipts: boolean;
   receipts: unknown[];
@@ -159,3 +172,7 @@ export const fetchMyOrders = (token: string) => apiGetAuth<{ data: OrderDetail[]
 
 /** Hands the guest orders this device placed to the member who just signed in. Orders that already belong to someone are left alone. */
 export const claimOrders = (token: string, codes: string[]) => apiPost<{ data: { claimed: string[] } }>('/orders/claim', { codes }, undefined, token);
+
+/** Asks customer services to refund a paid order that has not shipped. Only a request: an admin decides. */
+export const requestOrderRefund = (token: string, orderCode: string, note?: string) =>
+  apiPost<{ data: { requested: boolean; already_requested: boolean } }>(`/orders/${encodeURIComponent(orderCode)}/refund-request`, note ? { note } : {}, undefined, token);

@@ -11,6 +11,7 @@ import { shownPrice, useIsMember } from '../utils/pricing';
 import { Product } from '../types';
 import { ErrorState, Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
+import { ImageViewer } from './ImageViewer';
 
 interface ProductPageProps {
   slug: string;
@@ -30,6 +31,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
   const { isAr } = useLanguage();
   const contact = useContact();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<number | null>(null);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const member = useIsMember();
@@ -46,6 +48,10 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
   const currency = isAr ? 'ج.م' : 'EGP';
   const gallery = product?.gallery ?? [];
   const mainImage = selectedImage && gallery.includes(selectedImage) ? selectedImage : gallery[0] ?? product?.image;
+
+  // The photos the viewer pages through: the whole gallery, or the one picture when there is no gallery.
+  const photos = gallery.length ? gallery : product?.image ? [product.image] : [];
+  const mainIndex = Math.max(0, photos.indexOf(mainImage ?? ''));
 
   const back = () => (history.length > 1 ? history.back() : navigate(routeHref({ tab: 'products' })));
 
@@ -97,7 +103,10 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
 
       {/* Gallery */}
       <div className="bg-white rounded-3xl p-3 border border-slate-200/90 shadow-2xs space-y-2.5">
-        <div className="relative aspect-square sm:aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
+        <div
+          className={`relative aspect-square sm:aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 ${photos.length ? 'cursor-zoom-in' : ''}`}
+          onClick={() => photos.length && setViewing(mainIndex)}
+        >
           {detail.loading ? <Skeleton className="w-full h-full" /> : <Thumb src={mainImage} alt={product?.name ?? ''} kind="product" fit="contain" className="w-full h-full" />}
           {member && product?.discount != null && (
             <span className="absolute top-3 right-3 px-2.5 py-1 bg-[#941946] text-white text-[11px] font-black rounded-xl shadow-sm">{isAr ? `وفر ${product.discount}%` : `Save ${product.discount}%`}</span>
@@ -114,6 +123,8 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
           </div>
         )}
       </div>
+
+      {viewing !== null && <ImageViewer images={photos} index={viewing} onIndexChange={setViewing} onClose={() => setViewing(null)} />}
 
       {/* Title, price, order */}
       <div className="bg-white rounded-3xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
@@ -168,7 +179,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
                     ) : (
                       shown.memberPrice != null && (
                         <button
-                          onClick={() => navigate(routeHref({ tab: 'profile' }))}
+                          onClick={() => navigate(routeHref({ tab: 'mycard' }))}
                           className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-emerald-200 text-start cursor-pointer"
                         >
                           <span className="text-[11px] font-bold text-emerald-700">
@@ -317,7 +328,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
       <div className="text-center space-y-2.5 py-4">
         <h2 className="text-base font-black text-slate-900">{isAr ? 'أسعار الأعضاء على كل المنتجات' : 'Member prices, on everything here'}</h2>
         <p className="text-xs text-slate-500 leading-relaxed">{isAr ? 'كرت ديلار هو ما يحوّل هذه الأسعار إلى أسعار الأعضاء — كرت واحد يغطي أسرتك كلها.' : 'The Deilar card is what turns these into member prices — one card covers everyone at home.'}</p>
-        <button onClick={() => navigate(routeHref({ tab: 'profile' }))} className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer">
+        <button onClick={() => navigate(routeHref({ tab: 'mycard' }))} className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer">
           {isAr ? 'اعرض كرتك' : 'Check your card'}
         </button>
       </div>

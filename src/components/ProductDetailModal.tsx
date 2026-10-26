@@ -8,6 +8,7 @@ import { useContact } from '../hooks/useCatalog';
 import { useLanguage } from '../context/LanguageContext';
 import { Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
+import { ImageViewer } from './ImageViewer';
 import { usePopupHash } from '../utils/popupHash';
 
 interface ProductDetailModalProps {
@@ -26,9 +27,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
   const shown = shownPrice(product, member);
   const detail = useApi<ProductDetail>(`product:${product.slug}:${isAr}`, (signal) => api.product(product.slug, signal));
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<number | null>(null);
 
   const gallery = detail.data?.gallery ?? [];
   const mainImage = selectedImage ?? gallery[0] ?? product.image;
+  const photos = gallery.length ? gallery : product.image ? [product.image] : [];
   const currency = isAr ? 'ج.م' : 'EGP';
 
   const handleWhatsApp = () => {
@@ -63,7 +66,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
           </button>
         </div>
 
-        <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100">
+        <div className={`aspect-[4/3] rounded-2xl overflow-hidden bg-slate-100 ${photos.length ? 'cursor-zoom-in' : ''}`} onClick={() => photos.length && setViewing(Math.max(0, photos.indexOf(mainImage ?? '')))}>
           <Thumb src={mainImage} alt={product.name} kind="product" className="w-full h-full" />
         </div>
 
@@ -134,6 +137,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
           )}
         </div>
       </div>
+      {viewing !== null && <ImageViewer images={photos} index={viewing} onIndexChange={setViewing} onClose={() => setViewing(null)} />}
     </div>
   );
 };

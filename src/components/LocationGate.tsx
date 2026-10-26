@@ -5,8 +5,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { saveGps, GpsPoint } from '../utils/gps';
 import { usePopupHash } from '../utils/popupHash';
 
-/** Blocks the app until a GPS fix has been obtained once. There is no way to dismiss it. */
-export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void }> = ({ onGranted }) => {
+/** Asks for a GPS fix once. If GPS can't be opened the visitor can skip and continue without it. */
+export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void; onSkip: () => void }> = ({ onGranted, onSkip }) => {
   usePopupHash('location-popup');
   const { isAr } = useLanguage();
   const [busy, setBusy] = useState(false);
@@ -60,6 +60,13 @@ export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void }> = ({ o
         >
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
           <span>{failed ? (isAr ? 'حاول مرة أخرى' : 'Try again') : isAr ? 'السماح بتحديد الموقع' : 'Allow location'}</span>
+        </button>
+        <button
+          onClick={onSkip}
+          disabled={busy}
+          className="w-full py-2.5 text-slate-300 hover:text-white text-xs font-bold underline underline-offset-4 cursor-pointer"
+        >
+          {isAr ? 'تخطي' : 'Skip'}
         </button>
       </div>
     </div>,

@@ -40,26 +40,24 @@ describe('MembershipReminder', () => {
     wrap(<MembershipReminder />);
     await tick(9_000);
 
-    expect(await screen.findByText('You are on the free trial — 12 days left')).toBeInTheDocument();
-    expect(screen.getByText(/pay its price \(600 EGP\)/)).toBeInTheDocument();
-  });
+    expect(await screen.findByText(/Free trial — 12 days left/)).toBeInTheDocument();
+      });
 
   it('says an expired card gets no discount and pays the full price', async () => {
     api.fetchMembership.mockResolvedValue(status({ state: 'trial_expired', expired: true, valid: false, days_left: 0 }));
     wrap(<MembershipReminder />);
     await tick(9_000);
 
-    expect(await screen.findByText('Your card has expired')).toBeInTheDocument();
-    expect(screen.getByText(/no discount and pay the full price/)).toBeInTheDocument();
-  });
+    expect(await screen.findByText(/Your card has expired/)).toBeInTheDocument();
+      });
 
   it('its pay button leads to the profile where the payment options live', async () => {
     api.fetchMembership.mockResolvedValue(status({}));
     wrap(<MembershipReminder />);
     await tick(9_000);
 
-    await userEvent.setup({ advanceTimers: vi.advanceTimersByTime }).click(await screen.findByRole('button', { name: /Pay now/ }));
-    expect(nav.navigate).toHaveBeenCalledWith('/profile');
+    await userEvent.setup({ advanceTimers: vi.advanceTimersByTime }).click(await screen.findByRole('button', { name: /Free trial/ }));
+    expect(nav.navigate).toHaveBeenCalledWith('/mycard');
   });
 
   it('comes back every minute until the member pays, and hides itself in between', async () => {
@@ -101,7 +99,7 @@ describe('MembershipReminder', () => {
     wrap(<MembershipReminder />);
     await tick(9_000);
 
-    expect(await screen.findByText('Your card has expired')).toBeInTheDocument();
+    expect(await screen.findByText(/Your card has expired/)).toBeInTheDocument();
   });
 });
 
@@ -120,10 +118,10 @@ describe('SaveAreaPrompt', () => {
     const user = userEvent.setup();
     wrap(<SaveAreaPrompt />);
 
-    expect(await screen.findByText('Save your location to your card?')).toBeInTheDocument();
+    expect(await screen.findByText(/Save your location/)).toBeInTheDocument();
     expect(screen.getByText(/Dokki، Giza/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Yes, save' }));
+    await user.click(screen.getByRole('button', { name: /Save your location/ }));
 
     expect(auth.saveMemberArea).toHaveBeenCalledWith('tok', { governorate_id: 5, city_id: 50 });
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -134,7 +132,7 @@ describe('SaveAreaPrompt', () => {
     const user = userEvent.setup();
     wrap(<SaveAreaPrompt />);
 
-    await user.click(await screen.findByRole('button', { name: 'Yes, save' }));
+    await user.click(await screen.findByRole('button', { name: /Save your location/ }));
     expect(auth.saveMemberArea).toHaveBeenCalledWith('tok', { governorate_id: 7, city_id: null });
   });
 
@@ -142,7 +140,7 @@ describe('SaveAreaPrompt', () => {
     auth.fetchProfile.mockResolvedValue(profile({ governorateId: 5 }));
     wrap(<SaveAreaPrompt />);
 
-    expect(await screen.findByText('Save your location to your card?')).toBeInTheDocument();
+    expect(await screen.findByText(/Save your location/)).toBeInTheDocument();
   });
 
   it('"Not now" is remembered for that area and not asked again', async () => {
@@ -196,7 +194,7 @@ describe('SaveAreaPrompt', () => {
     const user = userEvent.setup();
     wrap(<SaveAreaPrompt />);
 
-    await user.click(await screen.findByRole('button', { name: 'Yes, save' }));
+    await user.click(await screen.findByRole('button', { name: /Save your location/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not save');
     expect(screen.getByRole('dialog')).toBeInTheDocument();

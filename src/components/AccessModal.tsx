@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, CheckCircle2, CreditCard, Loader2, Phone, ShieldCheck, Sparkles, UserPlus, UserRound, X } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, CreditCard, Loader2, MessageCircle, Phone, PhoneCall, ShieldCheck, Sparkles, UserPlus, UserRound, X } from 'lucide-react';
 import { ApiError, postContactMessage } from '../api/http';
 import { fetchCard, phoneHasCard, requestOtp, verifyOtp } from '../api/auth';
 import { navigate, routeHref } from '../router';
@@ -8,6 +8,7 @@ import { storedOrders } from '../utils/orders';
 import { getSession, updateSession } from '../utils/session';
 import { useLanguage } from '../context/LanguageContext';
 import { usePopupHash } from '../utils/popupHash';
+import { useContact } from '../hooks/useCatalog';
 
 /** Egyptian mobile: 11 digits starting with 01. */
 const PHONE_RE = /^01\d{9}$/;
@@ -45,6 +46,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   const [resendIn, setResendIn] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const contact = useContact();
   const [welcome, setWelcome] = useState<string | null>(null);
 
   // The URL names the form on screen (/map#otp-popup), so a link, a refresh or a bug report says where the visitor is.
@@ -155,7 +157,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         const typed = visitorName.trim() || result.user.name || undefined;
         if (typed) updateSession({ name: typed });
         onClose();
-        navigate(routeHref({ tab: 'profile' }));
+        navigate(routeHref({ tab: 'mycard' }));
       } else {
         setWelcome(result.user.name || cleanPhone);
       }
@@ -463,6 +465,27 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                 <p className="text-base text-rose-400 font-bold" role="alert">
                   {error}
                 </p>
+              )}
+
+              {/* Whatever went wrong, the member can reach customer service from here (numbers come from the admin settings). */}
+              {error && (contact.phone || contact.whatsapp) && (
+                <div className="space-y-2 pt-1">
+                  <p className="text-sm text-slate-400 font-bold">{isAr ? 'تواصل مع خدمة العملاء:' : 'Contact customer service:'}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {contact.phone && (
+                      <a href={`tel:${contact.dial ?? contact.phone}`} className="py-3 rounded-2xl bg-slate-800 border border-slate-700 text-white text-sm font-bold flex items-center justify-center gap-1.5">
+                        <PhoneCall className="w-4 h-4 text-amber-400" />
+                        <span dir="ltr" className="font-mono">{contact.phone}</span>
+                      </a>
+                    )}
+                    {contact.whatsapp && (
+                      <a href={`https://wa.me/${contact.whatsapp}`} target="_blank" rel="noreferrer" className="py-3 rounded-2xl bg-[#25D366] text-white text-sm font-bold flex items-center justify-center gap-1.5">
+                        <MessageCircle className="w-4 h-4" />
+                        <span>{isAr ? 'واتساب' : 'WhatsApp'}</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
               )}
             </>
           )}

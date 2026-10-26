@@ -45,6 +45,9 @@ interface HomeViewProps {
   onSearchOpen: () => void;
 }
 
+/** Shorter Arabic names for the home tiles, which have room for one word. The type's full name shows everywhere else. */
+const TILE_NAMES_AR: Record<string, string> = { 'medical-laboratories': 'معامل', 'batn-otkhssat-akhr': 'باطنة', hospitals: 'مستشفيات', 'dkatr-asnan': 'أسنان', 'radiology-centers': 'أشعة' };
+
 export const HomeView: React.FC<HomeViewProps> = ({
   userLocation,
   area,
@@ -84,7 +87,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         >
           <Search className="w-4 h-4 text-rose-600 shrink-0" />
           <span className="truncate">
-            {isAr ? 'ابحث باسم المستشفى، المعمل، الطبيب أو التخصص...' : 'Search hospital, lab, doctor or specialty...'}
+            {isAr ? 'ابحث عن مقدم الخدمة' : 'Search for a service provider'}
           </span>
         </button>
 
@@ -125,7 +128,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </Link>
 
         <Link
-          to={{ tab: 'profile' }}
+          to={{ tab: 'mycard' }}
           className="py-3 px-2 bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl shadow-sm hover:shadow-md active:scale-95 transition-all text-center flex flex-col items-center justify-center gap-1.5 group cursor-pointer"
         >
           <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-xs flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -139,22 +142,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
       {/* 6 MEDICAL FACILITIES BUTTONS WITH ICONS */}
       <section ref={typesRef} className="space-y-2.5">
-        <div className="flex items-center justify-between px-1">
-          <div>
-            <h2 className="text-sm font-extrabold text-slate-900">{t('facilitiesTitle')}</h2>
-            <p className="text-[11px] text-slate-500">
-              {isAr ? 'اختر نوع المنشأة للاطلاع على المستشفيات والمراكز ونسب الخصم' : 'Select facility type to view accredited hospitals & discount rates'}
-            </p>
-          </div>
-          <Link
-            to={{ tab: 'map' }}
-            className="text-xs font-bold text-[#941946] hover:underline flex items-center gap-0.5 cursor-pointer"
-          >
-            <span>{isAr ? 'الكل' : 'All'}</span>
-            <ChevronLeft className={`w-3.5 h-3.5 ${isAr ? '' : 'rotate-180'}`} />
-          </Link>
-        </div>
-
         {/* Facility type tiles — the most populated types, straight from the API */}
         <div className="grid grid-cols-3 gap-2">
           {types.loading &&
@@ -175,7 +162,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
                 <div className="mt-1.5 space-y-1 w-full">
                   <span className="block text-[11px] font-extrabold text-slate-800 group-hover:text-[#941946] transition-colors truncate">
-                    {type.name}
+                    {isAr ? TILE_NAMES_AR[type.slug] ?? type.name : type.name}
                   </span>
                   <span className={`inline-block text-[8.5px] font-bold px-1.5 py-0.2 rounded-md border ${style.badgeColor}`}>
                     {isAr ? `${type.count} منشأة` : `${type.count} facilities`}

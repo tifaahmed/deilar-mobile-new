@@ -2,16 +2,19 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { PaymobPixel } from './PaymobPixel';
+import { PaymobFrame } from './PaymobFrame';
 import { usePopupHash } from '../utils/popupHash';
 
 export interface PixelSession {
   clientSecret: string;
   publicKey: string;
   checkoutUrl: string | null;
+  /** `frame`: the wallet page drawn in a frame (Pixel cannot draw wallets). Default: the Pixel card form. */
+  mode?: 'pixel' | 'frame';
 }
 
 /** The embedded Paymob card form in a sheet over the current screen (subscribing / renewing a card). */
-export const PayModal: React.FC<{ session: PixelSession; onClose: () => void; onComplete: () => void }> = ({ session, onClose, onComplete }) => {
+export const PayModal: React.FC<{ session: PixelSession; onClose: () => void; onComplete: () => void; check?: () => Promise<boolean> }> = ({ session, onClose, onComplete, check }) => {
   usePopupHash('pay-popup');
   const { isAr } = useLanguage();
 
@@ -24,12 +27,16 @@ export const PayModal: React.FC<{ session: PixelSession; onClose: () => void; on
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-slate-900">{isAr ? 'الدفع بالبطاقة' : 'Pay by card'}</h3>
+          <h3 className="text-sm font-black text-slate-900">{session.mode === 'frame' ? (isAr ? 'الدفع بالمحفظة' : 'Pay by wallet') : isAr ? 'الدفع بالبطاقة' : 'Pay by card'}</h3>
           <button onClick={onClose} aria-label={isAr ? 'إغلاق' : 'Close'} className="text-slate-500 hover:text-slate-900 cursor-pointer">
             <X className="w-5 h-5" />
           </button>
         </div>
-        <PaymobPixel publicKey={session.publicKey} clientSecret={session.clientSecret} fallbackUrl={session.checkoutUrl} onComplete={onComplete} />
+        {session.mode === 'frame' && session.checkoutUrl ? (
+          <PaymobFrame url={session.checkoutUrl} check={check} onComplete={onComplete} />
+        ) : (
+          <PaymobPixel publicKey={session.publicKey} clientSecret={session.clientSecret} fallbackUrl={session.checkoutUrl} onComplete={onComplete} />
+        )}
       </div>
     </div>
   );

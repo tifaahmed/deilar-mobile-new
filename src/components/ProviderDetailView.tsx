@@ -16,6 +16,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { navigate, routeHref } from '../router';
 import { ErrorState, Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
+import { ImageViewer } from './ImageViewer';
 import { BranchList } from './BranchList';
 
 interface ProviderDetailViewProps {
@@ -58,6 +59,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
   const discount = facility?.discount ?? preview?.discount ?? null;
   const typeName = facility?.type?.name ?? preview?.type?.name;
   const hero = facility?.image || facility?.logo || preview?.logo;
+  const [viewingHero, setViewingHero] = React.useState(false);
 
   const handleWhatsApp = (number: string | null | undefined) => {
     const target = whatsappNumber(number);
@@ -87,9 +89,11 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
         {typeName && <span className="text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-100">{typeName}</span>}
       </div>
 
+      {viewingHero && hero && <ImageViewer images={[hero]} index={0} onIndexChange={() => undefined} onClose={() => setViewingHero(false)} />}
+
       {/* 2. Facility Hero Image & Identity */}
       <div className="relative rounded-3xl overflow-hidden bg-slate-950 text-white shadow-md border border-slate-200/50">
-        <div className="relative aspect-[2.1/1] sm:aspect-[2.6/1] w-full overflow-hidden">
+        <div className={`relative aspect-[2.1/1] sm:aspect-[2.6/1] w-full overflow-hidden ${hero ? 'cursor-zoom-in' : ''}`} onClick={() => hero && setViewingHero(true)}>
           <Thumb src={hero} alt={name} kind="facility" className="w-full h-full opacity-85" />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
         </div>
@@ -199,6 +203,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
         loading={detail.loading}
         loadPage={(page) => api.facilityBranches(slug, { ...point, page, per_page: BRANCH_PAGE })}
         resetKey={`${slug}:${point.lat},${point.lng}`}
+        focusId={preview?.focus_branch_id}
       />
 
       {/* 7. Similar places of the same type near the user */}

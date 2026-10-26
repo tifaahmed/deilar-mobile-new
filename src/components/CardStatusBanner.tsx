@@ -4,6 +4,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { subscribeByNumber, type CardStatus } from '../api/membership';
 import type { OnlineChannel } from '../api/orders';
 import { PayModal, type PixelSession } from './PayModal';
+import { PlanPicker, plansOf, planName } from './PlanPicker';
+import { formatNumber } from '../utils/formatNumber';
 
 interface CardStatusBannerProps {
   status: CardStatus | undefined;
@@ -22,8 +24,12 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const [pixel, setPixel] = useState<PixelSession | null>(null);
+  const [planKey, setPlanKey] = useState<string | undefined>(undefined);
 
   if (!status) return null;
+
+  const plans = plansOf(status);
+  const plan = plans.find((p) => p.key === planKey) ?? plans[0];
 
   const phone = status.contact.phone_international ?? status.contact.phone;
   const whatsapp = (status.contact.whatsapp ?? '').replace(/\D/g, '');
@@ -31,11 +37,11 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
   const buy = async (channel: OnlineChannel) => {
     setBusy(true);
     setFailed(false);
-    const result = await subscribeByNumber(number, channel);
+    const result = await subscribeByNumber(number, channel, plan?.key);
     setBusy(false);
-    // Wallets (Vodafone Cash…) cannot be drawn by Pixel: they always go to Paymob's own checkout page.
+    // Wallets (Vodafone Cash…) cannot be drawn by Pixel: their Paymob page is shown in a frame inside the app.
     if (channel !== 'wallet' && result?.client_secret && result.public_key) setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
-    else if (result?.checkout_url) window.open(result.checkout_url, '_blank');
+    else if (result?.checkout_url) setPixel({ clientSecret: result.client_secret ?? '', publicKey: result.public_key ?? '', checkoutUrl: result.checkout_url, mode: 'frame' });
     else setFailed(true);
   };
 
@@ -50,10 +56,11 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
         </p>
 
         <div className="space-y-2 pt-1">
+          {status.can_pay_online && <PlanPicker plans={plans} value={plan?.key} onChange={setPlanKey} tone="onRed" />}
           {status.can_pay_online && (status.online_channels?.length ? status.online_channels : (['card'] as OnlineChannel[])).map((channel) => (
             <button key={channel} onClick={() => buy(channel)} disabled={busy} className="w-full py-3 bg-white text-red-700 rounded-2xl text-sm font-extrabold disabled:opacity-60 cursor-pointer">
               {busy ? '…' : channel === 'wallet' ? (isAr ? 'اشترك الآن — الدفع بالمحفظة' : 'Subscribe now — pay by wallet') : isAr ? 'اشترك الآن — الدفع بالبطاقة' : 'Subscribe now — pay by card'}
-              {status.price > 0 && <span dir="ltr"> — {status.price} {isAr ? 'ج.م' : 'EGP'}</span>}
+              {plan && <span> — {formatNumber(plan.price, isAr)} {isAr ? 'ج.م' : 'EGP'}{plans.length > 1 ? ` · ${planName(plan, isAr)}` : ''}</span>}
             </button>
           ))}
           {phone && (

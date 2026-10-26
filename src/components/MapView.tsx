@@ -38,7 +38,7 @@ interface MapViewProps {
 }
 
 /** "Within X km" steps the API accepts; 0 means no limit (nearest first, across the country). */
-const RADIUS_OPTIONS = [10, 20, 30, 50, 100, 0];
+const RADIUS_OPTIONS = [1, 2, 3, 4, 5, 10, 20, 30, 50, 100, 0];
 /** Pins fetched per request, nearest first. The backend allows up to 3000 and only ~2000 branches have coordinates, so with a wide radius the map shows them all (the pins are tiny and the map clusters them). */
 const PIN_PAGE = 2500;
 /** What every deployed backend accepts. */
@@ -57,7 +57,10 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   const [inView, setInView] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const maxRadiusKm = radiusProp;
-  const setMaxRadiusKm = onRadiusChange;
+  // The map opens at 1 km; while nothing is found it widens one step at a time until a facility shows.
+  // Choosing a range by hand (or a search/type filter) ends the automatic widening.
+  const autoWiden = useRef(radiusProp === 1);
+  const setMaxRadiusKm = (km: number) => { autoWiden.current = false; onRadiusChange(km); };
   const viewMode = view;
   const setViewMode = onViewChange;
 
@@ -153,9 +156,19 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
     }),
   );
   const pins: Pin[] = useMemo(() => pinsQuery.data?.data ?? [], [pinsQuery.data]);
+  useEffect(() => {
+    if (!autoWiden.current || viewMode !== 'map' || pinsQuery.loading || !pinsQuery.data) return;
+    if (pins.length > 0 || q || selectedTypeId) { autoWiden.current = false; return; }
+    const next = RADIUS_OPTIONS[RADIUS_OPTIONS.indexOf(maxRadiusKm) + 1];
+    if (next === undefined) { autoWiden.current = false; return; }
+    onRadiusChange(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pinsQuery.loading, pinsQuery.data, pins, viewMode]);
   const capped = !!pinsQuery.data?.has_more;
 
   // The popup card is fetched when a pin is tapped — never shipped with every pin.
+  const [swipeX, setSwipeX] = useState(0);
+  const swipeStart = useRef<{ x: number; y: number; lock: boolean } | null>(null);
   const popup = useApi<FacilityCard>(activePin ? `pin:${activePin.id}:${isAr}` : null, (signal) => api.branchCard(activePin!.id, signal));
 
   // ---- List mode: server-side search / filter / nearest-first, infinite scroll ---------------
@@ -228,7 +241,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
         iconSize: [24, 24],
         iconAnchor: [12, 12],
       });
-      const userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon });
+      // Above the branch pins, whose labels sit over their point: a branch at the same spot shows its label and the user's dot together.
+      const userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon, zIndexOffset: 1000 });
       userMarker.bindTooltip(`<b>${isAr ? 'موقعك' : 'You'}:</b> ${escapeHtml(userLocation.name)}`, { direction: 'top', offset: [0, -10] });
       layer.addLayer(userMarker);
 
@@ -532,18 +546,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
         <div className="relative w-full h-[30rem] sm:h-[33.75rem] rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
           <div ref={mapContainerRef} className="w-full h-full" />
 
-          <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-1.5 shadow-md border border-slate-200/90 text-xs font-bold text-slate-800">
-            <Navigation className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-            <label htmlFor="map-radius-select" className="text-[11px] font-bold text-slate-700 whitespace-nowrap">
-              {isAr ? 'النطاق:' : 'Range:'}
-            </label>
-            {radiusSelect('map-radius-select')}
-            <span title={isAr ? 'في الشاشة / الإجمالي' : 'on screen / total'} className="text-[10px] text-slate-500 font-semibold px-1.5 border-x border-slate-200 whitespace-nowrap">
-              {pinsQuery.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : `${inView}/${pins.length}${capped && !q ? '+' : ''} ${isAr ? 'فرع' : 'br.'}`}
-            </span>
-          </div>
-
-          <div className="absolute top-3 left-3 z-[400] flex items-center gap-1.5">
+          <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5">
             <button
               onClick={handleCenterOnUser}
               className="w-8 h-8 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-800 rounded-xl shadow-md border border-slate-200 flex items-center justify-center transition-all active:scale-95"
@@ -552,14 +555,16 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
               <Navigation className="w-4 h-4 text-rose-600 fill-rose-100" />
             </button>
 
-            <button
-              onClick={onRequestGps}
-              disabled={isGpsLoading}
-              className="px-2.5 py-1 bg-white/95 backdrop-blur-md text-slate-800 hover:bg-slate-50 rounded-xl shadow-md border border-slate-200 text-[10px] font-bold flex items-center gap-1 transition-colors"
-            >
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span>{isGpsLoading ? (isAr ? 'جاري...' : '...') : 'GPS'}</span>
-            </button>
+            <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-1.5 shadow-md border border-slate-200/90 text-xs font-bold text-slate-800">
+              <Navigation className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+              <label htmlFor="map-radius-select" className="text-[11px] font-bold text-slate-700 whitespace-nowrap">
+                {isAr ? 'النطاق:' : 'Range:'}
+              </label>
+              {radiusSelect('map-radius-select')}
+              <span title={isAr ? 'في الشاشة / الإجمالي' : 'on screen / total'} className="text-[10px] text-slate-500 font-semibold px-1.5 border-x border-slate-200 whitespace-nowrap">
+                {pinsQuery.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : `${inView}/${pins.length}${capped && !q ? '+' : ''} ${isAr ? 'فرع' : 'br.'}`}
+              </span>
+            </div>
           </div>
 
           {pinsQuery.error && (
@@ -570,9 +575,32 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
           {/* Popup for the tapped pin */}
           {activePin && (
-            <div className="absolute bottom-3 left-3 right-3 z-[500] bg-white rounded-2xl p-3.5 shadow-2xl border border-slate-200/90 animate-in slide-in-from-bottom-4 duration-200">
+            <div
+              className="absolute bottom-3 left-3 right-3 z-[500] bg-white rounded-2xl p-3.5 shadow-2xl border border-slate-200/90 animate-in slide-in-from-bottom-4 duration-200 touch-pan-y"
+              style={{ transform: `translateX(${swipeX}px)`, opacity: 1 - Math.min(Math.abs(swipeX) / 300, 0.6), transition: swipeStart.current ? 'none' : 'transform 0.2s, opacity 0.2s' }}
+              onTouchStart={(e) => { swipeStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, lock: false }; }}
+              onTouchMove={(e) => {
+                const s = swipeStart.current;
+                if (!s) return;
+                const dx = e.touches[0].clientX - s.x;
+                if (!s.lock && Math.abs(e.touches[0].clientY - s.y) > Math.abs(dx)) { swipeStart.current = null; setSwipeX(0); return; }
+                s.lock = true;
+                setSwipeX(dx);
+              }}
+              onTouchEnd={() => {
+                swipeStart.current = null;
+                if (Math.abs(swipeX) > 80) setActivePin(null);
+                setSwipeX(0);
+              }}
+            >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3 min-w-0">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => (popupCard && Math.abs(swipeX) < 10 ? onSelectProvider({ ...popupCard, focus_branch_id: activePin.id }) : undefined)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && popupCard) onSelectProvider({ ...popupCard, focus_branch_id: activePin.id }); }}
+                  className="flex items-start gap-3 min-w-0 flex-1 cursor-pointer"
+                >
                   <Thumb src={popupCard?.logo} alt={activePin.name} kind="facility" fit="contain" className="w-12 h-12 rounded-xl border border-rose-100 shrink-0" />
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
@@ -620,7 +648,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                 </a>
 
                 <button
-                  onClick={() => (popupCard ? onSelectProvider(popupCard) : undefined)}
+                  onClick={() => (popupCard ? onSelectProvider({ ...popupCard, focus_branch_id: activePin.id }) : undefined)}
                   disabled={!popupCard}
                   className="py-2 bg-rose-700 hover:bg-rose-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-xs"
                 >

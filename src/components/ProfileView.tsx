@@ -38,6 +38,7 @@ import {
   Globe,
   Lock,
   LogOut,
+  PackageSearch,
 } from 'lucide-react';
 import { Beneficiary } from '../types';
 import { MembershipCardImage } from './MembershipCardImage';
@@ -49,6 +50,7 @@ import { useApi } from '../hooks/useApi';
 import { fetchFamily } from '../api/family';
 import { AddChildForm } from './AddChildForm';
 import { CardStatusBanner } from './CardStatusBanner';
+import { CardExpiry } from './CardExpiry';
 import { SubscribePanel } from './SubscribePanel';
 import { fetchMembership, requestRelatives, type CardStatus } from '../api/membership';
 import { AreaPicker } from './AreaPicker';
@@ -56,6 +58,9 @@ import { PayPage } from './PayPage';
 import { AddressesTab } from './AddressesTab';
 import { saveHomeAddress, uploadAvatar, fetchSavedAddress } from '../api/auth';
 import { navigate, routeHref } from '../router';
+import { onMembershipChanged } from '../utils/membershipEvents';
+import { AvatarCropper } from './AvatarCropper';
+import { ImageViewer } from './ImageViewer';
 import { NationalIdChange } from './NationalIdChange';
 import { reportClientError } from '../utils/reportError';
 import { useContact } from '../hooks/useCatalog';
@@ -63,7 +68,7 @@ import { DobPicker } from './DobPicker';
 import { downloadDeilarCardImage } from '../utils/downloadCard';
 import { useLanguage } from '../context/LanguageContext';
 
-export type ProfileSubSection = 'card' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay';
+export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay';
 
 export interface ProfileAccount {
   name: string;
@@ -74,6 +79,8 @@ export interface ProfileAccount {
 }
 
 interface ProfileViewProps {
+  /** `card`: the «كارتي» tab (card, relatives, subscription). `account`: the «حسابي» tab (a list; each row opens its page). */
+  mode: 'card' | 'account';
   account: ProfileAccount;
   onLogout: () => void;
   beneficiaries: Beneficiary[];
@@ -84,8 +91,8 @@ interface ProfileViewProps {
   /** Opens the phone + code sign-in. */
   onSignIn: () => void;
   /** Open sub-section, driven by the URL (null = the card). */
-  section: Exclude<ProfileSubSection, 'card'> | null;
-  onSectionChange: (section: Exclude<ProfileSubSection, 'card'> | null) => void;
+  section: Exclude<ProfileSubSection, 'card' | 'list'> | null;
+  onSectionChange: (section: Exclude<ProfileSubSection, 'card' | 'list'> | null) => void;
   /** The card's state from the backend (trial / expired / active, price, contacts). */
   status?: CardStatus;
 }
@@ -104,6 +111,7 @@ const FIELD_LABELS: Record<string, { ar: string; en: string }> = {
 };
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
+  mode,
   account,
   onLogout,
   beneficiaries,
@@ -119,8 +127,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const contact = useContact();
 
   // Active sub-section state (Default to 'card')
-  const activeSection: ProfileSubSection = section ?? 'card';
-  const setActiveSection = (s: ProfileSubSection) => onSectionChange(s === 'card' ? null : s);
+  const activeSection: ProfileSubSection = section ?? (mode === 'card' ? 'card' : 'list');
+  const setActiveSection = (s: ProfileSubSection) => onSectionChange(s === 'card' || s === 'list' ? null : (s as Exclude<ProfileSubSection, 'card' | 'list'>));
+  const isCardMode = mode === 'card';
 
   // Card sub-section states
   const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState<string>(beneficiaries[0]?.id || 'ben-1');
@@ -140,11 +149,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     nationalId: '',
     gender: '' as '' | 'male' | 'female',
     jobTitle: '',
+    companyName: '',
     dob: '',
     address: '',
     building: '',
   });
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  // The profile photo: picked here, framed in a circle (AvatarCropper), uploaded at once, then shown across the app.
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [viewAvatar, setViewAvatar] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ percent: number; missing: string[] } | null>(null);
   const [idChange, setIdChange] = useState<import('../api/auth').Profile['idChange']>(null);
   const [personalSaveSuccess, setPersonalSaveSuccess] = useState(false);
@@ -163,6 +177,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const awaiting = people.filter((p) => p.approval_status !== 'approved');
   // The signed-in member's own card state: the trial / relatives rules and the open payment. Never cached.
   const membership = useApi(token ? `membership:${token}` : null, () => fetchMembership(token!));
+  const reloadMembership = membership.reload;
+  useEffect(() => onMembershipChanged(reloadMembership), [reloadMembership]);
   const relatives = membership.data?.relatives;
   const [relativesAsked, setRelativesAsked] = useState(false);
   const [relativesError, setRelativesError] = useState(false);
@@ -178,6 +194,24 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     }
   };
   const governorates = useApi(personalOpen ? `all-governorates:${language}` : null, (signal) => fetchLocations(signal));
+
+  useEffect(() => {
+    const t = getSession().token;
+    if (!t) return;
+    let alive = true;
+    fetchProfile(t).then((p) => { if (alive) { setAvatarUrl(p.avatarUrl); setProgress(p.progress); } }, () => undefined);
+    return () => { alive = false; };
+  }, []);
+
+  const saveAvatar = async (cropped: File) => {
+    const t = getSession().token;
+    if (!t) return;
+    const url = await uploadAvatar(t, cropped);
+    // The same address now serves the new picture: ask the browser for it afresh.
+    setAvatarUrl(url ? `${url}${url.includes('?') ? '&' : '?'}v=${Date.now()}` : null);
+    setCropFile(null);
+    setAvatarError(null);
+  };
 
   useEffect(() => {
     const token = getSession().token;
@@ -196,6 +230,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           nationalId: p.nationalId ?? '',
           gender: p.gender ?? '',
           jobTitle: p.jobTitle ?? '',
+          companyName: p.companyName ?? '',
           dob: p.dob ?? '',
           address: cur.address,
           building: cur.building,
@@ -252,6 +287,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     }
   };
 
+  /** The family card is its two sides: front, then back. */
+  const handleDownloadBoth = async () => {
+    await handleDownload('front');
+    await handleDownload('back');
+  };
+
   const handleShareWhatsApp = () => {
     const cardTitle = isAr ? `بطاقة ${brandName} المعتمدة للخصم 🎫` : `${brandName} Certified Medical Discount Card 🎫`;
     const text = encodeURIComponent(
@@ -287,6 +328,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         email: personalInfo.email.trim() || null,
         ...(personalInfo.gender ? { gender: personalInfo.gender } : {}),
         job_title: personalInfo.jobTitle.trim() || null,
+        company_name: personalInfo.companyName.trim() || null,
         date_of_birth: personalInfo.dob || null,
         // An ID that is already on the card is changed only through a request (see <NationalIdChange>).
         ...(idLocked ? {} : { national_id: personalInfo.nationalId.trim() || null }),
@@ -305,10 +347,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           street: personalInfo.address.trim(),
           building_number: personalInfo.building.trim() || undefined,
         });
-      }
-      if (avatarFile) {
-        await uploadAvatar(token, avatarFile);
-        setAvatarFile(null);
       }
       // The percentage is the backend's count; ask it again rather than guessing what changed.
       fetchProfile(token).then((p) => setProgress(p.progress), () => undefined);
@@ -378,10 +416,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   return (
     <div className={`space-y-4 pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
       {/* A scan of an expired card says so first, in red, with every way to pay or call. */}
-      <CardStatusBanner status={status} number={account.number} />
+      {isCardMode && <CardStatusBanner status={status} number={account.number} />}
 
       {/* The name is required: say what is missing and take the member straight to the field. */}
-      {account.signedIn && !account.name.trim() && (
+      {isCardMode && account.signedIn && !account.name.trim() && (
         <div role="alert" className="rounded-2xl border border-red-300 bg-red-50 p-3.5 flex items-start gap-3 text-red-800">
           <TriangleAlert className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1 space-y-2">
@@ -395,18 +433,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       )}
 
       {/* Subscribe or renew: while on trial, once expired, or within a month of the end. */}
-      {(activeSection === 'card' || activeSection === 'support') && token && membership.data && (membership.data.is_trial || membership.data.expired || membership.data.days_left <= 30) && (
+      {isCardMode && activeSection === 'card' && token && membership.data && (membership.data.is_trial || membership.data.expired || membership.data.days_left <= 30) && (
         <SubscribePanel token={token} status={membership.data} onDone={membership.reload} />
       )}
 
       {/* 1. Profile Identity Header */}
+      {(isCardMode || activeSection === 'list') && (
       <section className={`rounded-2xl p-4 border transition-colors shadow-2xs ${
         isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200/90 text-slate-900'
       }`}>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#941946] to-[#6d1132] text-white flex items-center justify-center font-bold text-xl shadow-md shrink-0">
-              <span>{personalInfo.fullName.charAt(0) || 'D'}</span>
+            <div
+              className="relative w-[68px] h-[68px] shrink-0"
+              role={progress ? 'progressbar' : undefined}
+              aria-valuenow={progress?.percent}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            >
+              {progress && (
+                <svg viewBox="0 0 68 68" className="absolute inset-0 w-full h-full -rotate-90" aria-hidden="true">
+                  <circle cx="34" cy="34" r="31" fill="none" strokeWidth="4" className={isDark ? 'stroke-white/10' : 'stroke-slate-200'} />
+                  <circle
+                    cx="34" cy="34" r="31" fill="none" strokeWidth="4" strokeLinecap="round"
+                    className={progress.percent >= 100 ? 'stroke-emerald-500' : 'stroke-[#941946]'}
+                    strokeDasharray={2 * Math.PI * 31}
+                    strokeDashoffset={2 * Math.PI * 31 * (1 - Math.min(progress.percent, 100) / 100)}
+                    style={{ transition: 'stroke-dashoffset 0.6s' }}
+                  />
+                </svg>
+              )}
+              <div
+                role={avatarUrl ? 'button' : undefined}
+                onClick={avatarUrl ? () => setViewAvatar(true) : undefined}
+                className={`absolute inset-[7px] rounded-full overflow-hidden bg-gradient-to-br from-[#941946] to-[#6d1132] text-white flex items-center justify-center font-bold text-xl shadow-md ${avatarUrl ? 'cursor-pointer' : ''}`}
+              >
+                {avatarUrl ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" /> : <span>{personalInfo.fullName.charAt(0) || 'D'}</span>}
+              </div>
             </div>
 
             <div>
@@ -422,16 +485,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={() => handleDownload('front')}
-            className="px-3 py-1.5 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1 transition-colors shrink-0 cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>{t('downloadCardShort')}</span>
-          </button>
         </div>
 
-        {account.signedIn ? (
+        {!isCardMode && (account.signedIn ? (
           <button
             onClick={onLogout}
             className={`mt-3 w-full py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
@@ -450,10 +506,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           >
             {isAr ? 'إزالة الكرت من هذا الجهاز' : 'Remove card from this device'}
           </button>
-        )}
+        ))}
       </section>
+      )}
 
-      {/* 2. Interactive Navigation Tabs (5 Sections) */}
+      {/* 2. The card tab's two pages: the card and its relatives */}
+      {isCardMode && (
       <div className={`p-1.5 rounded-2xl border transition-colors flex items-center gap-1 overflow-x-auto no-scrollbar shadow-2xs ${
         isDark ? 'bg-[#181B26] border-white/[0.08]' : 'bg-white border-slate-200/90'
       }`}>
@@ -484,54 +542,38 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </span>
         </button>
 
-        <button
-          onClick={() => setActiveSection('support')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
-            activeSection === 'support'
-              ? 'bg-[#941946] text-white shadow-xs'
-              : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <Headphones className="w-3.5 h-3.5" />
-          <span>{t('tabSupport')}</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSection('personal')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
-            activeSection === 'personal'
-              ? 'bg-[#941946] text-white shadow-xs'
-              : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <UserCheck className="w-3.5 h-3.5" />
-          <span>{t('tabPersonal')}</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSection('addresses')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
-            activeSection === 'addresses'
-              ? 'bg-[#941946] text-white shadow-xs'
-              : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <MapPin className="w-3.5 h-3.5" />
-          <span>{isAr ? 'عناويني' : 'Addresses'}</span>
-        </button>
-
-        <button
-          onClick={() => setActiveSection('theme')}
-          className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${
-            activeSection === 'theme'
-              ? 'bg-[#941946] text-white shadow-xs'
-              : isDark ? 'text-[#94A3B8] hover:bg-[#1E2330]' : 'text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <Palette className="w-3.5 h-3.5" />
-          <span>{t('tabTheme')}</span>
-        </button>
       </div>
+      )}
+
+      {/* The account tab: a plain list, each row opens its own page. */}
+      {!isCardMode && activeSection === 'list' && (
+        <nav className={`rounded-2xl border overflow-hidden shadow-2xs divide-y ${isDark ? 'bg-[#181B26] border-white/[0.08] divide-white/[0.08]' : 'bg-white border-slate-200/90 divide-slate-100'}`}>
+          {([
+            { key: 'personal', icon: UserCheck, label: t('tabPersonal'), go: () => setActiveSection('personal') },
+            { key: 'addresses', icon: MapPin, label: isAr ? 'عناويني' : 'Addresses', go: () => setActiveSection('addresses') },
+            { key: 'orders', icon: PackageSearch, label: isAr ? 'طلباتي' : 'My orders', go: () => navigate(routeHref({ orders: { code: null } })) },
+            { key: 'support', icon: Headphones, label: t('tabSupport'), go: () => setActiveSection('support') },
+            { key: 'theme', icon: Palette, label: t('tabTheme'), go: () => setActiveSection('theme') },
+          ] as const).map(({ key, icon: Icon, label, go }) => (
+            <button key={key} onClick={go} className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold cursor-pointer transition-colors ${isDark ? 'text-[#F1F5F9] hover:bg-[#1E2330]' : 'text-slate-800 hover:bg-slate-50'}`}>
+              <span className="w-9 h-9 rounded-xl bg-[#941946]/10 text-[#941946] flex items-center justify-center shrink-0"><Icon className="w-4.5 h-4.5" /></span>
+              <span className="flex-1 text-start">{label}</span>
+              <ChevronLeft className={`w-4 h-4 text-slate-400 ${isAr ? '' : 'rotate-180'}`} />
+            </button>
+          ))}
+        </nav>
+      )}
+
+      {/* An account page: a way back to the list. */}
+      {!isCardMode && activeSection !== 'list' && (
+        <button onClick={() => setActiveSection('list')} className={`flex items-center gap-1.5 text-xs font-bold cursor-pointer ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'} hover:text-[#941946]`}>
+          <ChevronRight className={`w-4 h-4 ${isAr ? '' : 'rotate-180'}`} />
+          <span>{isAr ? 'حسابي' : 'Account'}</span>
+        </button>
+      )}
+
+      {viewAvatar && avatarUrl && <ImageViewer images={[avatarUrl]} index={0} onIndexChange={() => undefined} onClose={() => setViewAvatar(false)} />}
+      {cropFile && <AvatarCropper file={cropFile} onConfirm={saveAvatar} onCancel={() => setCropFile(null)} />}
 
       {/* 3. Section 1: مكان اشوف الكارت (Official Deilar Card & Downloads) */}
       {activeSection === 'card' && (
@@ -583,45 +625,22 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <RotateCw className="w-3 h-3 text-[#c89e43]" />
               <span>{t('tapToFlip')}</span>
             </p>
+
+            {token && membership.data && <CardExpiry status={membership.data} dark={isDark} />}
           </div>
 
           {/* Download & Actions Toolbar */}
           <div className="pt-1 space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => handleDownload('front')}
-                disabled={isDownloading}
-                className="py-2.5 px-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-              >
-                <Download className="w-4 h-4" />
-                <span>{t('downloadFront')}</span>
-              </button>
+            <button
+              onClick={handleDownloadBoth}
+              disabled={isDownloading}
+              className="w-full py-2.5 px-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 active:scale-[0.99] text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>{t('downloadFamilyCard')}</span>
+            </button>
 
-              <button
-                onClick={() => handleDownload('back')}
-                disabled={isDownloading}
-                className={`py-2.5 px-3 active:scale-[0.99] rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
-                  isDark 
-                    ? 'bg-[#1E2330] hover:bg-[#252c3d] text-[#F1F5F9] border-white/[0.08]' 
-                    : 'bg-slate-900 hover:bg-slate-800 text-white border-transparent'
-                }`}
-              >
-                <Download className="w-4 h-4" />
-                <span>{t('downloadBack')}</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-1.5 pt-1">
-              <button
-                onClick={() => setIsFlipped(!isFlipped)}
-                className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border cursor-pointer ${
-                  isDark ? 'bg-[#1E2330] hover:bg-[#252c3d] text-[#F1F5F9] border-white/[0.08]' : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200/70'
-                }`}
-              >
-                <RotateCw className="w-3.5 h-3.5 text-[#c89e43]" />
-                <span>{isFlipped ? t('frontSide') : t('backSide')}</span>
-              </button>
-
+            <div className="grid grid-cols-2 gap-1.5 pt-1">
               <button
                 onClick={handleCopyCardId}
                 className={`py-2 px-2 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border cursor-pointer ${
@@ -683,7 +702,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             {/* A trial card cannot take members: the button is there but locked, and leads to payment. */}
             {relatives?.must_contact_support && (
               <button
-                onClick={() => navigate(routeHref({ tab: 'profile', section: 'pay' }))}
+                onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))}
                 className="px-2.5 py-1 bg-slate-200 text-slate-600 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
                 title={isAr ? 'يلزم الدفع لإضافة أفراد' : 'Payment is required to add members'}
               >
@@ -714,7 +733,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   <div role="alert" className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 space-y-2">
                     <p className="font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'يلزم الدفع لإضافة أفراد العائلة' : 'You need to pay to add family members'}</p>
                     <p>{isAr ? 'الكارت التجريبي يشملك وحدك. اشترك في الكارت الكامل لتتمكن من إضافة أبنائك وأقاربك من الدرجة الأولى.' : 'The trial card covers only you. Subscribe to the full card to add your children and first-degree relatives.'}</p>
-                    <button onClick={() => navigate(routeHref({ tab: 'profile', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white text-[11px] font-bold cursor-pointer">
+                    <button onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white text-[11px] font-bold cursor-pointer">
                       {isAr ? 'ادفع الآن لإضافة الأفراد' : 'Pay now to add members'}
                     </button>
                   </div>
@@ -1214,6 +1233,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               />
             </div>
 
+            <div>
+              <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
+                {isAr ? 'جهة العمل (اختياري)' : 'Company name (optional)'}
+              </label>
+              <input
+                type="text"
+                value={personalInfo.companyName}
+                maxLength={255}
+                onChange={(e) => setPersonalInfo({ ...personalInfo, companyName: e.target.value })}
+                className={`w-full px-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+              />
+            </div>
+
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2">
                 <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'العنوان (الشارع والمنطقة)' : 'Address (street and area)'}</label>
@@ -1239,13 +1271,30 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
             <div>
               <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'الصورة الشخصية' : 'Profile photo'}</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
-                className="w-full text-[11px] file:mr-2 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-[11px] file:font-bold"
-              />
-              {avatarFile && <span className="block mt-1 text-[10px] text-emerald-700 truncate">{avatarFile.name}</span>}
+              <div className="flex items-center gap-3">
+                <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100 border-2 border-[#941946]/30 flex items-center justify-center shrink-0">
+                  {avatarUrl ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" /> : <User className="w-8 h-8 text-slate-300" />}
+                </div>
+                <div className="flex-1 space-y-1">
+                  <label className="inline-block px-3.5 py-2 rounded-xl bg-[#941946] hover:bg-[#7b1439] text-white text-[11px] font-bold cursor-pointer">
+                    {avatarUrl ? (isAr ? 'تغيير الصورة' : 'Change photo') : isAr ? 'اختيار صورة' : 'Choose a photo'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = '';
+                        if (!file) return;
+                        if (file.size > 15 * 1024 * 1024) { setAvatarError(isAr ? 'الصورة كبيرة جداً' : 'That photo is too large'); return; }
+                        setAvatarError(null);
+                        setCropFile(file);
+                      }}
+                    />
+                  </label>
+                  {avatarError && <p className="text-[10px] font-bold text-rose-600">{avatarError}</p>}
+                </div>
+              </div>
             </div>
 
             {personalError && (

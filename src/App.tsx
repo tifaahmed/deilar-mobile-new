@@ -11,7 +11,8 @@
  *    - 'store': Specialty Stores Front (coffee roasters, honey apiaries, olive oil presseries).
  *    - 'products': 2-per-row full catalog of natural products with store links & filters.
  *    - 'map': Interactive Google Map & Provider directory filtered by distance and category.
- *    - 'profile': User's account, 3D official medical card, PNG download buttons, family members.
+ *    - 'mycard': «كارتي» — the card, PNG download, relatives, subscription / payment.
+ *    - 'profile': «حسابي» — a plain list; every row opens its own page (personal data, addresses, orders, support, theme).
  * 
  * 2. 🛒 GLOBAL SHOPPING CART (`cart` & `isGlobalCartOpen`):
  *    - Manages items gathered from stores.
@@ -47,7 +48,8 @@ const OrdersPage = lazy(() => import('./components/OrdersPage').then((m) => ({ d
 const AccountGate = lazy(() => import('./components/AccountGate').then((m) => ({ default: m.AccountGate })));
 import { Beneficiary, Product, CartItem } from './types';
 import { fetchCard, fetchProfile, signOut } from './api/auth';
-import { ApiError } from './api/http';
+import { ApiError, forgetCached } from './api/http';
+import { onMembershipChanged } from './utils/membershipEvents';
 import { useApi } from './hooks/useApi';
 import { useIsMember } from './utils/pricing';
 import { getArea, useArea } from './utils/area';
@@ -55,6 +57,7 @@ import { clearSession, markPopupClosed, popupDueIn, popupSilenced, updateSession
 import { ProfileReminder } from './components/ProfileReminder';
 import { MembershipReminder } from './components/MembershipReminder';
 import { SaveAreaPrompt } from './components/SaveAreaPrompt';
+import { NoticeStack } from './components/Notice';
 import type { AccessStep } from './components/AccessModal';
 import type { FacilityCard } from './api/types';
 import { PRESET_LOCATIONS } from './utils/geo';
@@ -117,6 +120,15 @@ export default function App() {
         throw err;
       }),
   );
+  // A finished payment (or coming back from Paymob's own page) must lift the trial notice at once, not after the cache expires.
+  const reloadCard = card.reload;
+  useEffect(() => {
+    if (!session.cardNumber) return;
+    const onVisible = () => { if (document.visibilityState === 'visible') { forgetCached('/mobile/card/'); reloadCard(); } };
+    document.addEventListener('visibilitychange', onVisible);
+    const stop = onMembershipChanged(reloadCard);
+    return () => { document.removeEventListener('visibilitychange', onVisible); stop(); };
+  }, [session.cardNumber, reloadCard]);
   // A sign-in the server no longer recognises (expired, revoked, restored database) ends here rather than 401-ing every screen.
   useEffect(() => {
     const token = session.token;
@@ -198,7 +210,7 @@ export default function App() {
 
   // A guest opening Profile is asked for a name and number straight away.
   useEffect(() => {
-    if (activeTab === 'profile' && stage === 'done' && !silenced && !areaAsk) setAccessStep('visitor');
+    if ((activeTab === 'profile' || activeTab === 'mycard') && stage === 'done' && !silenced && !areaAsk) setAccessStep('visitor');
   }, [activeTab, stage, silenced, areaAsk]);
 
   const closeAccess = () => {
@@ -362,7 +374,7 @@ export default function App() {
               userLocation={userLocation}
               onBack={() => (history.length > 1 ? history.back() : navigate('/map'))}
               onNavigateToMap={() => navigate(routeHref({ tab: 'map' }))}
-              onNavigateToCard={() => navigate(routeHref({ tab: 'profile' }))}
+              onNavigateToCard={() => navigate(routeHref({ tab: 'mycard' }))}
             />
           ) : route.checkout ? (
             <CartCheckoutModal
@@ -418,7 +430,7 @@ export default function App() {
                   userLocation={userLocation}
                   selectedTypeId={selectedTypeId}
                   view={route.view}
-                  radius={route.radius ?? 20}
+                  radius={route.radius ?? 1}
                   sort={route.sort ?? null}
                   // The map's filters live in the URL, so a link or a refresh keeps the type, range, view and order.
                   onViewChange={(view) => navigate(routeHref({ ...route, tab: 'map', typeId: selectedTypeId, view }), { replace: true })}
@@ -432,13 +444,14 @@ export default function App() {
                 />
               )}
 
-              {activeTab === 'profile' && (
+              {(activeTab === 'profile' || activeTab === 'mycard') && (
                 card.data && beneficiaries.length > 0 ? (
                 <ProfileView
                   key={card.data.number}
                   onSignIn={() => setAccessStep('phone')}
+                  mode={activeTab === 'mycard' ? 'card' : 'account'}
                   section={route.section}
-                  onSectionChange={(section) => navigate(routeHref({ tab: 'profile', section }))}
+                  onSectionChange={(section) => navigate(routeHref({ tab: activeTab, section }))}
                   account={{
                     name: card.data.holder || session.name || '',
                     phone: session.phone ?? '',
@@ -506,7 +519,7 @@ export default function App() {
           </div>
         </div>
       )}
-      {stage === 'gate' && <LocationGate onGranted={handleGateGranted} />}
+      {stage === 'gate' && <LocationGate onGranted={handleGateGranted} onSkip={handleFindNearest} />}
       {stage === 'nearest' && <NearestPrompt onGo={handleFindNearest} />}
       <Suspense fallback={null}>
       {isSearchOpen && <SearchModal
@@ -525,9 +538,11 @@ export default function App() {
       {accessStep && !areaAsk && <AccessModal initialStep={accessStep} onClose={closeAccess} />}
       {/* Every minute while a signed-in member's profile is unfinished: how far along it is, and what is missing. */}
       {/* Nothing floats over the payment form. */}
-      {stage === 'done' && route.section !== 'pay' && <ProfileReminder />}
-      {stage === 'done' && route.section !== 'pay' && <MembershipReminder />}
-      {stage === 'done' && !areaAsk && route.section !== 'pay' && <SaveAreaPrompt />}
+      <NoticeStack>
+        {stage === 'done' && route.section !== 'pay' && <MembershipReminder />}
+        {stage === 'done' && route.section !== 'pay' && <ProfileReminder />}
+        {stage === 'done' && !areaAsk && route.section !== 'pay' && <SaveAreaPrompt />}
+      </NoticeStack>
       </Suspense>
     </div>
   );

@@ -43,6 +43,8 @@ export interface FacilityCard {
   type: Named | null;
   distance_km: number | null;
   branch: Place | null;
+  /** Set when opened from a map pin: the branch to scroll to and highlight. */
+  focus_branch_id?: number;
 }
 
 export interface BranchRow extends Place {

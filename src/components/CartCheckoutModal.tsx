@@ -27,6 +27,7 @@ import { ApiError } from '../api/http';
 import { fetchOrder, payOrder, placeOrder, uploadReceipt, type OnlineChannel, type PlacedOrder } from '../api/orders';
 import { useSession } from '../utils/session';
 import { PaymobPixel } from './PaymobPixel';
+import { PaymobFrame } from './PaymobFrame';
 import { reportClientError } from '../utils/reportError';
 import { fetchAddresses, type MemberAddress } from '../api/auth';
 import { fetchLocations, fetchShopSettings } from '../api/endpoints';
@@ -143,7 +144,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const [receiptFailed, setReceiptFailed] = useState(false);
   // Online payment: the page the buyer pays on, and what the server last said about it.
   // What the embedded card form (Paymob Pixel) mounts with, and the hosted page as its fallback.
-  const [pixel, setPixel] = useState<{ clientSecret: string; publicKey: string; checkoutUrl: string | null } | null>(null);
+  const [pixel, setPixel] = useState<{ clientSecret: string; publicKey: string; checkoutUrl: string | null; mode?: 'pixel' | 'frame' } | null>(null);
   const [payMessage, setPayMessage] = useState<string | null>(null);
   const [paidOnline, setPaidOnline] = useState(false);
   const [payBusy, setPayBusy] = useState(false);
@@ -246,7 +247,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
     try {
       const link = await payOrder(placed.order_code, onlineChannel);
       if (link.client_secret && link.public_key) {
-        setPixel({ clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url });
+        setPixel(onlineChannel === 'wallet' && link.checkout_url
+          ? { clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url, mode: 'frame' }
+          : { clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url });
         setPayMessage(null);
       } else {
         setPayMessage('تعذر فتح نموذج الدفع. حاول مرة أخرى.');
@@ -309,7 +312,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
       });
 
       setPlaced(order);
-      setPixel(order.payment?.client_secret && order.payment.public_key ? { clientSecret: order.payment.client_secret, publicKey: order.payment.public_key, checkoutUrl: order.payment.checkout_url } : null);
+      setPixel(order.payment?.client_secret && order.payment.public_key
+        ? { clientSecret: order.payment.client_secret, publicKey: order.payment.public_key, checkoutUrl: order.payment.checkout_url, ...(onlineChannel === 'wallet' && order.payment.checkout_url ? { mode: 'frame' as const } : {}) }
+        : null);
       setPayMessage(order.payment?.message ?? null);
       setStep('success');
     } catch (err) {
@@ -878,7 +883,15 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     <>
                       {pixel ? (
                         // The card form is Paymob's, shown here: card details never reach our code or server.
-                        <PaymobPixel publicKey={pixel.publicKey} clientSecret={pixel.clientSecret} fallbackUrl={pixel.checkoutUrl} onComplete={checkPayment} />
+                        pixel.mode === 'frame' && pixel.checkoutUrl ? (
+                          <PaymobFrame
+                            url={pixel.checkoutUrl}
+                            check={async () => (placed ? (await fetchOrder(placed.order_code))?.payment_status.value === 'accepted' : false)}
+                            onComplete={checkPayment}
+                          />
+                        ) : (
+                          <PaymobPixel publicKey={pixel.publicKey} clientSecret={pixel.clientSecret} fallbackUrl={pixel.checkoutUrl} onComplete={checkPayment} />
+                        )
                       ) : (
                         <p className="text-xs font-bold text-indigo-900">{payMessage ?? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.'}</p>
                       )}

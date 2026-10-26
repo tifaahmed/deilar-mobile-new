@@ -38,7 +38,7 @@ export const OfficialDeilarCard: React.FC<OfficialDeilarCardProps> = ({
     <div className={`perspective-1000 select-none ${className}`}>
       <div
         onClick={handleFlip}
-        className={`relative w-full aspect-[1.62/1] rounded-2xl transition-transform duration-700 transform-style-3d cursor-pointer shadow-2xl ${
+        className={`card-print relative w-full aspect-[1.62/1] rounded-2xl transition-transform duration-700 transform-style-3d cursor-pointer shadow-2xl ${
           isFlipped ? 'rotate-y-180' : ''
         }`}
       >

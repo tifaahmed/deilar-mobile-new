@@ -2,6 +2,7 @@ import React, { useEffect, useId, useState } from 'react';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { reportClientError } from '../utils/reportError';
+import { notifyMembershipChanged } from '../utils/membershipEvents';
 
 /**
  * Paymob Pixel: the card form lives INSIDE this page but is hosted by Paymob, so the card number
@@ -22,6 +23,7 @@ interface PixelOptions {
   elementId: string;
   afterPaymentComplete?: (result: unknown) => void;
   onPaymentCancel?: () => void;
+  customStyle?: Record<string, string>;
 }
 
 declare global {
@@ -29,6 +31,29 @@ declare global {
     Pixel?: new (options: PixelOptions) => unknown;
   }
 }
+
+/** The app's look for Paymob's form (same brand colour, font and corners as the rest of the app). The card fields stay Paymob's. */
+const PIXEL_STYLE: Record<string, string> = {
+  Font_Family: 'Cairo, sans-serif',
+  Font_Size_Label: '12px',
+  Font_Weight_Label: '700',
+  Text_Color_For_Label: '#334155',
+  Font_Size_Input_Fields: '14px',
+  Font_Weight_Input_Fields: '600',
+  Text_Color_For_Input_Fields: '#0f172a',
+  Color_Input_Fields: '#f8fafc',
+  Color_Border_Input_Fields: '#e2e8f0',
+  Color_For_Text_Placeholder: '#94a3b8',
+  Color_Container: '#ffffff',
+  Color_Primary: '#941946',
+  Color_Error: '#e11d48',
+  Color_Disabled: '#cbd5e1',
+  Font_Size_Payment_Button: '14px',
+  Font_Weight_Payment_Button: '800',
+  Text_Color_For_Payment_Button: '#ffffff',
+  Color_Border_Payment_Button: '#941946',
+  Radius_Border: '16px',
+};
 
 let loading: Promise<void> | null = null;
 
@@ -88,7 +113,8 @@ export const PaymobPixel: React.FC<PaymobPixelProps> = ({ publicKey, clientSecre
           clientSecret,
           paymentMethods: ['card'],
           elementId,
-          afterPaymentComplete: () => onComplete(),
+          customStyle: PIXEL_STYLE,
+          afterPaymentComplete: () => { notifyMembershipChanged(); onComplete(); },
         });
         setState('ready');
       })

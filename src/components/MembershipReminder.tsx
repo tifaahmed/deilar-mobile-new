@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Clock, XCircle, X } from 'lucide-react';
+import { Clock, XCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { fetchMembership, type MemberStatus } from '../api/membership';
 import { navigate, routeHref } from '../router';
 import { useSession } from '../utils/session';
 import { usePopupHash } from '../utils/popupHash';
+import { onMembershipChanged } from '../utils/membershipEvents';
+import { Notice } from './Notice';
 
 /** How often the reminder comes back while the card is on trial or expired. */
 const EVERY_MS = 60_000;
@@ -60,12 +62,14 @@ export const MembershipReminder: React.FC = () => {
     // Coming back from the payment page: re-read straight away so a paid card stops showing the trial notice.
     const onVisible = () => { if (document.visibilityState === 'visible') void tick(); };
     document.addEventListener('visibilitychange', onVisible);
+    const stopListening = onMembershipChanged(() => void tick());
     const timer = setInterval(tick, EVERY_MS);
 
     return () => {
       alive = false;
       clearTimeout(first);
       document.removeEventListener('visibilitychange', onVisible);
+      stopListening();
       clearInterval(timer);
       clearTimeout(hide);
     };
@@ -75,36 +79,18 @@ export const MembershipReminder: React.FC = () => {
   if (!status) return null;
 
   const expired = status.expired;
-  const price = status.price > 0 ? ` (${status.price} ${isAr ? 'ج.م' : 'EGP'})` : '';
   const Icon = expired ? XCircle : Clock;
 
   return (
-    <div
-      role="status"
-      className={`fixed top-16 inset-x-3 z-[999] max-w-md mx-auto rounded-2xl shadow-xl p-3 flex items-start gap-3 animate-in fade-in ${expired ? 'bg-red-600 text-white' : 'bg-amber-100 text-amber-950 border border-amber-300'} ${isAr ? 'text-right' : 'text-left'}`}
+    <Notice
+      icon={<Icon className="w-4 h-4" />}
+      tone={expired ? 'bg-red-600 text-white' : 'bg-amber-100 text-amber-950 border border-amber-300'}
+      onOpen={() => { setStatus(null); navigate(routeHref({ tab: 'mycard' })); }}
+      onClose={() => setStatus(null)}
     >
-      <Icon className="w-5 h-5 shrink-0 mt-0.5" />
-      <div className="min-w-0 flex-1 space-y-1">
-        <p className="text-xs font-extrabold">
-          {expired
-            ? isAr ? 'انتهى كرتك' : 'Your card has expired'
-            : isAr ? `أنت في الفترة التجريبية — متبقي ${status.days_left} يوماً` : `You are on the free trial — ${status.days_left} days left`}
-        </p>
-        <p className="text-[11px] leading-relaxed">
-          {expired
-            ? isAr ? 'لن تحصل على أي خصم، وستدفع السعر الكامل لكل مشترياتك. جدّد كرتك لتستعيد خصوماتك.' : 'You get no discount and pay the full price on every purchase. Renew your card to get your discounts back.'
-            : isAr ? `للحصول على الكرت الكامل ادفع سعره${price}.` : `To get the full card, pay its price${price}.`}
-        </p>
-        <button
-          onClick={() => { setStatus(null); navigate(routeHref({ tab: 'profile' })); }}
-          className={`text-[11px] font-bold underline cursor-pointer ${expired ? 'text-white' : 'text-amber-900'}`}
-        >
-          {isAr ? 'ادفع الآن (بطاقة / فودافون كاش / إنستاباي)' : 'Pay now (card / Vodafone Cash / Instapay)'}
-        </button>
-      </div>
-      <button onClick={() => setStatus(null)} aria-label={isAr ? 'إغلاق' : 'Close'} className="opacity-70 hover:opacity-100 cursor-pointer">
-        <X className="w-4 h-4" />
-      </button>
-    </div>
+      {expired
+        ? isAr ? 'انتهى كرتك، لا خصم — اضغط للتجديد' : 'Your card has expired, no discount — tap to renew'
+        : isAr ? `الفترة التجريبية — متبقي ${status.days_left} يوماً · اضغط للدفع` : `Free trial — ${status.days_left} days left · tap to pay`}
+    </Notice>
   );
 };

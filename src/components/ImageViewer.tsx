@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -25,8 +26,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({ images, index, onIndex
     return () => window.removeEventListener('keydown', onKey);
   });
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center" onClick={onClose} role="dialog" aria-modal="true">
+  // Portalled to <body> so a modal's transform or backdrop click can't trap or close it.
+  return createPortal(
+    <div className="fixed inset-0 z-[1000] bg-black/95 flex items-center justify-center" onClick={(e) => { e.stopPropagation(); onClose(); }} role="dialog" aria-modal="true">
       <button type="button" onClick={onClose} aria-label={isAr ? 'إغلاق' : 'Close'} className="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 p-2 rounded-full bg-white/15 text-white cursor-pointer">
         <X className="w-5 h-5" />
       </button>
@@ -42,6 +44,7 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({ images, index, onIndex
         </button>
       )}
       <span className="absolute bottom-[max(1rem,env(safe-area-inset-bottom))] text-xs font-bold text-white/80">{index + 1} / {images.length}</span>
-    </div>
+    </div>,
+    document.body,
   );
 };

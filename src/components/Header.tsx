@@ -81,9 +81,10 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Brand Lockup with Official Deilar Ticket Logo */}
         <Link to={{ tab: 'home' }} aria-label={brandName} className="flex items-center gap-2 cursor-pointer">
           <DeilarLogo className="h-8 sm:h-9 w-auto" />
-          <div>
+          {/* The name gives way to the logo on narrow phones, where the area and cart buttons need the room. */}
+          <div className="hidden min-[400px]:block">
             <div className="flex items-center gap-1.5">
-              <span className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight">
+              <span className="text-sm sm:text-base font-extrabold text-slate-900 leading-tight whitespace-nowrap">
                 {brandName}
               </span>
             </div>

@@ -6,6 +6,13 @@ import type { OnlineChannel } from './orders';
  * The app only DRAWS it: whether a card is expired, what it costs and who may add
  * relatives are never worked out here, so the website and the app cannot disagree.
  */
+/** One way to subscribe: `year` and/or `half`, each with the price and months the backend set (/admin/setting). */
+export interface Plan {
+  key: 'year' | 'half' | string;
+  price: number;
+  months: number;
+}
+
 export interface CardStatus {
   /** `trial`, `trial_expired`, `active`, `expired`, `inactive`, `pending` or `none`. */
   state: string;
@@ -17,6 +24,8 @@ export interface CardStatus {
   days_left: number;
   price: number;
   months: number;
+  /** Every plan on sale; absent on an older backend (then `price`/`months` is the only plan). */
+  plans?: Plan[];
   can_pay_online: boolean;
   /** The ways of paying the admin shows (/admin/setting), in order. Draw exactly these. */
   payment_methods: PayMethod[];
@@ -47,9 +56,10 @@ export const startTrial = (token: string, body: { name: string; gender?: 'male' 
   apiPost<{ data: MemberStatus }>('/membership/trial', body, undefined, token).then((r) => r.data);
 
 /** Pays for the card. Paymob answers with a `checkout_url`; the other methods reach customer services (receipts are files). */
-export function subscribe(token: string, body: { method: PayMethod; paymobChannel?: OnlineChannel; email?: string; reference?: string; receipt?: File | null }) {
+export function subscribe(token: string, body: { method: PayMethod; plan?: string; paymobChannel?: OnlineChannel; email?: string; reference?: string; receipt?: File | null }) {
   const form = new FormData();
   form.append('method', body.method);
+  if (body.plan) form.append('plan', body.plan);
   if (body.paymobChannel) form.append('paymob_channel', body.paymobChannel);
   if (body.email) form.append('email', body.email);
   if (body.reference) form.append('reference', body.reference);
@@ -62,8 +72,8 @@ export function subscribe(token: string, body: { method: PayMethod; paymobChanne
 export const requestRelatives = (token: string) => apiPost<{ data: { requested: boolean; already_open: boolean } }>('/membership/relatives-request', {}, undefined, token).then((r) => r.data);
 
 /** Pays for a card from its scan screen, with no sign-in. Resolves to what the embedded card form needs, or null when it could not be opened. */
-export const subscribeByNumber = (number: string, channel?: OnlineChannel) =>
-  apiPost<{ data: { checkout_url: string | null; client_secret: string | null; public_key: string | null } }>(`/card/${encodeURIComponent(number)}/subscribe`, channel ? { paymob_channel: channel } : {})
+export const subscribeByNumber = (number: string, channel?: OnlineChannel, plan?: string) =>
+  apiPost<{ data: { checkout_url: string | null; client_secret: string | null; public_key: string | null } }>(`/card/${encodeURIComponent(number)}/subscribe`, { ...(channel ? { paymob_channel: channel } : {}), ...(plan ? { plan } : {}) })
     .then((r) => r.data)
     .catch(() => null);
 
