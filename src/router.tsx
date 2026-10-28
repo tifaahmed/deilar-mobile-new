@@ -23,6 +23,8 @@ import type { NavTab } from './components/BottomNav';
  *   /orders  /orders/:code my orders / one order
  *   /facilities/:slug      one facility
  *   /stores/:slug          one store
+ *   /quiz                  the quiz game: /quiz (game types), /quiz/mcq (sections), /quiz/mcq/<section> (a section: start screen and play),
+ *                          /quiz/history, /quiz/badges, /quiz/moods and /quiz/moods/<score> (the points screens)
  */
 export interface Route {
   tab: NavTab;
@@ -38,6 +40,10 @@ export interface Route {
   orders: { code: string | null } | null;
   /** Set on the basket and the payment page. */
   checkout: 'cart' | 'checkout' | null;
+  /** Set on the kids' quiz game page (/quiz...). */
+  quiz?: boolean;
+  /** What follows `/quiz/` (`mcq/football`, `history`...); empty on /quiz itself. */
+  quizPath?: string;
   /** Map display: the default map, or the list. */
   view: 'map' | 'list';
   /** Profile section; null = the card itself. */
@@ -62,6 +68,10 @@ const TAB_PATHS: Record<NavTab, string> = { home: '/', store: '/store', products
 
 export function parseRoute(pathname: string, search: string): Route {
   const path = pathname.replace(/\/+$/, '') || '/';
+  const quiz = path.match(/^\/quiz(?:\/(.+))?$/);
+
+  if (quiz) return { tab: 'home', typeId: null, facility: null, product: null, orders: null, checkout: null, view: 'map', section: null, quiz: true, quizPath: quiz[1] ?? '' };
+
   const facility = path.match(/^\/facilities\/([^/]+)$/);
 
   if (facility) return { tab: 'map', typeId: null, facility: decodeURIComponent(facility[1]), product: null, orders: null, checkout: null, view: 'map', section: null };
@@ -106,6 +116,7 @@ export function parseRoute(pathname: string, search: string): Route {
 }
 
 export function routeHref(route: Partial<Route> & { tab?: NavTab }): string {
+  if (route.quiz) return route.quizPath ? `/quiz/${route.quizPath}` : '/quiz';
   if (route.facility) return `/facilities/${encodeURIComponent(route.facility)}`;
   if (route.product) return `/products/${encodeURIComponent(route.product)}`;
   if (route.store) return `/stores/${encodeURIComponent(route.store)}`;

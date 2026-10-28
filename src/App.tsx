@@ -33,6 +33,10 @@ import React, { lazy, Suspense, useCallback, useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BottomNav, NavTab } from './components/BottomNav';
 import { HomeView } from './components/HomeView';
+// The quiz carries all its questions (inside the app package, nothing is downloaded): it is a separate file so the home screen
+// starts fast, and it is read from the device in the background once the app is idle, so opening the quiz is instant.
+const loadQuiz = () => import('./components/QuizGame').then((m) => ({ default: m.QuizGame }));
+const QuizGame = React.lazy(loadQuiz);
 const MapView = lazy(() => import('./components/MapView').then((m) => ({ default: m.MapView })));
 const StoreView = lazy(() => import('./components/StoreView').then((m) => ({ default: m.StoreView })));
 const ProductsView = lazy(() => import('./components/ProductsView').then((m) => ({ default: m.ProductsView })));
@@ -53,9 +57,12 @@ import { onMembershipChanged } from './utils/membershipEvents';
 import { useApi } from './hooks/useApi';
 import { useIsMember } from './utils/pricing';
 import { getArea, useArea } from './utils/area';
+import { flushQuizAnswers, startQuizSync } from './utils/quizStore';
 import { clearSession, markPopupClosed, popupDueIn, popupSilenced, updateSession, useSession } from './utils/session';
 import { ProfileReminder } from './components/ProfileReminder';
 import { MembershipReminder } from './components/MembershipReminder';
+import { QuizReadyNotifier } from './components/QuizReadyNotifier';
+import { PullToRefresh, reloadedByPull } from './components/PullToRefresh';
 import { SaveAreaPrompt } from './components/SaveAreaPrompt';
 import { NoticeStack } from './components/Notice';
 import type { AccessStep } from './components/AccessModal';
@@ -80,7 +87,7 @@ export default function App() {
   const activeTab: NavTab = route.tab;
 
   // Every screen the member opens is filed with the backend's visitors (see utils/trackVisit.ts).
-  const routeKey = `${route.tab}|${route.product}|${route.facility}|${route.store}|${route.orders?.code}|${route.checkout}|${route.section}`;
+  const routeKey = `${route.tab}|${route.product}|${route.facility}|${route.store}|${route.orders?.code}|${route.checkout}|${route.section}|${route.quiz}${route.quizPath ?? ''}`;
   const selectedTypeId = route.typeId;
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; name: string }>(() => {
     // A saved location (from an earlier GPS fix) beats the Cairo default.
@@ -89,7 +96,7 @@ export default function App() {
   });
   const area = useArea();
   // Start-up flow: GPS gate (until a fix was ever saved) -> "find nearest" prompt -> map -> access popup.
-  const [stage, setStage] = useState<'gate' | 'nearest' | 'done'>(() => (getSavedGps() ? 'nearest' : 'gate'));
+  const [stage, setStage] = useState<'gate' | 'nearest' | 'done'>(() => (getSavedGps() ? (reloadedByPull ? 'done' : 'nearest') : 'gate'));
   const [areaAsk, setAreaAsk] = useState(false);
   const closeArea = useCallback(() => setAreaAsk(false), []);
   const [isGpsLoading, setIsGpsLoading] = useState(false);
@@ -110,6 +117,18 @@ export default function App() {
     trackVisit(route, session.token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeKey, session.token]);
+  // Quiz answers played offline (or before signing in) go up whenever there is a member and a connection.
+  useEffect(() => startQuizSync(), []);
+  useEffect(() => {
+    const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
+    const id = idle ? idle(() => void loadQuiz()) : window.setTimeout(() => void loadQuiz(), 3000);
+    return () => {
+      if (!idle) window.clearTimeout(id);
+    };
+  }, []);
+  useEffect(() => {
+    if (session.token) void flushQuizAnswers();
+  }, [session.token]);
   const card = useApi(
     session.cardNumber ? `card:${session.cardNumber}` : null,
     (signal) =>
@@ -387,6 +406,10 @@ export default function App() {
               onRemoveFromCart={handleRemoveFromCart}
               onClearCart={handleClearCart}
             />
+          ) : route.quiz ? (
+            <React.Suspense fallback={<div className="py-16 text-center text-4xl animate-bounce">⚽</div>}>
+              <QuizGame />
+            </React.Suspense>
           ) : route.orders ? (
             <OrdersPage code={route.orders.code} />
           ) : route.product ? (
@@ -539,6 +562,8 @@ export default function App() {
       {/* Every minute while a signed-in member's profile is unfinished: how far along it is, and what is missing. */}
       {/* Nothing floats over the payment form. */}
       <NoticeStack>
+        <QuizReadyNotifier />
+        <PullToRefresh />
         {stage === 'done' && route.section !== 'pay' && <MembershipReminder />}
         {stage === 'done' && route.section !== 'pay' && <ProfileReminder />}
         {stage === 'done' && !areaAsk && route.section !== 'pay' && <SaveAreaPrompt />}

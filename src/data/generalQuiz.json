@@ -1,0 +1,3406 @@
+{
+  "quizTitle": "تحدي المعلومات العامة الكبير",
+  "totalQuestions": 200,
+  "questions": [
+    {
+      "id": 1,
+      "question": "ما هي عاصمة جمهورية مصر العربية؟",
+      "options": [
+        "الإسكندرية",
+        "أسوان",
+        "القاهرة",
+        "الجيزة"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "القاهرة هي عاصمة مصر وأكبر مدنها.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 1,
+      "image": "q1_general.webp",
+      "emoji": "⚡",
+      "design": "comic"
+    },
+    {
+      "id": 2,
+      "question": "ما هو الكوكب الأقرب إلى الشمس في المجموعة الشمسية؟",
+      "options": [
+        "الزهرة",
+        "الأرض",
+        "المريخ",
+        "عطارد"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "عطارد هو أقرب كواكب الكواكب للشمس.",
+      "category": "فضاء وفلك",
+      "difficulty": 1,
+      "image": "q2_general.webp",
+      "emoji": "🌌",
+      "design": "cards"
+    },
+    {
+      "id": 3,
+      "question": "ما هو أطول نهر في العالم؟",
+      "options": [
+        "نهر الميسيسيبي",
+        "نهر الأمازون",
+        "نهر اليانغتسي",
+        "نهر النيل"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "نهر النيل في أفريقيا هو أطول نهر في العالم بطول يتجاوز 6650 كم.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 1,
+      "image": "q3_general.webp",
+      "emoji": "🚀",
+      "design": "polaroid"
+    },
+    {
+      "id": 4,
+      "question": "ما هي أكبر قارة في العالم من حيث المساحة والسكان؟",
+      "options": [
+        "أفريقيا",
+        "أوروبا",
+        "آسيا",
+        "أمريكا الشمالية"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "قارة آسيا هي أكبر قارات العالم مساحة وسكاناً.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 1,
+      "image": "q4_general.webp",
+      "emoji": "🔬",
+      "design": "comic"
+    },
+    {
+      "id": 5,
+      "question": "ما هو الغاز الأساسي الذي يتنفسه الكائنات الحية للبقاء على قيد الحياة؟",
+      "options": [
+        "الهيدروجين",
+        "الأكسجين",
+        "النيتروجين",
+        "ثاني أكسيد الكربون"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "الأكسجين حيوي لعملية التنفس الخلوي.",
+      "category": "علوم واكتشافات",
+      "difficulty": 1,
+      "image": "q5_general.webp",
+      "emoji": "🧭",
+      "design": "bubbles"
+    },
+    {
+      "id": 6,
+      "question": "ما هو أكبر حيوان ثديي في العالم وعلى كوكب الأرض؟",
+      "options": [
+        "الزرافة",
+        "القرش الأبيض",
+        "الفيل الأفريقي",
+        "الحوت الأزرق"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "الحوت الأزرق هو أضخم كائن حي عاش على الأرض.",
+      "category": "حيوانات وطبيعة",
+      "difficulty": 1,
+      "image": "q6_general.webp",
+      "emoji": "🌋",
+      "design": "bubbles"
+    },
+    {
+      "id": 7,
+      "question": "ما هي العضو المسؤول عن ضخ الدم في جسم الإنسان؟",
+      "options": [
+        "القلب",
+        "الكبد",
+        "الدماغ",
+        "الرئتان"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "القلب يضخ الدم المحمل بالأكسجين لجميع أجزاء الجسم.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 1,
+      "image": "q7_general.webp",
+      "emoji": "🚀",
+      "design": "cards"
+    },
+    {
+      "id": 8,
+      "question": "كم عدد ألوان قوس قزح الرئيسية؟",
+      "options": [
+        "5 ألوان",
+        "7 ألوان",
+        "8 ألوان",
+        "6 ألوان"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "يتكون قوس قزح من 7 ألوان أفقية ناتجة عن تحلل الضوء.",
+      "category": "علوم واكتشافات",
+      "difficulty": 1,
+      "image": "q8_general.webp",
+      "emoji": "🔬",
+      "design": "poster"
+    },
+    {
+      "id": 9,
+      "question": "ما هي عاصمة المملكة العربية السعودية؟",
+      "options": [
+        "الرياض",
+        "جدة",
+        "الدمام",
+        "مكة المكرمة"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "الرياض هي العاصمة والمركز السياسي للسعودية.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 1,
+      "image": "q9_general.webp",
+      "emoji": "🌌",
+      "design": "stadium"
+    },
+    {
+      "id": 10,
+      "question": "ما هي المادة التي تتكون منها هيكل العظام وتمنحها الصلابة؟",
+      "options": [
+        "الكالسيوم",
+        "الحديد",
+        "البوتاسيوم",
+        "الصوديوم"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "الكالسيوم هو المعدن الرئيسي لبناء العظام والأسنان.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 1,
+      "image": "q10_general.webp",
+      "emoji": "🚀",
+      "design": "comic"
+    },
+    {
+      "id": 11,
+      "question": "ما هي عاصمة فرنسا؟",
+      "options": [
+        "ليون",
+        "مارسيليا",
+        "نيس",
+        "باريس"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "باريس هي عاصمة فرنسا وتلقب بمدينة النور.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "🔬",
+      "design": "cards"
+    },
+    {
+      "id": 12,
+      "question": "ما هو أسرع حيوان بري في العالم؟",
+      "options": [
+        "الأسد",
+        "الفهد (الشيتا)",
+        "الغزال",
+        "النمر"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تصل سرعة الفهد الانطلاقية إلى أكثر من 100 كم/ساعة.",
+      "category": "حيوانات وطبيعة",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "📚",
+      "design": "bubbles"
+    },
+    {
+      "id": 13,
+      "question": "ما هو لسان البحر أو المحيط الأكبر مساحة في العالم؟",
+      "options": [
+        "المحيط الهادئ",
+        "المحيط الهندي",
+        "المحيط المتجمد الشمالي",
+        "المحيط الأطلسي"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "المحيط الهادئ يغطي أكثر من ثلث مساحة الكرة الأرضية.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "🧬",
+      "design": "bubbles"
+    },
+    {
+      "id": 14,
+      "question": "ما اسم الوجبة الرئيسية التي يتناولها الناس في الصباح؟",
+      "options": [
+        "السحور",
+        "الغداء",
+        "الإفطار",
+        "العشاء"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "الإفطار هو أول وجبة بعد الاستيقاظ من النوم.",
+      "category": "ثقافة ومعلومات عامة",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "💻",
+      "design": "neon"
+    },
+    {
+      "id": 15,
+      "question": "ما هي عاصمة المملكة المتحدة (بريطانيا)؟",
+      "options": [
+        "إدنبرة",
+        "لندن",
+        "برمنغهام",
+        "مانشستر"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "لندن هي العاصمة السياسية والتاريخية لبريطانيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "🌌",
+      "design": "bubbles"
+    },
+    {
+      "id": 16,
+      "question": "أي جزء من النبات يمتص الماء والمواد المغذية من التربة؟",
+      "options": [
+        "الأزهار",
+        "الساق",
+        "الأوراق",
+        "الجذور"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "الجذور تثبت النبات وتمتص المياه والأملاح.",
+      "category": "علوم واكتشافات",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "🌌",
+      "design": "poster"
+    },
+    {
+      "id": 17,
+      "question": "ما اسم أقرب جمر أو نجم لكوكب الأرض يزودنا بالضوء والحرارة؟",
+      "options": [
+        "القطب الشمالي",
+        "النجم القطبي",
+        "الشمس",
+        "الشعرى اليمانية"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "الشمس هي النجم المركز في مجموعتنا الشمسية.",
+      "category": "فضاء وفلك",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "🧠",
+      "design": "comic"
+    },
+    {
+      "id": 18,
+      "question": "ما هي عاصمة دولة الإمارات العربية المتحدة؟",
+      "options": [
+        "أبوظبي",
+        "دبي",
+        "الشارقة",
+        "العين"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "أبوظبي هي عاصمة دولة الإمارات الإتحادية.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🔬",
+      "design": "neon"
+    },
+    {
+      "id": 19,
+      "question": "ما هو اسم أكبر صحراء حارة في العالم؟",
+      "options": [
+        "صحراء غوبي",
+        "صحراء الربع الخالي",
+        "صحراء أتاكاما",
+        "الصحراء الكبرى"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "تمتد الصحراء الكبرى بشمال أفريقيا على مساحة تتجاوز 9 ملايين كم².",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🧬",
+      "design": "poster"
+    },
+    {
+      "id": 20,
+      "question": "ما هو اسم الكوكب الملقب بـ 'الكوكب الأحمر'؟",
+      "options": [
+        "الزهرة",
+        "المريخ",
+        "المشتري",
+        "زحل"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "يتميز المريخ بلونه الأحمر الناتج عن أكسيد الحديد على سطحه.",
+      "category": "فضاء وفلك",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🚀",
+      "design": "poster"
+    },
+    {
+      "id": 21,
+      "question": "ما هي أصغر قارة في العالم من حيث المساحة؟",
+      "options": [
+        "أمريكا الجنوبيّة",
+        "القارة القطبيّة الجنوبية",
+        "أوروبا",
+        "أستراليا"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "أستراليا هي أصغر القارات مساحة.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🎨",
+      "design": "cards"
+    },
+    {
+      "id": 22,
+      "question": "ما هو الجهاز المسئول عن تنقية الدم من السموم وطرح البول في جسم الإنسان؟",
+      "options": [
+        "المرارة",
+        "المعدة",
+        "الرئتان",
+        "الكليتان"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "الكليتان تقوم بكبح وإخراج الفضلات والسموم من الدم.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🧬",
+      "design": "stadium"
+    },
+    {
+      "id": 23,
+      "question": "أي عنصر كيميائي يرمز له بالرمز (O) في الجدول الدوري؟",
+      "options": [
+        "الذهب",
+        "الأومنيوم",
+        "أكسيد الكربون",
+        "الأكسجين"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "O هو الرمز الكيميائي للأكسجين.",
+      "category": "علوم واكتشافات",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "💡",
+      "design": "stadium"
+    },
+    {
+      "id": 24,
+      "question": "ما هي أكبر دولة في العالم من حيث المساحة الجغرافية؟",
+      "options": [
+        "روسيا",
+        "الولايات المتحدة",
+        "كندا",
+        "الصين"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "تمتد روسيا على مساحة تتجاوز 17 مليون كم².",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 25,
+      "question": "ما اسم المخترع الذي اخترع المصباح الكهربائي العملي؟",
+      "options": [
+        "توماس إديسون",
+        "ألكسندر غراهام بيل",
+        "نيكولا تسلا",
+        "ألبيرت أينشتاين"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "اخترع إديسون المصباح الكهربائي التجاري المتوهج عام 1879.",
+      "category": "اختراعات وتكنولوجيا",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🎨",
+      "design": "grid"
+    },
+    {
+      "id": 26,
+      "question": "ما هو أطول جدار أو سور بناه الإنسان وتراه بعض الأقمار الصناعية؟",
+      "options": [
+        "جدار برلين",
+        "جدار أدريان",
+        "سور القدس",
+        "سور الصين العظيم"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "بُني سور الصين للحماية من الهجمات الشمالية ويمتد لآلاف الكيلومترات.",
+      "category": "معالم وعجائب العالم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "💡",
+      "design": "cards"
+    },
+    {
+      "id": 27,
+      "question": "ما هو أكبر كواكب المجموعة الشمسية حجماً؟",
+      "options": [
+        "المشتري",
+        "زحل",
+        "أورانوس",
+        "نبتون"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "المشتري كوكب غازي ضخم يفوق حجم الأرض بأكثر من 1300 مرة.",
+      "category": "فضاء وفلك",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌋",
+      "design": "stadium"
+    },
+    {
+      "id": 28,
+      "question": "ما هي عاصمة اليابان؟",
+      "options": [
+        "طوكيو",
+        "أوساكا",
+        "هيروشيما",
+        "كيوتو"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "طوكيو هي عاصمة اليابان وأكثر المدن اكتظاظاً بالسكان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌋",
+      "design": "polaroid"
+    },
+    {
+      "id": 29,
+      "question": "ما هو الطائر الوحيد الذي يستطيع الطيران إلى الخلف؟",
+      "options": [
+        "الطنّان",
+        "الصقر",
+        "البومة",
+        "الهدهد"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "طائر الطنّان يمتلك عضلات أجنحة فريدة تمكنه من الطيران للخلف للوراء.",
+      "category": "حيوانات وطبيعة",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🎨",
+      "design": "neon"
+    },
+    {
+      "id": 30,
+      "question": "أي لغة هي الأكثر تحدثاً كأداة أم أصيلة في العالم؟",
+      "options": [
+        "إنجليزية",
+        "الصينية (الماندرين)",
+        "الإسبانية",
+        "الهندية"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "يتحدث لغة الماندرين الصينية أكثر من مليار شخص كبلد أم.",
+      "category": "لغات ولغويات",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "📚",
+      "design": "polaroid"
+    },
+    {
+      "id": 31,
+      "question": "ما هي العضو المسؤول عن التفكير وتخزين الذكريات والتحكم بالأعصاب؟",
+      "options": [
+        "الدماغ (المخ)",
+        "النخاع الشوكي",
+        "العمود الفقري",
+        "القلب"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "المخ هو المركز الرئيسي للجهاز العصبي المركزي.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "💻",
+      "design": "grid"
+    },
+    {
+      "id": 32,
+      "question": "ما هي عاصمة إيطاليا؟",
+      "options": [
+        "ميلانو",
+        "فلورنسا",
+        "روما",
+        "نابولي"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "روما هي عاصمة إيطاليا وتاريخها يمتد لآلاف السنين.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🎨",
+      "design": "comic"
+    },
+    {
+      "id": 33,
+      "question": "ما هو المعدن السائل الوحيد في درجة الحرارة العادية؟",
+      "options": [
+        "الرصاص",
+        "الزئبق",
+        "الفضة",
+        "البروم"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "الزئبق عنصر فلزي سائل في درجات الحرارة الطبيعية.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🔬",
+      "design": "poster"
+    },
+    {
+      "id": 34,
+      "question": "في أي دولة توجد أهرامات الجيزة الشهيرة وأبو الهول؟",
+      "options": [
+        "السودان",
+        "المكسيك",
+        "العراق",
+        "مصر"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "تقع أهرامات الجيزة في محافظة الجيزة بمصر.",
+      "category": "معالم وعجائب العالم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 35,
+      "question": "ما هي أكبر بحيرة مياه عذبة في العالم من حيث المساحة؟",
+      "options": [
+        "بحيرة سوبيريور",
+        "بحيرة بايكال",
+        "بحيرة ميشيغن",
+        "بحيرة فيكتوريا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "بحيرة سوبيريور على حدود أمريكا وكندا هي الأكبر مساحة للمياه العذبة.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "💻",
+      "design": "stadium"
+    },
+    {
+      "id": 36,
+      "question": "من هو العالم صاحب نظرية النسبية الشهيرة (E=mc²)؟",
+      "options": [
+        "إسحاق نيوتن",
+        "ستيفن هوكينغ",
+        "ماكس بلانك",
+        "ألبيرت أينشتاين"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "صاغ أينشتاين النظرية النسبية الخاصة والعامة في الفيزياء الحديثة.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🔬",
+      "design": "poster"
+    },
+    {
+      "id": 37,
+      "question": "ما هي عاصمة روسيا؟",
+      "options": [
+        "كازان",
+        "موسكو",
+        "سوتشي",
+        "سان بطرسبرغ"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "موسكو هي العاصمة والمركز الاقتصادي والسياسي لروسيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "📚",
+      "design": "grid"
+    },
+    {
+      "id": 38,
+      "question": "ما هي أصغر دولة في العالم من حيث المساحة والسكان؟",
+      "options": [
+        "مالطا",
+        "موناكو",
+        "الفاتيكان",
+        "سان مارينو"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "دولة الفاتيكان تقع داخل مدينة روما ومساحتها أقل من نصف كم².",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "💡",
+      "design": "poster"
+    },
+    {
+      "id": 39,
+      "question": "ما هو اسم البركان الذي دمر مدينة بومبي الرومانية عام 79 م؟",
+      "options": [
+        "بركان فوجي",
+        "بركان إتنا",
+        "بركان كراكاتوا",
+        "بركان فيزوف"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "دفن بركان فيزوف مدينة بومبي بالرماد البركاني.",
+      "category": "معالم وعجائب العالم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🧬",
+      "design": "cards"
+    },
+    {
+      "id": 40,
+      "question": "ما اسم العالم الذي اكتشف البنسلين (أول مضاد حيوي)؟",
+      "options": [
+        "روبرت كوخ",
+        "لويس باسطور",
+        "إدوارد جينر",
+        "ألكسندر فليمنغ"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "اكتشف فليمنغ البنسلين عام 1928 مصادفة من الفطريات.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🦁",
+      "design": "grid"
+    },
+    {
+      "id": 41,
+      "question": "ما هي عاصمة ألمانيا؟",
+      "options": [
+        "برلين",
+        "هامبورغ",
+        "فرانكفورت",
+        "ميونيخ"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "برلين هي عاصمة ألمانيا وأكبر مدن الاتحاد الأوروبي سكاناً.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "💻",
+      "design": "polaroid"
+    },
+    {
+      "id": 42,
+      "question": "ما هي المادة الكيميائية المسؤولة عن إعطاء الجلد والشعر لونهم؟",
+      "options": [
+        "الكولاجين",
+        "الحديث",
+        "الكيراتين",
+        "الميلانين"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "صبغة الميلانين تحدد درجة لون البشرة والعينين والشعر.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌌",
+      "design": "bubbles"
+    },
+    {
+      "id": 43,
+      "question": "ما اسم أطول سلسلة جبال في العالم على اليابسة؟",
+      "options": [
+        "جبال الألب",
+        "جبال الهيمالايا",
+        "جبال الروكي",
+        "جبال الأنديز"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "تمتد جبال الأنديز بصلابة بطول أمريكا الجنوبية.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🏛️",
+      "design": "poster"
+    },
+    {
+      "id": 44,
+      "question": "ما هو الغاز المسبب الرئيسي لظاهرة الاحتباس الحراري وتغير المناخ؟",
+      "options": [
+        "الهيليوم",
+        "النيتروجين",
+        "ثاني أكسيد الكربون",
+        "الأكسجين"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "ينبعث ثاني أكسيد الكربون بكثرة من احتراق الوقود الأحفوري.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌌",
+      "design": "stadium"
+    },
+    {
+      "id": 45,
+      "question": "ما هي عاصمة إسبانيا؟",
+      "options": [
+        "فالنسيا",
+        "مدريد",
+        "إشبيلية",
+        "برشلونة"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "مدريد هي عاصمة المملكة الإسبانية.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🎨",
+      "design": "polaroid"
+    },
+    {
+      "id": 46,
+      "question": "أي عضو في جسم الإنسان هو الأكبر حجماً ووزناً؟",
+      "options": [
+        "الكبد",
+        "الأمعاء الدقيقة",
+        "الدماغ",
+        "الجلد"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "الجلد يعتبر أكبر عضو في جسم الإنسان كغطاء خارجي.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "⚡",
+      "design": "cards"
+    },
+    {
+      "id": 47,
+      "question": "ما هي عاصمة دولة أستراليا؟",
+      "options": [
+        "بريزبن",
+        "كانبرا",
+        "سيدني",
+        "ملبورن"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "كانبرا هي العاصمة الرسمية لدولة أستراليا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 48,
+      "question": "ما هي عاصمة دولة كندا؟",
+      "options": [
+        "تورونتو",
+        "أوتاوا",
+        "مونتريال",
+        "فانكوفر"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "أوتاوا هي العاصمة الرسمية لدولة كندا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 49,
+      "question": "ما هي عاصمة دولة البرازيل؟",
+      "options": [
+        "برازيليا",
+        "سلفادور",
+        "ريو دي جانيرو",
+        "ساو باولو"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "برازيليا هي العاصمة الرسمية لدولة البرازيل.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 50,
+      "question": "ما هي عاصمة دولة تركيا؟",
+      "options": [
+        "إزمير",
+        "إسطنبول",
+        "أنقرة",
+        "بورصة"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "أنقرة هي العاصمة الرسمية لدولة تركيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 51,
+      "question": "ما هي عاصمة دولة الهند؟",
+      "options": [
+        "كلكتا",
+        "مدراس",
+        "نيودلهي",
+        "مومباي"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "نيودلهي هي العاصمة الرسمية لدولة الهند.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 52,
+      "question": "ما هي عاصمة دولة المغرب؟",
+      "options": [
+        "الدار البيضاء",
+        "فاس",
+        "الرباط",
+        "مراكش"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "الرباط هي العاصمة الرسمية لدولة المغرب.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 53,
+      "question": "ما هي عاصمة دولة العراق؟",
+      "options": [
+        "بغداد",
+        "أربيل",
+        "الموصل",
+        "البصرة"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "بغداد هي العاصمة الرسمية لدولة العراق.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 54,
+      "question": "ما هي عاصمة دولة الأردن؟",
+      "options": [
+        "الزرقاء",
+        "العقبة",
+        "عمان",
+        "إربد"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "عمان هي العاصمة الرسمية لدولة الأردن.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 55,
+      "question": "ما هي عاصمة دولة لبنان؟",
+      "options": [
+        "صور",
+        "صيدا",
+        "طرابلس",
+        "بيروت"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "بيروت هي العاصمة الرسمية لدولة لبنان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 56,
+      "question": "ما هي عاصمة دولة تونس؟",
+      "options": [
+        "صفاقس",
+        "سوسة",
+        "تونس",
+        "بنزرت"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "تونس هي العاصمة الرسمية لدولة تونس.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 57,
+      "question": "ما هي عاصمة دولة الجزائر؟",
+      "options": [
+        "وهران",
+        "الجزائر",
+        "عنابة",
+        "قسنطينة"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "الجزائر هي العاصمة الرسمية لدولة الجزائر.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 58,
+      "question": "ما هي عاصمة دولة سودان؟",
+      "options": [
+        "بورتسودان",
+        "كسلا",
+        "الخرطوم",
+        "أم درمان"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "الخرطوم هي العاصمة الرسمية لدولة سودان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 59,
+      "question": "ما هي عاصمة دولة اليابان؟",
+      "options": [
+        "طوكيو",
+        "يوكوهاما",
+        "كيوتو",
+        "أوساكا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "طوكيو هي العاصمة الرسمية لدولة اليابان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 60,
+      "question": "ما هي عاصمة دولة الصين؟",
+      "options": [
+        "بكين",
+        "شينجن",
+        "قوانغتشو",
+        "شانغهاي"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "بكين هي العاصمة الرسمية لدولة الصين.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 61,
+      "question": "ما هي عاصمة دولة الولايات المتحدة؟",
+      "options": [
+        "واشنطن العاصمة",
+        "نيويورك",
+        "شيكاغو",
+        "لوس أنجلوس"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "واشنطن العاصمة هي العاصمة الرسمية لدولة الولايات المتحدة.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 62,
+      "question": "ما هي عاصمة دولة الأرجنتين؟",
+      "options": [
+        "روساريو",
+        "مستنسخ",
+        "بوينس آيرس",
+        "كوردوبا"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "بوينس آيرس هي العاصمة الرسمية لدولة الأرجنتين.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 63,
+      "question": "ما هي عاصمة دولة أثيوبيا؟",
+      "options": [
+        "حواسا",
+        "دير داوا",
+        "أديس أبابا",
+        "بحر دار"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "أديس أبابا هي العاصمة الرسمية لدولة أثيوبيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 64,
+      "question": "ما هي عاصمة دولة نيجيريا؟",
+      "options": [
+        "كانو",
+        "لاغوس",
+        "إيبادان",
+        "أبوجا"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "أبوجا هي العاصمة الرسمية لدولة نيجيريا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 65,
+      "question": "ما هي عاصمة دولة كازاخستان؟",
+      "options": [
+        "شيمكنت",
+        "ألماتي",
+        "أستانا",
+        "أكتوبي"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "أستانا هي العاصمة الرسمية لدولة كازاخستان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 66,
+      "question": "ما هي عاصمة دولة سويسرا؟",
+      "options": [
+        "زوريخ",
+        "بازل",
+        "جنيف",
+        "برن"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "برن هي العاصمة الرسمية لدولة سويسرا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 67,
+      "question": "ما هي عاصمة دولة السويد؟",
+      "options": [
+        "ستوكهولم",
+        "غوتنبرغ",
+        "مالمو",
+        "أوبسالا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "ستوكهولم هي العاصمة الرسمية لدولة السويد.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 68,
+      "question": "ما هي عاصمة دولة النرويج؟",
+      "options": [
+        "بيرغن",
+        "تروندهايم",
+        "ستافانغر",
+        "أوسلو"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "أوسلو هي العاصمة الرسمية لدولة النرويج.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 69,
+      "question": "ما هي عاصمة دولة فنلندا؟",
+      "options": [
+        "أولو",
+        "هلسنكي",
+        "توركو",
+        "تامبيري"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "هلسنكي هي العاصمة الرسمية لدولة فنلندا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 70,
+      "question": "ما هي عاصمة دولة الدنمارك؟",
+      "options": [
+        "آرهوس",
+        "ألبورغ",
+        "أودنسه",
+        "كوبنهاغن"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "كوبنهاغن هي العاصمة الرسمية لدولة الدنمارك.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 71,
+      "question": "ما هي عاصمة دولة اليونان؟",
+      "options": [
+        "سالونيك",
+        "هيراكليون",
+        "أثينا",
+        "باتراس"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "أثينا هي العاصمة الرسمية لدولة اليونان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 72,
+      "question": "ما هي عاصمة دولة البرتغال؟",
+      "options": [
+        "كويمبرا",
+        "لشبونة",
+        "بورتو",
+        "براغا"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "لشبونة هي العاصمة الرسمية لدولة البرتغال.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 73,
+      "question": "ما هي عاصمة دولة هولندا؟",
+      "options": [
+        "أوتريخت",
+        "لاهاي",
+        "أمستردام",
+        "روتردام"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "أمستردام هي العاصمة الرسمية لدولة هولندا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 74,
+      "question": "ما هي عاصمة دولة بلجيكا؟",
+      "options": [
+        "لييج",
+        "غينت",
+        "أنتويرب",
+        "بروكسل"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "بروكسل هي العاصمة الرسمية لدولة بلجيكا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 75,
+      "question": "ما هي عاصمة دولة النمسا؟",
+      "options": [
+        "فيينا",
+        "غراتس",
+        "لينتس",
+        "سالزبورغ"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "فيينا هي العاصمة الرسمية لدولة النمسا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 76,
+      "question": "ما هي عاصمة دولة المجر؟",
+      "options": [
+        "ميسكولتس",
+        "سغد",
+        "دبرتسن",
+        "بودابست"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "بودابست هي العاصمة الرسمية لدولة المجر.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 77,
+      "question": "ما هي عاصمة دولة بولندا؟",
+      "options": [
+        "فروتسواف",
+        "وارسو",
+        "كراكوف",
+        "لودز"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "وارسو هي العاصمة الرسمية لدولة بولندا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 78,
+      "question": "ما هي عاصمة دولة التشيك؟",
+      "options": [
+        "براغ",
+        "بيلزن",
+        "برنو",
+        "أوسترافا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "براغ هي العاصمة الرسمية لدولة التشيك.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 79,
+      "question": "ما هي عاصمة دولة كوريا الجنوبية؟",
+      "options": [
+        "إنتشون",
+        "دايغو",
+        "سيؤول",
+        "بوسان"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "سيؤول هي العاصمة الرسمية لدولة كوريا الجنوبية.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 80,
+      "question": "ما هي عاصمة دولة أندونيسيا؟",
+      "options": [
+        "جاكرتا",
+        "سورابايا",
+        "مدان",
+        "باندونغ"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "جاكرتا هي العاصمة الرسمية لدولة أندونيسيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 81,
+      "question": "ما هي عاصمة دولة ماليزيا؟",
+      "options": [
+        "بينانغ",
+        "جوهر بهرو",
+        "إيبوه",
+        "كوالالمبور"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "كوالالمبور هي العاصمة الرسمية لدولة ماليزيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 82,
+      "question": "ما هي عاصمة دولة تايلاند؟",
+      "options": [
+        "بوكيت",
+        "شيانغ ماي",
+        "بتايا",
+        "بانكوك"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "بانكوك هي العاصمة الرسمية لدولة تايلاند.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 83,
+      "question": "ما هي عاصمة دولة الفلبين؟",
+      "options": [
+        "دافاو",
+        "مانيلا",
+        "سيبو",
+        "كويزون"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "مانيلا هي العاصمة الرسمية لدولة الفلبين.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 84,
+      "question": "ما هي عاصمة دولة باكستان؟",
+      "options": [
+        "روالبندي",
+        "كراتشي",
+        "لاهور",
+        "إسلام آباد"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "إسلام آباد هي العاصمة الرسمية لدولة باكستان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 85,
+      "question": "ما هي عاصمة دولة بنغلاديش؟",
+      "options": [
+        "دكا",
+        "تشيتاغونغ",
+        "خولنا",
+        "راجشاهي"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "دكا هي العاصمة الرسمية لدولة بنغلاديش.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 86,
+      "question": "ما هي عاصمة دولة فيتنام؟",
+      "options": [
+        "هو تشي منه",
+        "هايفونغ",
+        "هانوي",
+        "دا نانغ"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "هانوي هي العاصمة الرسمية لدولة فيتنام.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 87,
+      "question": "ما هي عاصمة دولة نيوزيلندا؟",
+      "options": [
+        "ويلينغتون",
+        "أوكلاند",
+        "هاميلتون",
+        "كرايستشرش"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "ويلينغتون هي العاصمة الرسمية لدولة نيوزيلندا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 88,
+      "question": "ما هي عاصمة دولة تشيلي؟",
+      "options": [
+        "كونسيبسيون",
+        "سانتياغو",
+        "أنتوفاغاستا",
+        "فالبارايسو"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "سانتياغو هي العاصمة الرسمية لدولة تشيلي.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 89,
+      "question": "ما هي عاصمة دولة كولومبيا؟",
+      "options": [
+        "كالي",
+        "بوغوتا",
+        "ميديلين",
+        "بارانكويلا"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "بوغوتا هي العاصمة الرسمية لدولة كولومبيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 90,
+      "question": "ما هي عاصمة دولة بيرو؟",
+      "options": [
+        "ليما",
+        "كوسكو",
+        "أريكيبا",
+        "تروخيو"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "ليما هي العاصمة الرسمية لدولة بيرو.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 91,
+      "question": "ما هي عاصمة دولة كوبا؟",
+      "options": [
+        "سانتياغو دي كوبا",
+        "هولغوين",
+        "هافانا",
+        "كاماجوي"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "هافانا هي العاصمة الرسمية لدولة كوبا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 92,
+      "question": "ما هي عاصمة دولة المكسيك؟",
+      "options": [
+        "مكسيكو سيتي",
+        "مونتيري",
+        "غوادالاخارا",
+        "بويبلا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "مكسيكو سيتي هي العاصمة الرسمية لدولة المكسيك.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 93,
+      "question": "ما هي عاصمة دولة أوروغواي؟",
+      "options": [
+        "مونتيفيديو",
+        "سيوداد دي لا كوستا",
+        "بايساندو",
+        "سالطو"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "مونتيفيديو هي العاصمة الرسمية لدولة أوروغواي.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 94,
+      "question": "ما هي عاصمة دولة فنزويلا؟",
+      "options": [
+        "كراكاس",
+        "ماراكايبو",
+        "فالنسيا",
+        "باركيسيميتو"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "كراكاس هي العاصمة الرسمية لدولة فنزويلا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 95,
+      "question": "ما هي عاصمة دولة كينيا؟",
+      "options": [
+        "مومباسا",
+        "ناكورو",
+        "نيروبي",
+        "كيسومو"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "نيروبي هي العاصمة الرسمية لدولة كينيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 96,
+      "question": "ما هي عاصمة دولة السنغال؟",
+      "options": [
+        "زيغينشور",
+        "داكار",
+        "تييس",
+        "سانت لويس"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "داكار هي العاصمة الرسمية لدولة السنغال.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 97,
+      "question": "ما هي عاصمة دولة أنغولا؟",
+      "options": [
+        "بينغيلا",
+        "لوبيتو",
+        "هوامبو",
+        "لواندا"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "لواندا هي العاصمة الرسمية لدولة أنغولا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 98,
+      "question": "ما هي عاصمة دولة غانا؟",
+      "options": [
+        "تاكورادي",
+        "أكرا",
+        "كوماسي",
+        "تمالي"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "أكرا هي العاصمة الرسمية لدولة غانا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 99,
+      "question": "ما هي عاصمة دولة ساحل العاج؟",
+      "options": [
+        "سان بيدرو",
+        "ياموسوكرو",
+        "أبيدجان",
+        "بواكي"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "ياموسوكرو هي العاصمة الرسمية لدولة ساحل العاج.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 100,
+      "question": "ما هي عاصمة دولة تانزانيا؟",
+      "options": [
+        "أروشا",
+        "دار السلام",
+        "موانزا",
+        "دودوما"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "دودوما هي العاصمة الرسمية لدولة تانزانيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 101,
+      "question": "ما هي عاصمة دولة الكاميرون؟",
+      "options": [
+        "ياوندي",
+        "باميندا",
+        "غاروا",
+        "دوالا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "ياوندي هي العاصمة الرسمية لدولة الكاميرون.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 102,
+      "question": "ما هي عاصمة دولة أذربيجان؟",
+      "options": [
+        "سومقاييت",
+        "غنجة",
+        "منكجبر",
+        "باكو"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "باكو هي العاصمة الرسمية لدولة أذربيجان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 103,
+      "question": "ما هي عاصمة دولة أرمينيا؟",
+      "options": [
+        "واغارشابات",
+        "غيومري",
+        "فانادزور",
+        "يريفان"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "يريفان هي العاصمة الرسمية لدولة أرمينيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 104,
+      "question": "ما هي عاصمة دولة جورجيا؟",
+      "options": [
+        "كوتيسي",
+        "تبليسي",
+        "رستافي",
+        "باتومي"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تبليسي هي العاصمة الرسمية لدولة جورجيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 105,
+      "question": "ما هي عاصمة دولة أوزبكستان؟",
+      "options": [
+        "سمرقند",
+        "طشقند",
+        "نمكان",
+        "بخارى"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "طشقند هي العاصمة الرسمية لدولة أوزبكستان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 106,
+      "question": "ما هي عاصمة دولة تركمانستان؟",
+      "options": [
+        "ماري",
+        "عشق أباد",
+        "دشغوز",
+        "تركمانباشي"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "عشق أباد هي العاصمة الرسمية لدولة تركمانستان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 107,
+      "question": "ما هي عاصمة دولة قرغيزستان؟",
+      "options": [
+        "جلال أباد",
+        "أوش",
+        "كارراكول",
+        "بيشكيك"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "بيشكيك هي العاصمة الرسمية لدولة قرغيزستان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 108,
+      "question": "ما هي عاصمة دولة طاجيكستان؟",
+      "options": [
+        "خجند",
+        "بوختر",
+        "دوشنبه",
+        "كولاب"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "دوشنبه هي العاصمة الرسمية لدولة طاجيكستان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 109,
+      "question": "ما هي عاصمة دولة منغوليا؟",
+      "options": [
+        "تشويبالسان",
+        "أولان باتور",
+        "إردنيت",
+        "دارخان"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "أولان باتور هي العاصمة الرسمية لدولة منغوليا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 110,
+      "question": "ما هي عاصمة دولة أيسلندا؟",
+      "options": [
+        "كفلافيك",
+        "ريكيافيك",
+        "أكورييري",
+        "غارذابير"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "ريكيافيك هي العاصمة الرسمية لدولة أيسلندا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 111,
+      "question": "ما هي عاصمة دولة أيرلندا؟",
+      "options": [
+        "غالواي",
+        "كورك",
+        "دبلن",
+        "ليمريك"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "دبلن هي العاصمة الرسمية لدولة أيرلندا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 112,
+      "question": "ما هي عاصمة دولة سلوفاكيا؟",
+      "options": [
+        "بريشوف",
+        "كوشيتسه",
+        "جيلينا",
+        "براتيسلافا"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "براتيسلافا هي العاصمة الرسمية لدولة سلوفاكيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 113,
+      "question": "ما هي عاصمة دولة سلوفينيا؟",
+      "options": [
+        "ليوبليانا",
+        "كراني",
+        "تسيليه",
+        "ماريبور"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "ليوبليانا هي العاصمة الرسمية لدولة سلوفينيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 114,
+      "question": "ما هي عاصمة دولة كرواتيا؟",
+      "options": [
+        "رييكا",
+        "زغرب",
+        "سبريت",
+        "أوسيجيك"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "زغرب هي العاصمة الرسمية لدولة كرواتيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 115,
+      "question": "ما هي عاصمة دولة صربيا؟",
+      "options": [
+        "بلجراد",
+        "نيش",
+        "نوفيساد",
+        "كراغويفاتس"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "بلجراد هي العاصمة الرسمية لدولة صربيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 116,
+      "question": "ما هي عاصمة دولة البوسنة والهرسك؟",
+      "options": [
+        "سراييفو",
+        "موستار",
+        "توزلا",
+        "بانيا لوكا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "سراييفو هي العاصمة الرسمية لدولة البوسنة والهرسك.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 117,
+      "question": "ما هي عاصمة دولة ألبانيا؟",
+      "options": [
+        "شكودر",
+        "فلوره",
+        "دوريس",
+        "تيرانا"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "تيرانا هي العاصمة الرسمية لدولة ألبانيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 118,
+      "question": "ما هي عاصمة دولة بلغاريا؟",
+      "options": [
+        "فارنا",
+        "بورغاس",
+        "صوفيا",
+        "بلوفديف"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "صوفيا هي العاصمة الرسمية لدولة بلغاريا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 119,
+      "question": "ما هي عاصمة دولة رومانيا؟",
+      "options": [
+        "تيميشوارا",
+        "بوخارست",
+        "ياش",
+        "كلوج نابوكا"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "بوخارست هي العاصمة الرسمية لدولة رومانيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 120,
+      "question": "ما هي عاصمة دولة أوكرانيا؟",
+      "options": [
+        "كييف",
+        "دنيبرو",
+        "خاركيف",
+        "أوديسا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "كييف هي العاصمة الرسمية لدولة أوكرانيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 121,
+      "question": "ما هي عاصمة دولة بيلاروسيا؟",
+      "options": [
+        "مينسك",
+        "فيتيبسك",
+        "موغيليف",
+        "غوميل"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "مينسك هي العاصمة الرسمية لدولة بيلاروسيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 122,
+      "question": "ما هي عاصمة دولة مولدوفا؟",
+      "options": [
+        "تيراسبول",
+        "بندر",
+        "كيشيناو",
+        "بيلتسي"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "كيشيناو هي العاصمة الرسمية لدولة مولدوفا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 123,
+      "question": "ما هي عاصمة دولة ليتوانيا؟",
+      "options": [
+        "كلايبيدا",
+        "فيلنيوس",
+        "شياولياي",
+        "كاوناس"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "فيلنيوس هي العاصمة الرسمية لدولة ليتوانيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 124,
+      "question": "ما هي عاصمة دولة لاتفيا؟",
+      "options": [
+        "داوغافبيلس",
+        "ييلغافا",
+        "ليبايا",
+        "ريغا"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "ريغا هي العاصمة الرسمية لدولة لاتفيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 125,
+      "question": "ما هي عاصمة دولة إستونيا؟",
+      "options": [
+        "تارتو",
+        "تالين",
+        "نارفا",
+        "بارنو"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تالين هي العاصمة الرسمية لدولة إستونيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 126,
+      "question": "ما هي عاصمة دولة لوكسومبورغ؟",
+      "options": [
+        "دوديلانج",
+        "إسش سور ألزيت",
+        "ديفردانج",
+        "لوكسومبورغ"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "لوكسومبورغ هي العاصمة الرسمية لدولة لوكسومبورغ.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 127,
+      "question": "ما هي عاصمة دولة مالطا؟",
+      "options": [
+        "موستا",
+        "فاليتا",
+        "بيركيركارا",
+        "قورمي"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "فاليتا هي العاصمة الرسمية لدولة مالطا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 128,
+      "question": "ما هي عاصمة دولة قبرص؟",
+      "options": [
+        "ليماسول",
+        "بافوس",
+        "نيقوسيا",
+        "لارنكا"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "نيقوسيا هي العاصمة الرسمية لدولة قبرص.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 129,
+      "question": "ما هي عاصمة دولة أفغانستان؟",
+      "options": [
+        "هرات",
+        "كابول",
+        "مزار شريف",
+        "قندهار"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "كابول هي العاصمة الرسمية لدولة أفغانستان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 130,
+      "question": "ما هي عاصمة دولة نيبال؟",
+      "options": [
+        "بوخارا",
+        "كاثماندو",
+        "لاليتبور",
+        "بيراتناغار"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "كاثماندو هي العاصمة الرسمية لدولة نيبال.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 131,
+      "question": "ما هي عاصمة دولة سريلانكا؟",
+      "options": [
+        "غال",
+        "جافنا",
+        "كاندي",
+        "كولومبو"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "كولومبو هي العاصمة الرسمية لدولة سريلانكا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 132,
+      "question": "ما هي عاصمة دولة ميانمار؟",
+      "options": [
+        "نايبيدو",
+        "باغان",
+        "ماندالاي",
+        "يانغون"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "نايبيدو هي العاصمة الرسمية لدولة ميانمار.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 133,
+      "question": "ما هي عاصمة دولة كمبوديا؟",
+      "options": [
+        "بنوم بنه",
+        "سيم ريب",
+        "باتامبانغ",
+        "سيهانوكفيل"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "بنوم بنه هي العاصمة الرسمية لدولة كمبوديا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 134,
+      "question": "ما هي عاصمة دولة لاوس؟",
+      "options": [
+        "فينتيان",
+        "سافانكيت",
+        "لوانغ برابانغ",
+        "باكسي"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "فينتيان هي العاصمة الرسمية لدولة لاوس.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 135,
+      "question": "ما هي عاصمة دولة بروناي؟",
+      "options": [
+        "بندر سري بكاوان",
+        "كوالا بيلايت",
+        "سيريا",
+        "توتونغ"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "بندر سري بكاوان هي العاصمة الرسمية لدولة بروناي.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 136,
+      "question": "ما هي عاصمة دولة كوستاريكا؟",
+      "options": [
+        "هريدبا",
+        "كارتاغو",
+        "ألاخويلا",
+        "سان خوسيه"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "سان خوسيه هي العاصمة الرسمية لدولة كوستاريكا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 137,
+      "question": "ما هي عاصمة دولة بنما؟",
+      "options": [
+        "كولون",
+        "مدينة بنما",
+        "ديفيد",
+        "لا تشوريرا"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "مدينة بنما هي العاصمة الرسمية لدولة بنما.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 138,
+      "question": "ما هي عاصمة دولة جامايكا؟",
+      "options": [
+        "مونتيغو باي",
+        "سبانيش تاون",
+        "شيروود",
+        "كينغستون"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "كينغستون هي العاصمة الرسمية لدولة جامايكا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "polaroid"
+    },
+    {
+      "id": 139,
+      "question": "ما هي عاصمة دولة هايتي؟",
+      "options": [
+        "غونايف",
+        "بورت أو برانس",
+        "كاب هايتيان",
+        "جاكميل"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "بورت أو برانس هي العاصمة الرسمية لدولة هايتي.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 140,
+      "question": "ما هي عاصمة دولة جمهورية الدومينيكان؟",
+      "options": [
+        "سانتياغو دي لوس كاباليروس",
+        "لا رومانا",
+        "سانتو دومينغو",
+        "سان بيدرو"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "سانتو دومينغو هي العاصمة الرسمية لدولة جمهورية الدومينيكان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 141,
+      "question": "ما هي عاصمة دولة إكوادور؟",
+      "options": [
+        "غواياكيل",
+        "أمباتو",
+        "كوانكا",
+        "كيتو"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "كيتو هي العاصمة الرسمية لدولة إكوادور.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 142,
+      "question": "ما هي عاصمة دولة باراغواي؟",
+      "options": [
+        "سيوداد ديل إستي",
+        "لوكي",
+        "أسونسيون",
+        "سان لورينزو"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "أسونسيون هي العاصمة الرسمية لدولة باراغواي.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 143,
+      "question": "ما هي عاصمة دولة موزمبيق؟",
+      "options": [
+        "نامپولا",
+        "مابوتو",
+        "بيرا",
+        "ماتولا"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "مابوتو هي العاصمة الرسمية لدولة موزمبيق.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 144,
+      "question": "ما هي عاصمة دولة زيمبابوي؟",
+      "options": [
+        "هاراري",
+        "موتاري",
+        "شيتونغويزا",
+        "بولاوايو"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "هاراري هي العاصمة الرسمية لدولة زيمبابوي.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 145,
+      "question": "ما هي عاصمة دولة زامبيا؟",
+      "options": [
+        "ندولا",
+        "كيتوي",
+        "شينغولا",
+        "لوساكا"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "لوساكا هي العاصمة الرسمية لدولة زامبيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 146,
+      "question": "ما هي عاصمة دولة مدغشقر؟",
+      "options": [
+        "ماهاجانجا",
+        "أنتسيرابي",
+        "تواماسينا",
+        "أنتاناناريفو"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "أنتاناناريفو هي العاصمة الرسمية لدولة مدغشقر.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 147,
+      "question": "ما هي عاصمة دولة موريشيوس؟",
+      "options": [
+        "كوريبب",
+        "بو باسين-روز هيل",
+        "بورت لويس",
+        "فاسكوس"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "بورت لويس هي العاصمة الرسمية لدولة موريشيوس.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 8,
+      "image": null,
+      "emoji": "🌍",
+      "design": "bubbles"
+    },
+    {
+      "id": 148,
+      "question": "ما هي عاصمة دولة ليبيا؟",
+      "options": [
+        "طرابلس",
+        "البيضاء",
+        "مصراتة",
+        "بنغازي"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "طرابلس هي العاصمة الرسمية لدولة ليبيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "grid"
+    },
+    {
+      "id": 149,
+      "question": "ما هي عاصمة دولة موريتانيا؟",
+      "options": [
+        "كيفه",
+        "نواذيبو",
+        "روصو",
+        "نواكشوط"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "نواكشوط هي العاصمة الرسمية لدولة موريتانيا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 150,
+      "question": "ما هي عاصمة دولة الصومال؟",
+      "options": [
+        "بوساسو",
+        "كيسمايو",
+        "مقديشو",
+        "هرجيسا"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "مقديشو هي العاصمة الرسمية لدولة الصومال.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 151,
+      "question": "ما هي عاصمة دولة جيبوتي؟",
+      "options": [
+        "دِخيل",
+        "جيبوتي",
+        "علي صبيح",
+        "تاجورة"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "جيبوتي هي العاصمة الرسمية لدولة جيبوتي.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 152,
+      "question": "ما هي عاصمة دولة جزر القمر؟",
+      "options": [
+        "دوموني",
+        "موروني",
+        "فومبوني",
+        "موتسامودو"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "موروني هي العاصمة الرسمية لدولة جزر القمر.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🌍",
+      "design": "poster"
+    },
+    {
+      "id": 153,
+      "question": "ما هي عاصمة دولة سلطنة عمان؟",
+      "options": [
+        "مسقط",
+        "نزوى",
+        "صلالة",
+        "صحار"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "مسقط هي العاصمة الرسمية لدولة سلطنة عمان.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "comic"
+    },
+    {
+      "id": 154,
+      "question": "ما هي عاصمة دولة قطر؟",
+      "options": [
+        "الخور",
+        "الدوحة",
+        "الوكرة",
+        "الريان"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "الدوحة هي العاصمة الرسمية لدولة قطر.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "stadium"
+    },
+    {
+      "id": 155,
+      "question": "ما هي عاصمة دولة الكويت؟",
+      "options": [
+        "الكويت",
+        "السالمية",
+        "الحولي",
+        "الأحمدي"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "الكويت هي العاصمة الرسمية لدولة الكويت.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 156,
+      "question": "ما هي عاصمة دولة البحرين؟",
+      "options": [
+        "الرفاع",
+        "مدينة عيسى",
+        "المحرق",
+        "المنامة"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "المنامة هي العاصمة الرسمية لدولة البحرين.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌍",
+      "design": "neon"
+    },
+    {
+      "id": 157,
+      "question": "معلومة ثفافية #157: كم عدد القارات المأهولة بالسكان في العالم؟",
+      "options": [
+        "4 قارات",
+        "7 قارات",
+        "5 قارات",
+        "6 قارات"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "القارات المأهولة هي آسيا، أفريقيا، أوروبا، أمريكا الشمالية، أمريكا الجنوبية، أستراليا.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌌",
+      "design": "cards"
+    },
+    {
+      "id": 158,
+      "question": "معلومة ثفافية #158: ما هي أطول الممرات المائية الاصطناعية التي تربط البحر الأبيض بالبحر الأحمر؟",
+      "options": [
+        "قناة بنما",
+        "قناة كيل",
+        "قناة السويس",
+        "قناة كورنث"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "افتتحت قناة السويس بمصر عام 1869 للربط البحري.",
+      "category": "معالم وعجائب العالم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🔮",
+      "design": "polaroid"
+    },
+    {
+      "id": 159,
+      "question": "معلومة ثفافية #159: ما هو المشروب الأكثر استهلاكاً في العالم بعد الماء؟",
+      "options": [
+        "العصير",
+        "القهوة",
+        "الحليب",
+        "الشاي"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "الشاي هو المشروب الأكثر شعبية عالمياً بعد الماء.",
+      "category": "ثقافة ومعلومات عامة",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🎨",
+      "design": "polaroid"
+    },
+    {
+      "id": 160,
+      "question": "معلومة ثفافية #160: ما اسم القارة التي لا تحتوي على أي صحراء جافة على الإطلاق؟",
+      "options": [
+        "أوروبا",
+        "أمريكا الشمالية",
+        "آسيا",
+        "أستراليا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "أوروبا القارة الوحيدة التي تخلو طبيعياً من الصحاري الجافة.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "⚡",
+      "design": "poster"
+    },
+    {
+      "id": 161,
+      "question": "معلومة ثفافية #161: ما اسم العالم الإغريقي الشهير باكتشاف قانون الطفو داخل الحمام الصيفي وعنصر 'يوريكا'؟",
+      "options": [
+        "طاليس",
+        "أرشميدس",
+        "إقليدس",
+        "فيثاغورس"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "صاح أرشميدس 'يوريكا' عند اكتشافه دفع الماء للأجسام.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🔬",
+      "design": "poster"
+    },
+    {
+      "id": 162,
+      "question": "معلومة ثفافية #162: ما هي أكبر جزيرة في العالم من حيث المساحة؟",
+      "options": [
+        "غرينلاند",
+        "مدغشقر",
+        "بورنيو",
+        "غينيا الجديدة"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "غرينلاند أكبر جزيرة وتتبع التاج الدنماركي.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🧠",
+      "design": "bubbles"
+    },
+    {
+      "id": 163,
+      "question": "معلومة ثفافية #163: ما هو الحيوان الذي يستطيع النوم لمدة تصل إلى 3 سنوات متواصلة؟",
+      "options": [
+        "الدب الأشهب",
+        "الضفدع",
+        "الحلزون",
+        "الكسلان"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "تدخل بعض أنواع الحلزونات البرية في بيات وصدمة طويلة.",
+      "category": "حيوانات وطبيعة",
+      "difficulty": 6,
+      "image": null,
+      "emoji": "🧭",
+      "design": "poster"
+    },
+    {
+      "id": 164,
+      "question": "معلومة ثفافية #164: ما هي الدولة التي تشتهر بوجود طواحين الهواء وزهور التوليب والسدود؟",
+      "options": [
+        "الدنمارك",
+        "هولندا",
+        "السويد",
+        "بلجيكا"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تشتهر هولندا بطواحين الهواء التاريخية والتوليب.",
+      "category": "ثقافة ومعلومات عامة",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🧬",
+      "design": "grid"
+    },
+    {
+      "id": 165,
+      "question": "معلومة ثفافية #165: ما هو الشريان الأكبر والأهم في جسم الإنسان ويخرج مباشرة من القلب؟",
+      "options": [
+        "الشريان السباتي",
+        "الشريان الرئوي",
+        "الشريان الأبهر (الأورطي)",
+        "الشريان التاجي"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "الأورطي يوزع الدم المؤكسج لكافة أعضاء الجسم.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌋",
+      "design": "stadium"
+    },
+    {
+      "id": 166,
+      "question": "معلومة ثفافية #166: ما هي أكبر هضبة في العالم مساحة وارتفاعاً وتلقب بـ 'سقف العالم'؟",
+      "options": [
+        "هضبة جيلف الكبير",
+        "هضبة الدكن",
+        "هضبة الأناضول",
+        "هضبة التبت"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "تقع هضبة التبت بآسيا وترتفع أكثر من 4500 متر.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🔮",
+      "design": "cards"
+    },
+    {
+      "id": 167,
+      "question": "معلومة ثفافية #167: ما هو الجهاز الأساسي الذي يقيس ضغط الدم لدى الإنسان؟",
+      "options": [
+        "الترمومتر",
+        "الهيدرومتر",
+        "مقياس ضغط الدم (السبفيغمومانوميتر)",
+        "البارومتر"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "يقيس السفيغمومانوميتر الضغط الانقباضي والانبساطي.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🦁",
+      "design": "polaroid"
+    },
+    {
+      "id": 168,
+      "question": "معلومة ثفافية #168: ما اسم أول رائد فضاء في التاريخ صعد للفضاء الخارجي عام 1961؟",
+      "options": [
+        "باز ألدرين",
+        "يوري غاغارين",
+        "نيل أرمسترونغ",
+        "فالنتينا تيريشكوفا"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "يوري غاغارين السوفيتي هو أول إنسان يسبح بالمركبة فضائياً.",
+      "category": "فضاء وفلك",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🎨",
+      "design": "poster"
+    },
+    {
+      "id": 169,
+      "question": "معلومة ثفافية #169: ما اسم أول إنسان مشى على سطح القمر عام 1969؟",
+      "options": [
+        "نيل أرمسترونغ",
+        "جون غلين",
+        "مبجل أبولو",
+        "يوري غاغارين"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "خطى الأمريكي نيل أرمسترونغ أول خطوة على القمر برحلة أبولو 11.",
+      "category": "فضاء وفلك",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🧭",
+      "design": "bubbles"
+    },
+    {
+      "id": 170,
+      "question": "معلومة ثفافية #170: ما هو أطول النزاعات وأطول معركة في الحرب العالمية الأولى؟",
+      "options": [
+        "معركة يبروس",
+        "معركة مارن",
+        "معركة الصوم",
+        "معركة فردان"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "استمرت معركة فردان عام 1916 بين فرنسا وألمانيا نحو 10 أشهر.",
+      "category": "ثقافة ومعلومات عامة",
+      "difficulty": 7,
+      "image": null,
+      "emoji": "🏛️",
+      "design": "cards"
+    },
+    {
+      "id": 171,
+      "question": "معلومة ثفافية #171: ما هي أسرع الطيور في الطيران الأفقي المستقيم لمسافات قصيرة؟",
+      "options": [
+        "النسر",
+        "طائر السويفت (السمامة)",
+        "الصقر",
+        "البطريك"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تصل سرعة طائر السمامة الأفقية لنحو 110 كم/ساعة.",
+      "category": "حيوانات وطبيعة",
+      "difficulty": 5,
+      "image": null,
+      "emoji": "🎨",
+      "design": "polaroid"
+    },
+    {
+      "id": 172,
+      "question": "معلومة ثفافية #172: ما هو الغاز الذي ينبعث من الأشجار والنباتات نهاراً أثناء البناء الضوئي؟",
+      "options": [
+        "الميثان",
+        "الأكسجين",
+        "النيتروجين",
+        "ثاني أكسيد الكربون"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تنتج النباتات الأكسجين أثناء عملية البناء الضوئي نهاراً.",
+      "category": "علوم واكتشافات",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "🌋",
+      "design": "comic"
+    },
+    {
+      "id": 173,
+      "question": "معلومة ثفافية #173: ما هو الغاز الرئيسي الموجود في مناجم الفحم والغاز الطبيعي ومسبب الاشتعال؟",
+      "options": [
+        "الإيثان",
+        "الميثان",
+        "البوتان",
+        "البروبان"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "غاز الميثان CH4 هو المكون الأساسي للغاز الطبيعي.",
+      "category": "علوم واكتشافات",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🚀",
+      "design": "poster"
+    },
+    {
+      "id": 174,
+      "question": "معلومة ثفافية #174: ما هي وحدة قياس القوة في النظام الدولي للوحدات (SI)؟",
+      "options": [
+        "النيوتن",
+        "الجول",
+        "الفيزياء",
+        "الوات"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "سميت وحدة النيوتن تخليداً للعالم إسحاق نيوتن.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "💻",
+      "design": "neon"
+    },
+    {
+      "id": 175,
+      "question": "معلومة ثفافية #175: ما هي وحدة قياس الطاقة والعمل في النظام الدولي؟",
+      "options": [
+        "الفولت",
+        "الجول",
+        "الأوم",
+        "الوات"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "الجول هو وحدة قياس الطاقة والعمل الميكانيكي.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🔮",
+      "design": "poster"
+    },
+    {
+      "id": 176,
+      "question": "معلومة ثفافية #176: ما هي وحدة قياس القدرة الكهربائية أو معدل استهلاك الطاقة؟",
+      "options": [
+        "الوات",
+        "الفولت",
+        "الأوم",
+        "الأمبير"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "الوات يعبر عن استهلاك جول واحد في الثانية.",
+      "category": "علوم واكتشافات",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🧬",
+      "design": "poster"
+    },
+    {
+      "id": 177,
+      "question": "معلومة ثفافية #177: ما هي وحدة قياس فرق الجهد الكهربائي؟",
+      "options": [
+        "الفولت",
+        "الكولوم",
+        "الأمبير",
+        "الأوم"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "الفولت هو وحدة قياس الجهد الكهربائي.",
+      "category": "علوم واكتشافات",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "💡",
+      "design": "polaroid"
+    },
+    {
+      "id": 178,
+      "question": "معلومة ثفافية #178: ما هي وحدة قياس شدة التيار الكهربائي؟",
+      "options": [
+        "الأوم",
+        "الفولت",
+        "الأمبير",
+        "الوات"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "الأمبير يرمز لتدفق الشحنات الكهربائية بالثانية.",
+      "category": "علوم واكتشافات",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🏛️",
+      "design": "bubbles"
+    },
+    {
+      "id": 179,
+      "question": "معلومة ثفافية #179: ما هي وحدة قياس المقاومة الكهربائية؟",
+      "options": [
+        "الأمبير",
+        "الأوم",
+        "الجول",
+        "الفولت"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تقاس المقاومة الكهربائية بالمواصفات بوحدة الأوم.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🚀",
+      "design": "poster"
+    },
+    {
+      "id": 180,
+      "question": "معلومة ثفافية #180: ما هو العلم المعني بدراسة الصخور وطبقات الأرض وتركيبها الجيولوجي؟",
+      "options": [
+        "علم الميتورولوجيا",
+        "علم الجيولوجيا",
+        "علم الأسترونومي",
+        "علم البيولوجيا"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "الجيولوجيا هو علم علم طبقات الأرض وتركيبها.",
+      "category": "علوم واكتشافات",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🧠",
+      "design": "comic"
+    },
+    {
+      "id": 181,
+      "question": "معلومة ثفافية #181: ما هو العلم المختص بدراسة الطقس والمناخ والغلاف الجوي؟",
+      "options": [
+        "علم الآثار",
+        "علم الأرصاد الجوية (الميتورولوجيا)",
+        "علم الجيولوجيا",
+        "علم الأحياء"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "الميتورولوجيا تهتم بدراسة ظواهر الجو والطقس.",
+      "category": "علوم واكتشافات",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌍",
+      "design": "cards"
+    },
+    {
+      "id": 182,
+      "question": "معلومة ثفافية #182: ما هو العلم المعني بدراسة الفضاء والنجوم والكواكب والمجرات؟",
+      "options": [
+        "علم البيئة",
+        "علم الجيولوجيا",
+        "علم الفلك (الأسترونومي)",
+        "علم الأحياء"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "علم الفلك يدرس الأجرام السماوية والكون.",
+      "category": "فضاء وفلك",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🎨",
+      "design": "neon"
+    },
+    {
+      "id": 183,
+      "question": "معلومة ثفافية #183: ما اسم المادة البروتينية الشديدة التي تتكون منها الأظافر والشعر لدى الإنسان؟",
+      "options": [
+        "الإيلاستين",
+        "الكولاجين",
+        "الميلانين",
+        "الكيراتين"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "الكيراتين بروتين صلب يركب الشعر والأظافر.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌌",
+      "design": "neon"
+    },
+    {
+      "id": 184,
+      "question": "معلومة ثفافية #184: ما اسم البروتين الرئيسي الأكثر وفرة في الأنسجة الضامة والجلد والعظام؟",
+      "options": [
+        "الألبومين",
+        "الكولاجين",
+        "الهيموغلوبين",
+        "الكيراتين"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "الكولاجين يمنح والمرونة للجلد والأربطة.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🧭",
+      "design": "neon"
+    },
+    {
+      "id": 185,
+      "question": "معلومة ثفافية #185: ما هو الجزء المسئول عن إعطاء العين لونها المميز (بني، أزرق، أخضر)؟",
+      "options": [
+        "القزحية",
+        "البؤبؤ",
+        "القرنية",
+        "الشبكية"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "القزحية هي الجزء الملون المحيط بحدقة العين.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🦁",
+      "design": "grid"
+    },
+    {
+      "id": 186,
+      "question": "معلومة ثفافية #186: ما هي الطبقة الحساسة للضوء في الجزء الخلفي من العين وتستقبل الصور؟",
+      "options": [
+        "الشبكية",
+        "الصلبة",
+        "القرنية",
+        "القزحية"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "الشبكية تحتوي الخلايا الضوئية التي ترسل الإشارات للمخ.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🏛️",
+      "design": "cards"
+    },
+    {
+      "id": 187,
+      "question": "معلومة ثفافية #187: ما هي العضلة الوحيدة في جسم الإنسان التي تعمل بدون توقف مدى الحياة؟",
+      "options": [
+        "عضلة الفخذ",
+        "عضلة القلب",
+        "عضلة اللسان",
+        "عضلة الحجاب الحاجز"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "القلب ينبض باستمرار دون راحة لتأمين الحياة.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 1,
+      "image": null,
+      "emoji": "🧭",
+      "design": "neon"
+    },
+    {
+      "id": 188,
+      "question": "معلومة ثفافية #188: ما هو العضو الذي يختزن العصارة الصفرواية (الصفراء) لضم الدهون؟",
+      "options": [
+        "البنكرياس",
+        "الطحال",
+        "الكبد",
+        "الحويصلة الهوائية / المرارة"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "المرارة تخزن الصفراء المفرزة من الكبد لتفكيك الدهون.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🎨",
+      "design": "neon"
+    },
+    {
+      "id": 189,
+      "question": "معلومة ثفافية #189: ما هو العضو الذي يقوم بتدمير وتدوير خلايا الدم الحمراء الهرمة والقديمة؟",
+      "options": [
+        "الكبد",
+        "البنكرياس",
+        "الطحال",
+        "الكلى"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "الطحال يلقب بـ 'مقبرة خلايا الدم الحمراء'.",
+      "category": "جسم الإنسان والصحة",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🧬",
+      "design": "grid"
+    },
+    {
+      "id": 190,
+      "question": "معلومة ثفافية #190: ما هي القارة التي تضم أكبر عدد من الدول المستقلة في العالم (54 دولة)؟",
+      "options": [
+        "أفريقيا",
+        "آسيا",
+        "أوروبا",
+        "أمريكا الشمالية"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "تضم أفريقيا 54 دولة عضو بالأمم المتحدة.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "🌋",
+      "design": "cards"
+    },
+    {
+      "id": 191,
+      "question": "معلومة ثفافية #191: ما هي أطول الحدود البرية غير الحصينة والمكشوفة بين دولتين في العالم؟",
+      "options": [
+        "الحدود بين الأرجنتين وتشيلسي",
+        "الحدود بين روسيا والصين",
+        "الحدود بين الهند وباكستان",
+        "الحدود بين كندا والولايات المتحدة"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "تمتد الحدود الكندية الأمريكية لأكثر من 8890 كم.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🦁",
+      "design": "bubbles"
+    },
+    {
+      "id": 192,
+      "question": "معلومة ثفافية #192: ما هي الدولة الأكثر إنتاجاً وزراعة للقهوة (البن) في العالم؟",
+      "options": [
+        "البرازيل",
+        "فيتنام",
+        "كولومبيا",
+        "إثيوبيا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "تتصدر البرازيل إنتاج البن العالمي منذ أكثر من قرن.",
+      "category": "ثقافة ومعلومات عامة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌌",
+      "design": "poster"
+    },
+    {
+      "id": 193,
+      "question": "معلومة ثفافية #193: ما هي الدولة الأكثر إنتاجاً وزراعة للشاي في العالم؟",
+      "options": [
+        "الصين",
+        "الهند",
+        "سريلانكا",
+        "كينيا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "الصين هي المنتج الأكبر للشاي في العالم.",
+      "category": "ثقافة ومعلومات عامة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "🌋",
+      "design": "neon"
+    },
+    {
+      "id": 194,
+      "question": "معلومة ثفافية #194: ما هي أكثر دولة إنتاجاً وتصديراً للزيتون وزيت الزيتون عالمياً؟",
+      "options": [
+        "إسبانيا",
+        "إيطاليا",
+        "اليونان",
+        "تونس"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "تتصدر إسبانيا إنتاج وتصدير زيت الزيتون.",
+      "category": "ثقافة ومعلومات عامة",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🚀",
+      "design": "cards"
+    },
+    {
+      "id": 195,
+      "question": "معلومة ثفافية #195: ما هي أقدم أبجدية كتابية صامتة ومنظمة تم ابتكارها على ساحل الشام؟",
+      "options": [
+        "الهيروغليفية",
+        "الأبجدية اليونانية",
+        "الكتابة المسمارية",
+        "الأبجدية الفينيقية"
+      ],
+      "correctAnswerIndex": 3,
+      "explanation": "طور الفينيقيون أول أبجدية صوتية أثرت بكل اللغات.",
+      "category": "لغات ولغويات",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🌋",
+      "design": "grid"
+    },
+    {
+      "id": 196,
+      "question": "معلومة ثفافية #196: ما هي الدولة التي تمتلك أكبر عدد من الأهرامات الكوشية في العالم؟",
+      "options": [
+        "البيرو",
+        "السودان",
+        "مصر",
+        "المكسيك"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تضم السودان في منطقة البجراوية ومروي أكثر من 200 هرم.",
+      "category": "معالم وعجائب العالم",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "📚",
+      "design": "stadium"
+    },
+    {
+      "id": 197,
+      "question": "معلومة ثفافية #197: ما اسم العلم الذي يدرس الآثار القديمة والمخلفات المادية للحضارات؟",
+      "options": [
+        "علم الآثار (الأركيولوجيا)",
+        "علم الميثولوجيا",
+        "علم الأنثروبولوجيا",
+        "علم الجيولوجيا"
+      ],
+      "correctAnswerIndex": 0,
+      "explanation": "الأركيولوجيا هي دراسة البقايا والتنقيب عن الماضي.",
+      "category": "علوم واكتشافات",
+      "difficulty": 2,
+      "image": null,
+      "emoji": "📚",
+      "design": "stadium"
+    },
+    {
+      "id": 198,
+      "question": "معلومة ثفافية #198: ما هو أسرع قطار ركاب تجاري مغناطيسي في العالم وتتجاوز سرعته 450 كم/ساعة؟",
+      "options": [
+        "قطار الرصاصة في اليابان",
+        "قطار الفيلارو بألمانيا",
+        "قطار المغليف (Maglev) في شانغهاي",
+        "قطار TGV بفرنسا"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "قطار شانغهاي المغناطيسي هو الأسرع تجارياً.",
+      "category": "اختراعات وتكنولوجيا",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "💻",
+      "design": "neon"
+    },
+    {
+      "id": 199,
+      "question": "معلومة ثفافية #199: ما اسم المفاعل النووي الذي شهد أسوأ حادثة تسرب نووي في التاريخ عام 1986؟",
+      "options": [
+        "مفاعل ثري مايل آيلاند",
+        "مفاعل زابوريجيا",
+        "مفاعل تشيرنوبل",
+        "مفاعل فوكوشيما"
+      ],
+      "correctAnswerIndex": 2,
+      "explanation": "وقع انفجار تشيرنوبل بجمهورية أوكرانيا السوفيتية.",
+      "category": "ثقافة ومعلومات عامة",
+      "difficulty": 3,
+      "image": null,
+      "emoji": "⚡",
+      "design": "cards"
+    },
+    {
+      "id": 200,
+      "question": "معلومة ثفافية #200: في أي دولة توجد صحراء 'أتاكاما' الجافة جداً والتي تعد الأكثر جفافاً بالأرض؟",
+      "options": [
+        "الأرجنتين",
+        "تشيلي",
+        "المكسيك",
+        "البيرو"
+      ],
+      "correctAnswerIndex": 1,
+      "explanation": "تقع صحراء أتاكاما بشمال تشيلي وندرة أمطارها فائقة.",
+      "category": "جغرافيا وعواصم",
+      "difficulty": 4,
+      "image": null,
+      "emoji": "🧭",
+      "design": "neon"
+    }
+  ]
+}

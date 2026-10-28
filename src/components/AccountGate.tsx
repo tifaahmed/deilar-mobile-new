@@ -4,6 +4,7 @@ import { useContact } from '../hooks/useCatalog';
 import { useLanguage } from '../context/LanguageContext';
 import { ErrorState, Skeleton } from './ui/Feedback';
 import { TrialCardForm } from './TrialCardForm';
+import { useLoyalty } from '../utils/quizStore';
 
 interface AccountGateProps {
   /** What the profile cannot show yet. */
@@ -51,6 +52,29 @@ const ContactUs: React.FC = () => {
   );
 };
 
+/** Said to a player who earned points in the quiz but has no card yet: why to fill in the data below. */
+const QuizPointsNotice: React.FC = () => {
+  const { isAr } = useLanguage();
+  const { total, answers } = useLoyalty();
+
+  if (answers === 0 && total === 0) return null;
+
+  return (
+    <div className="mb-3 rounded-3xl border-2 border-amber-300 bg-amber-50 p-4 text-right" dir={isAr ? 'rtl' : 'ltr'}>
+      <p className="text-sm font-black text-amber-900">
+        🎁 {isAr ? 'عندك ' : 'You have '}
+        <span dir="ltr">{total}</span>
+        {isAr ? ' نقطة ولاء من اللعبة!' : ' loyalty points from the game!'}
+      </p>
+      <p className="mt-1 text-xs font-semibold leading-relaxed text-amber-800">
+        {isAr
+          ? 'سجّل بياناتك واعمل كرت العضوية التجريبي المجاني عشان نحتفظ بنقاطك في حسابك، وتقدر تستفيد بيها بعدين.'
+          : 'Fill in your details and get your free trial card so your points are saved to your account and you can use them later.'}
+      </p>
+    </div>
+  );
+};
+
 /** The Profile tab before there is a card to show: both ways in, or what is still missing. */
 export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSignIn, onEnterCard, onLogout, onRetry, token, defaultName, onTrialCreated }) => {
   const { isAr } = useLanguage();
@@ -82,6 +106,7 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
   if (noCard && token && onTrialCreated) {
     return (
       <div className="space-y-2">
+        <QuizPointsNotice />
         <TrialCardForm token={token} defaultName={defaultName} onCreated={onTrialCreated} />
         <button onClick={onEnterCard} className="w-full py-2.5 text-xs font-bold text-slate-600 hover:text-[#941946] flex items-center justify-center gap-1.5 cursor-pointer">
           <CreditCard className="w-3.5 h-3.5" />
@@ -94,6 +119,7 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
 
   return (
     <>
+    <QuizPointsNotice />
     <div className={`bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-4 text-center mt-2 ${isAr ? 'text-right' : 'text-left'}`}>
       <div className="w-14 h-14 rounded-2xl bg-[#941946]/10 text-[#941946] flex items-center justify-center mx-auto">
         <UserRound className="w-7 h-7" />

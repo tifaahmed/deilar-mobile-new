@@ -140,6 +140,19 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </Link>
       </section>
 
+      {/* Kids' quiz game */}
+      <Link
+        to={{ quiz: true }}
+        className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-l from-emerald-500 to-emerald-600 text-white shadow-sm active:scale-95 transition-all cursor-pointer overflow-hidden"
+      >
+        <span className="text-3xl animate-bounce">⚽</span>
+        <div className="flex-1">
+          <span className="block text-sm font-black leading-tight">{isAr ? 'العب وتحدّى نفسك!' : 'Play the Football Quiz!'}</span>
+          <span className="block text-[11px] font-semibold text-emerald-50">{isAr ? 'لعبة أسئلة كرة القدم للأطفال' : 'A fun football quiz for kids'}</span>
+        </div>
+        <span className="text-2xl">🏆</span>
+      </Link>
+
       {/* 6 MEDICAL FACILITIES BUTTONS WITH ICONS */}
       <section ref={typesRef} className="space-y-2.5">
         {/* Facility type tiles — the most populated types, straight from the API */}
