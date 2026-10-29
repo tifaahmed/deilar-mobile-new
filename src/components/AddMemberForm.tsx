@@ -77,7 +77,8 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
-  const complete = name.trim().length > 1 && /^\d{14}$/.test(nationalId) && !!front && !!back && !!photo;
+  // Every relation but a son/daughter (added by first name in AddChildForm) needs the FULL name.
+  const complete = name.trim().split(/\s+/).length > 1 && /^\d{14}$/.test(nationalId) && !!front && !!back && !!photo;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +120,7 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
         <CheckCircle2 className="w-9 h-9 text-emerald-500 mx-auto" />
         <p className="text-xs font-black">{isAr ? 'تم إرسال الطلب' : 'Request sent'}</p>
         <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-600'}`}>
-          {isAr ? 'سيظهر الفرد على كرتك بعد موافقة الإدارة.' : 'The member will appear on your card once the admin approves.'}
+          {isAr ? 'سيظهر الفرد على كارتك بعد موافقة الإدارة.' : 'The member will appear on your card once the admin approves.'}
         </p>
       </div>
     );

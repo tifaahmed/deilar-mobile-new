@@ -61,16 +61,17 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
   const hero = facility?.image || facility?.logo || preview?.logo;
   const [viewingHero, setViewingHero] = React.useState(false);
 
-  const handleWhatsApp = (number: string | null | undefined) => {
+  const whatsappLink = (number: string | null | undefined) => {
     const target = whatsappNumber(number);
-    if (!target) return;
+    if (!target) return null;
     const text = encodeURIComponent(
       isAr
-        ? `مرحباً ${name}، أنا من حاملي كرت ديلار وأود الاستفسار عن كشف/فحص بنسبة الخصم المعتمدة${discount != null ? ` (${discount}%)` : ''}.`
+        ? `مرحباً ${name}، أنا من حاملي كارت ديلر وأود الاستفسار عن كشف/فحص بنسبة الخصم المعتمدة${discount != null ? ` (${discount}%)` : ''}.`
         : `Hello ${name}, I hold a Deilar medical card and would like to ask about the approved discount${discount != null ? ` (${discount}%)` : ''}.`,
     );
-    window.open(`https://wa.me/${target}?text=${text}`, '_blank');
+    return `https://wa.me/${target}?text=${text}`;
   };
+  const leadWhatsapp = whatsappLink(lead?.whatsapp);
 
   const leadDirections = directionsUrl(lead?.lat, lead?.lng, branches[0]?.maps_url);
 
@@ -95,10 +96,10 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
       <div className="relative rounded-3xl overflow-hidden bg-slate-950 text-white shadow-md border border-slate-200/50">
         <div className={`relative aspect-[2.1/1] sm:aspect-[2.6/1] w-full overflow-hidden ${hero ? 'cursor-zoom-in' : ''}`} onClick={() => hero && setViewingHero(true)}>
           <Thumb src={hero} alt={name} kind="facility" className="w-full h-full opacity-85" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
         </div>
 
-        <div className="absolute bottom-3 right-4 left-4 text-white">
+        <div className="absolute bottom-3 right-4 left-4 text-white pointer-events-none">
           <h1 className="text-lg sm:text-xl font-black text-white drop-shadow-md">{name}</h1>
           {facility?.tags && facility.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
@@ -123,7 +124,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
               <div>
                 <p className="text-sm font-black text-[#941946]">{isAr ? `خصم ${discount}%` : `${discount}% discount`}</p>
                 <p className="text-[11px] text-slate-600 font-medium">
-                  {isAr ? 'خصم فوري مباشر لحاملي كرت ديلار' : 'Instant discount for Deilar medical cardholders'}
+                  {isAr ? 'خصم فوري مباشر لحاملي كارت ديلر' : 'Instant discount for Deilar medical cardholders'}
                 </p>
               </div>
             </div>
@@ -138,13 +139,13 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
             </p>
             <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
               {isAr
-                ? 'للاستفادة من الخصم يجب أن يكون لديك كرت ديلار. اعرض الكرت مع رقم العضوية لمقدم الخدمة وستحصل على الخصم مباشرة.'
+                ? 'للاستفادة من الخصم يجب أن يكون لديك كارت ديلر. اعرض الكارت مع رقم العضوية لمقدم الخدمة وستحصل على الخصم مباشرة.'
                 : 'To use the discount you must hold a Deilar card. Just show your card with its ID number to the service provider and you get the discount right away.'}
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 pt-1">
+        <div className={`grid ${leadWhatsapp ? 'grid-cols-3' : 'grid-cols-2'} gap-2 pt-1`}>
           <a
             href={lead?.phone ? `tel:${lead.phone}` : undefined}
             aria-disabled={!lead?.phone}
@@ -155,15 +156,18 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
             {lead?.phone && <span dir="ltr" className="text-[10px] font-mono font-semibold text-white/80">{lead.phone}</span>}
           </a>
 
-          <button
-            onClick={() => handleWhatsApp(lead?.whatsapp)}
-            disabled={!lead?.whatsapp}
-            className={`py-2.5 px-2 bg-[#25D366] text-white rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 transition-colors shadow-2xs ${lead?.whatsapp ? 'hover:bg-emerald-600' : 'opacity-40 pointer-events-none'}`}
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>{isAr ? 'واتساب وحجز' : 'WhatsApp'}</span>
-            {lead?.whatsapp && <span dir="ltr" className="text-[10px] font-mono font-semibold text-white/80">{lead.whatsapp}</span>}
-          </button>
+          {leadWhatsapp && (
+            <a
+              href={leadWhatsapp}
+              target="_blank"
+              rel="noreferrer"
+              className="py-2.5 px-2 bg-[#25D366] text-white rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 transition-colors shadow-2xs hover:bg-emerald-600"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>{isAr ? 'واتساب وحجز' : 'WhatsApp'}</span>
+              <span dir="ltr" className="text-[10px] font-mono font-semibold text-white/80">{lead?.whatsapp}</span>
+            </a>
+          )}
 
           <a
             href={leadDirections ?? undefined}
@@ -255,7 +259,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
           className="w-full py-3.5 bg-gradient-to-r from-[#941946] to-[#6d1132] text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-rose-950/20 active:scale-98 transition-all"
         >
           <CreditCard className="w-4 h-4 text-amber-300" />
-          <span>{isAr ? 'عرض كرتي للاستفادة من الخصم الآن' : 'Show my medical card to get the discount'}</span>
+          <span>{isAr ? 'عرض كارتي للاستفادة من الخصم الآن' : 'Show my medical card to get the discount'}</span>
         </button>
       </div>
     </div>

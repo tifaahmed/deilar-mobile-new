@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSwipeDismiss } from '../hooks/useSwipeDismiss';
 import {
   ArrowRight,
   Phone,
@@ -59,7 +60,7 @@ export function offerRange(from: number | null | undefined, to: number | null | 
 export function offerLabel(from: number | null | undefined, to: number | null | undefined, isAr: boolean): string | null {
   const range = offerRange(from, to);
   if (!range) return null;
-  return isAr ? `خصم ${range} لحاملي كرت ديلار` : `${range} off for Deilar cardholders`;
+  return isAr ? `خصم ${range} لحاملي كارت ديلر` : `${range} off for Deilar cardholders`;
 }
 
 export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview, userLocation, onBack, onAddToCart, cart, onOpenCart }) => {
@@ -67,7 +68,10 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
   const member = useIsMember();
   const [selectedProduct, setSelectedProduct] = useState<ProductCard | null>(null);
   const [addedNotice, setAddedNotice] = useState<string | null>(null);
+  const noticeSwipe = useSwipeDismiss(() => setAddedNotice(null));
   const [viewing, setViewing] = useState<number | null>(null);
+  /** A single picture opened full screen: the cover or the logo. */
+  const [zoomed, setZoomed] = useState<string | null>(null);
 
   const point = userLocation ? { lat: roundCoord(userLocation.lat), lng: roundCoord(userLocation.lng) } : {};
   const detail = useApi<StoreDetail>(`store:${slug}:${userLocation ? `${point.lat},${point.lng}` : ''}:${isAr}`, (signal) => api.store(slug, { ...point, per_page: BRANCH_PAGE }, signal));
@@ -85,15 +89,14 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
   const hero = store?.cover || store?.gallery[0] || store?.logo || preview?.logo;
   const categoryName = (store?.categories ?? preview?.categories)?.[0]?.name;
 
-  const handleWhatsApp = () => {
-    const text = encodeURIComponent(
-      isAr
-        ? `مرحباً ${title}، أنا من مشتركي كرت ديلار وأرغب في الاستفسار عن منتجاتكم والعروض المتاحة.`
-        : `Hello ${title}, I am a Deilar medical cardholder and would like to ask about your products and offers.`,
-    );
-    const target = whatsappNumber(lead?.whatsapp);
-    if (target) window.open(`https://wa.me/${target}?text=${text}`, '_blank');
-  };
+  const whatsappTarget = whatsappNumber(lead?.whatsapp);
+  const whatsappLink = whatsappTarget
+    ? `https://wa.me/${whatsappTarget}?text=${encodeURIComponent(
+        isAr
+          ? `مرحباً ${title}، أنا من مشتركي كارت ديلر وأرغب في الاستفسار عن منتجاتكم والعروض المتاحة.`
+          : `Hello ${title}, I am a Deilar medical cardholder and would like to ask about your products and offers.`,
+      )}`
+    : null;
 
   const handleAdd = (card: ProductCard) => {
     onAddToCart(toCartProduct(card));
@@ -126,17 +129,19 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
       </div>
 
       {addedNotice && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[999] bg-slate-900 text-white px-4 py-2 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2 text-xs font-bold animate-in slide-in-from-top-3">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>{isAr ? `تمت إضافة «${addedNotice}» إلى السلة!` : `“${addedNotice}” added to the cart!`}</span>
+        <div className="fixed top-[calc(1rem+env(safe-area-inset-top))] inset-x-0 z-[999] flex justify-center pointer-events-none">
+          <div {...noticeSwipe.handlers} style={noticeSwipe.style} className="pointer-events-auto bg-slate-900 text-white px-4 py-2 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2 text-xs font-bold animate-in slide-in-from-top-3">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <span>{isAr ? `تمت إضافة «${addedNotice}» إلى السلة!` : `“${addedNotice}” added to the cart!`}</span>
+          </div>
         </div>
       )}
 
       {/* 2. Hero Cover & Store Header */}
       <div className="relative rounded-3xl overflow-hidden bg-slate-950 text-white shadow-md border border-slate-200/50">
-        <div className="relative aspect-[2.2/1] sm:aspect-[2.6/1] w-full overflow-hidden">
+        <div className={`relative aspect-[2.2/1] sm:aspect-[2.6/1] w-full overflow-hidden ${hero ? 'cursor-zoom-in' : ''}`} onClick={() => hero && setZoomed(hero)}>
           <Thumb src={hero} alt={title} kind="store" className="w-full h-full opacity-85" />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
         </div>
 
         {categoryName && (
@@ -145,16 +150,18 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
           </div>
         )}
 
-        <div className="absolute bottom-3 right-4 left-4 text-white flex items-end gap-3">
+        <div className="absolute bottom-3 right-4 left-4 text-white flex items-end gap-3 pointer-events-none">
           {/* The store's logo, from the list card at once and the full record once it arrives. */}
-          <Thumb
-            src={store?.logo ?? preview?.logo}
-            alt={title}
-            kind="store"
-            fit="contain"
-            priority
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shrink-0 border-2 border-white/80 shadow-lg"
-          />
+          <button type="button" onClick={() => { const logo = store?.logo ?? preview?.logo; if (logo) setZoomed(logo); }} className="pointer-events-auto shrink-0 cursor-zoom-in" aria-label={title}>
+            <Thumb
+              src={store?.logo ?? preview?.logo}
+              alt={title}
+              kind="store"
+              fit="contain"
+              priority
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border-2 border-white/80 shadow-lg"
+            />
+          </button>
           <div className="min-w-0">
             <h1 className="text-lg sm:text-xl font-black text-white drop-shadow-md">{title}</h1>
             {(store?.short_description ?? null) && <p className="text-[11px] text-slate-300 mt-0.5 line-clamp-1">{store?.short_description}</p>}
@@ -171,7 +178,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
             <div className="w-9 h-9 rounded-xl bg-[#941946] text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">%</div>
             <div>
               <p className="text-xs font-black text-[#941946]">{offer}</p>
-              <p className="text-[10.5px] text-slate-600 font-medium">{isAr ? 'خصم معتمد وحصري لحاملي كرت ديلار' : 'Approved, exclusive discount for Deilar cardholders'}</p>
+              <p className="text-[10.5px] text-slate-600 font-medium">{isAr ? 'خصم معتمد وحصري لحاملي كارت ديلر' : 'Approved, exclusive discount for Deilar cardholders'}</p>
             </div>
           </div>
         )}
@@ -193,7 +200,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div className={`grid ${whatsappLink ? 'grid-cols-2' : 'grid-cols-1'} gap-2 pt-1`}>
           <a
             href={lead?.phone ? `tel:${lead.phone}` : undefined}
             aria-disabled={!lead?.phone}
@@ -203,14 +210,17 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
             <span>{lead?.phone ?? (isAr ? 'اتصال هاتفياً' : 'Call')}</span>
           </a>
 
-          <button
-            onClick={handleWhatsApp}
-            disabled={!lead?.whatsapp}
-            className={`py-2.5 px-3 bg-[#25D366] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs ${lead?.whatsapp ? 'hover:bg-emerald-600' : 'opacity-40 pointer-events-none'}`}
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>{lead?.whatsapp ?? (isAr ? 'محادثة واتساب' : 'WhatsApp')}</span>
-          </button>
+          {whatsappLink && (
+            <a
+              href={whatsappLink}
+              target="_blank"
+              rel="noreferrer"
+              className="py-2.5 px-3 bg-[#25D366] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs hover:bg-emerald-600"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>{lead?.whatsapp}</span>
+            </a>
+          )}
         </div>
 
         {store && store.coupons.length > 0 && (
@@ -238,6 +248,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
           ))}
         </div>
       )}
+      {zoomed && <ImageViewer images={[zoomed]} index={0} onIndexChange={() => undefined} onClose={() => setZoomed(null)} />}
       {store && viewing !== null && <ImageViewer images={store.gallery} index={viewing} onIndexChange={setViewing} onClose={() => setViewing(null)} />}
 
       {store && (store.videos?.length ?? 0) > 0 && (
@@ -364,7 +375,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
                             )}
                           </div>
                           {shown.memberPrice != null && (
-                            <div className="text-[9px] font-bold text-emerald-700">{isAr ? `بالكرت ${shown.memberPrice} ${currency}` : `${shown.memberPrice} ${currency} with a card`}</div>
+                            <div className="text-[9px] font-bold text-emerald-700">{isAr ? `بالكارت ${shown.memberPrice} ${currency}` : `${shown.memberPrice} ${currency} with a card`}</div>
                           )}
                         </div>
                       );
@@ -425,7 +436,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
               {isAr
-                ? `يمكنك الاستفادة من خصم كرت ديلار${offer ? ` (${offer})` : ''} مباشرة عند زيارة أي من فروع المتجر بإبراز كرتك الرقمي من التطبيق.`
+                ? `يمكنك الاستفادة من خصم كارت ديلر${offer ? ` (${offer})` : ''} مباشرة عند زيارة أي من فروع المتجر بإبراز كارتك الرقمي من التطبيق.`
                 : `Use your Deilar card discount${offer ? ` (${offer})` : ''} directly at any branch by showing your digital card.`}
             </p>
             {lead?.phone && (

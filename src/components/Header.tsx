@@ -4,6 +4,8 @@ import { PRESET_LOCATIONS } from '../utils/geo';
 import { useStoredOrders } from '../utils/orders';
 import { Link } from '../router';
 import { useArea } from '../utils/area';
+import { useSession } from '../utils/session';
+import { fetchProfile } from '../api/auth';
 const AreaModal = lazy(() => import('./AreaModal').then((m) => ({ default: m.AreaModal })));
 import { DeilarLogo } from './DeilarLogo';
 import { useLanguage } from '../context/LanguageContext';
@@ -32,9 +34,20 @@ export const Header: React.FC<HeaderProps> = ({
   const [isVisible, setIsVisible] = React.useState(true);
   const { language, brandName, t, isAr } = useLanguage();
   const area = useArea();
+  // The header names the person (first name only); the marker beside it opens the same location popup the old chip did.
+  const session = useSession();
+  const firstName = (session.name ?? '').trim().split(/\s+/)[0];
+  const [photo, setPhoto] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (!session.token) { setPhoto(null); return; }
+    let alive = true;
+    fetchProfile(session.token).then((p) => alive && setPhoto(p.avatarUrl), () => undefined);
+    return () => { alive = false; };
+  }, [session.token]);
   const ordersCount = useStoredOrders().length;
 
   const [showCityPopup, setShowCityPopup] = React.useState(false);
+  const openLocation = () => (area ? setShowCityPopup(true) : setShowLocationDropdown(!showLocationDropdown));
   const areaLabel = area ? [area.governorate.name, area.city?.name].filter(Boolean).join(' - ') : currentLocationName;
 
   // Dynamic Scroll Direction Detection:
@@ -96,15 +109,35 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Middle: Geographic Location Selector */}
         <div className="relative">
-          <button
-            onClick={() => (area ? setShowCityPopup(true) : setShowLocationDropdown(!showLocationDropdown))}
-            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/70 rounded-full transition-colors border border-slate-200/60 cursor-pointer"
-            title={t('selectLocationPrompt')}
-          >
-            <MapPin className="w-3.5 h-3.5 text-[#931A47] shrink-0" />
-            <span className="max-w-[6.875rem] sm:max-w-[8.75rem] truncate text-[11px] font-semibold">{areaLabel}</span>
-            <span className="text-[9px] text-slate-400">▼</span>
-          </button>
+          {firstName ? (
+            <div className="flex items-center gap-1.5">
+              {photo && <img src={photo} alt="" onError={() => setPhoto(null)} className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" />}
+              {/* With a photo the name only shows when there is room (420px+); with none the name always shows, and a greeting joins it on wide screens. */}
+              <span className={`${photo ? 'hidden min-[420px]:inline' : ''} max-w-[6.875rem] sm:max-w-[8.75rem] truncate text-sm font-extrabold text-slate-900`}>
+                {!photo && <span className="hidden sm:inline font-semibold text-slate-500">{isAr ? 'أهلاً ' : 'Hi '}</span>}
+                {firstName}
+              </span>
+              <button
+                type="button"
+                onClick={openLocation}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200/70 border border-slate-200/60 transition-colors cursor-pointer"
+                title={t('selectLocationPrompt')}
+                aria-label={t('selectLocationPrompt')}
+              >
+                <MapPin className="w-4 h-4 text-[#931A47]" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={openLocation}
+              className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200/70 rounded-full transition-colors border border-slate-200/60 cursor-pointer"
+              title={t('selectLocationPrompt')}
+            >
+              <MapPin className="w-3.5 h-3.5 text-[#931A47] shrink-0" />
+              <span className="max-w-[6.875rem] sm:max-w-[8.75rem] truncate text-[11px] font-semibold">{areaLabel}</span>
+              <span className="text-[9px] text-slate-400">▼</span>
+            </button>
+          )}
 
           {showLocationDropdown && (
             <div className={`absolute top-full ${isAr ? 'left-0 text-right' : 'right-0 text-left'} mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150`}>

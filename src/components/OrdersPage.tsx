@@ -269,7 +269,7 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
             <div className="pt-2.5 border-t border-slate-100 space-y-1 text-xs">
               {savedAmount > 0 && (
                 <div className="flex justify-between text-emerald-700 font-bold">
-                  <span>{isAr ? 'وفّرت بكرت ديلار' : 'You saved with your card'}</span>
+                  <span>{isAr ? 'وفّرت بكارت ديلر' : 'You saved with your card'}</span>
                   <span className="font-mono">{savedAmount} {currency}</span>
                 </div>
               )}
@@ -282,9 +282,9 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
                 <span className="font-mono text-[#941946]">{order.total_amount} {currency}</span>
               </div>
               {order.membership_number ? (
-                <p className="text-[10px] text-emerald-700 font-bold pt-1">{isAr ? `سعر العضو — كرت ${order.membership_number}` : `Member price — card ${order.membership_number}`}</p>
+                <p className="text-[10px] text-emerald-700 font-bold pt-1">{isAr ? `سعر العضو — كارت ${order.membership_number}` : `Member price — card ${order.membership_number}`}</p>
               ) : (
-                <p className="text-[10px] text-slate-400 pt-1">{isAr ? 'طُلب بالسعر الكامل (بدون كرت).' : 'Ordered at full price (no card).'}</p>
+                <p className="text-[10px] text-slate-400 pt-1">{isAr ? 'طُلب بالسعر الكامل (بدون كارت).' : 'Ordered at full price (no card).'}</p>
               )}
             </div>
           </div>

@@ -6,7 +6,7 @@ export type ShareOutcome = 'shared' | 'copied' | 'whatsapp' | 'cancelled';
 /** The message that goes with a play's result. */
 export function resultShareText(score: number, right: number, total: number, emoji: string, topic = 'الأسئلة'): string {
   const points = score > 0 ? `+${score}` : `${score}`;
-  return `لعبت تحدي ${topic} في تطبيق ديلار ${emoji}\nجبت ${points} نقطة ولاء (${right} إجابة صح من ${total}).\nتقدر تجيب أكتر مني؟ 💪`;
+  return `لعبت تحدي ${topic} في تطبيق ديلر ${emoji}\nجبت ${points} نقطة ولاء (${right} إجابة صح من ${total}).\nتقدر تجيب أكتر مني؟ 💪`;
 }
 
 const whatsappLink = (text: string) => `https://wa.me/?text=${encodeURIComponent(`${text}\n${SHARE_URL}`)}`;
@@ -16,7 +16,7 @@ const whatsappLink = (text: string) => `https://wa.me/?text=${encodeURIComponent
  * link. Never throws; `cancelled` means the player closed the share sheet.
  */
 export async function shareResult(text: string): Promise<ShareOutcome> {
-  const payload = { title: 'ديلار', text, url: SHARE_URL };
+  const payload = { title: 'ديلر', text, url: SHARE_URL };
 
   try {
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (!navigator.canShare || navigator.canShare(payload))) {

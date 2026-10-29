@@ -1,4 +1,9 @@
+import { calculateDistanceKm } from './geo';
+
 const KEY = 'deilar_gps';
+
+/** Two fixes closer than this (km) are the same place for the "your location is set" prompt. */
+export const SAME_SPOT_KM = 0.5;
 
 export interface GpsPoint {
   lat: number;
@@ -22,3 +27,6 @@ export function saveGps(point: GpsPoint) {
     /* storage unavailable: asked again next launch */
   }
 }
+
+/** Whether two fixes are the same place or very near each other. */
+export const isSameSpot = (a: GpsPoint, b: GpsPoint): boolean => calculateDistanceKm(a.lat, a.lng, b.lat, b.lng) <= SAME_SPOT_KM;

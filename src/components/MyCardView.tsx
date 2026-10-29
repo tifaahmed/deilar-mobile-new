@@ -143,7 +143,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
           className="py-3 px-4 bg-[#112443] hover:bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md shadow-slate-900/20 flex items-center justify-center gap-1.5 transition-all active:scale-95"
         >
           <Maximize2 className="w-4 h-4 text-amber-400" />
-          <span>إبراز الكرت للمستشفى</span>
+          <span>إبراز الكارت للمستشفى</span>
         </button>
 
         <button
@@ -159,7 +159,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
       <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs max-w-sm mx-auto">
         <h3 className="text-xs font-bold text-slate-900 mb-2.5 flex items-center gap-1.5">
           <ShieldCheck className="w-4 h-4 text-rose-600" />
-          <span>كيفية استخدام الكرت في 3 خطوات بسيطة:</span>
+          <span>كيفية استخدام الكارت في 3 خطوات بسيطة:</span>
         </h3>
 
         <div className="space-y-2.5 text-xs text-slate-600">
@@ -167,13 +167,13 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
             <span className="w-5 h-5 rounded-full bg-rose-50 text-rose-700 font-bold text-[11px] flex items-center justify-center shrink-0">
               1
             </span>
-            <p>توجه إلى أي من المستشفيات أو المعامل أو الصيدليات في شبكة ديلار.</p>
+            <p>توجه إلى أي من المستشفيات أو المعامل أو الصيدليات في شبكة ديلر.</p>
           </div>
           <div className="flex items-start gap-2.5">
             <span className="w-5 h-5 rounded-full bg-rose-50 text-rose-700 font-bold text-[11px] flex items-center justify-center shrink-0">
               2
             </span>
-            <p>أبرز الكرت الرقمي أو الباركود لموظف الاستقبال قبل إصدار الفاتورة.</p>
+            <p>أبرز الكارت الرقمي أو الباركود لموظف الاستقبال قبل إصدار الفاتورة.</p>
           </div>
           <div className="flex items-start gap-2.5">
             <span className="w-5 h-5 rounded-full bg-rose-50 text-rose-700 font-bold text-[11px] flex items-center justify-center shrink-0">
@@ -198,7 +198,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
             {/* Live Verification Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span>كرت نشط وموثق رسمي</span>
+              <span>كارت نشط وموثق رسمي</span>
             </div>
 
             <div>
@@ -237,7 +237,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
         <div className="fixed inset-0 z-[999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl relative animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-slate-900">إضافة فرد عائلة للكرت</h3>
+              <h3 className="text-sm font-bold text-slate-900">إضافة فرد عائلة للكارت</h3>
               <button
                 onClick={() => setShowAddMemberModal(false)}
                 className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"
@@ -301,7 +301,7 @@ export const MyCardView: React.FC<MyCardViewProps> = ({
                   type="submit"
                   className="w-full py-2.5 bg-rose-700 hover:bg-rose-800 text-white rounded-xl text-xs font-bold shadow-md transition-colors"
                 >
-                  إصدار كرت رقمي جديد فوراً
+                  إصدار كارت رقمي جديد فوراً
                 </button>
               </div>
             </form>

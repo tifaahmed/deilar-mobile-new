@@ -90,7 +90,7 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
     <section className={`rounded-2xl p-4 border bg-white border-slate-200/90 space-y-4 ${isAr ? 'text-right' : 'text-left'}`}>
       <button type="button" onClick={toCard} className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-[#941946] cursor-pointer">
         <Back className="w-4 h-4" />
-        {isAr ? 'رجوع إلى كرتي' : 'Back to my card'}
+        {isAr ? 'رجوع إلى كارتي' : 'Back to my card'}
       </button>
 
       <div className="space-y-1">
@@ -101,7 +101,7 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
             <span className="text-slate-500 font-medium"> · {planName(plan, isAr)} · {isAr ? `${formatNumber(plan.months, true)} شهراً` : `${plan.months} months`}</span>
           </p>
         )}
-        <p className="text-xs text-slate-500">{isAr ? 'اختر طريقة الدفع. تتم العملية بأمان عبر Paymob ويُفعَّل كرتك تلقائياً بعد نجاحها.' : 'Choose how to pay. The payment is handled securely by Paymob and your card is activated automatically once it succeeds.'}</p>
+        <p className="text-xs text-slate-500">{isAr ? 'اختر طريقة الدفع. تتم العملية بأمان عبر Paymob ويُفعَّل كارتك تلقائياً بعد نجاحها.' : 'Choose how to pay. The payment is handled securely by Paymob and your card is activated automatically once it succeeds.'}</p>
       </div>
 
       {available.size === 0 && (

@@ -14,6 +14,10 @@ import '@fontsource/cairo/latin-700.css';
 import '@fontsource/cairo/latin-800.css';
 import './index.css';
 import { LanguageProvider } from './context/LanguageContext';
+import { installKeyboardGuard } from './utils/keyboardGuard';
+
+// Any field being typed in is scrolled clear of the on-screen keyboard (one rule for every form).
+installKeyboardGuard();
 
 createRoot(document.getElementById('root')!).render(
   <LanguageProvider>

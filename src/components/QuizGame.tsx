@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, animate, useMotionValue } from 'motion/react';
-import { ArrowRight, Trophy, RotateCcw, Star, Volume2, VolumeX } from 'lucide-react';
+import { ArrowRight, CloudCheck, Smartphone, Trophy, RotateCcw, Star, Volume2, VolumeX } from 'lucide-react';
 import { SECTIONS, type Question, type QuizDesign, type QuizSection } from '../data/quizSections';
 import { navigate, useRoute } from '../router';
-import { QUIZ_POINTS, flushQuizAnswers, markBadgesSeen, newId, recordQuizAnswer, refreshBadgeCatalog, refreshHistory, refreshLoyalty, useBadgeCatalog, useBadges, useLoyalty, useLoyaltyHistory } from '../utils/quizStore';
+import { QUIZ_POINTS, flushQuizAnswers, markBadgesSeen, newId, recordQuizAnswer, refreshBadgeCatalog, refreshHistory, refreshLoyalty, useBadgeCatalog, useBadges, useLoyalty, useLoyaltyHistory, useQueuedPlayIds } from '../utils/quizStore';
 import type { BadgeInfo } from '../utils/quizStore';
 import { PointsGallery, PointsMood, sceneFor } from './PointsMood';
 import { blockPullToRefresh } from './PullToRefresh';
@@ -29,7 +29,7 @@ export const PointsBalance: React.FC<{ total: number; pending: number; signedIn:
           {pending !== 0 && <> · لسه هتتضاف <span dir="ltr" className="font-black">{pending > 0 ? `+${pending}` : pending}</span></>}
         </p>
       ) : (
-        <p className="mt-1 text-xs font-semibold text-white/85">النقاط دي على موبايلك بس. سجّل بياناتك وأعمل الكرت التجريبي المجاني عشان تتحفظ في حسابك.</p>
+        <p className="mt-1 text-xs font-semibold text-white/85">النقاط دي على موبايلك بس. سجّل بياناتك وأعمل الكارت التجريبي المجاني عشان تتحفظ في حسابك.</p>
       )}
     </div>
   );
@@ -114,11 +114,45 @@ const ProgressPanel: React.FC<{ sec: QuizSection }> = ({ sec }) => {
   );
 };
 
-/** A line of the history screen. */
+/**
+ * Where a log line is kept, as a tappable icon: «محفوظة» (saved in the account on the server) or «على الجهاز» (still only on this
+ * phone, waiting for a connection or a sign-in). Tapping it opens a short explanation under it; tapping again, or anywhere else, closes it.
+ */
+export function SyncChip({ synced, signedIn }: { synced: boolean; signedIn: boolean }) {
+  const [open, setOpen] = useState(false);
+  const Icon = synced ? CloudCheck : Smartphone;
+  const explain = synced
+    ? 'تم حفظ هذا السجل في حسابك على السيرفر. نقاطك وشاراتك محفوظة ولن تضيع حتى لو غيّرت الموبايل أو مسحت التطبيق.'
+    : signedIn
+      ? 'هذا السجل ما زال على موبايلك فقط. سيُرفع إلى حسابك تلقائياً أول ما يتوفر اتصال بالإنترنت، وبعدها يتحول إلى «محفوظة».'
+      : 'هذا السجل على موبايلك فقط لأنك لم تسجّل الدخول. سجّل الدخول (أو أنشئ الكارت المجاني) لينتقل إلى حسابك ولا تضيع نقاطك.';
+
+  return (
+    <span className="relative shrink-0">
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-label={synced ? 'محفوظة: اضغط للشرح' : 'على الجهاز فقط: اضغط للشرح'}
+        onClick={() => setOpen((v) => !v)}
+        onBlur={() => setOpen(false)}
+        className={`flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-black leading-tight cursor-pointer ${synced ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}
+      >
+        <Icon className="w-4 h-4" aria-hidden="true" />
+        {synced ? 'محفوظة' : 'على الجهاز'}
+      </button>
+      {open && (
+        <span role="status" className="absolute z-20 top-full mt-1 end-0 w-52 rounded-xl bg-slate-900 p-2.5 text-[11px] font-bold leading-5 text-white shadow-lg">
+          {explain}
+        </span>
+      )}
+    </span>
+  );
+}
+
 type LogLine =
-  | { kind: 'play'; key: string; at: string; title: string; right: number; wrong: number; points: number; completed: boolean; pending: boolean }
-  | { kind: 'badge'; key: string; at: string; title: string; icon: string; points: number }
-  | { kind: 'admin'; key: string; at: string; points: number; note: string | null };
+  | { kind: 'play'; key: string; at: string; title: string; right: number; wrong: number; points: number; completed: boolean; synced: boolean }
+  | { kind: 'badge'; key: string; at: string; title: string; icon: string; points: number; synced: boolean }
+  | { kind: 'admin'; key: string; at: string; points: number; note: string | null; synced: boolean };
 
 /** The difficulty sign on a question: a word, a colour and 10 small bars of which `level` are lit. */
 function difficultyLook(level: number): { label: string; pill: string; bar: string } {
@@ -336,6 +370,7 @@ export const QuizGame: React.FC = () => {
   const loyalty = useLoyalty();
   const plays = useQuizHistory();
   const { entries: serverEntries } = useLoyaltyHistory();
+  const queuedPlays = useQueuedPlayIds();
   // The points scenes this player has really got: the result of every play they finished (on this phone or in their account).
   const seenScenes = useMemo(() => {
     const scores = new Set<number>();
@@ -353,15 +388,15 @@ export const QuizGame: React.FC = () => {
     const titleOf = (quiz: string | null) => `اختيار من متعدد · ${SECTIONS.find((x) => x.key === quiz)?.title ?? SECTIONS[0].title}`;
     const onServer = new Set(serverEntries.flatMap((e) => (e.type === 'play' ? [e.play_id] : [])));
     const lines: LogLine[] = serverEntries.map((e, i): LogLine => {
-      if (e.type === 'play') return { kind: 'play', key: `s-${e.play_id}`, at: e.at, title: titleOf(e.quiz), right: e.right, wrong: e.wrong, points: e.points, completed: e.right + e.wrong >= PLAY_SIZE, pending: false };
-      if (e.type === 'badge') return { kind: 'badge', key: `b-${e.quiz}-${e.key}-${i}`, at: e.at, title: badgeTitle(e), icon: badgeIcon(e), points: e.points };
-      return { kind: 'admin', key: `a-${e.at}-${i}`, at: e.at, points: e.points, note: e.note };
+      if (e.type === 'play') return { kind: 'play', key: `s-${e.play_id}`, at: e.at, title: titleOf(e.quiz), right: e.right, wrong: e.wrong, points: e.points, completed: e.right + e.wrong >= PLAY_SIZE, synced: !queuedPlays.has(e.play_id) };
+      if (e.type === 'badge') return { kind: 'badge', key: `b-${e.quiz}-${e.key}-${i}`, at: e.at, title: badgeTitle(e), icon: badgeIcon(e), points: e.points, synced: true };
+      return { kind: 'admin', key: `a-${e.at}-${i}`, at: e.at, points: e.points, note: e.note, synced: true };
     });
 
-    plays.filter((p) => !onServer.has(p.id)).forEach((p) => lines.push({ kind: 'play', key: `l-${p.id}`, at: p.played_at, title: p.title, right: p.right, wrong: p.wrong, points: p.points, completed: p.completed, pending: !!session.token }));
+    plays.filter((p) => !onServer.has(p.id)).forEach((p) => lines.push({ kind: 'play', key: `l-${p.id}`, at: p.played_at, title: p.title, right: p.right, wrong: p.wrong, points: p.points, completed: p.completed, synced: false }));
 
     return lines.sort((a, b) => b.at.localeCompare(a.at));
-  }, [serverEntries, plays, session.token]);
+  }, [serverEntries, plays, queuedPlays]);
   // A real card, not the placeholder a sign-in leaves: only these players already have somewhere for their points.
   const isMember = !!session.token && !!session.cardNumber;
 
@@ -562,7 +597,7 @@ export const QuizGame: React.FC = () => {
             )}
             {badges.length > 0 && !session.token && (
               <p className="rounded-2xl bg-amber-50 border border-amber-200 p-3 text-xs font-bold text-amber-900">
-                دي كل الشارات اللي تقدر تكسبها وهدية نقاط الولاء لكل واحدة. سجّل بياناتك واعمل كرت العضوية التجريبي المجاني عشان تتسجل شاراتك وتاخد هداياها.
+                دي كل الشارات اللي تقدر تكسبها وهدية نقاط الولاء لكل واحدة. سجّل بياناتك واعمل كارت العضوية التجريبي المجاني عشان تتسجل شاراتك وتاخد هداياها.
               </p>
             )}
             {SECTIONS.map((sec) => {
@@ -632,8 +667,9 @@ export const QuizGame: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-black text-slate-900 truncate">🎮 {line.title}</p>
                       <p className="text-xs font-semibold text-slate-500">{when}</p>
-                      <p className="text-xs font-bold mt-0.5"><span className="text-emerald-600">✅ {line.right} صح</span> <span className="text-red-600">❌ {line.wrong} غلط</span>{!line.completed && <span className="text-slate-400"> · غير مكتملة</span>}{line.pending && <span className="text-slate-400"> · لسه ما اترفعتش</span>}</p>
+                      <p className="text-xs font-bold mt-0.5"><span className="text-emerald-600">✅ {line.right} صح</span> <span className="text-red-600">❌ {line.wrong} غلط</span>{!line.completed && <span className="text-slate-400"> · غير مكتملة</span>}</p>
                     </div>
+                    <SyncChip synced={line.synced} signedIn={!!session.token} />
                   </div>
                 );
               }
@@ -647,6 +683,7 @@ export const QuizGame: React.FC = () => {
                       <p className="text-xs font-semibold text-slate-500">{when}</p>
                     </div>
                     {line.points > 0 && <span className="rounded-xl bg-emerald-500 px-2.5 py-1 text-sm font-black text-white" dir="ltr">{points} 🎁</span>}
+                    <SyncChip synced={line.synced} signedIn={!!session.token} />
                   </div>
                 );
               }
@@ -659,6 +696,7 @@ export const QuizGame: React.FC = () => {
                     <p className="text-xs font-semibold text-slate-500">{when}</p>
                     {line.note && <p className="text-xs font-bold text-slate-700 mt-0.5">{line.note}</p>}
                   </div>
+                  <SyncChip synced={line.synced} signedIn={!!session.token} />
                 </div>
               );
             })}
@@ -824,7 +862,7 @@ export const QuizGame: React.FC = () => {
               <div className="mb-4 rounded-2xl bg-white p-4 text-right shadow-md">
                 <p className="text-sm font-black text-slate-900">🎁 احتفظ بنقاطك!</p>
                 <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600">
-                  النقاط دي محفوظة على موبايلك. املأ بياناتك واعمل كرت العضوية التجريبي المجاني عشان تتسجل في حسابك وتقدر تستفيد بيها بعدين.
+                  النقاط دي محفوظة على موبايلك. املأ بياناتك واعمل كارت العضوية التجريبي المجاني عشان تتسجل في حسابك وتقدر تستفيد بيها بعدين.
                 </p>
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => navigate('/card')} className="mt-3 w-full rounded-xl bg-[#931A47] py-3 text-base font-black text-white cursor-pointer">
                   املأ بياناتي واحتفظ بنقاطي ➜

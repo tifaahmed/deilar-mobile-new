@@ -1,3 +1,5 @@
+import { Capacitor } from '@capacitor/core';
+import { saveImage } from './saveImage';
 /**
  * An order as a one-page PDF (Arabic or English), made on the device.
  *
@@ -45,7 +47,7 @@ function build(inv: InvoiceData, isAr: boolean): HTMLElement {
 
   const head = el('div', `display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid ${BRAND};padding-bottom:14px;margin-bottom:18px;`);
   const brand = el('div', '');
-  brand.append(el('div', `font-size:28px;font-weight:900;color:${BRAND};`, 'Deilar'), el('div', 'font-size:12px;color:#64748b;', t('كرت ديلار', 'Deilar medical card')));
+  brand.append(el('div', `font-size:28px;font-weight:900;color:${BRAND};`, 'Deilar'), el('div', 'font-size:12px;color:#64748b;', t('كارت ديلر', 'Deilar medical card')));
   const meta = el('div', `text-align:${isAr ? 'left' : 'right'};`);
   meta.append(
     el('div', 'font-size:18px;font-weight:800;', inv.code ? t('فاتورة الطلب', 'Order invoice') : t('ملخص الطلب', 'Order summary')),
@@ -61,7 +63,7 @@ function build(inv: InvoiceData, isAr: boolean): HTMLElement {
     [t('الاسم', 'Name'), inv.customer.name],
     [t('الهاتف', 'Phone'), inv.customer.phone],
     [t('العنوان', 'Address'), inv.customer.address],
-    [t('كرت العضوية', 'Membership card'), inv.member],
+    [t('كارت العضوية', 'Membership card'), inv.member],
   ] as const) {
     if (value) who.append(el('div', '', `${label}: ${value}`));
   }
@@ -84,19 +86,21 @@ function build(inv: InvoiceData, isAr: boolean): HTMLElement {
   page.append(table);
 
   const totals = el('div', 'width:55%;margin-inline-start:auto;');
-  if (inv.saved && inv.saved > 0) totals.append(row(t('وفّرت بكرت ديلار', 'Saved with your card'), money(inv.saved)));
+  if (inv.saved && inv.saved > 0) totals.append(row(t('وفّرت بكارت ديلر', 'Saved with your card'), money(inv.saved)));
   if (inv.delivery != null) totals.append(row(t('التوصيل', 'Delivery'), inv.delivery > 0 ? money(inv.delivery) : t('مجاناً', 'Free')));
   totals.append(row(t('الإجمالي', 'Total'), money(inv.total), true));
   page.append(totals);
 
   if (inv.payment) page.append(el('div', 'margin-top:14px;font-size:12px;color:#475569;', `${t('طريقة الدفع', 'Payment')}: ${inv.payment}`));
-  page.append(el('div', 'margin-top:28px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;', t('شكراً لتسوقك من ديلار', 'Thank you for shopping with Deilar')));
+  page.append(el('div', 'margin-top:28px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;', t('شكراً لتسوقك من ديلر', 'Thank you for shopping with Deilar')));
 
   return page;
 }
 
 export async function downloadInvoicePdf(inv: InvoiceData, isAr = true): Promise<void> {
-  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')]);
+  const native = Capacitor.isNativePlatform();
+  const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), native ? Promise.resolve({ jsPDF: null }) : import('jspdf')]);
+  const name = `deilar-${inv.code ? `order-${inv.code}` : 'order-summary'}`;
 
   const node = build(inv, isAr);
   document.body.append(node);
@@ -105,6 +109,14 @@ export async function downloadInvoicePdf(inv: InvoiceData, isAr = true): Promise
     // Wait for the web font so the Arabic is shaped in Cairo, not a fallback, when it is photographed.
     await document.fonts?.ready;
     const canvas = await html2canvas(node, { scale: 2, backgroundColor: '#ffffff' });
+
+    // The app's web view cannot save a PDF file (`pdf.save` only shows a notification): the invoice goes to the
+    // phone's gallery as a picture, the same way the card does. A browser still gets the PDF.
+    if (native || !jsPDF) {
+      const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Invoice image could not be made'))), 'image/png'));
+      await saveImage(blob, `${name}.png`);
+      return;
+    }
 
     const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
     const width = pdf.internal.pageSize.getWidth();
@@ -118,7 +130,7 @@ export async function downloadInvoicePdf(inv: InvoiceData, isAr = true): Promise
       pdf.addImage(image, 'JPEG', 0, -offset, width, height);
     }
 
-    pdf.save(`deilar-${inv.code ? `order-${inv.code}` : 'order-summary'}.pdf`);
+    pdf.save(`${name}.pdf`);
   } finally {
     node.remove();
   }

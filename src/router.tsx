@@ -15,6 +15,7 @@ import type { NavTab } from './components/BottomNav';
  *   /card                  my card (the «كارتي» tab: the card, relatives, subscription)
  *   /card/members          the card's relatives
  *   /card/pay              pay for the card with Paymob (card or mobile wallet)
+ *   /card/physical         order physical (plastic) cards for the member and the family
  *   /account               the account list («حسابي» tab): one row per page
  *   /account/personal  /account/addresses  /account/support  /account/theme   the account's pages
  *                          (the old /card/personal etc. still open the same pages)
@@ -55,7 +56,7 @@ export interface Route {
 }
 
 /** Pages of the «كارتي» tab. */
-export const CARD_SECTIONS = ['members', 'pay'] as const;
+export const CARD_SECTIONS = ['members', 'pay', 'physical'] as const;
 /** Pages of the account list. */
 export const ACCOUNT_SECTIONS = ['personal', 'addresses', 'support', 'theme'] as const;
 export const PROFILE_SECTIONS = [...CARD_SECTIONS, ...ACCOUNT_SECTIONS] as const;
@@ -143,7 +144,9 @@ const listeners = new Set<() => void>();
 
 export function navigate(to: string, opts: { replace?: boolean } = {}): void {
   if (to !== location.pathname + location.search) {
-    history[opts.replace ? 'replaceState' : 'pushState'](null, '', to);
+    // A replace (the map widening its range, a filter changing) keeps the open popup named in the URL (`#new-visit-popup`).
+    const popup = opts.replace && !to.includes('#') && location.hash.endsWith('-popup') ? location.hash : '';
+    history[opts.replace ? 'replaceState' : 'pushState'](null, '', to + popup);
     window.scrollTo({ top: 0 });
   }
   listeners.forEach((l) => l());

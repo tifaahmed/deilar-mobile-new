@@ -205,8 +205,12 @@ export const apiPost = <T>(path: string, body: unknown, params?: Params, token?:
 export const apiGetAuth = <T>(path: string, token: string, params?: Params) => send<T>(buildUrl(path, params), { method: 'GET', token });
 
 export const apiPut = <T>(path: string, body: unknown, token: string, params?: Params) => send<T>(buildUrl(path, params), { method: 'PUT', body, token });
+export const apiPatch = <T>(path: string, body: unknown, token: string, params?: Params) => send<T>(buildUrl(path, params), { method: 'PATCH', body, token });
 
 /** Sends a "call me" request to the Contact Us inbox. */
 export async function postContactMessage(body: { phone: string; name?: string; message: string; source: 'card_popup' | 'contact_form' }): Promise<void> {
   await send(`${SITE_API_URL}/contact-messages`, { method: 'POST', body });
 }
+
+/** Authenticated DELETE. */
+export const apiDelete = <T>(path: string, token: string, body?: unknown) => send<T>(buildUrl(path), { method: 'DELETE', body, token });

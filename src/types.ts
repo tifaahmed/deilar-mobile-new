@@ -21,7 +21,7 @@
 export interface Beneficiary {
   id: string;
   name: string;
-  relation: string;               // e.g. "حامل الكرت الرئيسي", "زوجة", "ابن"
+  relation: string;               // e.g. "حامل الكارت الرئيسي", "زوجة", "ابن"
   nationalId: string;
   dob: string;
   cardNumber: string;             // Format: MEM-1000, MEM-1001, etc.

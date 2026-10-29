@@ -21,11 +21,11 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'deilar Medical Platform',
   },
   tagline: {
-    ar: 'كرت الخصومات',
+    ar: 'كارت الخصومات',
     en: 'Medical Discount Card',
   },
   certifiedCard: {
-    ar: 'كرت الخصومات المعتمد',
+    ar: 'كارت الخصومات المعتمد',
     en: 'Certified Discount Card',
   },
 
@@ -83,7 +83,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
 
   // Profile Sub-tabs
   tabCard: {
-    ar: 'الكرت',
+    ar: 'الكارت',
     en: 'Medical Card',
   },
   tabMembers: {
@@ -105,7 +105,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
 
   // Card Tab
   userCardTitle: {
-    ar: 'كرت ديلر الخاص بحسابك',
+    ar: 'كارت ديلر الخاص بحسابك',
     en: 'Your deilar Medical Card',
   },
   officialCertified: {
@@ -125,7 +125,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Download Back (PNG)',
   },
   downloadCardShort: {
-    ar: 'تحميل الكرت',
+    ar: 'تحميل الكارت',
     en: 'Download Card',
   },
   frontSide: {
@@ -133,7 +133,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Front Side',
   },
   backSide: {
-    ar: 'ظهر الكرت',
+    ar: 'ظهر الكارت',
     en: 'Back Side',
   },
   copyId: {
@@ -149,11 +149,11 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Share WhatsApp',
   },
   tapToFlip: {
-    ar: 'اضغط على الكرت لقلب الوجهين (الأمامي / الخلفي)',
+    ar: 'اضغط على الكارت لقلب الوجهين (الأمامي / الخلفي)',
     en: 'Tap card to flip between front & back',
   },
   cardDownloadSuccess: {
-    ar: 'تم حفظ كرت ديلر عالي الدقة على جهازك بنجاح!',
+    ar: 'تم حفظ كارت ديلر عالي الدقة على جهازك بنجاح!',
     en: 'High-res deilar card saved to your device successfully!',
   },
   activeMember: {
@@ -167,7 +167,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
 
   // Family Members Tab
   familyMembersCount: {
-    ar: 'أفراد الأسرة المسجلين بالكرت',
+    ar: 'أفراد الأسرة المسجلين بالكارت',
     en: 'Family Members on Card',
   },
   addNewMember: {
@@ -183,7 +183,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Active ✓',
   },
   viewCardAction: {
-    ar: 'عرض الكرت',
+    ar: 'عرض الكارت',
     en: 'View Card',
   },
   primaryAccount: {
@@ -191,7 +191,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Primary Account',
   },
   addMemberTitle: {
-    ar: 'إضافة فرد جديد إلى الكرت',
+    ar: 'إضافة فرد جديد إلى الكارت',
     en: 'Add New Family Member to Card',
   },
   memberNamePrompt: {
@@ -231,7 +231,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Available 24/7',
   },
   supportDesc: {
-    ar: 'فريق رعاية عملاء كرت ديلر متواجد على مدار الساعة للرد على استفساراتكم وحجز المستشفيات.',
+    ar: 'فريق رعاية عملاء كارت ديلر متواجد على مدار الساعة للرد على استفساراتكم وحجز المستشفيات.',
     en: 'deilar customer care team is available 24/7 to assist with your medical inquiries and hospital bookings.',
   },
   directWhatsapp: {
@@ -293,7 +293,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Instant Update',
   },
   fullNamePrompt: {
-    ar: 'الاسم بالكامل (كما يظهر على الكرت):',
+    ar: 'الاسم بالكامل (كما يظهر على الكارت):',
     en: 'Full Name (as shown on medical card):',
   },
   phonePrompt: {
@@ -403,7 +403,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
 
   // Home Screen
   heroHeadline: {
-    ar: 'وفر حتى 50% من تكاليف علاجك مع كرت ديلر',
+    ar: 'وفر حتى 50% من تكاليف علاجك مع كارت ديلر',
     en: 'Save up to 50% on medical expenses with deilar card',
   },
   heroSubtitle: {
@@ -419,7 +419,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Products',
   },
   quickBtnCard: {
-    ar: 'كرتي',
+    ar: 'كارتي',
     en: 'My Card',
   },
   facilitiesTitle: {
@@ -526,7 +526,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     document.documentElement.lang = language;
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
     document.title = language === 'ar'
-      ? 'ديلر - كرت الخصومات'
+      ? 'ديلر - كارت الخصومات'
       : 'deilar - Medical Discount Card';
   }, [language]);
 

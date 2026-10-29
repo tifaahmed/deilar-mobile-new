@@ -96,7 +96,7 @@ export const OfficialDeilarCard: React.FC<OfficialDeilarCardProps> = ({
 
             <div className="flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200/60">
               <RotateCw className="w-3 h-3 animate-spin-slow" />
-              <span>اقلب الكرت</span>
+              <span>اقلب الكارت</span>
             </div>
           </div>
 

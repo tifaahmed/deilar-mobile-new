@@ -96,7 +96,7 @@ export const SaveAreaPrompt: React.FC = () => {
       ) : failed ? (
         <span role="alert" className="text-rose-600">{isAr ? 'تعذر الحفظ، اضغط للمحاولة مرة أخرى' : 'Could not save, tap to try again'}</span>
       ) : (
-        isAr ? `حفظ موقعك (${place}) في كرتك؟ اضغط للحفظ` : `Save your location (${place}) to your card? Tap to save`
+        isAr ? `حفظ موقعك (${place}) في كارتك؟ اضغط للحفظ` : `Save your location (${place}) to your card? Tap to save`
       )}
     </Notice>
   );

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Home, Store, MapPin, User, CreditCard } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { useLanguage } from '../context/LanguageContext';
+
+/** iPhone/iPad (the app or Safari): the home-bar inset and a larger arch need handling there. */
+const IS_IOS = Capacitor.getPlatform() === 'ios' || (typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent));
 
 export type NavTab = 'home' | 'store' | 'products' | 'map' | 'mycard' | 'profile';
 
@@ -88,8 +92,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 flex justify-center pointer-events-none">
       <nav
-        className={`w-full max-w-3xl pb-[env(safe-area-inset-bottom)] bg-white border-t border-slate-200/90 shadow-[0_-4px_22px_rgba(0,0,0,0.06)] pointer-events-auto px-1 flex items-stretch justify-around relative overflow-visible transition-all duration-300 ease-out ${
-          isSlim ? 'h-[3.125rem] sm:h-[3.25rem]' : 'h-[4.125rem] sm:h-[4.375rem]'
+        className={`w-full max-w-3xl bg-white border-t border-slate-200/90 shadow-[0_-4px_22px_rgba(0,0,0,0.06)] pointer-events-auto px-1 flex items-stretch justify-around relative overflow-visible transition-all duration-300 ease-out ${
+          isSlim ? 'h-[calc(3.125rem+env(safe-area-inset-bottom))] sm:h-[calc(3.25rem+env(safe-area-inset-bottom))]' : 'h-[calc(4.125rem+env(safe-area-inset-bottom))] sm:h-[calc(4.375rem+env(safe-area-inset-bottom))]'
         }`}
       >
         {/* 
@@ -99,7 +103,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
           - Correctly positions for both RTL (Arabic) and LTR (English)
         */}
         <div
-          className="absolute top-0 bottom-0 pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1)]"
+          className="absolute top-0 bottom-[env(safe-area-inset-bottom)] pointer-events-none transition-all duration-300 ease-[cubic-bezier(0.2,0.9,0.3,1)]"
           style={{
             width: `${100 / tabs.length}%`,
             ...(isAr ? { right: `${(safeIndex * 100) / tabs.length}%` } : { left: `${(safeIndex * 100) / tabs.length}%` }),
@@ -111,6 +115,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
               className={`absolute flex items-center justify-center transition-all duration-300 ease-out ${
                 isSlim ? '-top-[13px]' : '-top-[20px]'
               }`}
+              // iOS: a slightly bigger arch, so the raised icon sits inside it with room all round, centred on it.
+              style={IS_IOS ? { transform: 'scale(1.14)', transformOrigin: '50% 40%' } : undefined}
             >
               <svg
                 viewBox="0 0 110 70"
@@ -143,7 +149,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className="relative z-10 flex flex-col items-center justify-center flex-1 h-full focus:outline-none select-none group min-h-[2.75rem] cursor-pointer"
+              className="relative z-10 flex flex-col items-center justify-center flex-1 h-full pb-[env(safe-area-inset-bottom)] focus:outline-none select-none group min-h-[2.75rem] cursor-pointer"
             >
               {/* Icon */}
               <div

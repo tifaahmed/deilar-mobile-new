@@ -164,7 +164,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
         <div className="w-14 h-14 rounded-2xl bg-[#941946]/10 text-[#941946] flex items-center justify-center mx-auto">
           <Sparkles className="w-7 h-7" />
         </div>
-        <h2 className="text-sm font-black text-slate-900">{isAr ? 'احصل على كارت ديلار مجاني لمدة شهر' : 'Get your free 1-month Deilar card'}</h2>
+        <h2 className="text-sm font-black text-slate-900">{isAr ? 'احصل على كارت ديلر مجاني لمدة شهر' : 'Get your free 1-month Deilar card'}</h2>
         <p className="text-xs text-slate-500 leading-relaxed">
           {isAr ? 'اسمك فقط. الكارت يعمل فوراً لمدة شهر.' : 'Only your name. The card works straight away for one month.'}
         </p>

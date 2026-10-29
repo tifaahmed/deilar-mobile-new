@@ -12,6 +12,7 @@ import { usePaged } from '../hooks/usePaged';
 import { isAbort } from '../api/http';
 import { useFacilityTypes } from '../hooks/useCatalog';
 import { useArea } from '../utils/area';
+import { getSavedGps } from '../utils/gps';
 import { usePopupHash } from '../utils/popupHash';
 import { fetchLocations, fetchNearestAreas, searchDirectory, type Locations, type SearchGroup } from '../api/endpoints';
 import { useLanguage } from '../context/LanguageContext';
@@ -69,6 +70,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
   // List-only area filter: browse other governorates/cities, with the member's own one marked.
   const myArea = useArea();
+  // A real position (GPS fix) ranks by distance; the member's governorate/city is only a fallback without one.
+  const hasGps = !!(getSavedGps() ?? myArea?.point);
   const [govId, setGovId] = useState<number | null>(null);
   const [cityId, setCityId] = useState<number | null>(null);
   const [locations, setLocations] = useState<Locations['governorates']>([]);
@@ -173,7 +176,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
   // ---- List mode: server-side search / filter / nearest-first, infinite scroll ---------------
   const byDiscount = sort === 'discount';
-  const listParams = { ...listPoint, q, radius_km: govId ? null : radius, governorate_id: govId, city_id: cityId, home_governorate_id: myArea?.governorate.id, home_city_id: myArea?.city?.id, type: selectedTypeId, per_page: 12, sort: byDiscount ? 'discount' : undefined };
+  const listParams = { ...listPoint, q, radius_km: govId ? null : radius, governorate_id: govId, city_id: cityId, ...(hasGps ? {} : { home_governorate_id: myArea?.governorate.id, home_city_id: myArea?.city?.id }), type: selectedTypeId, per_page: 12, sort: byDiscount ? 'discount' : undefined };
   const list = usePaged<FacilityCard>(PATHS.facilities, listParams, (page, signal) => api.facilities({ ...listParams, page }, signal), viewMode === 'list');
 
   // Initialize Leaflet Map (only while the map view is showing)

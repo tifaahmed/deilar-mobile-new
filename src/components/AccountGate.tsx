@@ -5,6 +5,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { ErrorState, Skeleton } from './ui/Feedback';
 import { TrialCardForm } from './TrialCardForm';
 import { useLoyalty } from '../utils/quizStore';
+import { LegalSheet, type LegalKind } from './LegalPages';
+import { DeleteAccountModal } from './DeleteAccountModal';
 
 interface AccountGateProps {
   /** What the profile cannot show yet. */
@@ -68,7 +70,7 @@ const QuizPointsNotice: React.FC = () => {
       </p>
       <p className="mt-1 text-xs font-semibold leading-relaxed text-amber-800">
         {isAr
-          ? 'سجّل بياناتك واعمل كرت العضوية التجريبي المجاني عشان نحتفظ بنقاطك في حسابك، وتقدر تستفيد بيها بعدين.'
+          ? 'سجّل بياناتك واعمل كارت العضوية التجريبي المجاني عشان نحتفظ بنقاطك في حسابك، وتقدر تستفيد بيها بعدين.'
           : 'Fill in your details and get your free trial card so your points are saved to your account and you can use them later.'}
       </p>
     </div>
@@ -78,6 +80,8 @@ const QuizPointsNotice: React.FC = () => {
 /** The Profile tab before there is a card to show: both ways in, or what is still missing. */
 export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSignIn, onEnterCard, onLogout, onRetry, token, defaultName, onTrialCreated }) => {
   const { isAr } = useLanguage();
+  const [legal, setLegal] = React.useState<LegalKind | null>(null);
+  const [deleting, setDeleting] = React.useState(false);
 
   if (state === 'loading') {
     return (
@@ -127,12 +131,12 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
 
       <div className="text-center space-y-1">
         <h2 className="text-sm font-black text-slate-900">
-          {noCard ? (isAr ? 'لا يوجد كرت مرتبط برقمك' : 'No card is linked to your number') : isAr ? 'حسابي' : 'My account'}
+          {noCard ? (isAr ? 'لا يوجد كارت مرتبط برقمك' : 'No card is linked to your number') : isAr ? 'حسابي' : 'My account'}
         </h2>
         <p className="text-xs text-slate-500 leading-relaxed">
           {noCard
-            ? isAr ? 'إذا كان لديك كرت، أدخل رقم العضوية لعرض بياناته.' : 'If you have a card, enter its membership number to see it.'
-            : isAr ? 'سجّل الدخول برقم هاتفك فيظهر كرتك تلقائياً، أو اعرض بيانات كرتك برقم العضوية.' : 'Sign in with your phone and your card appears automatically, or view it with its membership number.'}
+            ? isAr ? 'إذا كان لديك كارت، أدخل رقم العضوية لعرض بياناته.' : 'If you have a card, enter its membership number to see it.'
+            : isAr ? 'سجّل الدخول برقم هاتفك فيظهر كارتك تلقائياً، أو اعرض بيانات كارتك برقم العضوية.' : 'Sign in with your phone and your card appears automatically, or view it with its membership number.'}
         </p>
       </div>
 
@@ -146,7 +150,7 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
 
         <button onClick={onEnterCard} className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
           <CreditCard className="w-4 h-4 text-amber-400" />
-          <span>{isAr ? 'عرض بيانات الكرت برقم العضوية' : 'View card with membership number'}</span>
+          <span>{isAr ? 'عرض بيانات الكارت برقم العضوية' : 'View card with membership number'}</span>
         </button>
 
         {signedIn && (
@@ -155,9 +159,22 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
             <span>{isAr ? 'تسجيل الخروج' : 'Sign out'}</span>
           </button>
         )}
+
+        <div className="flex items-center justify-center gap-4 pt-1 text-[11px] font-bold text-slate-500">
+          <button onClick={() => setLegal('privacy')} className="underline cursor-pointer">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</button>
+          <button onClick={() => setLegal('terms')} className="underline cursor-pointer">{isAr ? 'شروط الاستخدام' : 'Terms of Use'}</button>
+        </div>
+
+        {signedIn && token && (
+          <button onClick={() => setDeleting(true)} className="w-full py-2 text-[11px] font-bold text-rose-600 hover:underline cursor-pointer">
+            {isAr ? 'حذف الحساب' : 'Delete account'}
+          </button>
+        )}
       </div>
     </div>
     <ContactUs />
+    {legal && <LegalSheet kind={legal} onClose={() => setLegal(null)} />}
+    {deleting && token && <DeleteAccountModal token={token} hasRelatives={false} onClose={() => setDeleting(false)} onDeleted={() => { setDeleting(false); onLogout(); }} />}
     </>
   );
 };

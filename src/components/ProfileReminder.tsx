@@ -1,3 +1,4 @@
+import { REMINDER_EVERY_MS } from '../utils/reminderEvery';
 import React, { useEffect, useState } from 'react';
 import { UserRoundCheck } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -8,7 +9,7 @@ import { usePopupHash } from '../utils/popupHash';
 import { Notice } from './Notice';
 
 /** How often the reminder appears while a signed-in member's profile is unfinished. */
-const EVERY_MS = 60_000;
+const EVERY_MS = REMINDER_EVERY_MS;
 /** How long one reminder stays on screen. */
 const VISIBLE_MS = 12_000;
 

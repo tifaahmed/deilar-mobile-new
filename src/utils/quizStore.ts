@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useSyncExternalStore, useMemo } from 'react';
 import { apiGet, apiGetAuth, apiPost, ApiError } from '../api/http';
 import { getSession } from './session';
 import { reportClientError } from './reportError';
@@ -28,6 +28,8 @@ export interface QuizAnswer {
   answered_at: string;
   /** The stage the player is in AFTER this answer (see quizProgress.ts). */
   stage: number;
+  /** Who was signed in when it was played; absent = a guest, so the first account to sign in on this phone takes it. */
+  owner?: { card?: string; phone?: string };
 }
 
 /** One badge as the backend draws it: the rules and thresholds are its (config/loyalty.php), the app only paints them. */
@@ -83,6 +85,7 @@ const listeners = new Set<() => void>();
 let queueCache: { raw: string | null; value: QuizAnswer[] } | null = null;
 let serverCache: { raw: string | null; value: Server | null } | null = null;
 let flushing = false;
+let lastRefresh: { token: string; at: number } | null = null;
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 const read = (key: string): string | null => {
@@ -127,9 +130,53 @@ function getServer(): Server | null {
 export const newId = (): string =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 
+const digits = (v?: string) => (v ?? '').replace(/\D/g, '').slice(-10);
+
+/** Who is signed in on this phone right now, as far as the session says. */
+function currentOwner(): { card?: string; phone?: string } | undefined {
+  const { token, cardNumber, phone } = getSession();
+  if (!token || (!cardNumber && !phone)) return undefined;
+
+  return { card: cardNumber || undefined, phone: phone || undefined };
+}
+
+/** Whether an answer played under `owner` belongs to the account in `me`. A guest's answers (no owner) belong to nobody yet. */
+const isMine = (owner: QuizAnswer['owner'], me: NonNullable<ReturnType<typeof currentOwner>>) =>
+  !owner || (!!owner.card && owner.card === me.card) || (!!owner.phone && !!me.phone && digits(owner.phone) === digits(me.phone));
+
+/** What signing in as `who` would do to the answers on this phone — shown BEFORE the code is sent, so the player can say no. */
+export function previewSignIn(who: { card?: string; phone?: string }): { move: { answers: number; points: number }; remove: { answers: number; points: number } } {
+  const sum = (list: QuizAnswer[]) => ({ answers: list.length, points: list.reduce((n, a) => n + (a.correct ? QUIZ_POINTS : -QUIZ_POINTS), 0) });
+  const queue = getQueue();
+  const me = { card: who.card, phone: who.phone };
+
+  return {
+    move: sum(queue.filter((q) => !q.owner)),
+    remove: sum(queue.filter((q) => q.owner && !isMine(q.owner, me as NonNullable<ReturnType<typeof currentOwner>>))),
+  };
+}
+
+/**
+ * Settles whose points are on this phone when a member is signed in: answers played as a guest are kept (they will be
+ * booked to this member), answers played under ANOTHER account are deleted, and the saved balance / log / badges of
+ * another account are dropped. Does nothing when the session cannot say who the member is (never deletes by guessing).
+ */
+export function settleLocalPoints(): void {
+  const me = currentOwner();
+  const token = getSession().token;
+  if (!me || !token) return;
+
+  const queue = getQueue();
+  const mine = queue.filter((q) => isMine(q.owner, me));
+  if (mine.length !== queue.length) write(QUEUE_KEY, JSON.stringify(mine));
+
+  if (getServer() && getServer()?.token !== token) write(SERVER_KEY, null);
+  if (parse<HistoryCache | null>(read(HISTORY_KEY), null)?.token !== undefined && parse<HistoryCache | null>(read(HISTORY_KEY), null)?.token !== token) write(HISTORY_KEY, null);
+}
+
 /** Files one answer on the phone and schedules the upload. Never throws, never waits. */
-export function recordQuizAnswer(a: Omit<QuizAnswer, 'id' | 'answered_at'>): void {
-  write(QUEUE_KEY, JSON.stringify([...getQueue(), { ...a, id: newId(), answered_at: new Date().toISOString() }]));
+export function recordQuizAnswer(a: Omit<QuizAnswer, 'id' | 'answered_at' | 'owner'>): void {
+  write(QUEUE_KEY, JSON.stringify([...getQueue(), { ...a, owner: currentOwner(), id: newId(), answered_at: new Date().toISOString() }]));
   scheduleFlush();
 }
 
@@ -141,14 +188,26 @@ export function scheduleFlush(delay = FLUSH_DELAY_MS): void {
 /** Sends the queued answers if a member is signed in and the phone is online. Safe to call any time, any number of times. */
 export async function flushQuizAnswers(): Promise<void> {
   const token = getSession().token;
-  if (flushing || !token || getQueue().length === 0 || (typeof navigator !== 'undefined' && navigator.onLine === false)) return;
+  if (flushing || !token || (typeof navigator !== 'undefined' && navigator.onLine === false)) return;
+
+  settleLocalPoints();
+
+  if (getQueue().length === 0) {
+    // Nothing to send, but the member's older points on the server (and their log) must still show on this phone.
+    if (lastRefresh?.token !== token || Date.now() - lastRefresh.at > 60_000) {
+      lastRefresh = { token, at: Date.now() };
+      void refreshLoyalty();
+      void refreshHistory();
+    }
+    return;
+  }
 
   flushing = true;
   try {
     while (getQueue().length > 0) {
       const batch = getQueue().slice(0, BATCH);
       const result = await Promise.race([
-        apiPost<{ data: LoyaltyData }>('/loyalty/quiz-answers', { answers: batch, platform: 'app' }, undefined, token),
+        apiPost<{ data: LoyaltyData }>('/loyalty/quiz-answers', { answers: batch.map(({ owner: _owner, ...rest }) => rest), platform: 'app' }, undefined, token),
         new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), REQUEST_TIMEOUT_MS)),
       ]);
       const sent = new Set(batch.map((b) => b.id));
@@ -268,6 +327,12 @@ export interface LoyaltyView {
   /** Everything: what the backend holds for the signed-in member (as of the last upload) plus `pending`. */
   total: number;
   answers: number;
+}
+
+/** The plays that still have answers waiting on this phone (not accepted by the backend yet). */
+export function useQueuedPlayIds(): Set<string> {
+  const queue = useSyncExternalStore(subscribe, getQueue);
+  return useMemo(() => new Set(queue.map((a) => a.play_id)), [queue]);
 }
 
 /** What this phone's player has earned so far (signed in or not). */

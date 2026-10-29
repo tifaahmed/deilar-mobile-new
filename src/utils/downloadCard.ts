@@ -122,7 +122,7 @@ export const downloadDeilarCardImage = async (
 
     ctx.fillStyle = '#64748b';
     ctx.font = '20px sans-serif';
-    ctx.fillText('صلة القرابة: ' + (beneficiary.relation || 'حامل الكرت الرئيسي'), 1080, 565);
+    ctx.fillText('صلة القرابة: ' + (beneficiary.relation || 'حامل الكارت الرئيسي'), 1080, 565);
 
     // Left side: Membership ID & Validity
     ctx.textAlign = 'left';
@@ -142,7 +142,7 @@ export const downloadDeilarCardImage = async (
     ctx.fillStyle = '#94a3b8';
     ctx.font = '18px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('بطاقة إلكترونية رسمية معتمدة لكافة مستشفيات ومعامل وصيدليات شبكة ديلار في مصر', 600, 625);
+    ctx.fillText('بطاقة إلكترونية رسمية معتمدة لكافة مستشفيات ومعامل وصيدليات شبكة ديلر في مصر', 600, 625);
   } else {
     // BACK SIDE
     // Magnetic Stripe
@@ -161,7 +161,7 @@ export const downloadDeilarCardImage = async (
     ctx.fillStyle = '#334155';
     ctx.font = 'italic bold 28px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('توقيع حامل الكرت المعتمد: ' + beneficiary.name, 100, 290);
+    ctx.fillText('توقيع حامل الكارت المعتمد: ' + beneficiary.name, 100, 290);
 
     // Security Code
     ctx.fillStyle = '#0f172a';
@@ -175,10 +175,10 @@ export const downloadDeilarCardImage = async (
     ctx.fillText('شروط الاستخدام والخدمة:', 1080, 390);
 
     const rules = [
-      '• يبرز هذا الكرت قبل إصدار الفاتورة أو طلب الخدمة لدى مقدم الرعاية.',
-      '• الكرت شخصي ومخصص لحامله أو التابع المسجل لدى شبكة ديلار.',
+      '• يبرز هذا الكارت قبل إصدار الفاتورة أو طلب الخدمة لدى مقدم الرعاية.',
+      '• الكارت شخصي ومخصص لحامله أو التابع المسجل لدى شبكة ديلر.',
       '• للحصول على الدعم الفوري أو حجز العمليات اتصل على: 01020709993',
-      '• موقع شبكة ديلار الرسمية: www.deilar.com'
+      '• موقع شبكة ديلر الرسمية: www.deilar.com'
     ];
 
     rules.forEach((rule, idx) => {

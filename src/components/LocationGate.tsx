@@ -43,8 +43,8 @@ export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void; onSkip: 
         <h2 className="text-lg font-black">{isAr ? 'نحتاج لموقعك' : 'We need your location'}</h2>
         <p className="text-xs text-slate-300 leading-relaxed">
           {isAr
-            ? 'لإظهار أقرب مقدمي الخدمة إليك، يجب السماح للتطبيق بتحديد موقعك (GPS).'
-            : 'To show the service providers nearest to you, the app must be allowed to read your GPS location.'}
+            ? 'لإظهار أقرب مقدمي الخدمة إليك، يُفضَّل السماح للتطبيق بتحديد موقعك (GPS). يمكنك التخطي واختيار منطقتك يدوياً.'
+            : 'To show the service providers nearest to you, it is best to allow the app to read your GPS location. You can skip and pick your area by hand.'}
         </p>
         {failed && (
           <p className="text-[11px] text-rose-300 font-bold leading-relaxed">

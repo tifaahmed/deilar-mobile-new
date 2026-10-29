@@ -71,7 +71,7 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
           )}
           {whatsapp && (
             <a
-              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(`${isAr ? 'مرحباً، أريد تجديد كارت ديلار رقم' : "Hello, I'd like to renew Deilar card number"} ${number}`)}`}
+              href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(`${isAr ? 'مرحباً، أريد تجديد كارت ديلر رقم' : "Hello, I'd like to renew Deilar card number"} ${number}`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-3 border-2 border-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2"

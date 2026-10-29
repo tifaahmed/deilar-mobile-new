@@ -104,7 +104,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
               {shown.price ?? '—'} <span className="text-xs font-sans">{currency}</span>
             </div>
             {shown.memberPrice != null && (
-              <div className="text-[10px] font-bold text-emerald-700">{isAr ? `بالكرت ${shown.memberPrice} ${currency}` : `${shown.memberPrice} ${currency} with a card`}</div>
+              <div className="text-[10px] font-bold text-emerald-700">{isAr ? `بالكارت ${shown.memberPrice} ${currency}` : `${shown.memberPrice} ${currency} with a card`}</div>
             )}
           </div>
 

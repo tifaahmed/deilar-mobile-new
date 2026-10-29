@@ -336,7 +336,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
       ? `تحويل محفظة إلكترونية (فودافون كاش) من رقم: ${senderWalletNumber || 'غير محدد'}`
       : 'الدفع عند الاستلام';
 
-    let message = `🛒 *طلب جديد من متجر ديلار - رقم الطلب: #${orderId}*\n\n`;
+    let message = `🛒 *طلب جديد من متجر ديلر - رقم الطلب: #${orderId}*\n\n`;
     message += `👤 *بيانات العميل:*\n`;
     message += `• الاسم: ${customerName}\n`;
     message += `• الهاتف: ${customerPhone}\n`;
@@ -345,12 +345,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
     message += `\n📦 *المنتجات المطلوبة:*\n`;
     cart.forEach((item, idx) => {
-      message += `${idx + 1}. ${item.product.name} (الكمية: ${item.quantity}) - السعر: ${item.product.price * item.quantity} ج.م [المتجر: ${item.product.storeName || 'ديلار'}]\n`;
+      message += `${idx + 1}. ${item.product.name} (الكمية: ${item.quantity}) - السعر: ${item.product.price * item.quantity} ج.م [المتجر: ${item.product.storeName || 'ديلر'}]\n`;
     });
 
     message += `\n💰 *الحساب المالي:*\n`;
-    message += `• الإجمالي بعد خصم كرت ديلار: ${totalCartPrice} ج.م\n`;
-    message += `• مصاريف الشحن: ${shippingFee === 0 ? 'مجاناً (عرض ديلار)' : `${shippingFee} ج.م`}\n`;
+    message += `• الإجمالي بعد خصم كارت ديلر: ${totalCartPrice} ج.م\n`;
+    message += `• مصاريف الشحن: ${shippingFee === 0 ? 'مجاناً (عرض ديلر)' : `${shippingFee} ج.م`}\n`;
     message += `• *المبلغ الإجمالي المطلوب تحويله: ${finalTotal} ج.م*\n`;
     message += `• إجمالي التوفير: ${totalCartSavings} ج.م\n\n`;
 
@@ -479,7 +479,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     </div>
                     {totalCartSavings > 0 && (
                       <div className="flex justify-between text-emerald-600 font-bold">
-                        <span>خصم وتوفير كرت ديلار:</span>
+                        <span>خصم وتوفير كارت ديلر:</span>
                         <span>-{totalCartSavings} ج.م</span>
                       </div>
                     )}
@@ -828,7 +828,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   تم تسجيل طلبك بنجاح
                 </span>
                 <h3 className="text-base font-extrabold text-slate-900 mt-1">
-                  شكراً لتسوقك من متاجر ديلار الطبيعية
+                  شكراً لتسوقك من متاجر ديلر الطبيعية
                 </h3>
                 <p className="text-xs text-slate-500">
                   رقم الطلب: <span className="font-mono font-bold text-slate-800">#{orderId}</span>

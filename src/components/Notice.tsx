@@ -5,7 +5,7 @@ import { useSwipeDismiss } from '../hooks/useSwipeDismiss';
 
 /** Every app notification stacks here, at the top, one under the other. */
 export const NoticeStack: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="fixed top-16 inset-x-3 z-[999] max-w-md mx-auto flex flex-col gap-1.5 pointer-events-none">{children}</div>
+  <div className="fixed top-[calc(4rem+env(safe-area-inset-top))] inset-x-3 z-[999] max-w-md mx-auto flex flex-col gap-1.5 pointer-events-none">{children}</div>
 );
 
 interface NoticeProps {

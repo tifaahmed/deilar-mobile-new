@@ -1,5 +1,5 @@
 import { saveImage } from '../utils/saveImage';
-import { apiGet, apiGetAuth, apiPost, apiPut, apiUrl, absoluteUrl } from './http';
+import { apiDelete, apiGet, apiGetAuth, apiPost, apiPut, apiUrl, absoluteUrl } from './http';
 import type { CardStatus } from './membership';
 
 export interface OtpSent {
@@ -29,6 +29,38 @@ export const verifyOtp = (phone: string, code: string) => apiPost<{ data: Verifi
 export const phoneHasCard = (phone: string) =>
   apiPost<{ data: { has_card: boolean; registered?: boolean } }>('/mobile/auth/phone-check', { phone }).then((r) => r.data.has_card || r.data.registered === true);
 
+/** What sending a code for a card number answers. `has_phone: false` means nothing was sent: the card has no phone yet. */
+export interface CardOtpSent {
+  has_phone: boolean;
+  phone_masked?: string;
+  code_length?: number;
+  expires_in?: number;
+  resend_after?: number;
+}
+
+/**
+ * Card-number sign-in. The code is texted to the phone ON the card (the app only learns it masked); a card with no phone
+ * may ADD one — a phone already on a card can never be replaced. Throws `ApiError` (`reason`: unknown_card, cooldown,
+ * phone_taken, phone_already_set, invalid_phone, invalid, expired, too_many_attempts).
+ */
+export const requestCardOtp = (cardNumber: string) =>
+  apiPost<{ data: CardOtpSent }>('/mobile/auth/card/otp', { card_number: cardNumber }).then((r) => r.data);
+
+/** The phone on a card, masked to its last 4 digits, BEFORE any code is sent (nothing is texted). `has_phone: false` = the card has none. */
+export const cardPhoneHint = (cardNumber: string) =>
+  apiPost<{ data: { has_phone: boolean; phone_masked?: string } }>('/mobile/auth/card/phone-hint', { card_number: cardNumber }).then((r) => r.data);
+
+export const verifyCardOtp = (cardNumber: string, code: string) =>
+  apiPost<{ data: Verified }>('/mobile/auth/card/otp/verify', { card_number: cardNumber, code }).then((r) => r.data);
+
+/** Texts a code to a NEW phone for a card that has none. */
+export const requestCardPhone = (cardNumber: string, phone: string) =>
+  apiPost<{ data: CardOtpSent }>('/mobile/auth/card/phone', { card_number: cardNumber, phone }).then((r) => r.data);
+
+/** With the right code the phone is saved on the card and the member is signed in. */
+export const verifyCardPhone = (cardNumber: string, phone: string, code: string) =>
+  apiPost<{ data: Verified }>('/mobile/auth/card/phone/verify', { card_number: cardNumber, phone, code }).then((r) => r.data);
+
 export const signOut = (token: string) => apiPost('/auth/logout', {}, undefined, token);
 
 /** What the card screen draws; deliberately without contact details. */
@@ -41,6 +73,8 @@ export interface CardData {
   members: { id: number; name: string; relationship: string }[];
   /** trial / expired / active, the price and how to pay or call. Absent on a backend older than trial cards. */
   status?: CardStatus;
+  /** Whether a phone is attached to the card. False → the holder is asked to add one. Absent on an older backend. */
+  has_phone?: boolean;
 }
 
 export const fetchCard = (number: string, signal?: AbortSignal) =>
@@ -170,3 +204,10 @@ export const uploadAvatar = (token: string, file: File) => {
   form.append('avatar', file);
   return apiPost<{ data: { avatar_url: string | null } }>('/profile/avatar', form, undefined, token).then((r) => absoluteUrl(r.data.avatar_url));
 };
+
+/**
+ * Deletes the signed-in member's account for good. The holder of a primary card takes every relative on it along.
+ * Throws `ApiError`. The caller must then clear the session.
+ */
+export const deleteAccount = (token: string) =>
+  apiDelete<{ data: { removed_relatives: number } }>('/account', token, { confirm: true }).then((r) => r.data);

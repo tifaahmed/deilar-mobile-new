@@ -36,6 +36,12 @@ export interface CardStatus {
 
 export interface MemberStatus extends CardStatus {
   has_card: boolean;
+  /** `relative` rides on somebody else's card: cannot add relatives, may pay to become `primary`. Absent on an older backend. */
+  member_type?: 'primary' | 'relative';
+  is_relative?: boolean;
+  can_upgrade?: boolean;
+  /** A primary member who used to be a relative: the old family stays visible. */
+  had_family?: boolean;
   membership_number: string | null;
   slug: string | null;
   progress: { overall: { filled: number; total: number; percent: number; missing: string[]; complete: boolean } };

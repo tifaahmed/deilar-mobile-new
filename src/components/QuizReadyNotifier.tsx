@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SECTION_LIST } from '../data/quizSectionsMeta';
 import { lockedSections, markReopenedNotified, nextOpenAt, systemNotice, unseenReopened, useUsageRaw } from '../utils/quizLimit';
 import { navigate } from '../router';
+import { useSwipeDismiss } from '../hooks/useSwipeDismiss';
 
 const KEYS = SECTION_LIST.map((s) => s.key);
 const titleOf = (key: string) => SECTION_LIST.find((s) => s.key === key);
@@ -14,13 +15,14 @@ const titleOf = (key: string) => SECTION_LIST.find((s) => s.key === key);
 export const QuizReadyNotifier: React.FC = () => {
   const usage = useUsageRaw();
   const [ready, setReady] = useState<string[]>([]);
+  const swipe = useSwipeDismiss(() => setReady([]));
 
   const announce = (keys: string[]) => {
     if (keys.length === 0) return;
     setReady(keys);
     markReopenedNotified(keys);
     const names = keys.map((k) => titleOf(k)?.title).filter(Boolean).join(' و');
-    systemNotice('ديلار — تقدر تلعب دلوقتي! 🎮', `محاولاتك اتجددت في ${names}. تعالى كمّل التحدي!`);
+    systemNotice('ديلر — تقدر تلعب دلوقتي! 🎮', `محاولاتك اتجددت في ${names}. تعالى كمّل التحدي!`);
   };
 
   // The player was away when the countdown ended.
@@ -51,7 +53,9 @@ export const QuizReadyNotifier: React.FC = () => {
         <div
           role="status"
           dir="rtl"
-          className="animate-in slide-in-from-top-6 fade-in duration-300 fixed inset-x-3 top-3 z-[70] mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-emerald-600 p-3 text-white shadow-xl"
+          {...swipe.handlers}
+          style={swipe.style}
+          className="animate-in slide-in-from-top-6 fade-in duration-300 fixed inset-x-3 top-[calc(0.75rem+env(safe-area-inset-top))] z-[70] mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-emerald-600 p-3 text-white shadow-xl"
         >
           <span className="text-3xl">🎮</span>
           <div className="min-w-0 flex-1 text-right">

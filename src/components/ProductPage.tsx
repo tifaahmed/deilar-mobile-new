@@ -172,7 +172,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
                     {member ? (
                       product.discount != null && (
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-bold text-emerald-700">{isAr ? 'سعر العضو — بكرتك' : 'Member price — with your card'}</span>
+                          <span className="text-[11px] font-bold text-emerald-700">{isAr ? 'سعر العضو — بكارتك' : 'Member price — with your card'}</span>
                           <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black">{isAr ? `خصم ${product.discount}%` : `${product.discount}% off`}</span>
                         </div>
                       )
@@ -183,7 +183,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
                           className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-emerald-200 text-start cursor-pointer"
                         >
                           <span className="text-[11px] font-bold text-emerald-700">
-                            {isAr ? `سعر العضو بالكرت: ${shown.memberPrice} ${currency}` : `Member price with a card: ${shown.memberPrice} ${currency}`}
+                            {isAr ? `سعر العضو بالكارت: ${shown.memberPrice} ${currency}` : `Member price with a card: ${shown.memberPrice} ${currency}`}
                           </span>
                           {product.discount != null && <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black shrink-0">{isAr ? `وفر ${product.discount}%` : `Save ${product.discount}%`}</span>}
                         </button>
@@ -327,9 +327,9 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
       {/* Member CTA */}
       <div className="text-center space-y-2.5 py-4">
         <h2 className="text-base font-black text-slate-900">{isAr ? 'أسعار الأعضاء على كل المنتجات' : 'Member prices, on everything here'}</h2>
-        <p className="text-xs text-slate-500 leading-relaxed">{isAr ? 'كرت ديلار هو ما يحوّل هذه الأسعار إلى أسعار الأعضاء — كرت واحد يغطي أسرتك كلها.' : 'The Deilar card is what turns these into member prices — one card covers everyone at home.'}</p>
+        <p className="text-xs text-slate-500 leading-relaxed">{isAr ? 'كارت ديلر هو ما يحوّل هذه الأسعار إلى أسعار الأعضاء — كارت واحد يغطي أسرتك كلها.' : 'The Deilar card is what turns these into member prices — one card covers everyone at home.'}</p>
         <button onClick={() => navigate(routeHref({ tab: 'mycard' }))} className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer">
-          {isAr ? 'اعرض كرتك' : 'Check your card'}
+          {isAr ? 'اعرض كارتك' : 'Check your card'}
         </button>
       </div>
     </div>

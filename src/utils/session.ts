@@ -14,6 +14,8 @@ export interface Session {
   phone?: string;
   name?: string;
   cardNumber?: string;
+  /** A card number typed whose card has no phone yet. NOT a sign-in and shows nothing: it only lets the app ask for the phone to add. */
+  pendingCard?: string;
   leadPhone?: string;
 }
 
@@ -74,7 +76,7 @@ export function clearSession() {
 
 export const isSignedIn = (s: Session) => !!s.token;
 /** Anything that means "stop showing the free-card popup". */
-export const popupSilenced = (s: Session) => !!(s.token || s.cardNumber || s.leadPhone);
+export const popupSilenced = (s: Session) => !!(s.token || s.cardNumber || s.leadPhone || s.pendingCard);
 
 export function useSession(): Session {
   return useSyncExternalStore(

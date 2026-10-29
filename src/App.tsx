@@ -29,6 +29,7 @@
  */
 
 import { useSwipeBack } from './hooks/useSwipeBack';
+import { useSwipeDismiss } from './hooks/useSwipeDismiss';
 import React, { lazy, Suspense, useCallback, useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BottomNav, NavTab } from './components/BottomNav';
@@ -61,6 +62,8 @@ import { flushQuizAnswers, startQuizSync } from './utils/quizStore';
 import { clearSession, markPopupClosed, popupDueIn, popupSilenced, updateSession, useSession } from './utils/session';
 import { ProfileReminder } from './components/ProfileReminder';
 import { MembershipReminder } from './components/MembershipReminder';
+import { AddPhoneReminder } from './components/AddPhoneReminder';
+import { onAccessRequested } from './utils/accessEvents';
 import { QuizReadyNotifier } from './components/QuizReadyNotifier';
 import { PullToRefresh, reloadedByPull } from './components/PullToRefresh';
 import { SaveAreaPrompt } from './components/SaveAreaPrompt';
@@ -68,7 +71,7 @@ import { NoticeStack } from './components/Notice';
 import type { AccessStep } from './components/AccessModal';
 import type { FacilityCard } from './api/types';
 import { PRESET_LOCATIONS } from './utils/geo';
-import { getSavedGps, GpsPoint, saveGps } from './utils/gps';
+import { getSavedGps, GpsPoint, isSameSpot, saveGps } from './utils/gps';
 import { trackVisit } from './utils/trackVisit';
 import { LocationGate, NearestPrompt } from './components/LocationGate';
 import { useLanguage } from './context/LanguageContext';
@@ -96,7 +99,8 @@ export default function App() {
   });
   const area = useArea();
   // Start-up flow: GPS gate (until a fix was ever saved) -> "find nearest" prompt -> map -> access popup.
-  const [stage, setStage] = useState<'gate' | 'nearest' | 'done'>(() => (getSavedGps() ? (reloadedByPull ? 'done' : 'nearest') : 'gate'));
+  // With a saved fix the prompt waits ('locating', nothing drawn) for a fresh one: the same place or a very near one needs no prompt.
+  const [stage, setStage] = useState<'gate' | 'locating' | 'nearest' | 'done'>(() => (getSavedGps() ? (reloadedByPull ? 'done' : 'locating') : 'gate'));
   const [areaAsk, setAreaAsk] = useState(false);
   const closeArea = useCallback(() => setAreaAsk(false), []);
   const [isGpsLoading, setIsGpsLoading] = useState(false);
@@ -165,7 +169,7 @@ export default function App() {
         {
           id: 'holder',
           name: card.data.holder,
-          relation: isAr ? 'حامل الكرت الرئيسي' : 'Primary cardholder',
+          relation: isAr ? 'حامل الكارت الرئيسي' : 'Primary cardholder',
           nationalId: '',
           dob: '',
           cardNumber: card.data.number,
@@ -220,17 +224,20 @@ export default function App() {
 
   useEffect(() => {
     if (silenced) return;
-    if (accessStep || areaAsk || stage !== 'done') return;
+    if (accessStep || areaAsk || stage !== 'done' || route.quiz) return;
     if (reminder) return;
     // Randomly either the registration popup itself or a notification banner that opens it.
     const id = setTimeout(() => (Math.random() < 0.5 ? setAccessStep('visitor') : setReminder(true)), Math.max(popupDueIn(), 4000));
     return () => clearTimeout(id);
-  }, [silenced, accessStep, areaAsk, stage, reminder]);
+  }, [silenced, accessStep, areaAsk, stage, reminder, route.quiz]);
 
   // A guest opening Profile is asked for a name and number straight away.
   useEffect(() => {
     if ((activeTab === 'profile' || activeTab === 'mycard') && stage === 'done' && !silenced && !areaAsk) setAccessStep('visitor');
   }, [activeTab, stage, silenced, areaAsk]);
+
+  // Reminders elsewhere (add the phone to your card) open the popup at a given step.
+  useEffect(() => onAccessRequested(setAccessStep), []);
 
   const closeAccess = () => {
     markPopupClosed();
@@ -240,6 +247,9 @@ export default function App() {
     markPopupClosed();
     setReminder(false);
   };
+  const reminderSwipe = useSwipeDismiss(dismissReminder);
+  // In the quiz game nothing interrupts the player: no banner, no popup, no notice.
+  const inGame = !!route.quiz;
 
   // Shopping Cart state for Store & Products
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -312,16 +322,30 @@ export default function App() {
   // The first fix is forced by <LocationGate>. On later launches the saved point is used at once
   // and refreshed quietly in the background.
   useEffect(() => {
-    if (!getSavedGps() || !navigator.geolocation) return;
+    const saved = getSavedGps();
+    if (!saved) return;
+    const waiting = stage === 'locating';
+    // The same place (or no new fix at all): the visitor already has a location, so skip "Your location is set".
+    const skipPrompt = () => {
+      if (!waiting) return;
+      setStage('done');
+      if (!getArea()) setAreaAsk(true);
+    };
+
+    if (!navigator.geolocation) { skipPrompt(); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         saveGps(p);
         setUserLocation({ ...p, name: 'موقعي الحالي (GPS مباشر)' });
+        if (!waiting) return;
+        if (isSameSpot(saved, p)) skipPrompt();
+        else setStage('nearest');
       },
-      () => undefined,
+      skipPrompt,
       { timeout: 10000, maximumAge: 5 * 60_000 },
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleGateGranted = (p: GpsPoint) => {
@@ -525,12 +549,12 @@ export default function App() {
       </div>
 
       {/* Global Quick Search Modal */}
-      {reminder && !silenced && (
-        <div className="fixed top-2 inset-x-2 z-[999] flex justify-center" dir={isAr ? 'rtl' : 'ltr'}>
-          <div className="w-full max-w-md bg-slate-950 text-white border border-amber-400/50 rounded-2xl shadow-2xl p-3 flex items-center gap-2.5 animate-in slide-in-from-top duration-300">
+      {reminder && !silenced && !inGame && (
+        <div className="fixed top-[calc(0.5rem+env(safe-area-inset-top))] inset-x-2 z-[999] flex justify-center" dir={isAr ? 'rtl' : 'ltr'}>
+          <div {...reminderSwipe.handlers} style={reminderSwipe.style} className="w-full max-w-md bg-slate-950 text-white border border-amber-400/50 rounded-2xl shadow-2xl p-3 flex items-center gap-2.5 animate-in slide-in-from-top duration-300">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
             <p className="flex-1 text-[11px] font-bold leading-snug">
-              {isAr ? 'سجّل اسمك ورقمك معنا لتحصل على كرت ديلار وخصومات الخدمات.' : 'Register your name and number with us to get your Deilar card and service discounts.'}
+              {isAr ? 'سجّل اسمك ورقمك معنا لتحصل على كارت ديلر وخصومات الخدمات.' : 'Register your name and number with us to get your Deilar card and service discounts.'}
             </p>
             <button
               onClick={() => { setReminder(false); setAccessStep('visitor'); }}
@@ -557,16 +581,17 @@ export default function App() {
       />}
 
       {/* Global Shopping Cart & Bank / Wallet Checkout Modal */}
-      {areaAsk && <AreaModal lat={userLocation.lat} lng={userLocation.lng} onClose={closeArea} />}
-      {accessStep && !areaAsk && <AccessModal initialStep={accessStep} onClose={closeAccess} />}
+      {areaAsk && !inGame && <AreaModal lat={userLocation.lat} lng={userLocation.lng} onClose={closeArea} />}
+      {accessStep && !areaAsk && !inGame && <AccessModal initialStep={accessStep} onClose={closeAccess} />}
       {/* Every minute while a signed-in member's profile is unfinished: how far along it is, and what is missing. */}
       {/* Nothing floats over the payment form. */}
       <NoticeStack>
-        <QuizReadyNotifier />
+        {!inGame && <QuizReadyNotifier />}
         <PullToRefresh />
-        {stage === 'done' && route.section !== 'pay' && <MembershipReminder />}
-        {stage === 'done' && route.section !== 'pay' && <ProfileReminder />}
-        {stage === 'done' && !areaAsk && route.section !== 'pay' && <SaveAreaPrompt />}
+        {!inGame && stage === 'done' && route.section !== 'pay' && <MembershipReminder />}
+        {!inGame && stage === 'done' && !accessStep && route.section !== 'pay' && <AddPhoneReminder />}
+        {!inGame && stage === 'done' && route.section !== 'pay' && <ProfileReminder />}
+        {!inGame && stage === 'done' && !areaAsk && route.section !== 'pay' && <SaveAreaPrompt />}
       </NoticeStack>
       </Suspense>
     </div>

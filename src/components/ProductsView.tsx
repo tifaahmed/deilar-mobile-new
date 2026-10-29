@@ -114,7 +114,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
           </div>
           <div>
             <h1 className="text-base font-extrabold text-slate-900 leading-tight">{isAr ? 'منتجاتنا' : 'Our Products'}</h1>
-            <p className="text-[11px] text-slate-500">{isAr ? 'منتجات طبيعية بأسعار خاصة لحاملي كرت ديلار' : 'Natural products at special prices for Deilar cardholders'}</p>
+            <p className="text-[11px] text-slate-500">{isAr ? 'منتجات طبيعية بأسعار خاصة لحاملي كارت ديلر' : 'Natural products at special prices for Deilar cardholders'}</p>
           </div>
         </div>
 
@@ -242,7 +242,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
                           </div>
                           {shown.memberPrice != null && (
                             <div className="text-[9px] font-bold text-emerald-700 leading-tight">
-                              {isAr ? `بالكرت ${shown.memberPrice} ${currency}` : `${shown.memberPrice} ${currency} with a card`}
+                              {isAr ? `بالكارت ${shown.memberPrice} ${currency}` : `${shown.memberPrice} ${currency} with a card`}
                             </div>
                           )}
                         </>

@@ -1,3 +1,4 @@
+import { REMINDER_EVERY_MS } from '../utils/reminderEvery';
 import React, { useEffect, useState } from 'react';
 import { Clock, XCircle } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -9,7 +10,7 @@ import { onMembershipChanged } from '../utils/membershipEvents';
 import { Notice } from './Notice';
 
 /** How often the reminder comes back while the card is on trial or expired. */
-const EVERY_MS = 60_000;
+const EVERY_MS = REMINDER_EVERY_MS;
 /** How long one reminder stays on screen. */
 const VISIBLE_MS = 10_000;
 
@@ -89,7 +90,7 @@ export const MembershipReminder: React.FC = () => {
       onClose={() => setStatus(null)}
     >
       {expired
-        ? isAr ? 'انتهى كرتك، لا خصم — اضغط للتجديد' : 'Your card has expired, no discount — tap to renew'
+        ? isAr ? 'انتهى كارتك، لا خصم — اضغط للتجديد' : 'Your card has expired, no discount — tap to renew'
         : isAr ? `الفترة التجريبية — متبقي ${status.days_left} يوماً · اضغط للدفع` : `Free trial — ${status.days_left} days left · tap to pay`}
     </Notice>
   );

@@ -38,6 +38,7 @@ import {
   Globe,
   Lock,
   LogOut,
+  Trash2,
   PackageSearch,
 } from 'lucide-react';
 import { Beneficiary } from '../types';
@@ -52,6 +53,8 @@ import { AddChildForm } from './AddChildForm';
 import { CardStatusBanner } from './CardStatusBanner';
 import { CardExpiry } from './CardExpiry';
 import { SubscribePanel } from './SubscribePanel';
+import { FamilyCircle } from './FamilyCircle';
+import { PhysicalCardOrder } from './PhysicalCardOrder';
 import { fetchMembership, requestRelatives, type CardStatus } from '../api/membership';
 import { AreaPicker } from './AreaPicker';
 import { PayPage } from './PayPage';
@@ -67,8 +70,10 @@ import { useContact } from '../hooks/useCatalog';
 import { DobPicker } from './DobPicker';
 import { downloadDeilarCardImage } from '../utils/downloadCard';
 import { useLanguage } from '../context/LanguageContext';
+import { LegalSheet, type LegalKind } from './LegalPages';
+import { DeleteAccountModal } from './DeleteAccountModal';
 
-export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay';
+export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay' | 'physical';
 
 export interface ProfileAccount {
   name: string;
@@ -157,6 +162,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   // The profile photo: picked here, framed in a circle (AvatarCropper), uploaded at once, then shown across the app.
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [viewAvatar, setViewAvatar] = useState(false);
+  const [legal, setLegal] = useState<LegalKind | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ percent: number; missing: string[] } | null>(null);
@@ -400,6 +407,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   // Red once the name is empty or too short, and from the first failed save.
   const nameBad = personalInfo.fullName.trim().length < 3 && (nameTried || !personalInfo.fullName.trim());
 
+  // /card/physical is the physical-card order form and nothing else.
+  if (activeSection === 'physical') {
+    return (
+      <div className={`pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
+        {token ? <PhysicalCardOrder token={token} /> : (
+          <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل الدخول برقم هاتفك أولاً لطلب كارت فيزيكال.' : 'Sign in with your phone first to order a physical card.'}</p>
+        )}
+      </div>
+    );
+  }
+
   // /card/pay is the payment form and nothing else: no banners, tabs or card around it.
   if (activeSection === 'pay') {
     return (
@@ -424,7 +442,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <TriangleAlert className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1 space-y-2">
             <p className="text-sm font-black">{isAr ? 'بيانات ناقصة: الاسم مطلوب' : 'Missing details: your name is required'}</p>
-            <p className="text-xs leading-relaxed">{isAr ? 'أضف اسمك بالكامل ليظهر على كرتك.' : 'Add your full name so it appears on your card.'}</p>
+            <p className="text-xs leading-relaxed">{isAr ? 'أضف اسمك بالكامل ليظهر على كارتك.' : 'Add your full name so it appears on your card.'}</p>
             <button type="button" onClick={() => setActiveSection('personal')} className="px-3.5 py-2 rounded-xl bg-red-700 text-white text-xs font-bold cursor-pointer">
               {isAr ? 'إضافة الاسم الآن' : 'Add my name now'}
             </button>
@@ -433,8 +451,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       )}
 
       {/* Subscribe or renew: while on trial, once expired, or within a month of the end. */}
-      {isCardMode && activeSection === 'card' && token && membership.data && (membership.data.is_trial || membership.data.expired || membership.data.days_left <= 30) && (
-        <SubscribePanel token={token} status={membership.data} onDone={membership.reload} />
+      {isCardMode && activeSection === 'card' && token && membership.data && (membership.data.is_trial || membership.data.expired || membership.data.days_left <= 30 || membership.data.is_relative) && (
+        <div className="space-y-2">
+          {membership.data.is_relative && (
+            <div className="rounded-2xl border border-[#c89e43] bg-[#c89e43]/10 p-3.5 text-xs leading-6 text-slate-800">
+              <p className="font-black">{isAr ? 'أنت عضو قريب على كارت عائلتك' : 'You are a relative member on your family\'s card'}</p>
+              <p>{isAr ? 'اشترك في كارتك الخاص لتصبح عضواً أساسياً وتضيف أسرتك أنت. تبقى ترى عائلتك الحالية ونقاطهم وإنجازاتهم بعد الاشتراك.' : 'Subscribe to your own card to become a primary member and add your own family. You keep seeing your current family, their points and achievements after subscribing.'}</p>
+            </div>
+          )}
+          <SubscribePanel token={token} status={membership.data} onDone={membership.reload} />
+        </div>
       )}
 
       {/* 1. Profile Identity Header */}
@@ -479,6 +505,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                   {t('activeMember')}
                 </span>
+                {membership.data?.is_relative ? (
+                  <span className="text-[10px] font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">{isAr ? 'عضو قريب' : 'Relative member'}</span>
+                ) : membership.data?.member_type === 'primary' && (
+                  <span className="text-[10px] font-black text-[#7a5a14] bg-gradient-to-r from-[#f3d98b] to-[#c89e43] px-2 py-0.5 rounded-full shadow-sm">{isAr ? '★ عضو أساسي' : '★ Primary member'}</span>
+                )}
               </div>
               <p className="text-xs text-[#c89e43] font-bold mt-0.5">{t('membershipId')}: {account.number}</p>
               <p className={`text-[11px] font-mono ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{personalInfo.phone}</p>
@@ -504,7 +535,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             onClick={onLogout}
             className={`mt-3 text-[11px] font-bold hover:underline cursor-pointer ${isDark ? 'text-rose-300' : 'text-[#941946]'}`}
           >
-            {isAr ? 'إزالة الكرت من هذا الجهاز' : 'Remove card from this device'}
+            {isAr ? 'إزالة الكارت من هذا الجهاز' : 'Remove card from this device'}
           </button>
         ))}
       </section>
@@ -552,8 +583,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             { key: 'personal', icon: UserCheck, label: t('tabPersonal'), go: () => setActiveSection('personal') },
             { key: 'addresses', icon: MapPin, label: isAr ? 'عناويني' : 'Addresses', go: () => setActiveSection('addresses') },
             { key: 'orders', icon: PackageSearch, label: isAr ? 'طلباتي' : 'My orders', go: () => navigate(routeHref({ orders: { code: null } })) },
+            ...(account.signedIn ? [{ key: 'physical', icon: CreditCard, label: isAr ? 'طلب كارت فيزيكال' : 'Order a physical card', go: () => navigate(routeHref({ tab: 'mycard', section: 'physical' })) }] : []),
             { key: 'support', icon: Headphones, label: t('tabSupport'), go: () => setActiveSection('support') },
             { key: 'theme', icon: Palette, label: t('tabTheme'), go: () => setActiveSection('theme') },
+            { key: 'privacy', icon: ShieldCheck, label: isAr ? 'سياسة الخصوصية' : 'Privacy Policy', go: () => setLegal('privacy') },
+            { key: 'terms', icon: FileText, label: isAr ? 'شروط الاستخدام' : 'Terms of Use', go: () => setLegal('terms') },
+            ...(account.signedIn ? [{ key: 'delete', icon: Trash2, label: isAr ? 'حذف الحساب' : 'Delete account', go: () => setDeleting(true) }] : []),
           ] as const).map(({ key, icon: Icon, label, go }) => (
             <button key={key} onClick={go} className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-bold cursor-pointer transition-colors ${isDark ? 'text-[#F1F5F9] hover:bg-[#1E2330]' : 'text-slate-800 hover:bg-slate-50'}`}>
               <span className="w-9 h-9 rounded-xl bg-[#941946]/10 text-[#941946] flex items-center justify-center shrink-0"><Icon className="w-4.5 h-4.5" /></span>
@@ -570,6 +605,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <ChevronRight className={`w-4 h-4 ${isAr ? '' : 'rotate-180'}`} />
           <span>{isAr ? 'حسابي' : 'Account'}</span>
         </button>
+      )}
+
+      {legal && <LegalSheet kind={legal} onClose={() => setLegal(null)} />}
+      {deleting && getSession().token && (
+        <DeleteAccountModal
+          token={getSession().token as string}
+          hasRelatives={beneficiaries.length > 1}
+          onClose={() => setDeleting(false)}
+          onDeleted={() => { setDeleting(false); onLogout(); }}
+        />
       )}
 
       {viewAvatar && avatarUrl && <ImageViewer images={[avatarUrl]} index={0} onIndexChange={() => undefined} onClose={() => setViewAvatar(false)} />}
@@ -589,25 +634,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               {t('officialCertified')}
             </span>
           </div>
-
-          {/* Beneficiary Switcher Pills (If multiple members exist) */}
-          {beneficiaries.length > 1 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-              {beneficiaries.map((b) => (
-                <button
-                  key={b.id}
-                  onClick={() => setSelectedBeneficiaryId(b.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-colors cursor-pointer ${
-                    selectedBeneficiaryId === b.id
-                      ? 'bg-[#941946] text-white shadow-xs'
-                      : isDark ? 'bg-[#1E2330] text-[#94A3B8] border border-white/[0.08]' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {b.name} ({b.relation || (isAr ? 'رئيسي' : 'Primary')})
-                </button>
-              ))}
-            </div>
-          )}
 
           {/* The 3D Realistic Interactive Deilar Card */}
           <div className="relative">
@@ -679,6 +705,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <span className="font-bold">{t('cardDownloadSuccess')}</span>
               </div>
             )}
+
+            {/* A plastic card delivered to the member and the family; who may order is the backend's call (the page explains when not). */}
+            {token && membership.data?.has_card && (
+              <button
+                type="button"
+                onClick={() => navigate(routeHref({ tab: 'mycard', section: 'physical' }))}
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#c89e43] to-[#e6c068] text-slate-900 text-xs font-black flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>{isAr ? 'اطلب كارتاً فيزيكال يصلك أنت وأسرتك' : 'Order a physical card for you and your family'}</span>
+              </button>
+            )}
           </div>
         </section>
       )}
@@ -710,7 +748,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <span>{t('addNewMember')}</span>
               </button>
             )}
-            {(!relatives || relatives.can_add) && canAddChildren && (
+            {!membership.data?.is_relative && (!relatives || relatives.can_add) && canAddChildren && (
               <button
                 onClick={() => setShowAddMemberModal(true)}
                 className="px-2.5 py-1 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
@@ -721,7 +759,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             )}
           </div>
 
-          {relatives && (
+          {token && <FamilyCircle token={token} dark={isDark} />}
+
+          {membership.data?.is_relative && (
+            <div className="p-3 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900 text-[11px] space-y-2">
+              <p className="font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'العضو القريب لا يضيف أقارب' : 'A relative member cannot add relatives'}</p>
+              <p>{isAr ? 'اشترك في كارتك الخاص لتصبح عضواً أساسياً، ثم أضف أسرتك.' : 'Subscribe to your own card to become a primary member, then add your family.'}</p>
+              <button onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white font-bold cursor-pointer">{isAr ? 'اشترك الآن' : 'Subscribe now'}</button>
+            </div>
+          )}
+
+          {relatives && !membership.data?.is_relative && (
             <div className={`p-3 rounded-2xl border text-[11px] space-y-2 ${isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#CBD5E1]' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
               <p className="font-bold">
                 {isAr ? `${relatives.count} من ${relatives.max} مستخدم` : `${relatives.count} of ${relatives.max} used`}
@@ -767,44 +815,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           )}
 
+          {relatives && !membership.data?.is_relative && !relatives.must_contact_support && (
+            <p role="note" className={`p-2.5 rounded-xl border text-[11px] font-bold ${relatives.count >= relatives.max ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-[#c89e43]/10 border-[#c89e43]/40 text-slate-800'}`}>
+              {isAr
+                ? `الحد الأقصى ${relatives.max} فرداً من الدرجة الأولى (الوالدان والزوج/الزوجة والأبناء). ${relatives.count >= relatives.max ? 'وصلت للحد الأقصى ولا يمكن إضافة المزيد.' : `المتبقي لك: ${relatives.max - relatives.count}.`}`
+                : `The maximum is ${relatives.max} first-degree relatives (parents, spouse, children). ${relatives.count >= relatives.max ? 'You have reached the limit; no more can be added.' : `You can still add ${relatives.max - relatives.count}.`}`}
+            </p>
+          )}
+
           <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
             {t('familyMembersDesc')}
           </p>
 
-          {awaiting.length > 0 && (
-            <div className="space-y-2">
-              {awaiting.map((p) => (
-                <div
-                  key={`pending-${p.id}`}
-                  className={`p-3 rounded-2xl border flex items-center justify-between gap-2 ${
-                    p.approval_status === 'rejected'
-                      ? isDark ? 'bg-rose-500/10 border-rose-400/30' : 'bg-rose-50 border-rose-200'
-                      : isDark ? 'bg-amber-500/10 border-amber-400/30' : 'bg-amber-50 border-amber-200'
-                  }`}
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold truncate">{p.name}</p>
-                    <p className={`text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
-                      {p.relationship_label ?? p.relationship}
-                      {p.approval_status === 'rejected' && p.rejection_reason ? ` • ${p.rejection_reason}` : ''}
-                    </p>
-                  </div>
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
-                      p.approval_status === 'rejected'
-                        ? 'text-rose-600 bg-rose-500/10 border-rose-500/30'
-                        : 'text-amber-600 bg-amber-500/10 border-amber-500/30'
-                    }`}
-                  >
-                    {p.approval_status === 'rejected'
-                      ? isAr ? 'مرفوض' : 'Rejected'
-                      : isAr ? 'بانتظار موافقة الإدارة' : 'Awaiting admin approval'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
+          {/* Signed in: ONE list (FamilyCircle above, with pending and rejected people marked). The device-only list below is for a visitor with no account. */}
+          {!token && (
           <div className="space-y-2 pt-1">
             {beneficiaries.map((b) => {
               const open = expandedId === b.id;
@@ -812,7 +836,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               const rows: [string, string | null | undefined][] = [
                 [isAr ? 'الاسم' : 'Name', b.name],
                 [isAr ? 'الصلة' : 'Relation', b.relation || t('primaryAccount')],
-                [isAr ? 'رقم الكرت' : 'Card number', b.cardNumber],
+                [isAr ? 'رقم الكارت' : 'Card number', b.cardNumber],
                 [isAr ? 'الرقم القومي' : 'National ID', b.nationalId],
                 [isAr ? 'تاريخ الميلاد' : 'Date of birth', b.dob],
                 [isAr ? 'الحالة' : 'Status', fam ? (fam.is_active ? (isAr ? 'مفعل' : 'Active') : isAr ? 'غير مفعل' : 'Inactive') : b.status === 'active' ? t('activeStatus') : isAr ? 'بانتظار الموافقة' : 'Awaiting approval'],
@@ -879,6 +903,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               );
             })}
           </div>
+          )}
 
           {/* Add member: every field + camera pictures, then waits for admin approval */}
           {showAddMemberModal && (
@@ -888,6 +913,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 isAr={isAr}
                 isDark={isDark}
                 fatherName={account.name}
+                remaining={relatives ? Math.max(relatives.max - relatives.count, 0) : undefined}
+                max={relatives?.max}
                 onCancel={() => setShowAddMemberModal(false)}
                 onSent={() => {
                   setShowAddMemberModal(false);
