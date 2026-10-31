@@ -9,4 +9,4 @@ http://localhost:3000/card/members خليني اقدر انى اعدل على ا
 - [x] باك إند: PATCH/DELETE /family/relatives/{id} (FamilyController::updateRelative/destroyRelative)؛ المعتمد (approved) بيتكمّل الناقص بس ولا يتغير الاسم؛ التليفون الجديد غير موثق؛ can_edit/can_delete/locked في /family؛ editable في /family/overview؛ MemberRelativeEditTest (+ تعديل اختبار القانون القديم في MemberFamilyTest)
 - [x] التطبيق: RelativeTools في FamilyCircle (تعديل/استكمال، حذف بتأكيد)
 - [~] اختبارات التطبيق عدّت؛ اختبارات الباك إند عدّت (45 من 45). ⏳ عقد CLAUDE.md بند 7 لسه بيقول الأب بس يعدّل الأبناء
-- [ ] AddMemberForm للأقارب غير الأبناء (إضافة بالصور) مش اتلمس
+- [x] (2026-10-31) AddMemberForm: خانة تليفون اختيارية (بتتبعت لـ /family/members وتتحفظ غير موثقة) + src/test/addMemberForm.test.tsx. ⚠ الفورم مش متركّب في أي شاشة (ProfileView بيستخدم AddChildForm وبيحوّل الزوج/الأب/الأم للدعم) — قرار منتج: نركّبه؟

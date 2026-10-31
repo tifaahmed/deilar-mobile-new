@@ -7,6 +7,7 @@ import { reportClientError } from '../utils/reportError';
 import { PlanPicker, plansOf } from './PlanPicker';
 import { formatNumber } from '../utils/formatNumber';
 import { navigate, routeHref } from '../router';
+import { refreshLoyalty, useLoyalty } from '../utils/quizStore';
 
 interface SubscribePanelProps {
   token: string;
@@ -43,6 +44,24 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
   const plans = plansOf(status);
   const [planKey, setPlanKey] = useState<string | undefined>(plans[0]?.key);
   const plan = plans.find((p) => p.key === planKey) ?? plans[0];
+  // The wallet buys the YEARLY plan, and only when it holds the whole price (the backend decides; this just offers the button).
+  const money = useLoyalty().money;
+  const yearly = plans.find((p) => p.key === 'year');
+  const canUseWallet = !!yearly && !!money && money.wallet_membership_enabled !== false && money.wallet_balance >= yearly.price;
+  const payWithWallet = async () => {
+    setBusy('manual');
+    setMessage(null);
+    try {
+      await subscribe(token, { method: 'wallet', plan: 'year' });
+      void refreshLoyalty();
+      setMessage({ ok: true, text: isAr ? 'تم تجديد عضويتك من المحفظة ✅' : 'Your membership was paid from the wallet ✅' });
+      onDone();
+    } catch (err) {
+      fail(err);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const fail = (err: unknown) => {
     setMessage({
@@ -126,6 +145,12 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
       {/* A failed online attempt must be visible even when no manual form is drawn. */}
       {!nothingToPayWith && manual.length === 0 && message && (
         <p role="alert" className="text-[11px] font-bold rounded-xl px-3 py-2 border text-rose-600 bg-rose-50 border-rose-200">{message.text}</p>
+      )}
+
+      {canUseWallet && yearly && (
+        <button type="button" disabled={busy !== null} onClick={payWithWallet} className="w-full py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold cursor-pointer">
+          {isAr ? `👛 اشترِ العضوية السنوية من المحفظة (${yearly.price} ج.م)` : `👛 Buy the yearly membership from the wallet (${yearly.price} EGP)`}
+        </button>
       )}
 
       {status.can_pay_online && (

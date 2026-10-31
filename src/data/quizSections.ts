@@ -2,6 +2,7 @@ import football from './footballQuiz.json';
 import fawazeer from './fawazeerQuiz.json';
 import general from './generalQuiz.json';
 import history from './historyQuiz.json';
+import cinema from './cinemaQuiz.json';
 import { SECTION_META } from './quizSectionsMeta';
 
 /** The ways a question can be drawn (see LOOKS in components/QuizGame.tsx). */
@@ -65,6 +66,7 @@ const bank = (file: unknown): Question[] =>
 const footballImages = import.meta.glob('../assets/quiz/*.webp', { eager: true, import: 'default' }) as Record<string, string>;
 const fawazeerImages = import.meta.glob('../assets/fawazeer/*.webp', { eager: true, import: 'default' }) as Record<string, string>;
 const generalImages = import.meta.glob('../assets/general/*.webp', { eager: true, import: 'default' }) as Record<string, string>;
+const cinemaImages = import.meta.glob('../assets/cinema/*.webp', { eager: true, import: 'default' }) as Record<string, string>;
 const historyImages = import.meta.glob('../assets/history/*.webp', { eager: true, import: 'default' }) as Record<string, string>;
 
 /**
@@ -112,5 +114,15 @@ export const SECTIONS: QuizSection[] = [
     assetsFolder: 'history',
     questions: bank(history),
     imageOf: (name) => historyImages[`../assets/history/${name}`],
+  },
+  {
+    ...SECTION_META.cinema,
+    topic: 'السينما والمسلسلات',
+    color: 'from-rose-500 to-red-600',
+    introBg: 'from-rose-400 via-red-500 to-purple-800',
+    introTitle: 'تحدي السينما والمسلسلات',
+    assetsFolder: 'cinema',
+    questions: bank(cinema),
+    imageOf: (name) => cinemaImages[`../assets/cinema/${name}`],
   },
 ];

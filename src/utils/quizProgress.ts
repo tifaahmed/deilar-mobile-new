@@ -21,7 +21,16 @@ export interface PoolItem {
  * Two questions with the same words are ONE question, whatever their ids: the generated question files repeat a text under
  * new numbers, and a player must not meet a question they solved just because it has another id.
  */
-export const contentKey = (q: PoolItem): string => (q.question ? q.question.replace(/\s+/g, ' ').trim() : `id:${q.id}`);
+const keyCache = new WeakMap<object, string>();
+export const contentKey = (q: PoolItem): string => {
+  // The same question objects are keyed over and over while a play is picked, so the answer is remembered.
+  let key = keyCache.get(q);
+  if (key === undefined) {
+    key = q.question ? q.question.replace(/\s+/g, ' ').trim() : `id:${q.id}`;
+    keyCache.set(q, key);
+  }
+  return key;
+};
 
 export interface SectionProgress {
   stage: number;

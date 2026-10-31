@@ -13,6 +13,7 @@ export function toCartProduct(card: ProductCard): Product {
     price,
     originalPrice: card.old_price ?? price,
     storeName: card.store?.title,
+    walletPayable: !!card.wallet_payable,
   };
 }
 

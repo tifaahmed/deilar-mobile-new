@@ -208,7 +208,7 @@ export const apiPut = <T>(path: string, body: unknown, token: string, params?: P
 export const apiPatch = <T>(path: string, body: unknown, token: string, params?: Params) => send<T>(buildUrl(path, params), { method: 'PATCH', body, token });
 
 /** Sends a "call me" request to the Contact Us inbox. */
-export async function postContactMessage(body: { phone: string; name?: string; message: string; source: 'card_popup' | 'contact_form' }): Promise<void> {
+export async function postContactMessage(body: { phone: string; name?: string; message: string; subject?: string; source: 'card_popup' | 'contact_form' | 'provider_referral' }): Promise<void> {
   await send(`${SITE_API_URL}/contact-messages`, { method: 'POST', body });
 }
 

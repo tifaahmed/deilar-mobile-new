@@ -13,10 +13,29 @@ import { reportClientError } from './reportError';
  * Every answer carries an id made here, and the backend books an id once, so a lost reply that
  * makes us send a batch twice cannot pay the member twice.
  *
- * The points are the backend's call (`config/loyalty.php` in ibusiness_medical); `QUIZ_POINTS`
- * below only lets the game show the same figure while offline. Keep them equal.
+ * The points are the backend's call (`config/loyalty.php` in ibusiness_medical); the figures below
+ * only let the game show the same numbers while offline. Keep them equal.
+ * A right answer pays by SPEED: within 5 s = 100, within 10 s = 75, within 15 s = 50, within 20 s = 25;
+ * a wrong answer or a missed clock costs 100. The app sends the seconds taken; the backend does the sums.
  */
-export const QUIZ_POINTS = 10;
+export const QUIZ_SPEED_TIERS = [
+  { upTo: 5, points: 100 },
+  { upTo: 10, points: 75 },
+  { upTo: 15, points: 50 },
+  { upTo: 20, points: 25 },
+] as const;
+/** The most one answer can pay. */
+export const QUIZ_POINTS = QUIZ_SPEED_TIERS[0].points;
+/** What a wrong answer or a missed clock costs. */
+export const QUIZ_WRONG_POINTS = -100;
+
+/** Points of one answer. `seconds` unknown pays the lowest tier, like the backend. */
+export function quizPoints(correct: boolean, seconds?: number | null): number {
+  if (!correct) return QUIZ_WRONG_POINTS;
+  if (seconds == null || seconds < 0) return QUIZ_SPEED_TIERS[QUIZ_SPEED_TIERS.length - 1].points;
+  const tier = QUIZ_SPEED_TIERS.find((t) => seconds <= t.upTo);
+  return (tier ?? QUIZ_SPEED_TIERS[QUIZ_SPEED_TIERS.length - 1]).points;
+}
 
 export interface QuizAnswer {
   id: string;
@@ -25,6 +44,8 @@ export interface QuizAnswer {
   question_id: number;
   correct: boolean;
   timed_out: boolean;
+  /** Seconds the player took (0-20); the backend turns it into points. Older saved answers have none. */
+  seconds?: number;
   answered_at: string;
   /** The stage the player is in AFTER this answer (see quizProgress.ts). */
   stage: number;
@@ -52,7 +73,8 @@ export interface BadgeInfo {
 export type HistoryEntry =
   | { type: 'play'; at: string; play_id: string; quiz: string | null; right: number; wrong: number; points: number }
   | { type: 'badge'; at: string; quiz: string; key: string; kind: string | null; threshold: number | null; title: string | null; icon: string | null; points: number }
-  | { type: 'admin'; at: string; points: number; note: string | null };
+  | { type: 'admin'; at: string; points: number; note: string | null }
+  | { type: 'wallet'; at: string; points: number; note: string | null };
 
 interface HistoryCache {
   token: string;
@@ -66,12 +88,34 @@ interface Server {
   points: number;
   token: string;
   badges?: BadgeInfo[];
+  /** The money side, as the backend last said it (see `LoyaltyWallet` there). */
+  money?: Money;
+}
+
+/** What the backend says about points as pounds and the wallet. The rate is the admin's (`loyalty_points_per_egp`). */
+export interface Money {
+  points_per_egp: number;
+  wallet_balance: number;
+  wallet_enabled: boolean;
+  wallet_min_egp: number;
+  /** The smallest top-up from the app, and whether the wallet may buy the yearly membership. */
+  wallet_min_topup?: number;
+  wallet_membership_enabled?: boolean;
 }
 
 interface LoyaltyData {
   points: number;
   badges?: BadgeInfo[];
+  points_per_egp?: number;
+  wallet_balance?: number;
+  wallet_enabled?: boolean;
+  wallet_min_egp?: number;
+  wallet_min_topup?: number;
+  wallet_membership_enabled?: boolean;
 }
+
+const moneyOf = (d: LoyaltyData): Money | undefined =>
+  d.points_per_egp == null ? undefined : { points_per_egp: d.points_per_egp, wallet_balance: d.wallet_balance ?? 0, wallet_enabled: !!d.wallet_enabled, wallet_min_egp: d.wallet_min_egp ?? 20, wallet_min_topup: d.wallet_min_topup ?? 20, wallet_membership_enabled: d.wallet_membership_enabled ?? true };
 
 const SEEN_KEY = 'deilar_quiz_badges_seen';
 
@@ -146,7 +190,7 @@ const isMine = (owner: QuizAnswer['owner'], me: NonNullable<ReturnType<typeof cu
 
 /** What signing in as `who` would do to the answers on this phone — shown BEFORE the code is sent, so the player can say no. */
 export function previewSignIn(who: { card?: string; phone?: string }): { move: { answers: number; points: number }; remove: { answers: number; points: number } } {
-  const sum = (list: QuizAnswer[]) => ({ answers: list.length, points: list.reduce((n, a) => n + (a.correct ? QUIZ_POINTS : -QUIZ_POINTS), 0) });
+  const sum = (list: QuizAnswer[]) => ({ answers: list.length, points: list.reduce((n, a) => n + quizPoints(a.correct, a.seconds), 0) });
   const queue = getQueue();
   const me = { card: who.card, phone: who.phone };
 
@@ -212,7 +256,7 @@ export async function flushQuizAnswers(): Promise<void> {
       ]);
       const sent = new Set(batch.map((b) => b.id));
       write(QUEUE_KEY, JSON.stringify(getQueue().filter((q) => !sent.has(q.id))));
-      write(SERVER_KEY, JSON.stringify({ points: result.data.points, badges: result.data.badges, token } satisfies Server));
+      write(SERVER_KEY, JSON.stringify({ points: result.data.points, badges: result.data.badges, money: moneyOf(result.data), token } satisfies Server));
       void refreshHistory();
     }
   } catch (error) {
@@ -223,6 +267,43 @@ export async function flushQuizAnswers(): Promise<void> {
   }
 }
 
+/**
+ * Turns `egp` whole pounds of the member's points into money in their wallet. The backend does the sums and refuses when the switch
+ * is off, the amount is under its minimum or the points are not enough (`reason`); one `id` per tap, so a repeat cannot pay twice.
+ */
+export async function convertPointsToWallet(egp: number): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const token = getSession().token;
+  if (!token) return { ok: false, reason: 'signed_out' };
+
+  try {
+    const { data } = await apiPost<{ data: LoyaltyData }>('/loyalty/convert', { egp, id: newId() }, undefined, token);
+    write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, money: moneyOf(data), token } satisfies Server));
+    void refreshHistory();
+    return { ok: true };
+  } catch (e) {
+    const reason = (e instanceof ApiError ? e.reason : undefined) ?? (typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'failed');
+    void refreshLoyalty();
+    return { ok: false, reason };
+  }
+}
+
+/**
+ * Starts adding `amount` pounds to the wallet: the backend opens a Paymob checkout and answers with its URL. The wallet is credited only when
+ * Paymob's signed notice reaches the backend (never from here), so the caller sends the member to `checkoutUrl`, then calls `refreshLoyalty()`.
+ */
+export async function startWalletTopup(amount: number): Promise<{ ok: true; checkoutUrl: string } | { ok: false; reason: string }> {
+  const token = getSession().token;
+  if (!token) return { ok: false, reason: 'signed_out' };
+
+  try {
+    const { data } = await apiPost<{ data: { checkout_url: string } }>('/wallet/topup', { amount }, undefined, token);
+    return data.checkout_url ? { ok: true, checkoutUrl: data.checkout_url } : { ok: false, reason: 'failed' };
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 422) return { ok: false, reason: 'amount' };
+    return { ok: false, reason: typeof navigator !== 'undefined' && navigator.onLine === false ? 'offline' : 'failed' };
+  }
+}
+
 /** Re-reads the member's balance and badge catalog (when online and signed in). Quiet on failure: the saved copy stays. */
 export async function refreshLoyalty(): Promise<void> {
   const token = getSession().token;
@@ -230,7 +311,7 @@ export async function refreshLoyalty(): Promise<void> {
 
   try {
     const { data } = await apiGetAuth<{ data: LoyaltyData }>('/loyalty', token);
-    write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, token } satisfies Server));
+    write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, money: moneyOf(data), token } satisfies Server));
   } catch {
     /* offline or signed out: keep what we have */
   }
@@ -327,7 +408,14 @@ export interface LoyaltyView {
   /** Everything: what the backend holds for the signed-in member (as of the last upload) plus `pending`. */
   total: number;
   answers: number;
+  /** What `total` is worth in pounds (0 until the backend has told the rate). */
+  egp: number;
+  /** The wallet and the conversion rules, as the backend last said them; null until it has. */
+  money: Money | null;
 }
+
+/** Pounds a number of points is worth at the backend's rate, with pennies. */
+export const pointsToEgp = (points: number, rate: number | undefined | null): number => (rate && rate > 0 && points > 0 ? Math.floor((points / rate) * 100) / 100 : 0);
 
 /** The plays that still have answers waiting on this phone (not accepted by the backend yet). */
 export function useQueuedPlayIds(): Set<string> {
@@ -340,8 +428,11 @@ export function useLoyalty(): LoyaltyView {
   const queue = useSyncExternalStore(subscribe, getQueue);
   const server = useSyncExternalStore(subscribe, getServer);
   const token = getSession().token;
-  const pending = queue.reduce((sum, a) => sum + (a.correct ? QUIZ_POINTS : -QUIZ_POINTS), 0);
+  const pending = queue.reduce((sum, a) => sum + quizPoints(a.correct, a.seconds), 0);
   const held = server && token && server.token === token ? server.points : 0;
 
-  return { pending, total: held + pending, answers: queue.length };
+  const money = server && token && server.token === token ? server.money ?? null : null;
+  const total = held + pending;
+
+  return { pending, total, answers: queue.length, egp: pointsToEgp(total, money?.points_per_egp), money };
 }

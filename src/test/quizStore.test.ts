@@ -5,10 +5,10 @@ vi.mock('../api/http', () => ({ apiPost: http.apiPost, ApiError: class ApiError 
 vi.mock('../utils/reportError', () => ({ reportClientError: vi.fn() }));
 
 import { renderHook, act } from '@testing-library/react';
-import { flushQuizAnswers, getQueue, previewSignIn, recordQuizAnswer, useQueuedPlayIds } from '../utils/quizStore';
+import { flushQuizAnswers, getQueue, previewSignIn, quizPoints, recordQuizAnswer, useQueuedPlayIds } from '../utils/quizStore';
 import { clearSession, updateSession } from '../utils/session';
 
-const answer = (correct: boolean) => ({ play_id: 'p1', quiz: 'mcq:football', question_id: 1, correct, timed_out: false, stage: 1 });
+const answer = (correct: boolean) => ({ play_id: 'p1', quiz: 'mcq:football', question_id: 1, correct, timed_out: false, seconds: 1, stage: 1 });
 
 describe('quiz answer queue', () => {
   beforeEach(() => {
@@ -76,9 +76,9 @@ describe('quiz answer queue', () => {
     recordQuizAnswer(answer(true)); // account A
     clearSession();
     recordQuizAnswer(answer(true));
-    recordQuizAnswer(answer(false)); // guest: +10 -10
+    recordQuizAnswer(answer(false)); // guest: +100 -100
 
-    expect(previewSignIn({ card: '222222' })).toEqual({ move: { answers: 2, points: 0 }, remove: { answers: 1, points: 10 } });
+    expect(previewSignIn({ card: '222222' })).toEqual({ move: { answers: 2, points: 0 }, remove: { answers: 1, points: 100 } });
     expect(previewSignIn({ card: '111111' }).remove.answers).toBe(0);
   });
 
@@ -91,5 +91,14 @@ describe('quiz answer queue', () => {
     http.apiPost.mockResolvedValueOnce({ data: { points: 10 } });
     await act(async () => { await flushQuizAnswers(); });
     expect(result.current.has('p1')).toBe(false);
+  });
+
+  it('pays a right answer by speed (5 s = 100, 10 s = 75, 15 s = 50, 20 s = 25) and charges 100 for a wrong one', () => {
+    expect([0, 4.9, 5].map((s) => quizPoints(true, s))).toEqual([100, 100, 100]);
+    expect([5.1, 8, 10].map((s) => quizPoints(true, s))).toEqual([75, 75, 75]);
+    expect([10.5, 15].map((s) => quizPoints(true, s))).toEqual([50, 50]);
+    expect([15.1, 19.9, 20, 99].map((s) => quizPoints(true, s))).toEqual([25, 25, 25, 25]);
+    expect(quizPoints(true)).toBe(25);
+    expect([quizPoints(false, 1), quizPoints(false)]).toEqual([-100, -100]);
   });
 });

@@ -7,6 +7,7 @@ import type { FacilityCard, MapPin as Pin } from '../api/types';
 import { api, PATHS } from '../api/endpoints';
 import { directionsUrl, formatKm, roundCoord } from '../api/adapters';
 import { useApi } from '../hooks/useApi';
+import { RADIUS_OPTIONS, radiusToTryNext } from '../utils/widenRadius';
 import { useDebounced } from '../hooks/useDebounced';
 import { usePaged } from '../hooks/usePaged';
 import { isAbort } from '../api/http';
@@ -38,8 +39,6 @@ interface MapViewProps {
   isGpsLoading: boolean;
 }
 
-/** "Within X km" steps the API accepts; 0 means no limit (nearest first, across the country). */
-const RADIUS_OPTIONS = [1, 2, 3, 4, 5, 10, 20, 30, 50, 100, 0];
 /** Pins fetched per request, nearest first. The backend allows up to 3000 and only ~2000 branches have coordinates, so with a wide radius the map shows them all (the pins are tiny and the map clusters them). */
 const PIN_PAGE = 2500;
 /** What every deployed backend accepts. */
@@ -58,10 +57,13 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   const [inView, setInView] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const maxRadiusKm = radiusProp;
-  // The map opens at 1 km; while nothing is found it widens one step at a time until a facility shows.
-  // Choosing a range by hand (or a search/type filter) ends the automatic widening.
+  // The map opens at 1 km; while nothing is found it widens one step at a time until a facility shows. The same happens
+  // when a kind of place is picked and none of it is in range (pharmacies all around, clinics 3 km away): the range grows
+  // until the nearest ones show. Choosing a range by hand or typing a search ends the automatic widening.
   const autoWiden = useRef(radiusProp === 1);
-  const setMaxRadiusKm = (km: number) => { autoWiden.current = false; onRadiusChange(km); };
+  const [widenedFrom, setWidenedFrom] = useState<number | null>(null);
+  const setMaxRadiusKm = (km: number) => { autoWiden.current = false; setWidenedFrom(null); onRadiusChange(km); };
+  const pickType = (id: number | null) => { autoWiden.current = true; setWidenedFrom(null); onSelectType(id); };
   const viewMode = view;
   const setViewMode = onViewChange;
 
@@ -95,7 +97,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
       return;
     }
     setSearchQuery('');
-    if (g === 'facility_type') { onSelectType(item.id); return; }
+    if (g === 'facility_type') { pickType(item.id); return; }
     onViewChange('list');
     if (g === 'governorate') { setGovId(item.id); setCityId(null); return; }
     const gov = locations.find((x) => x.cities.some((c) => c.id === item.id));
@@ -160,10 +162,11 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   );
   const pins: Pin[] = useMemo(() => pinsQuery.data?.data ?? [], [pinsQuery.data]);
   useEffect(() => {
-    if (!autoWiden.current || viewMode !== 'map' || pinsQuery.loading || !pinsQuery.data) return;
-    if (pins.length > 0 || q || selectedTypeId) { autoWiden.current = false; return; }
-    const next = RADIUS_OPTIONS[RADIUS_OPTIONS.indexOf(maxRadiusKm) + 1];
-    if (next === undefined) { autoWiden.current = false; return; }
+    if (viewMode !== 'map') return;
+    const next = radiusToTryNext({ armed: autoWiden.current, loaded: !pinsQuery.loading && !!pinsQuery.data, pinCount: pins.length, searching: !!q, current: maxRadiusKm });
+    if (!autoWiden.current || pinsQuery.loading || !pinsQuery.data) return;
+    if (next === null) { autoWiden.current = false; return; }
+    if (selectedTypeId) setWidenedFrom((from) => from ?? maxRadiusKm);
     onRadiusChange(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinsQuery.loading, pinsQuery.data, pins, viewMode]);
@@ -533,7 +536,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
           {[{ id: null as number | null, name: isAr ? 'الكل' : 'All' }, ...(types.data ?? [])].map((type) => (
             <button
               key={type.id ?? 'all'}
-              onClick={() => onSelectType(type.id)}
+              onClick={() => pickType(type.id)}
               className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors ${
                 selectedTypeId === type.id ? 'bg-rose-700 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
@@ -542,6 +545,11 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
             </button>
           ))}
         </div>
+        {widenedFrom !== null && selectedTypeId && pins.length > 0 && (
+          <p data-testid="widened-note" className="text-[11px] font-bold text-amber-700 bg-amber-50 rounded-lg px-2 py-1">
+            {isAr ? `مفيش منها في ${widenedFrom} كم، وسّعنا البحث لـ ${maxRadiusKm || 'كل'} ${maxRadiusKm ? 'كم' : 'المسافات'} عشان نوصل لأقرب فروع.` : `None within ${widenedFrom} km, so we widened the search to ${maxRadiusKm || 'any distance'}${maxRadiusKm ? ' km' : ''} to find the nearest.`}
+          </p>
+        )}
       </div>
 
       {/* 2. Map or list */}
@@ -774,7 +782,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                 {[{ id: null as number | null, name: isAr ? 'الكل' : 'All' }, ...(types.data ?? [])].map((type) => (
             <button
               key={type.id ?? 'all'}
-              onClick={() => onSelectType(type.id)}
+              onClick={() => pickType(type.id)}
               className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors ${
                 selectedTypeId === type.id ? 'bg-rose-700 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}

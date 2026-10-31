@@ -10,3 +10,5 @@
 - [x] التطبيق: مفيش تعديل مطلوب (كل شاشة بتقرأ قائمة سياقها من الباك إند)
 - [x] عقد CLAUDE.md بند 17 (التطبيق فقط) ⏳ AGENTS.md الباك إند + CLAUDE.md الموقع؛ migrate على الإنتاج؛ الموقع (deilar) بيقرأ partner/shop-settings (products) فمفيش تعديل لازم
 - اختبارات الباك إند: PaymentMethodsPerContextTest + PhysicalCardOrderTest عدّوا (64 من 66). فشل اتنين مش من تعديلي: PaymobPaymentTest::items_add_up (بيتوقع integration ids [111,222] والبيئة المحلية فيها [5951049,5974746] من .env)، و TrialCardTest::a_soft_deleted_card (GuardsUniqueIdentity في User بيرفض تليفون مكرر مع كارت محذوف soft — لسه ما اتحققتش إنه كان فاشل قبل تعديلاتي)
+
+- [x] (2026-10-31) بنود 14–17 اتنقلت حرفياً من CLAUDE.md التطبيق إلى ibusiness_medical/AGENTS.md وdeilar/CLAUDE.md وdeilar/AGENTS.md (ناقص منها فقط). ملحوظة: بنود 2 و5 و7 فيها فروق قديمة بين النسخ التلاتة ولم ألمسها.

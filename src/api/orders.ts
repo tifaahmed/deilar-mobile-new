@@ -7,6 +7,10 @@ export interface PlacedOrder {
   delivery_price: number;
   /** The pay-on-delivery fee already inside `total_amount`; 0 = none. */
   cod_fee: number;
+  /** What the member's wallet paid automatically (products only, never delivery); 0 = nothing. */
+  wallet_amount?: number;
+  /** What is left to pay in REAL money. */
+  amount_due?: number;
 }
 
 /** The two ways to pay online with Paymob: its bank-card form, or a mobile wallet (Vodafone Cash…). */
@@ -139,6 +143,10 @@ export interface OrderDetail {
   total_paid: number;
   delivery_price: number;
   cod_fee?: number;
+  wallet_amount?: number;
+  amount_due?: number;
+  /** The money went back to the wallet (the order was refused or cancelled after the sale). */
+  wallet_refunded?: boolean;
   refunded_amount?: number;
   can_pay_online?: boolean;
   /** Paid and not shipped yet: the buyer may ask for the money back (an admin decides). */

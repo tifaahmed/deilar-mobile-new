@@ -70,6 +70,8 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
   const [name, setName] = useState('');
   const [relationship, setRelationship] = useState('wife');
   const [nationalId, setNationalId] = useState('');
+  // Optional. The backend saves a phone typed by the card owner UNVERIFIED (no SMS) until the relative proves it.
+  const [phone, setPhone] = useState('');
   const [front, setFront] = useState<File | null>(null);
   const [back, setBack] = useState<File | null>(null);
   const [photo, setPhoto] = useState<File | null>(null);
@@ -78,7 +80,7 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
   const [sent, setSent] = useState(false);
 
   // Every relation but a son/daughter (added by first name in AddChildForm) needs the FULL name.
-  const complete = name.trim().split(/\s+/).length > 1 && /^\d{14}$/.test(nationalId) && !!front && !!back && !!photo;
+  const complete = name.trim().split(/\s+/).length > 1 && /^\d{14}$/.test(nationalId) && (phone === '' || /^\+?\d{8,15}$/.test(phone)) && !!front && !!back && !!photo;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +92,7 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
     body.append('name', name.trim());
     body.append('relationship', relationship);
     body.append('national_id', nationalId);
+    if (phone) body.append('phone', phone);
     body.append('id_front', front!);
     body.append('id_back', back!);
     body.append('photo', photo!);
@@ -175,6 +178,12 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
               className={`${field} font-mono`}
             />
           </div>
+        </div>
+
+        <div>
+          <label className={label}>{isAr ? 'رقم الهاتف (اختياري)' : 'Phone (optional)'}</label>
+          <input type="tel" inputMode="tel" dir="ltr" maxLength={16} value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ''))} className={`${field} font-mono`} aria-label={isAr ? 'رقم الهاتف' : 'Phone'} />
+          <p className={`text-[10px] mt-0.5 ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{isAr ? 'يظهر «غير موثّق» حتى يؤكده صاحبه.' : 'Shown as "not verified" until its owner confirms it.'}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-2">

@@ -26,6 +26,7 @@ import { Product, CartItem } from '../types';
 import { ApiError } from '../api/http';
 import { fetchOrder, payOrder, placeOrder, uploadReceipt, type OnlineChannel, type PlacedOrder } from '../api/orders';
 import { useSession } from '../utils/session';
+import { useLoyalty } from '../utils/quizStore';
 import { PaymobPixel } from './PaymobPixel';
 import { PaymobFrame } from './PaymobFrame';
 import { reportClientError } from '../utils/reportError';
@@ -174,8 +175,13 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const onlineWalletAvailable = !!methods?.online_wallet;
   const onlineAvailable = cardAvailable || onlineWalletAvailable;
   const remainingForFree = freeFrom !== null && shippingFee > 0 ? Math.max(0, freeFrom - totalCartPrice) : 0;
+  // The wallet is used AUTOMATICALLY for products the admin allowed (never for delivery): an estimate while shopping, the server's figure once placed.
+  const loyalty = useLoyalty();
+  const walletBalance = session.token ? loyalty.money?.wallet_balance ?? 0 : 0;
+  const walletEligible = cart.reduce((sum, item) => sum + (item.product.walletPayable ? item.product.price * item.quantity : 0), 0);
+  const walletShown = placed ? placed.wallet_amount ?? 0 : Math.min(walletBalance, walletEligible);
   // An estimate while shopping; once the order is placed the server's figures replace it.
-  const finalTotal = placed ? placed.total_amount : totalCartPrice + shippingFee + codFee;
+  const finalTotal = placed ? placed.amount_due ?? placed.total_amount : Math.max(0, totalCartPrice + shippingFee + codFee - walletShown);
 
   useEffect(() => {
     if (!shop.data) return;
@@ -200,7 +206,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
         items: cart.map((item) => ({ name: item.product.name, quantity: item.quantity, unit: item.product.price, total: item.product.price * item.quantity })),
         saved: totalCartSavings,
         delivery: placed ? placed.delivery_price : shippingFee,
-        total: finalTotal,
+        total: placed ? placed.total_amount : totalCartPrice + shippingFee + codFee,
+        wallet: walletShown,
+        due: finalTotal,
         payment: paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : paymentMethod === 'online' ? 'دفع إلكتروني' : 'الدفع عند الاستلام',
         member: totalCartSavings > 0 ? session.cardNumber : null,
       });
@@ -493,6 +501,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                         <span>{codFee} ج.م</span>
                       </div>
                     )}
+                    {walletShown > 0 && (
+                      <div data-testid="wallet-line-cart" className="flex justify-between text-violet-800 font-bold">
+                        <span>👛 هيتخصم تلقائياً من محفظتك:</span>
+                        <span>-{walletShown} ج.م</span>
+                      </div>
+                    )}
                     {remainingForFree > 0 && <p className="text-[10px] text-amber-700 font-bold">أضف منتجات بـ {remainingForFree} ج.م لتحصل على توصيل مجاني</p>}
                     <div className="flex justify-between text-slate-900 font-black border-t border-slate-200 pt-2 text-sm">
                       <span>المبلغ الإجمالي للدفع:</span>
@@ -528,6 +542,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
               {/* Amount to transfer banner */}
               <div className="p-3 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-center justify-between">
                 <div>
+                  {walletShown > 0 && <span data-testid="wallet-line-checkout" className="block text-[10px] text-violet-800 font-bold">👛 بعد خصم {walletShown} ج.م من محفظتك تلقائياً</span>}
                   <span className="text-[10px] text-rose-800 font-bold">المطلوب تحويله بالكامل:</span>
                   <div className="text-base sm:text-lg font-black text-[#941946] font-mono leading-none mt-0.5">
                     {finalTotal} <span className="text-xs font-sans">ج.م فقط</span>
@@ -867,6 +882,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <div className="flex justify-between">
                     <span className="text-slate-500">مصاريف الشحن:</span>
                     <span className="font-bold text-emerald-700">مجاناً</span>
+                  </div>
+                )}
+                {walletShown > 0 && (
+                  <div data-testid="wallet-line" className="flex justify-between text-violet-800">
+                    <span>👛 {placed ? 'دفعت من المحفظة:' : 'هيتخصم تلقائياً من محفظتك:'}</span>
+                    <span className="font-bold font-mono">- {walletShown} ج.م</span>
                   </div>
                 )}
                 <div className="flex justify-between border-t border-slate-200 pt-1 font-bold">

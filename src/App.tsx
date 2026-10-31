@@ -45,6 +45,7 @@ const ProfileView = lazy(() => import('./components/ProfileView').then((m) => ({
 const ProviderDetailView = lazy(() => import('./components/ProviderDetailView').then((m) => ({ default: m.ProviderDetailView })));
 const SearchModal = lazy(() => import('./components/SearchModal').then((m) => ({ default: m.SearchModal })));
 import { FloatingContactButton } from './components/FloatingContactButton';
+import { ReferProviderButton } from './components/ReferProviderButton';
 const CartCheckoutModal = lazy(() => import('./components/CartCheckoutModal').then((m) => ({ default: m.CartCheckoutModal })));
 const AccessModal = lazy(() => import('./components/AccessModal').then((m) => ({ default: m.AccessModal })));
 const AreaModal = lazy(() => import('./components/AreaModal').then((m) => ({ default: m.AreaModal })));
@@ -534,6 +535,7 @@ export default function App() {
 
         {/* Floating Side Contact Icon with Number */}
         {route.section !== 'pay' && <FloatingContactButton />}
+        {route.section !== 'pay' && <ReferProviderButton />}
 
         {/* 
           CRITICAL USER REQUIREMENT:

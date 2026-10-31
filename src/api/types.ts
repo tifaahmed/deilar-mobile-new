@@ -125,6 +125,8 @@ export interface ProductCard {
   type: Named | null;
   store: { id: number; slug: string; title: string } | null;
   purchasable: boolean;
+  /** The admin allowed the wallet to pay for it (delivery is never paid from the wallet). */
+  wallet_payable?: boolean;
 }
 
 export interface ProductDetail extends ProductCard {

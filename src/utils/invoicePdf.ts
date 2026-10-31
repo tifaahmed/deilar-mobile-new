@@ -18,7 +18,14 @@ export interface InvoiceData {
   saved?: number;
   /** null = not known yet (shown as nothing); 0 = free. */
   delivery: number | null;
+  /** The full bill, before the wallet. */
   total: number;
+  /** What the member's wallet paid (the server's figure). */
+  wallet?: number;
+  /** What is left to pay in real money (the server's figure); only drawn together with `wallet`. */
+  due?: number | null;
+  /** Everything already paid on the order (wallet part included). */
+  paid?: number;
   payment?: string | null;
   member?: string | null;
 }
@@ -39,7 +46,7 @@ function row(label: string, value: string, bold = false): HTMLElement {
   return line;
 }
 
-function build(inv: InvoiceData, isAr: boolean): HTMLElement {
+export function build(inv: InvoiceData, isAr: boolean): HTMLElement {
   const money = (n: number) => `${n} ${isAr ? 'ج.م' : 'EGP'}`;
   const t = (ar: string, en: string) => (isAr ? ar : en);
 
@@ -89,6 +96,11 @@ function build(inv: InvoiceData, isAr: boolean): HTMLElement {
   if (inv.saved && inv.saved > 0) totals.append(row(t('وفّرت بكارت ديلر', 'Saved with your card'), money(inv.saved)));
   if (inv.delivery != null) totals.append(row(t('التوصيل', 'Delivery'), inv.delivery > 0 ? money(inv.delivery) : t('مجاناً', 'Free')));
   totals.append(row(t('الإجمالي', 'Total'), money(inv.total), true));
+  if (inv.wallet && inv.wallet > 0) {
+    totals.append(row(t('مدفوع من المحفظة', 'Paid from wallet'), `- ${money(inv.wallet)}`));
+    if (inv.due != null) totals.append(row(t('المتبقي (فلوس حقيقية)', 'Remaining (real money)'), money(inv.due), true));
+  }
+  if (inv.paid && inv.paid > 0) totals.append(row(t('إجمالي المدفوع', 'Total paid'), money(inv.paid)));
   page.append(totals);
 
   if (inv.payment) page.append(el('div', 'margin-top:14px;font-size:12px;color:#475569;', `${t('طريقة الدفع', 'Payment')}: ${inv.payment}`));

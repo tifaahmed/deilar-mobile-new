@@ -31,6 +31,14 @@ describe.each(SECTIONS)('quiz section $id', (section) => {
     expect(questions.length).toBeGreaterThanOrEqual(10);
   });
 
+  it('has no template leftovers in the question or options (a "#157" counter, braces, undefined)', () => {
+    expect(failing((q) => /#\d+|undefined|NaN|[{}]/.test(`${q.question} ${(q.options as unknown[]).join(' ')}`)), 'ids with leftovers').toBe('');
+  });
+
+  it('has four different options in every question', () => {
+    expect(failing((q) => !Array.isArray(q.options) || q.options.length !== 4 || new Set((q.options as unknown[]).map((o) => String(o).trim())).size !== 4), 'ids without 4 different options').toBe('');
+  });
+
   it('has unique, positive whole-number ids', () => {
     const seen = new Set<unknown>();
     const repeated = questions.filter((q) => seen.has(q.id) || !seen.add(q.id)).map((q) => q.id);

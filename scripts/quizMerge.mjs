@@ -4,7 +4,7 @@
  *
  *   npm run quiz:merge -- <section> <new-questions.json> [--dry]
  *
- * <section> is football | fawazeer | general | history. The new file may be a plain list or `{ "questions": [...] }` in the
+ * <section> is football | fawazeer | general | history | cinema. The new file may be a plain list or `{ "questions": [...] }` in the
  * same shape as the section's own file. A new question is skipped when
  *   - its words are already in the section (the same words with another number or another id are the same question),
  *   - its words repeat inside the new file itself, or
@@ -24,6 +24,7 @@ export const SECTION_FILES = {
   fawazeer: { data: 'src/data/fawazeerQuiz.json', assets: 'src/assets/fawazeer' },
   general: { data: 'src/data/generalQuiz.json', assets: 'src/assets/general' },
   history: { data: 'src/data/historyQuiz.json', assets: 'src/assets/history' },
+  cinema: { data: 'src/data/cinemaQuiz.json', assets: 'src/assets/cinema' },
 };
 
 export const DESIGNS = ['cards', 'grid', 'bubbles', 'stadium', 'poster', 'polaroid', 'neon', 'comic'];

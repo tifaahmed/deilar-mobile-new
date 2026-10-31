@@ -20,6 +20,8 @@ export default defineConfig(() => {
       __APP_VERSION_CODE__: JSON.stringify(appVersionCode()),
     },
     plugins: [react(), tailwindcss()],
+    // Android 9 phones ship an old WebView (Chrome ~70-90): keep CSS output in syntax it understands.
+    build: {cssTarget: 'chrome69'},
     test: {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],

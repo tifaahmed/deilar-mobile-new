@@ -196,6 +196,9 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
           saved: order.total_amount_before_discount != null ? order.total_amount_before_discount - order.total_amount : 0,
           delivery: order.delivery_price,
           total: order.total_amount,
+          wallet: order.wallet_amount,
+          due: order.amount_due,
+          paid: order.total_paid,
           payment: `${order.payment_type.label} — ${order.payment_status.label}`,
           member: order.membership_number,
         },
@@ -281,6 +284,13 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
                 <span>{isAr ? 'الإجمالي' : 'Total'}</span>
                 <span className="font-mono text-[#941946]">{order.total_amount} {currency}</span>
               </div>
+              {(order.wallet_amount ?? 0) > 0 && (
+                <div data-testid="order-split" className="rounded-xl bg-violet-50 border border-violet-200 p-2 text-xs font-bold text-violet-900 space-y-0.5">
+                  <div className="flex justify-between"><span>{isAr ? '👛 دفعت من المحفظة' : '👛 Paid from wallet'}</span><span className="font-mono">{order.wallet_amount} {currency}</span></div>
+                  <div className="flex justify-between"><span>{isAr ? '💵 دفعت من الفلوس الحقيقية' : '💵 Paid in real money'}</span><span className="font-mono">{order.amount_due ?? Math.max(0, order.total_amount - (order.wallet_amount ?? 0))} {currency}</span></div>
+                  {order.wallet_refunded && <p className="text-emerald-700">{isAr ? 'تم رد المبلغ إلى محفظتك.' : 'The money was returned to your wallet.'}</p>}
+                </div>
+              )}
               {order.membership_number ? (
                 <p className="text-[10px] text-emerald-700 font-bold pt-1">{isAr ? `سعر العضو — كارت ${order.membership_number}` : `Member price — card ${order.membership_number}`}</p>
               ) : (

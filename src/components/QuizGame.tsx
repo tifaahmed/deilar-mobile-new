@@ -3,10 +3,13 @@ import { motion, AnimatePresence, animate, useMotionValue } from 'motion/react';
 import { ArrowRight, CloudCheck, Smartphone, Trophy, RotateCcw, Star, Volume2, VolumeX } from 'lucide-react';
 import { SECTIONS, type Question, type QuizDesign, type QuizSection } from '../data/quizSections';
 import { navigate, useRoute } from '../router';
-import { QUIZ_POINTS, flushQuizAnswers, markBadgesSeen, newId, recordQuizAnswer, refreshBadgeCatalog, refreshHistory, refreshLoyalty, useBadgeCatalog, useBadges, useLoyalty, useLoyaltyHistory, useQueuedPlayIds } from '../utils/quizStore';
+import { QUIZ_SPEED_TIERS, quizPoints, flushQuizAnswers, markBadgesSeen, newId, recordQuizAnswer, refreshBadgeCatalog, refreshHistory, refreshLoyalty, useBadgeCatalog, useBadges, useLoyalty, useLoyaltyHistory, useQueuedPlayIds } from '../utils/quizStore';
 import type { BadgeInfo } from '../utils/quizStore';
 import { PointsGallery, PointsMood, sceneFor } from './PointsMood';
 import { blockPullToRefresh } from './PullToRefresh';
+import { QuizLaunch } from './QuizLaunch';
+import { WalletPanel, formatEgp } from './WalletPanel';
+import { TransfersPanel } from './TransfersPanel';
 import { resultShareText } from '../utils/shareResult';
 import { PLAY_SIZE, pickQuestions, recordProgress, useProgress } from '../utils/quizProgress';
 import { useSession } from '../utils/session';
@@ -15,7 +18,7 @@ import type { NotifyPermission } from '../utils/quizLimit';
 import { savePlay, useQuizHistory } from '../utils/quizHistory';
 
 /** Everything this player has won or lost: the points the backend holds for the account plus those still on the phone. */
-export const PointsBalance: React.FC<{ total: number; pending: number; signedIn: boolean }> = ({ total, pending, signedIn }) => {
+export const PointsBalance: React.FC<{ total: number; pending: number; signedIn: boolean; egp?: number }> = ({ total, pending, signedIn, egp }) => {
   const held = total - pending;
   const tone = total > 0 ? 'from-emerald-500 to-teal-600' : total < 0 ? 'from-rose-500 to-red-600' : 'from-slate-500 to-slate-600';
 
@@ -23,6 +26,7 @@ export const PointsBalance: React.FC<{ total: number; pending: number; signedIn:
     <div className={`rounded-3xl bg-gradient-to-l ${tone} p-4 text-white shadow-md`}>
       <p className="text-xs font-bold text-white/85">🎁 محصلة نقاط الولاء بتاعتي</p>
       <p dir="ltr" className="text-5xl font-black tabular-nums">{total > 0 ? `+${total}` : total}</p>
+      {egp != null && egp > 0 && <p className="text-sm font-black text-white/95">≈ <span dir="ltr">{formatEgp(egp)}</span> جنيه</p>}
       {signedIn ? (
         <p className="mt-1 text-xs font-semibold text-white/85">
           في حسابك <span dir="ltr" className="font-black">{held}</span>
@@ -152,7 +156,8 @@ export function SyncChip({ synced, signedIn }: { synced: boolean; signedIn: bool
 type LogLine =
   | { kind: 'play'; key: string; at: string; title: string; right: number; wrong: number; points: number; completed: boolean; synced: boolean }
   | { kind: 'badge'; key: string; at: string; title: string; icon: string; points: number; synced: boolean }
-  | { kind: 'admin'; key: string; at: string; points: number; note: string | null; synced: boolean };
+  | { kind: 'admin'; key: string; at: string; points: number; note: string | null; synced: boolean }
+  | { kind: 'wallet'; key: string; at: string; points: number; synced: boolean };
 
 /** The difficulty sign on a question: a word, a colour and 10 small bars of which `level` are lit. */
 function difficultyLook(level: number): { label: string; pill: string; bar: string } {
@@ -233,7 +238,6 @@ function optionClass(design: Design, i: number, right: boolean, wrong: boolean):
 const SECONDS_PER_QUESTION = 20;
 const FEEDBACK_MS = 1300;
 /** Points won for a right answer and lost for a wrong one or a missed clock; the total may go below zero. Shared with the upload queue, which mirrors the backend's figure. */
-const POINTS = QUIZ_POINTS;
 
 
 /** A short beep made with WebAudio, so the game needs no sound files. */
@@ -353,6 +357,8 @@ export const QuizGame: React.FC = () => {
     void refreshLoyalty();
   }, []);
   const [started, setStarted] = useState(false);
+  /** True while the 1-2-3 lights and the Deilar logo scene play, before the first question. */
+  const [launching, setLaunching] = useState(false);
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -361,6 +367,9 @@ export const QuizGame: React.FC = () => {
   const [finished, setFinished] = useState(false);
   const [sound, setSound] = useState(true);
   const [timedOut, setTimedOut] = useState(false);
+  /** Points the last answer won or lost, and when the open question's clock started. */
+  const [gained, setGained] = useState(0);
+  const questionStart = useRef(Date.now());
   const [timeLeft, setTimeLeft] = useState(SECONDS_PER_QUESTION);
   // How much of the line around the question card is used up: 0 = full time left, 1 = none.
   const spent = useMotionValue(0);
@@ -390,6 +399,7 @@ export const QuizGame: React.FC = () => {
     const lines: LogLine[] = serverEntries.map((e, i): LogLine => {
       if (e.type === 'play') return { kind: 'play', key: `s-${e.play_id}`, at: e.at, title: titleOf(e.quiz), right: e.right, wrong: e.wrong, points: e.points, completed: e.right + e.wrong >= PLAY_SIZE, synced: !queuedPlays.has(e.play_id) };
       if (e.type === 'badge') return { kind: 'badge', key: `b-${e.quiz}-${e.key}-${i}`, at: e.at, title: badgeTitle(e), icon: badgeIcon(e), points: e.points, synced: true };
+      if (e.type === 'wallet') return { kind: 'wallet', key: `w-${e.at}-${i}`, at: e.at, points: e.points, synced: true };
       return { kind: 'admin', key: `a-${e.at}-${i}`, at: e.at, points: e.points, note: e.note, synced: true };
     });
 
@@ -416,15 +426,17 @@ export const QuizGame: React.FC = () => {
 
   // The clock of the open question: it runs only until an answer is given.
   useEffect(() => {
-    if (!started || finished || answered) return;
+    if (!started || launching || finished || answered) return;
     setTimeLeft(SECONDS_PER_QUESTION);
+    questionStart.current = Date.now();
     spent.set(0);
     const line = animate(spent, 1, { duration: SECONDS_PER_QUESTION, ease: 'linear' });
     const tick = setInterval(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000);
     const stop = setTimeout(() => {
       setTimedOut(true);
-      book(false, true);
-      setScore((p) => p - POINTS);
+      book(false, true, SECONDS_PER_QUESTION);
+      setGained(quizPoints(false));
+      setScore((p) => p + quizPoints(false));
       setStreak(0);
       beep([300, 220]);
     }, SECONDS_PER_QUESTION * 1000);
@@ -434,7 +446,7 @@ export const QuizGame: React.FC = () => {
       clearInterval(tick);
       clearTimeout(stop);
     };
-  }, [started, finished, index, answered]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [started, launching, finished, index, answered]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // After the right / wrong sign, the next question comes by itself.
   useEffect(() => {
@@ -444,24 +456,27 @@ export const QuizGame: React.FC = () => {
   }, [answered, finished, index]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Files one answer: in the stage progress, and in the queue that goes up to the backend. */
-  function book(correct: boolean, timedOutAnswer: boolean) {
+  function book(correct: boolean, timedOutAnswer: boolean, seconds: number) {
     const { stage } = recordProgress(QUIZ_KEY, QUESTIONS, q.id, correct);
-    recordQuizAnswer({ play_id: playId.current, quiz: QUIZ_KEY, question_id: q.id, correct, timed_out: timedOutAnswer, stage });
+    recordQuizAnswer({ play_id: playId.current, quiz: QUIZ_KEY, question_id: q.id, correct, timed_out: timedOutAnswer, seconds, stage });
   }
 
   const choose = (i: number) => {
     if (answered) return;
     setPicked(i);
 
-    book(i === q.correctAnswerIndex, false);
+    const seconds = Math.min(SECONDS_PER_QUESTION, Math.max(0, Math.round(((Date.now() - questionStart.current) / 1000) * 100) / 100));
+    book(i === q.correctAnswerIndex, false, seconds);
+    const won = quizPoints(i === q.correctAnswerIndex, seconds);
+    setGained(won);
 
     if (i === q.correctAnswerIndex) {
-      setScore((p) => p + POINTS);
+      setScore((p) => p + won);
       setRightCount((c) => c + 1);
       setStreak((s) => s + 1);
       beep([660, 880]);
     } else {
-      setScore((p) => p - POINTS);
+      setScore((p) => p + won);
       setStreak(0);
       beep([300, 220]);
     }
@@ -496,14 +511,17 @@ export const QuizGame: React.FC = () => {
     setStreak(0);
     setFinished(false);
     setStarted(true);
+    setLaunching(true);
     return true;
   };
 
   /** Ends the play in progress (a play left half-way is still logged). */
   const exitPlay = () => {
     if (!started) return;
+    setLaunching(false);
     if (!finished) logPlay(index + (answered ? 1 : 0), false);
     setStarted(false);
+    setLaunching(false);
     setFinished(false);
     setIndex(0);
     setPicked(null);
@@ -550,7 +568,9 @@ export const QuizGame: React.FC = () => {
       <AnimatePresence mode="wait">
         {!started && step === 'types' && (
           <motion.div key="types" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-            <PointsBalance total={loyalty.total} pending={loyalty.pending} signedIn={!!session.token} />
+            <PointsBalance total={loyalty.total} pending={loyalty.pending} signedIn={!!session.token} egp={loyalty.egp} />
+            <WalletPanel signedIn={!!session.token} />
+            {!!session.token && <TransfersPanel />}
             <h1 className="text-xl font-black text-slate-900">🎮 اختر نوع اللعبة</h1>
             <motion.button whileTap={{ scale: 0.96 }} onClick={() => go('mcq')} className="w-full flex items-center gap-3 p-4 rounded-3xl bg-gradient-to-l from-violet-500 to-purple-600 text-white shadow-[0_5px_0_rgba(0,0,0,0.2)] cursor-pointer">
               <span className="text-4xl">🎯</span>
@@ -688,6 +708,19 @@ export const QuizGame: React.FC = () => {
                 );
               }
 
+              if (line.kind === 'wallet') {
+                return (
+                  <div key={line.key} className="flex items-center gap-3 rounded-2xl bg-violet-50 border-2 border-violet-300 p-3 shadow-2xs">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white shrink-0 bg-violet-600" dir="ltr">{points}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-violet-900">👛 تحويل نقاط إلى المحفظة</p>
+                      <p className="text-xs font-semibold text-slate-500">{when}</p>
+                    </div>
+                    <SyncChip synced={line.synced} signedIn={!!session.token} />
+                  </div>
+                );
+              }
+
               return (
                 <div key={line.key} className="flex items-center gap-3 rounded-2xl bg-sky-50 border-2 border-sky-300 p-3 shadow-2xs">
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white shrink-0 ${tone}`} dir="ltr">{points}</div>
@@ -721,7 +754,8 @@ export const QuizGame: React.FC = () => {
           <motion.div key="intro" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className={`rounded-3xl bg-gradient-to-b ${section.introBg} p-6 text-center text-white shadow-lg overflow-hidden relative`}>
             <motion.div animate={{ y: [0, -22, 0], rotate: [0, 360] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }} className="text-7xl mb-2 inline-block">{section.emoji}</motion.div>
             <h1 className="text-2xl font-black mb-1">{section.introTitle}</h1>
-            <p className="text-sm font-semibold text-emerald-50 mb-4">جاوب على {PLAY_SIZE} أسئلة واجمع النقاط!</p>
+            <p className="text-sm font-semibold text-emerald-50 mb-2">جاوب على {PLAY_SIZE} أسئلة واجمع النقاط!</p>
+            <p className="text-xs font-bold text-white/90 mb-4">⚡ كل ما تجاوب أسرع تكسب أكتر: {QUIZ_SPEED_TIERS.map((t) => `${t.upTo}ث = ${t.points}`).join(' · ')}</p>
             <p className="-mt-3 mb-1 text-xs font-bold text-emerald-100">المرحلة {progress.stage} · حليت {progress.solved.length} سؤال</p>
             <p className="mb-4 text-xs font-black text-white">{limit.locked ? '🔒 خلصت محاولات النهارده' : `🎮 باقي ${limit.left} من ${PLAYS_PER_DAY} محاولات النهارده`}</p>
             <div className="grid grid-cols-3 gap-2 mb-5 empty:hidden">
@@ -739,7 +773,7 @@ export const QuizGame: React.FC = () => {
           </motion.div>
         )}
 
-        {started && !finished && (
+        {started && !finished && !launching && (
           <motion.div key={`q${index}`} initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 60 }} transition={{ type: 'spring', stiffness: 200, damping: 22 }}>
             <div className="flex items-center gap-2 mb-2">
               <div className="flex-1 h-3 rounded-full bg-slate-200 overflow-hidden">
@@ -752,7 +786,7 @@ export const QuizGame: React.FC = () => {
                 <AnimatePresence>
                   {answered && (
                     <motion.span key={`delta-${index}`} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: -26 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} dir="ltr" className={`absolute -top-1 left-0 text-lg font-black ${correct ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {correct ? `+${POINTS}` : `-${POINTS}`}
+                      {gained > 0 ? `+${gained}` : `${gained}`}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -769,7 +803,7 @@ export const QuizGame: React.FC = () => {
                   <motion.div initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 15 }} className="absolute inset-0 z-30 flex items-center justify-center bg-black/35 pointer-events-none">
                     <div className={`rounded-2xl px-6 py-3 text-center text-3xl font-black text-white shadow-xl ${correct ? 'bg-emerald-500' : timedOut ? 'bg-orange-500' : 'bg-red-500'}`}>
                       {correct ? '✅ صح!' : timedOut ? '⏰ انتهى الوقت!' : '❌ غلط!'}
-                      <span dir="ltr" className="block text-lg mt-0.5">{correct ? `+${POINTS}` : `-${POINTS}`}</span>
+                      <span dir="ltr" className="block text-lg mt-0.5">{gained > 0 ? `+${gained}` : `${gained}`}</span>
                     </div>
                   </motion.div>
                 )}
@@ -857,6 +891,7 @@ export const QuizGame: React.FC = () => {
             {isMember ? (
               <p className="mb-4 rounded-2xl bg-white/25 px-3 py-2 text-sm font-bold text-white">
                 🎁 رصيد نقاط الولاء في حسابك: <span dir="ltr">{loyalty.total}</span>
+                {loyalty.egp > 0 && <> (≈ <span dir="ltr">{formatEgp(loyalty.egp)}</span> جنيه)</>}
               </p>
             ) : (
               <div className="mb-4 rounded-2xl bg-white p-4 text-right shadow-md">
@@ -882,6 +917,7 @@ export const QuizGame: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      <AnimatePresence>{started && launching && <QuizLaunch key="launch" sound={sound} onDone={() => setLaunching(false)} />}</AnimatePresence>
     </div>
   );
 };

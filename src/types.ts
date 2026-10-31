@@ -70,6 +70,8 @@ export interface Product {
   price: number;                  // What the buyer pays
   originalPrice: number;          // Struck-through price; equals `price` when not discounted
   storeName?: string;
+  /** The admin allowed the wallet to pay for it. */
+  walletPayable?: boolean;
 }
 
 /**

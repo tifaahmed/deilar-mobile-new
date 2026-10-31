@@ -49,7 +49,7 @@ export interface MemberStatus extends CardStatus {
   open_subscription: { id: number; method: string; amount: number; created_at: string } | null;
 }
 
-export type PayMethod = 'paymob' | 'cash_on_delivery' | 'vodafone_cash' | 'instapay';
+export type PayMethod = 'paymob' | 'cash_on_delivery' | 'vodafone_cash' | 'instapay' | 'wallet';
 
 /** The signed-in member's own card state. Never cached: it changes the moment a payment lands. */
 export const fetchMembership = (token: string) => apiGetAuth<{ data: MemberStatus }>('/membership', token).then((r) => r.data);
