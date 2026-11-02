@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, animate, useMotionValue } from 'motion/react';
 import { ArrowRight, CloudCheck, Smartphone, Trophy, RotateCcw, Star, Volume2, VolumeX } from 'lucide-react';
-import { SECTIONS, type Question, type QuizDesign, type QuizSection } from '../data/quizSections';
+import { SECTIONS as BASE_SECTIONS, sectionIn, type Question, type QuizDesign, type QuizSection } from '../data/quizSections';
 import { navigate, useRoute } from '../router';
 import { QUIZ_SPEED_TIERS, quizPoints, flushQuizAnswers, markBadgesSeen, newId, recordQuizAnswer, refreshBadgeCatalog, refreshHistory, refreshLoyalty, useBadgeCatalog, useBadges, useLoyalty, useLoyaltyHistory, useQueuedPlayIds } from '../utils/quizStore';
 import type { BadgeInfo } from '../utils/quizStore';
@@ -16,24 +16,27 @@ import { useSession } from '../utils/session';
 import { PLAYS_PER_DAY, formatCountdown, notifyPermission, registerPlay, requestQuizNotifications, useQuizLimit } from '../utils/quizLimit';
 import type { NotifyPermission } from '../utils/quizLimit';
 import { savePlay, useQuizHistory } from '../utils/quizHistory';
+import { useIsAr } from '../context/LanguageContext';
+import { setQuizLang, useQuizLang } from '../data/quizLanguage';
 
 /** Everything this player has won or lost: the points the backend holds for the account plus those still on the phone. */
 export const PointsBalance: React.FC<{ total: number; pending: number; signedIn: boolean; egp?: number }> = ({ total, pending, signedIn, egp }) => {
+  const isAr = useIsAr();
   const held = total - pending;
   const tone = total > 0 ? 'from-emerald-500 to-teal-600' : total < 0 ? 'from-rose-500 to-red-600' : 'from-slate-500 to-slate-600';
 
   return (
     <div className={`rounded-3xl bg-gradient-to-l ${tone} p-4 text-white shadow-md`}>
-      <p className="text-xs font-bold text-white/85">🎁 محصلة نقاط الولاء بتاعتي</p>
+      <p className="text-xs font-bold text-white/85">{isAr ? '🎁 محصلة نقاط الولاء بتاعتي' : '🎁 My loyalty points total'}</p>
       <p dir="ltr" className="text-5xl font-black tabular-nums">{total > 0 ? `+${total}` : total}</p>
-      {egp != null && egp > 0 && <p className="text-sm font-black text-white/95">≈ <span dir="ltr">{formatEgp(egp)}</span> جنيه</p>}
+      {egp != null && egp > 0 && <p className="text-sm font-black text-white/95">≈ <span dir="ltr">{formatEgp(egp)}</span> {isAr ? 'جنيه' : 'EGP'}</p>}
       {signedIn ? (
         <p className="mt-1 text-xs font-semibold text-white/85">
-          في حسابك <span dir="ltr" className="font-black">{held}</span>
-          {pending !== 0 && <> · لسه هتتضاف <span dir="ltr" className="font-black">{pending > 0 ? `+${pending}` : pending}</span></>}
+          {isAr ? 'في حسابك' : 'In your account'} <span dir="ltr" className="font-black">{held}</span>
+          {pending !== 0 && <> · {isAr ? 'لسه هتتضاف' : 'still to be added'} <span dir="ltr" className="font-black">{pending > 0 ? `+${pending}` : pending}</span></>}
         </p>
       ) : (
-        <p className="mt-1 text-xs font-semibold text-white/85">النقاط دي على موبايلك بس. سجّل بياناتك وأعمل الكارت التجريبي المجاني عشان تتحفظ في حسابك.</p>
+        <p className="mt-1 text-xs font-semibold text-white/85">{isAr ? 'النقاط دي على موبايلك بس. سجّل بياناتك وأعمل الكارت التجريبي المجاني عشان تتحفظ في حسابك.' : 'These points are only on your phone. Fill in your details and get the free trial card so they are saved to your account.'}</p>
       )}
     </div>
   );
@@ -41,36 +44,38 @@ export const PointsBalance: React.FC<{ total: number; pending: number; signedIn:
 
 /** Shown instead of "play" when a section's daily allowance is used up: the time until it opens again, and a way to be told. */
 const LockedPanel: React.FC<{ title: string; msLeft: number }> = ({ title, msLeft }) => {
+  const isAr = useIsAr();
   const [permission, setPermission] = useState<NotifyPermission>(notifyPermission());
 
   return (
     <div className="rounded-3xl bg-white p-4 text-center text-slate-900 shadow-md">
       <p className="text-4xl">⏳</p>
-      <p className="mt-1 text-base font-black">خلصت محاولاتك النهارده في {title}</p>
-      <p className="text-xs font-semibold text-slate-500">{PLAYS_PER_DAY} محاولات في اليوم لكل قسم</p>
+      <p className="mt-1 text-base font-black">{isAr ? `خلصت محاولاتك النهارده في ${title}` : `You have used today's plays in ${title}`}</p>
+      <p className="text-xs font-semibold text-slate-500">{isAr ? `${PLAYS_PER_DAY} محاولات في اليوم لكل قسم` : `${PLAYS_PER_DAY} plays a day for each section`}</p>
       <p dir="ltr" className="my-2 text-4xl font-black tabular-nums">{formatCountdown(msLeft)}</p>
-      <p className="text-xs font-bold text-slate-600">المحاولات بتتجدد كل يوم الساعة 12 بالليل</p>
+      <p className="text-xs font-bold text-slate-600">{isAr ? 'المحاولات بتتجدد كل يوم الساعة 12 بالليل' : 'Your plays renew every day at midnight'}</p>
       {permission === 'default' && (
         <button type="button" onClick={async () => setPermission(await requestQuizNotifications())} className="mt-3 w-full cursor-pointer rounded-xl bg-[#931A47] py-3 text-sm font-black text-white">
-          🔔 نبّهني لما أقدر ألعب
+          {isAr ? '🔔 نبّهني لما أقدر ألعب' : '🔔 Tell me when I can play'}
         </button>
       )}
-      {permission === 'granted' && <p className="mt-3 rounded-xl bg-emerald-50 p-2 text-xs font-bold text-emerald-700">🔔 هنبعتلك إشعار أول ما العداد يخلص</p>}
-      {permission === 'denied' && <p className="mt-3 rounded-xl bg-amber-50 p-2 text-xs font-bold text-amber-800">إشعارات الجهاز مقفولة من الإعدادات. هيظهرلك تنبيه جوه التطبيق لما تفتحه.</p>}
-      {permission === 'unsupported' && <p className="mt-3 rounded-xl bg-slate-50 p-2 text-xs font-bold text-slate-600">هيظهرلك تنبيه جوه التطبيق أول ما العداد يخلص.</p>}
+      {permission === 'granted' && <p className="mt-3 rounded-xl bg-emerald-50 p-2 text-xs font-bold text-emerald-700">{isAr ? '🔔 هنبعتلك إشعار أول ما العداد يخلص' : '🔔 We will notify you as soon as the countdown ends'}</p>}
+      {permission === 'denied' && <p className="mt-3 rounded-xl bg-amber-50 p-2 text-xs font-bold text-amber-800">{isAr ? 'إشعارات الجهاز مقفولة من الإعدادات. هيظهرلك تنبيه جوه التطبيق لما تفتحه.' : 'Notifications are turned off in your device settings. You will see a reminder inside the app when you open it.'}</p>}
+      {permission === 'unsupported' && <p className="mt-3 rounded-xl bg-slate-50 p-2 text-xs font-bold text-slate-600">{isAr ? 'هيظهرلك تنبيه جوه التطبيق أول ما العداد يخلص.' : 'You will see a reminder inside the app as soon as the countdown ends.'}</p>}
     </div>
   );
 };
 
 /** The small line under a section's name on the sections screen. */
 const SectionProgressLine: React.FC<{ sec: QuizSection }> = ({ sec }) => {
+  const isAr = useIsAr();
   const p = useProgress(sec.key);
   const limit = useQuizLimit(sec.key);
   return (
     <>
-      <span className="block text-xs font-semibold text-white/80">المرحلة {p.stage} · حليت {p.solved.length} سؤال</span>
+      <span className="block text-xs font-semibold text-white/80">{isAr ? `المرحلة ${p.stage} · حليت ${p.solved.length} سؤال` : `Stage ${p.stage} · ${p.solved.length} solved`}</span>
       <span className="block text-xs font-black text-white" dir="rtl">
-        {limit.locked ? <>🔒 هتفتح بعد <span dir="ltr" className="tabular-nums">{formatCountdown(limit.msLeft)}</span></> : `🎮 باقي ${limit.left} من ${PLAYS_PER_DAY} محاولات النهارده`}
+        {limit.locked ? <>{isAr ? '🔒 هتفتح بعد' : '🔒 Opens in'} <span dir="ltr" className="tabular-nums">{formatCountdown(limit.msLeft)}</span></> : isAr ? `🎮 باقي ${limit.left} من ${PLAYS_PER_DAY} محاولات النهارده` : `🎮 ${limit.left} of ${PLAYS_PER_DAY} plays left today`}
       </span>
     </>
   );
@@ -84,7 +89,7 @@ export function parseQuizPath(path: string): { step: QuizStep; sectionId: string
   const none = { sectionId: null, moodScore: null };
 
   if (first === 'mcq') {
-    const found = SECTIONS.find((s) => s.id === second);
+    const found = BASE_SECTIONS.find((s) => s.id === second);
     return found ? { step: 'intro', sectionId: found.id, moodScore: null } : { step: 'sections', ...none };
   }
   if (first === 'history') return { step: 'history', ...none };
@@ -99,19 +104,20 @@ export function parseQuizPath(path: string): { step: QuizStep; sectionId: string
 
 /** What this player has done in one section: its stage, how many they solved and which questions they met. */
 const ProgressPanel: React.FC<{ sec: QuizSection }> = ({ sec }) => {
+  const isAr = useIsAr();
   const p = useProgress(sec.key);
 
   return (
     <div className="rounded-3xl bg-white border border-slate-200 p-3 shadow-2xs">
-      <p className="text-sm font-black text-slate-900">{sec.emoji} {sec.title} · المرحلة {p.stage}</p>
-      <p className="mb-2 text-xs font-semibold text-slate-500">حليت {p.solved.length} سؤال في المرحلة دي{p.stagesDone > 0 ? ` · خلصت ${p.stagesDone} مرحلة` : ''}</p>
+      <p className="text-sm font-black text-slate-900">{sec.emoji} {sec.title} · {isAr ? 'المرحلة' : 'Stage'} {p.stage}</p>
+      <p className="mb-2 text-xs font-semibold text-slate-500">{isAr ? `حليت ${p.solved.length} سؤال في المرحلة دي` : `${p.solved.length} solved in this stage`}{p.stagesDone > 0 ? (isAr ? ` · خلصت ${p.stagesDone} مرحلة` : ` · ${p.stagesDone} stages finished`) : ''}</p>
       {p.seen.length === 0 ? (
-        <p className="text-xs font-bold text-slate-400">لسه ماشفتش أي سؤال في المرحلة دي.</p>
+        <p className="text-xs font-bold text-slate-400">{isAr ? 'لسه ماشفتش أي سؤال في المرحلة دي.' : 'You have not seen any question in this stage yet.'}</p>
       ) : (
         // Counts only: a question's number is never shown to the player.
         <div className="flex gap-2 text-xs font-black">
-          <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-emerald-700">✅ حليت {p.solved.length}</span>
-          <span className="rounded-lg bg-red-50 px-2.5 py-1 text-red-600">🔁 هتتعاد عليك {p.seen.length - p.solved.length}</span>
+          <span className="rounded-lg bg-emerald-50 px-2.5 py-1 text-emerald-700">{isAr ? '✅ حليت' : '✅ Solved'} {p.solved.length}</span>
+          <span className="rounded-lg bg-red-50 px-2.5 py-1 text-red-600">{isAr ? '🔁 هتتعاد عليك' : '🔁 To repeat'} {p.seen.length - p.solved.length}</span>
         </div>
       )}
     </div>
@@ -123,26 +129,27 @@ const ProgressPanel: React.FC<{ sec: QuizSection }> = ({ sec }) => {
  * phone, waiting for a connection or a sign-in). Tapping it opens a short explanation under it; tapping again, or anywhere else, closes it.
  */
 export function SyncChip({ synced, signedIn }: { synced: boolean; signedIn: boolean }) {
+  const isAr = useIsAr();
   const [open, setOpen] = useState(false);
   const Icon = synced ? CloudCheck : Smartphone;
   const explain = synced
-    ? 'تم حفظ هذا السجل في حسابك على السيرفر. نقاطك وشاراتك محفوظة ولن تضيع حتى لو غيّرت الموبايل أو مسحت التطبيق.'
+    ? isAr ? 'تم حفظ هذا السجل في حسابك على السيرفر. نقاطك وشاراتك محفوظة ولن تضيع حتى لو غيّرت الموبايل أو مسحت التطبيق.' : 'This record is saved in your account on the server. Your points and badges are safe even if you change phone or delete the app.'
     : signedIn
-      ? 'هذا السجل ما زال على موبايلك فقط. سيُرفع إلى حسابك تلقائياً أول ما يتوفر اتصال بالإنترنت، وبعدها يتحول إلى «محفوظة».'
-      : 'هذا السجل على موبايلك فقط لأنك لم تسجّل الدخول. سجّل الدخول (أو أنشئ الكارت المجاني) لينتقل إلى حسابك ولا تضيع نقاطك.';
+      ? isAr ? 'هذا السجل ما زال على موبايلك فقط. سيُرفع إلى حسابك تلقائياً أول ما يتوفر اتصال بالإنترنت، وبعدها يتحول إلى «محفوظة».' : 'This record is still only on your phone. It will be uploaded to your account automatically as soon as there is an internet connection, then it becomes “Saved”.'
+      : isAr ? 'هذا السجل على موبايلك فقط لأنك لم تسجّل الدخول. سجّل الدخول (أو أنشئ الكارت المجاني) لينتقل إلى حسابك ولا تضيع نقاطك.' : 'This record is only on your phone because you are not signed in. Sign in (or create the free card) so it moves to your account and your points are not lost.';
 
   return (
     <span className="relative shrink-0">
       <button
         type="button"
         aria-expanded={open}
-        aria-label={synced ? 'محفوظة: اضغط للشرح' : 'على الجهاز فقط: اضغط للشرح'}
+        aria-label={synced ? (isAr ? 'محفوظة: اضغط للشرح' : 'Saved: tap for details') : isAr ? 'على الجهاز فقط: اضغط للشرح' : 'On this device only: tap for details'}
         onClick={() => setOpen((v) => !v)}
         onBlur={() => setOpen(false)}
         className={`flex flex-col items-center gap-0.5 rounded-xl px-2 py-1 text-[10px] font-black leading-tight cursor-pointer ${synced ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}
       >
         <Icon className="w-4 h-4" aria-hidden="true" />
-        {synced ? 'محفوظة' : 'على الجهاز'}
+        {synced ? (isAr ? 'محفوظة' : 'Saved') : isAr ? 'على الجهاز' : 'On device'}
       </button>
       {open && (
         <span role="status" className="absolute z-20 top-full mt-1 end-0 w-52 rounded-xl bg-slate-900 p-2.5 text-[11px] font-bold leading-5 text-white shadow-lg">
@@ -157,26 +164,28 @@ type LogLine =
   | { kind: 'play'; key: string; at: string; title: string; right: number; wrong: number; points: number; completed: boolean; synced: boolean }
   | { kind: 'badge'; key: string; at: string; title: string; icon: string; points: number; synced: boolean }
   | { kind: 'admin'; key: string; at: string; points: number; note: string | null; synced: boolean }
-  | { kind: 'wallet'; key: string; at: string; points: number; synced: boolean };
+  | { kind: 'wallet'; key: string; at: string; points: number; synced: boolean }
+  | { kind: 'transfer'; key: string; at: string; points: number; synced: boolean };
 
 /** The difficulty sign on a question: a word, a colour and 10 small bars of which `level` are lit. */
-function difficultyLook(level: number): { label: string; pill: string; bar: string } {
-  if (level <= 3) return { label: 'سهل', pill: 'bg-emerald-600', bar: 'bg-emerald-300' };
-  if (level <= 6) return { label: 'متوسط', pill: 'bg-amber-600', bar: 'bg-amber-300' };
-  if (level <= 8) return { label: 'صعب', pill: 'bg-orange-600', bar: 'bg-orange-300' };
-  return { label: 'صعب جداً', pill: 'bg-red-600', bar: 'bg-red-300' };
+function difficultyLook(level: number, isAr = true): { label: string; pill: string; bar: string } {
+  if (level <= 3) return { label: isAr ? 'سهل' : 'Easy', pill: 'bg-emerald-600', bar: 'bg-emerald-300' };
+  if (level <= 6) return { label: isAr ? 'متوسط' : 'Medium', pill: 'bg-amber-600', bar: 'bg-amber-300' };
+  if (level <= 8) return { label: isAr ? 'صعب' : 'Hard', pill: 'bg-orange-600', bar: 'bg-orange-300' };
+  return { label: isAr ? 'صعب جداً' : 'Very hard', pill: 'bg-red-600', bar: 'bg-red-300' };
 }
 
 /** The kinds of badge, in the order they are drawn; what a kind means and how many levels it has comes from the backend. */
 const BADGE_KIND_ORDER = ['solved', 'streak', 'stage'];
 const BADGE_KIND_TITLES: Record<string, string> = { solved: 'إجابات صحيحة', streak: 'صح ورا بعض', stage: 'مراحل القسم' };
+const BADGE_KIND_TITLES_EN: Record<string, string> = { solved: 'Right answers', streak: 'Right in a row', stage: 'Section stages' };
 /** The look of a ladder's levels, lowest to highest. */
 const BADGE_TIERS = [
-  { name: 'برونزي', medal: '🥉', earned: 'border-orange-300 bg-orange-50' },
-  { name: 'فضي', medal: '🥈', earned: 'border-slate-300 bg-slate-100' },
-  { name: 'ذهبي', medal: '🥇', earned: 'border-amber-300 bg-amber-50' },
-  { name: 'بلاتيني', medal: '💠', earned: 'border-cyan-300 bg-cyan-50' },
-  { name: 'ماسي', medal: '💎', earned: 'border-fuchsia-300 bg-fuchsia-50' },
+  { name: 'برونزي', nameEn: 'Bronze', medal: '🥉', earned: 'border-orange-300 bg-orange-50' },
+  { name: 'فضي', nameEn: 'Silver', medal: '🥈', earned: 'border-slate-300 bg-slate-100' },
+  { name: 'ذهبي', nameEn: 'Gold', medal: '🥇', earned: 'border-amber-300 bg-amber-50' },
+  { name: 'بلاتيني', nameEn: 'Platinum', medal: '💠', earned: 'border-cyan-300 bg-cyan-50' },
+  { name: 'ماسي', nameEn: 'Diamond', medal: '💎', earned: 'border-fuchsia-300 bg-fuchsia-50' },
 ];
 
 /** How a badge from the backend is named and drawn; the kinds and thresholds themselves are the backend's. */
@@ -185,13 +194,13 @@ function badgeIcon(b: { kind?: string | null; icon?: string | null }): string {
   return b.icon || BADGE_ICONS[b.kind ?? ''] || '🏅';
 }
 /** The admin's title when there is one (/admin/loyalty), otherwise the app words the rule itself. */
-function badgeTitle(b: { kind?: string | null; threshold?: number | null; title?: string | null }): string {
+function badgeTitle(b: { kind?: string | null; threshold?: number | null; title?: string | null }, isAr = true): string {
   if (b.title) return b.title;
-  if (b.threshold == null) return 'شارة';
-  if (b.kind === 'solved') return `حل ${b.threshold} سؤال صح`;
-  if (b.kind === 'streak') return `${b.threshold} إجابات صح ورا بعض`;
-  if (b.kind === 'stage') return `وصلت المرحلة ${b.threshold}`;
-  return `شارة ${b.threshold}`;
+  if (b.threshold == null) return isAr ? 'شارة' : 'Badge';
+  if (b.kind === 'solved') return isAr ? `حل ${b.threshold} سؤال صح` : `Solve ${b.threshold} questions right`;
+  if (b.kind === 'streak') return isAr ? `${b.threshold} إجابات صح ورا بعض` : `${b.threshold} right answers in a row`;
+  if (b.kind === 'stage') return isAr ? `وصلت المرحلة ${b.threshold}` : `Reach stage ${b.threshold}`;
+  return isAr ? `شارة ${b.threshold}` : `Badge ${b.threshold}`;
 }
 /** Three pictures of a section for its start screen (whatever its file has). */
 const introImages = (section: QuizSection): string[] => section.questions.flatMap((q) => (q.image && section.imageOf(q.image) ? [section.imageOf(q.image) as string] : [])).slice(0, 3);
@@ -325,7 +334,29 @@ const Art: React.FC<{ design: Design; q: Question; imageOf: (name: string) => st
   return <motion.div key={q.id} initial={{ scale: 1.15, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>{box}</motion.div>;
 };
 
+/** Asked once per visit when the app is in English: the questions come in Arabic or in English. */
+const QuizLanguageChoice: React.FC = () => (
+  <div dir="ltr" className="mx-auto max-w-sm space-y-4 pt-8 text-center" data-testid="quiz-language-choice">
+    <p className="text-5xl">🌐</p>
+    <h1 className="text-xl font-black text-slate-900">Which language for the questions?</h1>
+    <p className="text-sm font-semibold text-slate-500">You can pick again next time you open the app.</p>
+    <button type="button" onClick={() => setQuizLang('en')} className="w-full rounded-3xl bg-gradient-to-l from-sky-500 to-blue-600 p-4 text-lg font-black text-white shadow-[0_5px_0_rgba(0,0,0,0.2)] cursor-pointer">English questions</button>
+    <button type="button" onClick={() => setQuizLang('ar')} className="w-full rounded-3xl bg-gradient-to-l from-emerald-500 to-emerald-600 p-4 text-lg font-black text-white shadow-[0_5px_0_rgba(0,0,0,0.2)] cursor-pointer">الأسئلة بالعربي (Arabic questions)</button>
+  </div>
+);
+
+/** The quiz. An app in English first asks which language the questions should be in. */
 export const QuizGame: React.FC = () => {
+  const isAr = useIsAr();
+  const lang = useQuizLang();
+  if (!isAr && lang === null) return <QuizLanguageChoice />;
+  return <QuizGameInner />;
+};
+
+const QuizGameInner: React.FC = () => {
+  const isAr = useIsAr();
+  const quizLang = useQuizLang();
+  const SECTIONS = useMemo(() => BASE_SECTIONS.map((sec) => sectionIn(sec, quizLang)), [quizLang]);
   // Where the player is comes from the address (/quiz/mcq/football ...): the back button and shared links work.
   const route = useRoute();
   const { step, sectionId, moodScore } = parseQuizPath(route.quizPath ?? '');
@@ -394,12 +425,13 @@ export const QuizGame: React.FC = () => {
   // One log in time order: what the backend holds (plays, badges and their reward, points from the admin), plus plays
   // still on this phone that have not been uploaded yet.
   const log = useMemo<LogLine[]>(() => {
-    const titleOf = (quiz: string | null) => `اختيار من متعدد · ${SECTIONS.find((x) => x.key === quiz)?.title ?? SECTIONS[0].title}`;
+    const titleOf = (quiz: string | null) => `${isAr ? 'اختيار من متعدد' : 'Multiple choice'} · ${SECTIONS.find((x) => x.key === quiz)?.title ?? SECTIONS[0].title}`;
     const onServer = new Set(serverEntries.flatMap((e) => (e.type === 'play' ? [e.play_id] : [])));
     const lines: LogLine[] = serverEntries.map((e, i): LogLine => {
       if (e.type === 'play') return { kind: 'play', key: `s-${e.play_id}`, at: e.at, title: titleOf(e.quiz), right: e.right, wrong: e.wrong, points: e.points, completed: e.right + e.wrong >= PLAY_SIZE, synced: !queuedPlays.has(e.play_id) };
-      if (e.type === 'badge') return { kind: 'badge', key: `b-${e.quiz}-${e.key}-${i}`, at: e.at, title: badgeTitle(e), icon: badgeIcon(e), points: e.points, synced: true };
+      if (e.type === 'badge') return { kind: 'badge', key: `b-${e.quiz}-${e.key}-${i}`, at: e.at, title: badgeTitle(e, isAr), icon: badgeIcon(e), points: e.points, synced: true };
       if (e.type === 'wallet') return { kind: 'wallet', key: `w-${e.at}-${i}`, at: e.at, points: e.points, synced: true };
+      if (e.type === 'transfer') return { kind: 'transfer', key: `t-${e.at}-${i}`, at: e.at, points: e.points, synced: true };
       return { kind: 'admin', key: `a-${e.at}-${i}`, at: e.at, points: e.points, note: e.note, synced: true };
     });
 
@@ -485,7 +517,7 @@ export const QuizGame: React.FC = () => {
   /** Files this play in the log: when it was played and the points it won or lost. `answeredSoFar` is how many questions were answered. */
   const logPlay = (answeredSoFar: number, completed: boolean, rightSoFar = rightCount, pointsSoFar = score) => {
     if (answeredSoFar === 0) return;
-    savePlay({ id: playId.current, played_at: new Date().toISOString(), quiz: QUIZ_KEY, title: `اختيار من متعدد · ${section.title}`, right: rightSoFar, wrong: answeredSoFar - rightSoFar, completed, points: pointsSoFar });
+    savePlay({ id: playId.current, played_at: new Date().toISOString(), quiz: QUIZ_KEY, title: `${isAr ? 'اختيار من متعدد' : 'Multiple choice'} · ${section.title}`, right: rightSoFar, wrong: answeredSoFar - rightSoFar, completed, points: pointsSoFar });
   };
 
   const next = () => {
@@ -555,12 +587,12 @@ export const QuizGame: React.FC = () => {
   const stars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.3 ? 1 : 0;
 
   return (
-    <div dir="rtl" className="relative min-h-[80vh] pb-24 pt-1 text-right">
+    <div dir={isAr ? 'rtl' : 'ltr'} className={`relative min-h-[80vh] pb-24 pt-1 ${isAr ? 'text-right' : 'text-left'}`}>
       <div className="flex items-center justify-between mb-1.5">
         <button onClick={goBack} className="flex items-center gap-1 text-sm font-bold text-[#931A47] cursor-pointer">
-          <ArrowRight className="w-4 h-4" /> رجوع
+          <ArrowRight className={`w-4 h-4 ${isAr ? '' : 'rotate-180'}`} /> {isAr ? 'رجوع' : 'Back'}
         </button>
-        <button onClick={() => setSound((s) => !s)} className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center cursor-pointer" aria-label="الصوت">
+        <button onClick={() => setSound((s) => !s)} className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center cursor-pointer" aria-label={isAr ? 'الصوت' : 'Sound'}>
           {sound ? <Volume2 className="w-4 h-4 text-slate-700" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
         </button>
       </div>
@@ -571,10 +603,10 @@ export const QuizGame: React.FC = () => {
             <PointsBalance total={loyalty.total} pending={loyalty.pending} signedIn={!!session.token} egp={loyalty.egp} />
             <WalletPanel signedIn={!!session.token} />
             {!!session.token && <TransfersPanel />}
-            <h1 className="text-xl font-black text-slate-900">🎮 اختر نوع اللعبة</h1>
+            <h1 className="text-xl font-black text-slate-900">{isAr ? '🎮 اختر نوع اللعبة' : '🎮 Choose the game'}</h1>
             <motion.button whileTap={{ scale: 0.96 }} onClick={() => go('mcq')} className="w-full flex items-center gap-3 p-4 rounded-3xl bg-gradient-to-l from-violet-500 to-purple-600 text-white shadow-[0_5px_0_rgba(0,0,0,0.2)] cursor-pointer">
               <span className="text-4xl">🎯</span>
-              <span className="flex-1 text-right"><span className="block text-lg font-black">اختيار من متعدد</span><span className="block text-xs font-semibold text-white/80">اختر الإجابة الصحيحة من 4 اختيارات</span></span>
+              <span className="flex-1 text-right"><span className="block text-lg font-black">{isAr ? 'اختيار من متعدد' : 'Multiple choice'}</span><span className="block text-xs font-semibold text-white/80">{isAr ? 'اختر الإجابة الصحيحة من 4 اختيارات' : 'Pick the right answer out of 4'}</span></span>
               <span className="text-xl">◀</span>
             </motion.button>
           </motion.div>
@@ -584,18 +616,18 @@ export const QuizGame: React.FC = () => {
           <motion.div key="types-more" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-3 space-y-3">
             <button onClick={() => { void refreshHistory(); void refreshLoyalty(); go('history'); }} className="w-full flex items-center gap-3 p-4 rounded-3xl bg-white border-2 border-slate-200 text-slate-800 cursor-pointer">
               <span className="text-3xl">📜</span>
-              <span className="flex-1 text-right"><span className="block text-base font-black">سجل اللعب والتقدم</span><span className="block text-xs font-semibold text-slate-500">{plays.length} مرة لعب · المرحلة {progress.stage} · حليت {progress.solved.length}</span></span>
+              <span className="flex-1 text-right"><span className="block text-base font-black">{isAr ? 'سجل اللعب والتقدم' : 'Play history & progress'}</span><span className="block text-xs font-semibold text-slate-500">{isAr ? `${plays.length} مرة لعب · المرحلة ${progress.stage} · حليت ${progress.solved.length}` : `${plays.length} plays · stage ${progress.stage} · ${progress.solved.length} solved`}</span></span>
               <span className="text-xl">◀</span>
             </button>
             <button onClick={() => go('moods')} className="w-full flex items-center gap-3 p-4 rounded-3xl bg-white border-2 border-fuchsia-200 text-slate-800 cursor-pointer">
               <span className="text-3xl">🎭</span>
-              <span className="flex-1 text-right"><span className="block text-base font-black">شاشات النقاط</span><span className="block text-xs font-semibold text-slate-500">20 شاشة تفاعلية للربح والخسارة</span></span>
+              <span className="flex-1 text-right"><span className="block text-base font-black">{isAr ? 'شاشات النقاط' : 'Points screens'}</span><span className="block text-xs font-semibold text-slate-500">{isAr ? '20 شاشة تفاعلية للربح والخسارة' : '20 interactive win and lose screens'}</span></span>
               <span className="text-xl">◀</span>
             </button>
             <button onClick={() => { markBadgesSeen(badges.filter((b) => b.earned)); void refreshLoyalty(); go('badges'); }} className="relative w-full flex items-center gap-3 p-4 rounded-3xl bg-white border-2 border-amber-200 text-slate-800 cursor-pointer">
               <span className="text-3xl">🏅</span>
-              <span className="flex-1 text-right"><span className="block text-base font-black">كل الشارات</span><span className="block text-xs font-semibold text-slate-500">{badges.length === 0 ? 'شوف الشارات اللي تقدر تكسبها وهداياها' : `حصلت على ${badges.filter((b) => b.earned).length} من ${badges.length} شارة`}</span></span>
-              {unseen.length > 0 && <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-black text-white">{unseen.length} جديدة</span>}
+              <span className="flex-1 text-right"><span className="block text-base font-black">{isAr ? 'كل الشارات' : 'All badges'}</span><span className="block text-xs font-semibold text-slate-500">{badges.length === 0 ? (isAr ? 'شوف الشارات اللي تقدر تكسبها وهداياها' : 'See the badges you can earn and their gifts') : isAr ? `حصلت على ${badges.filter((b) => b.earned).length} من ${badges.length} شارة` : `You earned ${badges.filter((b) => b.earned).length} of ${badges.length} badges`}</span></span>
+              {unseen.length > 0 && <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-black text-white">{unseen.length} {isAr ? 'جديدة' : 'new'}</span>}
               <span className="text-xl">◀</span>
             </button>
           </motion.div>
@@ -603,21 +635,21 @@ export const QuizGame: React.FC = () => {
 
         {!started && step === 'moods' && (
           <motion.div key="moods" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <PointsGallery selected={moodScore} onSelect={(score) => go(score === null ? 'moods' : `moods/${score}`)} seen={seenScenes} shareFor={(s) => resultShareText(s, Math.max(0, Math.round((s + 100) / 20)), PLAY_SIZE, sceneFor(s).emoji, section.topic)} />
+            <PointsGallery selected={moodScore} onSelect={(score) => go(score === null ? 'moods' : `moods/${score}`)} seen={seenScenes} shareFor={(s) => resultShareText(s, Math.max(0, Math.round((s + 100) / 20)), PLAY_SIZE, sceneFor(s).emoji, section.topic, isAr)} />
           </motion.div>
         )}
 
         {!started && step === 'badges' && (
           <motion.div key="badges" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-            <h1 className="text-xl font-black text-slate-900">🏅 كل الشارات</h1>
+            <h1 className="text-xl font-black text-slate-900">{isAr ? '🏅 كل الشارات' : '🏅 All badges'}</h1>
             {badges.length === 0 && (
               <p className="rounded-2xl bg-slate-50 border border-slate-200 p-4 text-sm font-bold text-slate-600">
-                مقدرناش نحمّل الشارات دلوقتي. اتأكد من الاتصال بالإنترنت وجرّب تاني.
+                {isAr ? 'مقدرناش نحمّل الشارات دلوقتي. اتأكد من الاتصال بالإنترنت وجرّب تاني.' : 'We could not load the badges now. Check your connection and try again.'}
               </p>
             )}
             {badges.length > 0 && !session.token && (
               <p className="rounded-2xl bg-amber-50 border border-amber-200 p-3 text-xs font-bold text-amber-900">
-                دي كل الشارات اللي تقدر تكسبها وهدية نقاط الولاء لكل واحدة. سجّل بياناتك واعمل كارت العضوية التجريبي المجاني عشان تتسجل شاراتك وتاخد هداياها.
+                {isAr ? 'دي كل الشارات اللي تقدر تكسبها وهدية نقاط الولاء لكل واحدة. سجّل بياناتك واعمل كارت العضوية التجريبي المجاني عشان تتسجل شاراتك وتاخد هداياها.' : 'These are all the badges you can earn, with a loyalty-points gift for each. Fill in your details and get the free trial card so your badges are saved and you get the gifts.'}
               </p>
             )}
             {SECTIONS.map((sec) => {
@@ -634,17 +666,17 @@ export const QuizGame: React.FC = () => {
                     return (
                       <div key={kind} className="mt-3 rounded-2xl border border-slate-200 p-2.5">
                         <div className="mb-2 flex items-center justify-between">
-                          <p className="text-sm font-black text-slate-900">{BADGE_ICONS[kind]} {BADGE_KIND_TITLES[kind]}</p>
-                          <span className="text-xs font-bold text-slate-500">{levels.filter((b) => b.earned).length}/{levels.length} مراحل</span>
+                          <p className="text-sm font-black text-slate-900">{BADGE_ICONS[kind]} {(isAr ? BADGE_KIND_TITLES : BADGE_KIND_TITLES_EN)[kind]}</p>
+                          <span className="text-xs font-bold text-slate-500">{levels.filter((b) => b.earned).length}/{levels.length} {isAr ? 'مراحل' : 'levels'}</span>
                         </div>
                         <div className="grid grid-cols-5 gap-1.5">
                           {levels.map((b, i) => {
                             const tier = BADGE_TIERS[Math.min(i, BADGE_TIERS.length - 1)];
                             return (
-                              <div key={b.key} title={badgeTitle(b)} className={`flex flex-col items-center rounded-xl border-2 px-1 py-2 text-center ${b.earned ? tier.earned : 'border-slate-200 bg-slate-50'}`}>
+                              <div key={b.key} title={badgeTitle(b, isAr)} className={`flex flex-col items-center rounded-xl border-2 px-1 py-2 text-center ${b.earned ? tier.earned : 'border-slate-200 bg-slate-50'}`}>
                                 <span className={`text-2xl leading-none ${b.earned ? '' : 'grayscale opacity-60'}`}>{b.icon || tier.medal}</span>
                                 <span className="mt-1 text-sm font-black text-slate-900" dir="ltr">{b.threshold}</span>
-                                <span className="text-[10px] font-bold leading-tight text-slate-500">{b.title || tier.name}</span>
+                                <span className="text-[10px] font-bold leading-tight text-slate-500">{b.title || (isAr ? tier.name : tier.nameEn)}</span>
                                 {b.reward_points > 0 && <span className="mt-0.5 text-[10px] font-black text-emerald-600" dir="ltr">🎁 +{b.reward_points}</span>}
                                 {b.earned && <span className="text-[10px] font-black text-emerald-600">✔</span>}
                               </div>
@@ -670,11 +702,11 @@ export const QuizGame: React.FC = () => {
 
         {!started && step === 'history' && (
           <motion.div key="history" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-2.5">
-            <h1 className="text-xl font-black text-slate-900">📜 سجل اللعب</h1>
+            <h1 className="text-xl font-black text-slate-900">{isAr ? '📜 سجل اللعب' : '📜 Play history'}</h1>
 
             {SECTIONS.map((sec) => <ProgressPanel key={sec.id} sec={sec} />)}
 
-            {log.length === 0 && <p className="rounded-2xl bg-slate-50 p-4 text-center text-sm font-bold text-slate-500">لسه ما لعبتش. العب أول مرة وهتظهر هنا.</p>}
+            {log.length === 0 && <p className="rounded-2xl bg-slate-50 p-4 text-center text-sm font-bold text-slate-500">{isAr ? 'لسه ما لعبتش. العب أول مرة وهتظهر هنا.' : 'You have not played yet. Play your first game and it will show here.'}</p>}
             {log.map((line) => {
               const when = new Date(line.at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' });
               const tone = line.points >= 0 ? 'bg-emerald-500' : 'bg-red-500';
@@ -687,7 +719,7 @@ export const QuizGame: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-black text-slate-900 truncate">🎮 {line.title}</p>
                       <p className="text-xs font-semibold text-slate-500">{when}</p>
-                      <p className="text-xs font-bold mt-0.5"><span className="text-emerald-600">✅ {line.right} صح</span> <span className="text-red-600">❌ {line.wrong} غلط</span>{!line.completed && <span className="text-slate-400"> · غير مكتملة</span>}</p>
+                      <p className="text-xs font-bold mt-0.5"><span className="text-emerald-600">✅ {line.right} {isAr ? 'صح' : 'right'}</span> <span className="text-red-600">❌ {line.wrong} {isAr ? 'غلط' : 'wrong'}</span>{!line.completed && <span className="text-slate-400"> · {isAr ? 'غير مكتملة' : 'unfinished'}</span>}</p>
                     </div>
                     <SyncChip synced={line.synced} signedIn={!!session.token} />
                   </div>
@@ -699,7 +731,7 @@ export const QuizGame: React.FC = () => {
                   <div key={line.key} className="flex items-center gap-3 rounded-2xl bg-amber-50 border-2 border-amber-300 p-3 shadow-2xs">
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl bg-white shrink-0">{line.icon}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-amber-900">شارة: {line.title}</p>
+                      <p className="text-sm font-black text-amber-900">{isAr ? 'شارة:' : 'Badge:'} {line.title}</p>
                       <p className="text-xs font-semibold text-slate-500">{when}</p>
                     </div>
                     {line.points > 0 && <span className="rounded-xl bg-emerald-500 px-2.5 py-1 text-sm font-black text-white" dir="ltr">{points} 🎁</span>}
@@ -713,7 +745,20 @@ export const QuizGame: React.FC = () => {
                   <div key={line.key} className="flex items-center gap-3 rounded-2xl bg-violet-50 border-2 border-violet-300 p-3 shadow-2xs">
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white shrink-0 bg-violet-600" dir="ltr">{points}</div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-violet-900">👛 تحويل نقاط إلى المحفظة</p>
+                      <p className="text-sm font-black text-violet-900">{isAr ? '👛 تحويل نقاط إلى المحفظة' : '👛 Points converted to the wallet'}</p>
+                      <p className="text-xs font-semibold text-slate-500">{when}</p>
+                    </div>
+                    <SyncChip synced={line.synced} signedIn={!!session.token} />
+                  </div>
+                );
+              }
+
+              if (line.kind === 'transfer') {
+                return (
+                  <div key={line.key} className="flex items-center gap-3 rounded-2xl bg-indigo-50 border-2 border-indigo-300 p-3 shadow-2xs">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white shrink-0 ${tone}`} dir="ltr">{points}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-indigo-900">{line.points < 0 ? (isAr ? '↗️ تحويل نقاط إلى عضو' : '↗️ Points sent to a member') : isAr ? '↙️ نقاط وصلتك من عضو' : '↙️ Points received from a member'}</p>
                       <p className="text-xs font-semibold text-slate-500">{when}</p>
                     </div>
                     <SyncChip synced={line.synced} signedIn={!!session.token} />
@@ -725,7 +770,7 @@ export const QuizGame: React.FC = () => {
                 <div key={line.key} className="flex items-center gap-3 rounded-2xl bg-sky-50 border-2 border-sky-300 p-3 shadow-2xs">
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-lg font-black text-white shrink-0 ${tone}`} dir="ltr">{points}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-sky-900">🎁 نقاط ولاء من الإدارة</p>
+                    <p className="text-sm font-black text-sky-900">{isAr ? '🎁 نقاط ولاء من الإدارة' : '🎁 Loyalty points from the admin'}</p>
                     <p className="text-xs font-semibold text-slate-500">{when}</p>
                     {line.note && <p className="text-xs font-bold text-slate-700 mt-0.5">{line.note}</p>}
                   </div>
@@ -738,8 +783,9 @@ export const QuizGame: React.FC = () => {
 
         {!started && step === 'sections' && (
           <motion.div key="sections" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
-            <h1 className="text-xl font-black text-slate-900">🎯 اختيار من متعدد</h1>
-            <p className="text-sm font-semibold text-slate-500">اختر القسم</p>
+            <h1 className="text-xl font-black text-slate-900">{isAr ? '🎯 اختيار من متعدد' : '🎯 Multiple choice'}</h1>
+            <p className="text-sm font-semibold text-slate-500">{isAr ? 'اختر القسم' : 'Choose a section'}</p>
+            {!isAr && <button type="button" onClick={() => setQuizLang(null)} className="text-xs font-bold text-sky-700 underline cursor-pointer">{quizLang === 'en' ? 'Questions: English — change' : 'Questions: Arabic — change'}</button>}
             {SECTIONS.map((sec) => (
               <motion.button key={sec.id} whileTap={{ scale: 0.96 }} onClick={() => go(`mcq/${sec.id}`)} className={`w-full flex items-center gap-3 p-4 rounded-3xl bg-gradient-to-l ${sec.color} text-white shadow-[0_5px_0_rgba(0,0,0,0.2)] cursor-pointer`}>
                 <motion.span animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 1.2 }} className="text-4xl">{sec.emoji}</motion.span>
@@ -754,10 +800,10 @@ export const QuizGame: React.FC = () => {
           <motion.div key="intro" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className={`rounded-3xl bg-gradient-to-b ${section.introBg} p-6 text-center text-white shadow-lg overflow-hidden relative`}>
             <motion.div animate={{ y: [0, -22, 0], rotate: [0, 360] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }} className="text-7xl mb-2 inline-block">{section.emoji}</motion.div>
             <h1 className="text-2xl font-black mb-1">{section.introTitle}</h1>
-            <p className="text-sm font-semibold text-emerald-50 mb-2">جاوب على {PLAY_SIZE} أسئلة واجمع النقاط!</p>
-            <p className="text-xs font-bold text-white/90 mb-4">⚡ كل ما تجاوب أسرع تكسب أكتر: {QUIZ_SPEED_TIERS.map((t) => `${t.upTo}ث = ${t.points}`).join(' · ')}</p>
-            <p className="-mt-3 mb-1 text-xs font-bold text-emerald-100">المرحلة {progress.stage} · حليت {progress.solved.length} سؤال</p>
-            <p className="mb-4 text-xs font-black text-white">{limit.locked ? '🔒 خلصت محاولات النهارده' : `🎮 باقي ${limit.left} من ${PLAYS_PER_DAY} محاولات النهارده`}</p>
+            <p className="text-sm font-semibold text-emerald-50 mb-2">{isAr ? `جاوب على ${PLAY_SIZE} أسئلة واجمع النقاط!` : `Answer ${PLAY_SIZE} questions and collect points!`}</p>
+            <p className="text-xs font-bold text-white/90 mb-4">{isAr ? '⚡ كل ما تجاوب أسرع تكسب أكتر:' : '⚡ The faster you answer, the more you earn:'} {QUIZ_SPEED_TIERS.map((t) => `${t.upTo}${isAr ? 'ث' : 's'} = ${t.points}`).join(' · ')}</p>
+            <p className="-mt-3 mb-1 text-xs font-bold text-emerald-100">{isAr ? `المرحلة ${progress.stage} · حليت ${progress.solved.length} سؤال` : `Stage ${progress.stage} · ${progress.solved.length} solved`}</p>
+            <p className="mb-4 text-xs font-black text-white">{limit.locked ? (isAr ? '🔒 خلصت محاولات النهارده' : '🔒 No plays left today') : isAr ? `🎮 باقي ${limit.left} من ${PLAYS_PER_DAY} محاولات النهارده` : `🎮 ${limit.left} of ${PLAYS_PER_DAY} plays left today`}</p>
             <div className="grid grid-cols-3 gap-2 mb-5 empty:hidden">
               {introImages(section).map((src, i) => (
                 <motion.img key={src} src={src} alt="" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 + i * 0.15 }} className="rounded-2xl border-4 border-white/70 aspect-square object-cover" />
@@ -767,7 +813,7 @@ export const QuizGame: React.FC = () => {
               <LockedPanel title={section.title} msLeft={limit.msLeft} />
             ) : (
               <motion.button whileTap={{ scale: 0.92 }} animate={{ scale: [1, 1.07, 1] }} transition={{ repeat: Infinity, duration: 1.3 }} onClick={() => { if (restart()) beep([523, 659]); }} className="w-full py-4 rounded-2xl bg-amber-400 text-emerald-900 text-xl font-black shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none cursor-pointer">
-                ابدأ اللعب 🎮
+                {isAr ? 'ابدأ اللعب 🎮' : 'Start playing 🎮'}
               </motion.button>
             )}
           </motion.div>
@@ -802,7 +848,7 @@ export const QuizGame: React.FC = () => {
                 {answered && (
                   <motion.div initial={{ opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 15 }} className="absolute inset-0 z-30 flex items-center justify-center bg-black/35 pointer-events-none">
                     <div className={`rounded-2xl px-6 py-3 text-center text-3xl font-black text-white shadow-xl ${correct ? 'bg-emerald-500' : timedOut ? 'bg-orange-500' : 'bg-red-500'}`}>
-                      {correct ? '✅ صح!' : timedOut ? '⏰ انتهى الوقت!' : '❌ غلط!'}
+                      {correct ? (isAr ? '✅ صح!' : '✅ Right!') : timedOut ? (isAr ? '⏰ انتهى الوقت!' : '⏰ Time is up!') : isAr ? '❌ غلط!' : '❌ Wrong!'}
                       <span dir="ltr" className="block text-lg mt-0.5">{gained > 0 ? `+${gained}` : `${gained}`}</span>
                     </div>
                   </motion.div>
@@ -818,11 +864,11 @@ export const QuizGame: React.FC = () => {
 
               <div className="relative">
                 <div className={`flex items-center gap-2 mb-1.5 ${design === 'bubbles' || design === 'polaroid' ? 'justify-center' : ''}`}>
-                  <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-black text-white ${difficultyLook(q.difficulty).pill}`} title={`الصعوبة ${q.difficulty} من 10`}>
-                    {difficultyLook(q.difficulty).label}
+                  <span className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-black text-white ${difficultyLook(q.difficulty, isAr).pill}`} title={isAr ? `الصعوبة ${q.difficulty} من 10` : `Difficulty ${q.difficulty} of 10`}>
+                    {difficultyLook(q.difficulty, isAr).label}
                     <span className="flex gap-px" dir="ltr" aria-hidden>
                       {Array.from({ length: 10 }, (_, n) => (
-                        <span key={n} className={`h-2.5 w-1 rounded-sm ${n < q.difficulty ? difficultyLook(q.difficulty).bar : 'bg-white/25'}`} />
+                        <span key={n} className={`h-2.5 w-1 rounded-sm ${n < q.difficulty ? difficultyLook(q.difficulty, isAr).bar : 'bg-white/25'}`} />
                       ))}
                     </span>
                   </span>
@@ -865,7 +911,7 @@ export const QuizGame: React.FC = () => {
           <motion.div key="end" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="space-y-3">
             {score > 0 && <Confetti />}
             {/* The scene of this result (one of 20), with the button that shares it. */}
-            <PointsMood score={score} shareText={resultShareText(score, rightCount, deck.length, sceneFor(score).emoji, section.topic)} />
+            <PointsMood score={score} shareText={resultShareText(score, rightCount, deck.length, sceneFor(score).emoji, section.topic, isAr)} />
 
           <div className="rounded-3xl bg-gradient-to-b from-amber-300 via-amber-400 to-orange-500 p-5 text-center shadow-lg">
             <div className="flex justify-center gap-2 mb-3">
@@ -875,32 +921,32 @@ export const QuizGame: React.FC = () => {
                 </motion.div>
               ))}
             </div>
-            <p dir="ltr" className="text-5xl font-black text-white">{score} <span className="text-2xl">نقطة ولاء</span></p>
-            <p className="text-sm font-bold text-white/90 mb-4">{rightCount} إجابة صحيحة من {deck.length}</p>
+            <p dir="ltr" className="text-5xl font-black text-white">{score} <span className="text-2xl">{isAr ? 'نقطة ولاء' : 'loyalty points'}</span></p>
+            <p className="text-sm font-bold text-white/90 mb-4">{isAr ? `${rightCount} إجابة صحيحة من ${deck.length}` : `${rightCount} right answers out of ${deck.length}`}</p>
 
             {progress.stage > stageAtStart.current && (
-              <p className="mb-3 rounded-2xl bg-white/90 px-3 py-2 text-sm font-black text-emerald-700">🎉 خلصت كل أسئلة القسم! بدأت المرحلة {progress.stage} بكل الأسئلة من جديد.</p>
+              <p className="mb-3 rounded-2xl bg-white/90 px-3 py-2 text-sm font-black text-emerald-700">{isAr ? `🎉 خلصت كل أسئلة القسم! بدأت المرحلة ${progress.stage} بكل الأسئلة من جديد.` : `🎉 You finished every question in this section! Stage ${progress.stage} starts with all the questions again.`}</p>
             )}
             {unseen.length > 0 && (
               <div className="mb-3 rounded-2xl bg-white/90 px-3 py-2 text-sm font-black text-amber-700">
-                🏅 شارة جديدة!
-                {unseen.map((b) => <span key={`${b.quiz}${b.key}`} className="block text-xs">{badgeIcon(b)} {badgeTitle(b)}{b.reward_points > 0 && <span dir="ltr"> · 🎁 +{b.reward_points} نقطة</span>}</span>)}
+                {isAr ? '🏅 شارة جديدة!' : '🏅 New badge!'}
+                {unseen.map((b) => <span key={`${b.quiz}${b.key}`} className="block text-xs">{badgeIcon(b)} {badgeTitle(b, isAr)}{b.reward_points > 0 && <span dir="ltr"> · 🎁 +{b.reward_points} {isAr ? 'نقطة' : 'points'}</span>}</span>)}
               </div>
             )}
 
             {isMember ? (
               <p className="mb-4 rounded-2xl bg-white/25 px-3 py-2 text-sm font-bold text-white">
-                🎁 رصيد نقاط الولاء في حسابك: <span dir="ltr">{loyalty.total}</span>
-                {loyalty.egp > 0 && <> (≈ <span dir="ltr">{formatEgp(loyalty.egp)}</span> جنيه)</>}
+                {isAr ? '🎁 رصيد نقاط الولاء في حسابك:' : '🎁 Loyalty points in your account:'} <span dir="ltr">{loyalty.total}</span>
+                {loyalty.egp > 0 && <> (≈ <span dir="ltr">{formatEgp(loyalty.egp)}</span> {isAr ? 'جنيه' : 'EGP'})</>}
               </p>
             ) : (
               <div className="mb-4 rounded-2xl bg-white p-4 text-right shadow-md">
-                <p className="text-sm font-black text-slate-900">🎁 احتفظ بنقاطك!</p>
+                <p className="text-sm font-black text-slate-900">{isAr ? '🎁 احتفظ بنقاطك!' : '🎁 Keep your points!'}</p>
                 <p className="mt-1 text-xs font-semibold leading-relaxed text-slate-600">
-                  النقاط دي محفوظة على موبايلك. املأ بياناتك واعمل كارت العضوية التجريبي المجاني عشان تتسجل في حسابك وتقدر تستفيد بيها بعدين.
+                  {isAr ? 'النقاط دي محفوظة على موبايلك. املأ بياناتك واعمل كارت العضوية التجريبي المجاني عشان تتسجل في حسابك وتقدر تستفيد بيها بعدين.' : 'These points are saved on your phone. Fill in your details and get the free trial card so they are recorded in your account and you can use them later.'}
                 </p>
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => navigate('/card')} className="mt-3 w-full rounded-xl bg-[#931A47] py-3 text-base font-black text-white cursor-pointer">
-                  املأ بياناتي واحتفظ بنقاطي ➜
+                  {isAr ? 'املأ بياناتي واحتفظ بنقاطي ➜' : 'Fill in my details and keep my points ➜'}
                 </motion.button>
               </div>
             )}
@@ -909,10 +955,10 @@ export const QuizGame: React.FC = () => {
               <LockedPanel title={section.title} msLeft={limit.msLeft} />
             ) : (
               <motion.button whileTap={{ scale: 0.93 }} onClick={() => void restart()} className="w-full py-4 rounded-2xl bg-white text-orange-600 text-lg font-black shadow-[0_5px_0_#c2410c] flex items-center justify-center gap-2 cursor-pointer">
-                <RotateCcw className="w-5 h-5" /> العب تاني <span className="text-xs font-bold text-orange-400">(باقي {limit.left})</span>
+                <RotateCcw className="w-5 h-5" /> {isAr ? 'العب تاني' : 'Play again'} <span className="text-xs font-bold text-orange-400">({isAr ? 'باقي' : 'left:'} {limit.left})</span>
               </motion.button>
             )}
-            <button onClick={() => navigate('/')} className="mt-3 text-sm font-bold text-white/90 underline cursor-pointer">الرجوع للرئيسية</button>
+            <button onClick={() => navigate('/')} className="mt-3 text-sm font-bold text-white/90 underline cursor-pointer">{isAr ? 'الرجوع للرئيسية' : 'Back to home'}</button>
           </div>
           </motion.div>
         )}

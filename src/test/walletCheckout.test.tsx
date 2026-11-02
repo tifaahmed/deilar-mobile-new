@@ -21,11 +21,11 @@ import { CartCheckoutModal } from '../components/CartCheckoutModal';
 import { clearSession, updateSession } from '../utils/session';
 import { LanguageProvider } from '../context/LanguageContext';
 
-const item = (id: string, price: number, walletPayable: boolean) =>
-  ({ quantity: 1, product: { id, name: id, price, image: '', walletPayable } }) as never;
+const item = (id: string, price: number, pointsPayable = false) =>
+  ({ quantity: 1, product: { id, name: id, price, image: '', pointsPayable } }) as never;
 
-const seed = (balance: number) => localStorage.setItem('deilar_loyalty_server', JSON.stringify({
-  points: 0, token: 'tok', money: { points_per_egp: 10, wallet_balance: balance, wallet_enabled: true, wallet_min_egp: 10 },
+const seed = (balance: number, points = 0) => localStorage.setItem('deilar_loyalty_server', JSON.stringify({
+  points, token: 'tok', money: { points_per_egp: 10, wallet_balance: balance, wallet_enabled: true, wallet_min_egp: 10 },
 }));
 
 const show = (cart: never[]) => render(
@@ -34,24 +34,41 @@ const show = (cart: never[]) => render(
   </LanguageProvider>,
 );
 
-describe('wallet cuts the bill automatically at checkout', () => {
+describe('wallet and loyalty points cut the bill automatically at checkout', () => {
   beforeEach(() => { vi.clearAllMocks(); localStorage.clear(); clearSession(); updateSession({ token: 'tok' }); });
 
-  it('deducts only the allowed products, capped by the balance', async () => {
+  it('the wallet pays for ANY product (ticked or not), capped by the balance', async () => {
     seed(80);
-    show([item('a', 100, true), item('b', 50, false)] as never[]);
+    show([item('a', 100), item('b', 50)] as never[]);
     expect((await screen.findByTestId('wallet-line-cart')).textContent).toContain('-80');
   });
 
-  it('shows no wallet line when no product is allowed or the balance is empty', async () => {
-    seed(500);
-    const { unmount } = show([item('a', 100, false)] as never[]);
-    await screen.findAllByText(/ج\.م/);
-    expect(screen.queryByTestId('wallet-line-cart')).toBeNull();
-    unmount();
+  it('shows no wallet line when the balance is empty', async () => {
     seed(0);
-    show([item('a', 100, true)] as never[]);
+    show([item('a', 100)] as never[]);
     await screen.findAllByText(/ج\.م/);
     expect(screen.queryByTestId('wallet-line-cart')).toBeNull();
+  });
+
+  it('points discount only products that accept them, in whole pounds, then the wallet pays the rest', async () => {
+    seed(30, 1250); // 125 pounds of points at 10 per pound; only the 100 EGP product accepts them
+    show([item('a', 100, true), item('b', 50)] as never[]);
+    expect((await screen.findByTestId('points-line-cart')).textContent).toContain('-100');
+    expect((await screen.findByTestId('wallet-line-cart')).textContent).toContain('-30');
+  });
+
+  it('shows no points line when no product accepts them, and the buyer can switch points off', async () => {
+    seed(0, 5000);
+    const { unmount } = show([item('a', 100)] as never[]);
+    await screen.findAllByText(/ج\.م/);
+    expect(screen.queryByTestId('points-line-cart')).toBeNull();
+    expect(screen.queryByTestId('points-toggle')).toBeNull();
+    unmount();
+
+    show([item('a', 100, true)] as never[]);
+    expect(await screen.findByTestId('points-line-cart')).toBeTruthy();
+    (await screen.findByTestId('points-toggle')).querySelector('input')!.click();
+    await screen.findAllByText(/ج\.م/);
+    expect(screen.queryByTestId('points-line-cart')).toBeNull();
   });
 });

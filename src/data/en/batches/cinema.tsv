@@ -1,0 +1,997 @@
+1	Which film won Best Picture at the Oscars ceremony held in 2025?	Gladiator	Forrest Gump	Everything Everywhere All at Once	Anora	Anora won Best Picture at the 2025 ceremony.
+2	Which film won Best Picture at the Oscars ceremony held in 2024?	No Country for Old Men	Crash	The Hurt Locker	Oppenheimer	Oppenheimer won Best Picture in 2024.
+3	Which film won Best Picture at the Oscars ceremony held in 2023?	Gladiator	Everything Everywhere All at Once	Nomadland	No Country for Old Men	Everything Everywhere All at Once won in 2023.
+4	Which film won Best Picture at the Oscars ceremony held in 2022?	CODA	The Hurt Locker	Anora	Birdman	CODA won Best Picture in 2022.
+5	Which film won Best Picture at the Oscars ceremony held in 2021?	Nomadland	Crash	Parasite	No Country for Old Men	Nomadland won Best Picture in 2021.
+6	Which film won Best Picture at the Oscars ceremony held in 2020?	CODA	Moonlight	Crash	Parasite	Parasite was the first non-English-language Best Picture winner.
+7	Which film won Best Picture at the Oscars ceremony held in 2019?	Everything Everywhere All at Once	Anora	Green Book	Shakespeare in Love	Green Book won Best Picture in 2019.
+8	Which film won Best Picture at the Oscars ceremony held in 2018?	Schindler's List	The Hurt Locker	The Shape of Water	Parasite	The Shape of Water won in 2018.
+9	Which film won Best Picture at the Oscars ceremony held in 2017?	Green Book	Moonlight	The King's Speech	Nomadland	Moonlight won after a famous envelope mix-up.
+10	Which film won Best Picture at the Oscars ceremony held in 2016?	The King's Speech	Schindler's List	Slumdog Millionaire	Spotlight	Spotlight won Best Picture in 2016.
+12	Which film won Best Picture at the Oscars ceremony held in 2014?	The Hurt Locker	Argo	12 Years a Slave	The King's Speech	12 Years a Slave won in 2014.
+13	Which film won Best Picture at the Oscars ceremony held in 2013?	Argo	No Country for Old Men	Moonlight	CODA	Argo won Best Picture in 2013.
+14	Which film won Best Picture at the Oscars ceremony held in 2012?	American Beauty	The Artist	Schindler's List	Anora	The Artist, a silent film, won in 2012.
+15	Which film won Best Picture at the Oscars ceremony held in 2011?	Oppenheimer	A Beautiful Mind	The King's Speech	Green Book	The King's Speech won in 2011.
+16	Which film won Best Picture at the Oscars ceremony held in 2010?	Parasite	No Country for Old Men	Anora	The Hurt Locker	The Hurt Locker won in 2010.
+17	Which film won Best Picture at the Oscars ceremony held in 2009?	Forrest Gump	Chicago	Slumdog Millionaire	The Departed	Slumdog Millionaire won in 2009.
+18	Which film won Best Picture at the Oscars ceremony held in 2008?	No Country for Old Men	Argo	Forrest Gump	Titanic	No Country for Old Men won in 2008.
+19	Which film won Best Picture at the Oscars ceremony held in 2007?	The Departed	12 Years a Slave	No Country for Old Men	Schindler's List	The Departed won in 2007.
+20	Which film won Best Picture at the Oscars ceremony held in 2006?	The Departed	Crash	Green Book	Schindler's List	Crash won in 2006.
+21	Which film won Best Picture at the Oscars ceremony held in 2005?	Million Dollar Baby	Oppenheimer	Crash	American Beauty	Million Dollar Baby won in 2005.
+22	Which film won Best Picture at the Oscars ceremony held in 2004?	The Shape of Water	Birdman	A Beautiful Mind	The Return of the King	The Return of the King won all 11 of its nominations.
+23	Which film won Best Picture at the Oscars ceremony held in 2003?	The Departed	Gladiator	Chicago	Crash	Chicago won in 2003.
+24	Which film won Best Picture at the Oscars ceremony held in 2002?	12 Years a Slave	A Beautiful Mind	Spotlight	Anora	A Beautiful Mind won in 2002.
+25	Which film won Best Picture at the Oscars ceremony held in 2001?	The Hurt Locker	No Country for Old Men	Forrest Gump	Gladiator	Gladiator won in 2001.
+26	Which film won Best Picture at the Oscars ceremony held in 2000?	American Beauty	No Country for Old Men	Anora	Million Dollar Baby	American Beauty won in 2000.
+27	Which film won Best Picture at the Oscars ceremony held in 1999?	Chicago	The Departed	Nomadland	Shakespeare in Love	Shakespeare in Love won in 1999.
+28	Which film won Best Picture at the Oscars ceremony held in 1998?	Birdman	American Beauty	Chicago	Titanic	Titanic won 11 Oscars.
+29	Which film won Best Picture at the Oscars ceremony held in 1996?	No Country for Old Men	Braveheart	Birdman	Slumdog Millionaire	Braveheart won in 1996.
+30	Which film won Best Picture at the Oscars ceremony held in 1995?	Oppenheimer	No Country for Old Men	Forrest Gump	The King's Speech	Forrest Gump won in 1995.
+31	Which film won Best Picture at the Oscars ceremony held in 1994?	Green Book	Oppenheimer	Schindler's List	Moonlight	Schindler's List won in 1994.
+32	Who won the Oscar for Best Actor at the ceremony held in 2024?	Daniel Day-Lewis	Forest Whitaker	Rami Malek	Cillian Murphy	Cillian Murphy won for Oppenheimer.
+33	Who won the Oscar for Best Actor at the ceremony held in 2023?	Brendan Fraser	Daniel Day-Lewis	Eddie Redmayne	Tom Hanks	Brendan Fraser won for The Whale.
+34	Who won the Oscar for Best Actor at the ceremony held in 2022?	Anthony Hopkins	Philip Seymour Hoffman	Will Smith	Brad Pitt	Will Smith won for King Richard.
+35	Who won the Oscar for Best Actor at the ceremony held in 2021?	Casey Affleck	Anthony Hopkins	Colin Firth	Rami Malek	Anthony Hopkins won for The Father.
+36	Who won the Oscar for Best Actor at the ceremony held in 2020?	Joaquin Phoenix	Cillian Murphy	Brendan Fraser	Eddie Redmayne	Joaquin Phoenix won for Joker.
+37	Who won the Oscar for Best Actor at the ceremony held in 2019?	Rami Malek	Leonardo DiCaprio	Joaquin Phoenix	Philip Seymour Hoffman	Rami Malek won for Bohemian Rhapsody.
+38	Who won the Oscar for Best Actor at the ceremony held in 2018?	Brad Pitt	Leonardo DiCaprio	Gary Oldman	Philip Seymour Hoffman	Gary Oldman won for Darkest Hour.
+39	Who won the Oscar for Best Actor at the ceremony held in 2017?	Colin Firth	Philip Seymour Hoffman	Casey Affleck	Jamie Foxx	Casey Affleck won for Manchester by the Sea.
+40	Who won the Oscar for Best Actor at the ceremony held in 2016?	Robert De Niro	Leonardo DiCaprio	Daniel Day-Lewis	Casey Affleck	Leonardo DiCaprio won for The Revenant.
+41	Who won the Oscar for Best Actor at the ceremony held in 2015?	Joaquin Phoenix	Philip Seymour Hoffman	Eddie Redmayne	Cillian Murphy	Eddie Redmayne won for The Theory of Everything.
+42	Who won the Oscar for Best Actor at the ceremony held in 2014?	Matthew McConaughey	Rami Malek	Robert De Niro	Jack Nicholson	McConaughey won for Dallas Buyers Club.
+43	Who won the Oscar for Best Actor at the ceremony held in 2013?	Daniel Day-Lewis	Colin Firth	Eddie Redmayne	Brendan Fraser	Daniel Day-Lewis won for Lincoln.
+44	Who won the Oscar for Best Actor at the ceremony held in 2012?	Daniel Day-Lewis	Jean Dujardin	Jeff Bridges	Forest Whitaker	Jean Dujardin won for The Artist.
+45	Who won the Oscar for Best Actor at the ceremony held in 2011?	Jamie Foxx	Jack Nicholson	Colin Firth	Forest Whitaker	Colin Firth won for The King's Speech.
+46	Who won the Oscar for Best Actor at the ceremony held in 2010?	Daniel Day-Lewis	Jeff Bridges	Robert De Niro	Al Pacino	Jeff Bridges won for Crazy Heart.
+47	Who won the Oscar for Best Actor at the ceremony held in 2009?	Jean Dujardin	Forest Whitaker	Anthony Hopkins	Sean Penn	Sean Penn won for Milk.
+48	Who won the Oscar for Best Actor at the ceremony held in 2008?	Colin Firth	Rami Malek	Daniel Day-Lewis	Robert De Niro	Daniel Day-Lewis won for There Will Be Blood.
+49	Who won the Oscar for Best Actor at the ceremony held in 2007?	Jean Dujardin	Leonardo DiCaprio	Forest Whitaker	Jeff Bridges	Forest Whitaker won for The Last King of Scotland.
+50	Who won the Oscar for Best Actor at the ceremony held in 2006?	Brad Pitt	Philip Seymour Hoffman	Sean Penn	Anthony Hopkins	Hoffman won for Capote.
+51	Who won the Oscar for Best Actor at the ceremony held in 2005?	Robert De Niro	Forest Whitaker	Jamie Foxx	Rami Malek	Jamie Foxx won for Ray.
+80	Who directed Titanic?	Frank Darabont	James Cameron	Greta Gerwig	Orson Welles	James Cameron directed Titanic in 1997.
+81	Who directed Inception?	George Lucas	Francis Ford Coppola	Christopher Nolan	Denis Villeneuve	Christopher Nolan directed Inception in 2010.
+90	Who directed the original Star Wars?	George Lucas	Martin Scorsese	Michael Curtiz	Frank Darabont	George Lucas directed it in 1977.
+107	Which actor played Forrest Gump?	Chadwick Boseman	Mike Myers	Tom Hanks	Scarlett Johansson	Tom Hanks won an Oscar for the role.
+111	Which actor played Harry Potter?	Johnny Depp	Sigourney Weaver	Gal Gadot	Daniel Radcliffe	Daniel Radcliffe played Harry in all eight films.
+119	Which actress played Barbie in the 2023 film?	Chadwick Boseman	Christian Bale	Margot Robbie	Scarlett Johansson	Margot Robbie starred in Barbie.
+137	Which Egyptian actor is nicknamed "Al Zaeem" (the Leader)?	Ahmed Zaki	Mahmoud Abdel Aziz	Nour El-Sherif	Adel Imam	Adel Imam is Egyptian cinema's "Al Zaeem".
+138	Which Egyptian actor is nicknamed "the Black Tiger"?	Mahmoud Yassin	Nour El-Sherif	Ahmed Zaki	Adel Imam	Ahmed Zaki was known as "the Black Tiger".
+139	Which Egyptian actor is nicknamed "the Magician"?	Yehia El-Fakharany	Hussein Fahmy	Rushdy Abaza	Mahmoud Abdel Aziz	Mahmoud Abdel Aziz was called "the Magician".
+140	Which Egyptian actress is called "the Lady of the Arabic Screen"?	Soad Hosny	Faten Hamama	Shadia	Magda	Faten Hamama earned this title.
+141	Which Egyptian actress is called "the Cinderella of the Arabic Screen"?	Faten Hamama	Shadia	Mervat Amin	Soad Hosny	Soad Hosny was known as the Cinderella of Arabic cinema.
+142	Which Egyptian actor appeared in the international film Lawrence of Arabia?	Anwar Wagdi	Omar Sharif	Rushdy Abaza	Ahmed Ramzy	Omar Sharif played Sherif Ali in the 1962 film.
+145	Which Mohamed Henedy film is named after a Dutch city?	Saidi at the American University	Hammam in Amsterdam	Ful in the Great Wall of China	I Want My Rights	Hammam in Amsterdam is set in the Netherlands.
+147	In which Adel Imam film, directed by Sherif Arafa, does a man hold hostages in the Mogamma building?	Terrorism and Kebab	Birds of Darkness	Playing with the Big Boys	Sleeping in Honey	Terrorism and Kebab (1992) is a classic satire.
+148	Which Adel Imam and Omar Sharif film is about the relationship between a Muslim and a Christian?	Hassan and Marcus	The Embassy in the Building	A Groom from a Security Agency	Morgan Ahmed Morgan	Hassan wa Morcos (2008) tackles national unity.
+149	Which Adel Imam film is set around the Israeli embassy building?	Hassan and Marcus	Al Wad Mahrous	Bekhit and Adila	The Embassy in the Building	The Embassy in the Building (2005).
+152	Which 2019 film starring Ahmed Ezz tells the story of an Egyptian military mission after the 1967 war?	The Blue Elephant	Casablanca	The Passage (Al Momar)	The Spy (Al Haggan)	Al Momar (The Passage) was a big hit in 2019.
+159	Which Egyptian novelist won the Nobel Prize in Literature and had novels turned into films?	Taha Hussein	Tawfiq al-Hakim	Naguib Mahfouz	Yusuf Idris	Naguib Mahfouz won the Nobel Prize in 1988.
+166	Which Egyptian series, starring Mahmoud Abdel Aziz, tells the story of an Egyptian spy in Israel?	Al Saffaa	Raafat El-Haggan	Tears in Insolent Eyes	Abed Karman	Raafat El-Haggan is a classic spy series.
+196	Which cartoon series is about a cat and a mouse who chase each other?	Mickey Mouse	Tom and Jerry	Popeye	Pocoyo	Tom and Jerry is one of the most famous cartoons.
+197	Which cartoon series takes place in Bikini Bottom?	Pokémon	SpongeBob SquarePants	Me and My Brother	Tom and Jerry	SpongeBob lives in Bikini Bottom.
+202	Which yellow cartoon family lives in Springfield?	The Griffins	The Simpsons	The Flintstones	The Brooklyns	The Simpsons live in Springfield.
+203	What is the father's name in The Simpsons?	Homer	Bart	Lenny	Fry	Homer Simpson is the father of the family.
+204	What are the small yellow minions in Despicable Me called?	The Gremlins	The Dwarfs	The Minions	The Dolls	The Minions follow Gru.
+205	What is the name of the lion cub in The Lion King?	Mufasa	Simba	Nala	Scar	Simba is Mufasa's son.
+207	What is the Snow Queen called in Frozen?	Anna	Elsa	Aurora	Mulan	Elsa has ice powers.
+209	What is the forgetful fish called in Finding Nemo?	Marlin	Nemo	Dory	Gill	Dory has short-term memory loss.
+211	What is the cowboy sheriff doll called in Toy Story?	Woody	Buzz	Rex	Hamm	Woody is the sheriff doll.
+327	In which year was Citizen Kane released?	1942	1933	1941	1944	Citizen Kane came out in 1941.
+329	In which year was 2001: A Space Odyssey released?	1974	1962	1968	1978	Stanley Kubrick's film came out in 1968.
+370	In which year was Snow White and the Seven Dwarfs released?	1937	1945	1933	1947	Disney's first full-length animation came out in 1937.
+371	In which year was Bambi released?	1934	1947	1946	1942	Bambi came out in 1942.
+372	In which year was The Great Escape released?	1961	1953	1963	1958	The Great Escape came out in 1963.
+373	In which year was Ben-Hur (the Charlton Heston film) released?	1962	1957	1959	1954	Ben-Hur came out in 1959.
+404	Which film is considered Umm Kulthum's first, in 1936?	Dananeer	Salama	Widad	Aida	Widad (1936) was her first film.
+405	Which 1939 film by Kamal Selim is seen as the start of realism in Egyptian cinema?	Al Azima (The Determination)	Lashin	Leila	Widad	Al Azima is a landmark of Egyptian realism.
+576	Who directed Oldboy (2003)?	Ben Affleck	David Fincher	Park Chan-wook	Wes Anderson	Park Chan-wook directed the South Korean film.
+627	Which actor played the commandant Amon Göth in Schindler's List?	Liam Neeson	Ralph Fiennes	Ben Kingsley	Tim Roth	Ralph Fiennes was nominated for an Oscar for the role.
+988	Who directed the classic film Bicycle Thieves?	Vittorio De Sica	Alfred Hitchcock	Federico Fellini	Carol Reed	De Sica directed this Italian neorealist classic in 1948.
+990	Who directed the classic film 8½?	Vittorio De Sica	Orson Welles	Federico Fellini	Carol Reed	Fellini directed 8½ in 1963.
+991	Who directed the classic film Breathless?	Robert Wiene	Jean-Luc Godard	Akira Kurosawa	Federico Fellini	Godard directed it in 1960.
+992	Who directed the classic film Battleship Potemkin?	Sergei Eisenstein	Frank Capra	Federico Fellini	David Lean	Eisenstein directed it in 1925.
+994	Who directed the classic film Nosferatu (1922)?	Billy Wilder	F. W. Murnau	Frank Capra	John Ford	Murnau directed this silent horror classic.
+995	Who directed the classic film The Cabinet of Dr. Caligari?	Robert Wiene	Miloš Forman	Carol Reed	Alfred Hitchcock	Robert Wiene directed it in 1920.
+999	Who directed the classic film It Happened One Night?	Orson Welles	Robert Wiene	Frank Capra	William Wyler	Frank Capra directed it in 1934.
+1002	Who directed the film Barry Lyndon?	Stanley Kubrick	Frank Capra	Martin Scorsese	John Ford	Kubrick directed Barry Lyndon in 1975.
+1006	Which director has won the Oscar for Best Director four times?	Steven Spielberg	John Ford	Frank Capra	William Wyler	John Ford won four Best Director Oscars.
+11	Which film won Best Picture at the Oscars ceremony held in 2015?	Birdman	Everything Everywhere All at Once	Gladiator	American Beauty	Birdman won Best Picture in 2015.
+52	Who won the Oscar for Best Actress at the ceremony held in 2024?	Emma Stone	Kate Winslet	Brie Larson	Sandra Bullock	Emma Stone won for Poor Things.
+53	Who won the Oscar for Best Actress at the ceremony held in 2023?	Frances McDormand	Nicole Kidman	Michelle Yeoh	Olivia Colman	Michelle Yeoh won for Everything Everywhere All at Once.
+54	Who won the Oscar for Best Actress at the ceremony held in 2022?	Natalie Portman	Jessica Chastain	Cate Blanchett	Anne Hathaway	Jessica Chastain won for The Eyes of Tammy Faye.
+55	Who won the Oscar for Best Actress at the ceremony held in 2021?	Angelina Jolie	Frances McDormand	Brie Larson	Scarlett Johansson	Frances McDormand won for Nomadland.
+56	Who won the Oscar for Best Actress at the ceremony held in 2020?	Jessica Chastain	Renée Zellweger	Michelle Yeoh	Emma Stone	Renée Zellweger won for Judy.
+57	Who won the Oscar for Best Actress at the ceremony held in 2019?	Olivia Colman	Meryl Streep	Jennifer Lawrence	Julia Roberts	Olivia Colman won for The Favourite.
+58	Who won the Oscar for Best Actress at the ceremony held in 2017?	Cate Blanchett	Kate Winslet	Anne Hathaway	Emma Stone	Emma Stone won for La La Land.
+59	Who won the Oscar for Best Actress at the ceremony held in 2016?	Natalie Portman	Brie Larson	Anne Hathaway	Cate Blanchett	Brie Larson won for Room.
+60	Who won the Oscar for Best Actress at the ceremony held in 2015?	Emma Stone	Natalie Portman	Kate Winslet	Julianne Moore	Julianne Moore won for Still Alice.
+61	Who won the Oscar for Best Actress at the ceremony held in 2014?	Michelle Yeoh	Cate Blanchett	Natalie Portman	Jessica Chastain	Cate Blanchett won for Blue Jasmine.
+62	Who won the Oscar for Best Actress at the ceremony held in 2013?	Olivia Colman	Frances McDormand	Cate Blanchett	Jennifer Lawrence	Jennifer Lawrence won for Silver Linings Playbook.
+63	Who won the Oscar for Best Actress at the ceremony held in 2012?	Meryl Streep	Renée Zellweger	Julia Roberts	Nicole Kidman	Meryl Streep won for The Iron Lady.
+64	Who won the Oscar for Best Actress at the ceremony held in 2011?	Scarlett Johansson	Natalie Portman	Sandra Bullock	Brie Larson	Natalie Portman won for Black Swan.
+65	Who won the Oscar for Best Actress at the ceremony held in 2010?	Olivia Colman	Sandra Bullock	Renée Zellweger	Anne Hathaway	Sandra Bullock won for The Blind Side.
+66	Who won the Oscar for Best Actress at the ceremony held in 2009?	Kate Winslet	Scarlett Johansson	Frances McDormand	Michelle Yeoh	Kate Winslet won for The Reader.
+67	Who won the Oscar for Best Director at the ceremony held in 2024?	Christopher Nolan	Damien Chazelle	David Fincher	Alfonso Cuarón	Christopher Nolan won for Oppenheimer.
+68	Who won the Oscar for Best Director at the ceremony held in 2022?	Jane Campion	Chloé Zhao	James Cameron	Alejandro G. Iñárritu	Jane Campion won for The Power of the Dog.
+69	Who won the Oscar for Best Director at the ceremony held in 2021?	Chloé Zhao	Damien Chazelle	Guillermo del Toro	Michel Hazanavicius	Chloé Zhao won for Nomadland.
+70	Who won the Oscar for Best Director at the ceremony held in 2020?	Ridley Scott	Damien Chazelle	Tom Hooper	Bong Joon-ho	Bong Joon-ho won for Parasite.
+71	Who won the Oscar for Best Director at the ceremony held in 2019?	Steven Spielberg	Alfonso Cuarón	Bong Joon-ho	Damien Chazelle	Alfonso Cuarón won for Roma.
+72	Who won the Oscar for Best Director at the ceremony held in 2018?	Alejandro G. Iñárritu	Tom Hooper	Guillermo del Toro	Ridley Scott	Guillermo del Toro won for The Shape of Water.
+73	Who won the Oscar for Best Director at the ceremony held in 2017?	Tom Hooper	Damien Chazelle	Ridley Scott	Ang Lee	Damien Chazelle won for La La Land.
+74	Who won the Oscar for Best Director at the ceremony held in 2016?	Alfonso Cuarón	Alejandro G. Iñárritu	Ang Lee	Christopher Nolan	Iñárritu won for The Revenant.
+75	Who won the Oscar for Best Director at the ceremony held in 2014?	Quentin Tarantino	Alfonso Cuarón	Damien Chazelle	Ridley Scott	Alfonso Cuarón won for Gravity.
+76	Who won the Oscar for Best Director at the ceremony held in 2013?	Guillermo del Toro	Christopher Nolan	Ridley Scott	Ang Lee	Ang Lee won for Life of Pi.
+77	Who won the Oscar for Best Director at the ceremony held in 2012?	Jane Campion	Michel Hazanavicius	Ridley Scott	Bong Joon-ho	Michel Hazanavicius won for The Artist.
+78	Who won the Oscar for Best Director at the ceremony held in 2011?	Damien Chazelle	Ridley Scott	Tom Hooper	Ang Lee	Tom Hooper won for The King's Speech.
+79	Who won the Oscar for Best Director at the ceremony held in 2010?	James Cameron	Quentin Tarantino	Kathryn Bigelow	Guillermo del Toro	Kathryn Bigelow was the first woman to win the award.
+82	Who directed Interstellar?	Todd Phillips	Francis Ford Coppola	Denis Villeneuve	Christopher Nolan	Christopher Nolan directed it in 2014.
+83	Who directed The Dark Knight?	The Wachowskis	Martin Scorsese	Christopher Nolan	Francis Ford Coppola	The Dark Knight came out in 2008.
+84	Who directed Oppenheimer?	Denis Villeneuve	Frank Darabont	Christopher Nolan	George Lucas	Oppenheimer came out in 2023.
+106	Which actor played Jack Dawson in Titanic?	Ian McKellen	Chris Evans	Leonardo DiCaprio	Elijah Wood	DiCaprio played Jack opposite Kate Winslet.
+108	Which actor played the Joker in the 2019 film?	Joaquin Phoenix	Chris Evans	Tom Cruise	Sigourney Weaver	Joaquin Phoenix won an Oscar for it.
+109	Which actor played Neo in The Matrix?	Keanu Reeves	Mike Myers	Heath Ledger	Marlon Brando	Keanu Reeves starred in the 1999 film.
+112	Which actor played Tony Stark (Iron Man)?	Tom Holland	Hugh Jackman	Heath Ledger	Robert Downey Jr.	Downey played Iron Man for over a decade.
+113	Which actor played Captain America?	Christian Bale	Bruce Willis	Chris Hemsworth	Chris Evans	Chris Evans played Steve Rogers.
+114	Which actor played Thor?	Tom Holland	Chris Hemsworth	Sigourney Weaver	Chadwick Boseman	Chris Hemsworth is Australian.
+115	Which actress played Black Widow?	Joaquin Phoenix	Emma Watson	Jennifer Lawrence	Scarlett Johansson	Scarlett Johansson played Natasha Romanoff.
+116	Which actor played Wolverine?	Hugh Jackman	Harrison Ford	Eddie Murphy	Elijah Wood	Hugh Jackman played Wolverine in the X-Men films.
+117	Which actor played Black Panther?	Tom Holland	Chadwick Boseman	Keanu Reeves	Joaquin Phoenix	Chadwick Boseman starred in Black Panther (2018).
+118	Which actress played Wonder Woman?	Daniel Radcliffe	Gal Gadot	Chadwick Boseman	Ryan Gosling	Gal Gadot is Israeli.
+144	In which Mohamed Saad film did the character "El Limby" first appear?	El Limby	Elli Baly Balak	Bohha	Katkout	El Limby (2002) made Mohamed Saad a star.
+146	Which 1998 Mohamed Henedy film made him a star and is set in a university?	Hammam in Amsterdam	Ramadan Mabrouk Abu El Alamein Hammouda	Marriage by Force	Saidi at the American University	Saidi fil Gamaa El Amrikeya (1998).
+154	Which film directed by Shadi Abdel Salam in 1969 is considered one of the most important Arab films?	The Land	The Iron Gate	Shame	The Mummy	The Mummy (Al-Mummia) is set in Upper Egypt.
+156	Who directed the film "The Land", based on Abdel Rahman al-Sharqawi's novel?	Salah Abu Seif	Shadi Abdel Salam	Daoud Abdel Sayed	Youssef Chahine	Chahine directed Al-Ard in 1970.
+157	Who directed the film "Kit Kat" starring Mahmoud Abdel Aziz?	Youssef Chahine	Sherif Arafa	Daoud Abdel Sayed	Atef El-Tayeb	Kit Kat (1991) was directed by Daoud Abdel Sayed.
+158	Who directed "The Thief and the Dogs", based on Naguib Mahfouz's novel?	Kamal El Sheikh	Salah Abu Seif	Youssef Chahine	Hussein Kamal	Kamal El Sheikh directed it in 1962.
+160	Which Ahmed Zaki film portrays President Gamal Abdel Nasser?	Days of Sadat	The Pasha	Nasser 56	Kaboria	Ahmed Zaki played Nasser in Nasser 56.
+161	Which Ahmed Zaki film portrays President Anwar Sadat?	Days of Sadat	Nasser 56	His Excellency the Minister	Wife of an Important Man	Ahmed Zaki starred in Ayyam El Sadat (2001).
+163	Which actress played Umm Kulthum in the 1999 series Umm Kulthum?	Yousra	Mona Zaki	Elham Shahin	Sabreen	Sabreen played the legendary singer.
+164	Which actor played King Farouk in the series "Malek Farouk"?	Taim Hassan	Youssef El-Sherif	Yasser Galal	Khaled El Nabawy	Taim Hassan played the last king of Egypt.
+165	Which Egyptian series, written by Osama Anwar Okasha, starred Yehia El-Fakharany and Salah El-Saadany?	Al Mal wal Banoun	Raafat El-Haggan	Layali El Helmeya	Arabesque	Layali El Helmeya is a classic of Egyptian drama.
+168	Which Egyptian comedy series starring Ahmed Mekky is about a rich rural family?	Kalabsh	Al Ekhtyar	Al Kabeer Awi	Reffo	Al Kabeer Awi is a popular comedy.
+169	Which Egyptian police series starring Amir Karara aired in Ramadan 2017?	Al Ekhtyar	Kalabsh	Al Kabeer Awi	Al Ostoura	Kalabsh was a big hit in Ramadan 2017.
+170	Which Ramadan series about the Egyptian army, starring Amir Karara, aired in 2020?	Kalabsh	Al Gama'a	Hagma Mortada	Al Ekhtyar	Al Ekhtyar tells the story of army heroes.
+171	Which Syrian series that began in 2006 is set in an old Damascus neighbourhood?	Al Taghreeba Al Filastiniya	Bab Al-Hara	Al Zeer Salem	Day'a Daya'a	Bab Al-Hara was watched across the Arab world.
+174	Which famous Saudi comedy series stars Nasser Al-Qasabi and Abdullah Al-Sadhan?	Tash Ma Tash	Selfie	Al Asouf	Makhraj 7	Tash Ma Tash ran for nearly twenty years.
+176	Which Turkish series, starting in 2008 with the hero Muhannad, was watched by millions in the Arab world?	Noor	Forbidden Love	Valley of the Wolves	Magnificent Century	Noor was a big hit in the Arab world.
+177	Which Turkish historical series is about Sultan Suleiman the Magnificent?	Magnificent Century	Valley of the Wolves	Resurrection: Ertuğrul	Forbidden Love	Muhteşem Yüzyıl ran from 2011 to 2014.
+178	Which Turkish series is about Osman, founder of the Ottoman state?	Resurrection: Ertuğrul	Kuruluş: Osman	Valley of the Wolves	Noor	Kuruluş: Osman followed Ertuğrul.
+179	Which Turkish series is about Ertuğrul, father of the Ottoman founder Osman?	Kuruluş: Osman	Resurrection: Ertuğrul	Magnificent Century	Ask ve Mantik	Diriliş: Ertuğrul ran from 2014 to 2019.
+181	Which Korean series, a worldwide hit in 2021, is about contestants in survival games?	Crash Landing on You	Kingdom	Squid Game	Sky Castle	Squid Game became Netflix's biggest hit.
+182	Which American series is about House Stark and the Iron Throne?	Game of Thrones	Vikings	The Witcher	Breaking Bad	Game of Thrones ran from 2011 to 2019.
+184	Which American series is about a chemistry teacher who becomes a drug dealer?	Breaking Bad	Peter Man	House	Dexter	Walter White is the central character.
+187	How many main characters does the series Friends have?	Four	Six	Five	Seven	Rachel, Monica, Phoebe, Joey, Chandler and Ross.
+188	Which Spanish Netflix series is about a robbery of the Royal Mint led by "the Professor"?	Squid Game	Narcos	Money Heist	Dark	Money Heist (La Casa de Papel) was a global hit.
+189	Which American series is about Michael Scofield breaking out of prison?	Lost	24	Prison Break	House	Prison Break followed Michael and his brother Lincoln.
+190	Which Netflix series is about children in Hawkins and a girl called Eleven?	The Witcher	Wednesday	Dark	Stranger Things	Stranger Things began in 2016.
+214	What is the green ogre in the film Shrek called?	Fiona	Donkey	Lord Farquaad	Shrek	Shrek lives in a swamp.
+216	What is the princess with long hair called in the film Tangled?	Cinderella	Rapunzel	Aurora	Ariel	Rapunzel has magic golden hair.
+217	What is the princess called in Beauty and the Beast?	Ariel	Jasmine	Belle	Mulan	Belle loves books.
+218	What is the mermaid called in The Little Mermaid?	Belle	Ariel	Rapunzel	Elsa	Ariel dreams of life on land.
+227	In which year was The Godfather released?	1965	1980	1972	1975	The Godfather came out in 1972.
+236	In which year was the film Kit Kat released?	1985	1996	1991	2001	Kit Kat was released in 1991.
+237	What is the name of the ship that sinks in Titanic, carrying Jack and Rose?	Queen Mary	Britannic	Titanic	Olympic	The Titanic sank on its first voyage.
+238	What is the magic school in the Harry Potter series called?	Beauxbatons	Durmstrang	Hogwarts	Azkaban	Hogwarts is in Scotland.
+239	Who is the villain who hunts Harry Potter?	Draco	Snape	Dumbledore	Voldemort	Voldemort killed Harry's parents.
+240	Who is Harry Potter's closest red-haired friend?	Neville	Ron Weasley	Draco	Seamus	Ron is Harry's best friend.
+246	What is the fictional city protected by Batman called?	Gotham	Metropolis	Central City	Star City	Batman protects Gotham City.
+247	Which hero protects the city of Metropolis and wears a red cape?	Superman	Batman	The Flash	Aquaman	Superman lives in Metropolis.
+248	What is Batman's real name?	Bruce Wayne	Clark Kent	Peter Parker	Tony Stark	Bruce Wayne is a billionaire.
+249	What is Spider-Man's real name?	Bruce Wayne	Peter Parker	Clark Kent	Steve Rogers	Peter Parker was bitten by a radioactive spider.
+290	Which actor gave Darth Vader his famous voice?	Mark Hamill	Harrison Ford	James Earl Jones	Liam Neeson	James Earl Jones voiced Vader.
+297	Which actor played Dumbledore in the first Harry Potter films?	Michael Gambon	Ian McKellen	Anthony Hopkins	Richard Harris	Richard Harris played him in the first two films.
+299	Which actress played the investigator Clarice in The Silence of the Lambs?	Sigourney Weaver	Jodie Foster	Meryl Streep	Demi Moore	Jodie Foster won an Oscar for the role.
+302	Which actor played Batman in Tim Burton's 1989 film?	Michael Keaton	Val Kilmer	George Clooney	Ben Affleck	Michael Keaton wore the cowl in 1989.
+308	Which actor played Gollum?	Andy Serkis	Elijah Wood	Sean Astin	Hugo Weaving	Andy Serkis used motion capture for Gollum.
+325	In which year was the film Casablanca released?	1942	1946	1934	1940	Casablanca came out in 1942.
+326	In which year was the film Gone with the Wind released?	1939	1942	1947	1945	It came out in 1939.
+328	In which year was the film Psycho released?	1952	1965	1960	1963	Hitchcock's Psycho came out in 1960.
+330	In which year was The Godfather Part II released?	1969	1966	1974	1971	The sequel came out in 1974.
+402	What was the first Egyptian full-length feature film, from 1927, called?	Zeinab	Leila	Widad	Al Azima	Leila (1927) is considered the first Egyptian feature film.
+403	Who founded Studio Misr in 1935?	Mohamed Karim	Youssef Wahbi	Ahmed Salem	Talaat Harb	Talaat Harb founded Studio Misr.
+983	Who directed the classic film The Third Man?	Martin Scorsese	Carol Reed	Robert Wiene	Alfred Hitchcock	Carol Reed directed it in 1949.
+987	Who directed the classic film Rashomon?	Sergei Eisenstein	Stanley Kubrick	Orson Welles	Akira Kurosawa	Kurosawa directed it in 1950.
+989	Who directed the classic film La Dolce Vita?	Stanley Kubrick	Billy Wilder	Jean-Luc Godard	Federico Fellini	Fellini directed it in 1960.
+993	Who directed the classic film Metropolis (1927)?	Stanley Kubrick	Alfred Hitchcock	Fritz Lang	Francis Ford Coppola	Fritz Lang directed this silent sci-fi classic.
+997	Who directed the film Amadeus?	Miloš Forman	F. W. Murnau	Akira Kurosawa	David Lean	Miloš Forman directed it in 1984.
+998	Who directed the film One Flew Over the Cuckoo's Nest?	Miloš Forman	John Ford	David Lean	Sergei Eisenstein	Forman directed it in 1975.
+1000	Who directed the classic film It's a Wonderful Life?	Frank Capra	Carol Reed	Francis Ford Coppola	Akira Kurosawa	Frank Capra directed it in 1946.
+1003	Who directed the classic film Roman Holiday?	Martin Scorsese	William Wyler	Vittorio De Sica	Alfred Hitchcock	William Wyler directed it in 1953.
+1004	Which studio produced the first talking film, The Jazz Singer?	MGM	Universal	Warner Bros.	Paramount	Warner Bros. released it in 1927.
+85	Who directed the film Jaws?	Greta Gerwig	Steven Spielberg	Quentin Tarantino	Michael Curtiz	Spielberg directed Jaws in 1975.
+86	Who directed Jurassic Park?	George Lucas	Steven Spielberg	Denis Villeneuve	Frank Darabont	Spielberg directed it in 1993.
+88	Who directed The Godfather?	David Fincher	Francis Ford Coppola	Robert Zemeckis	Frank Darabont	Coppola directed it in 1972.
+89	Who directed Psycho?	Greta Gerwig	Alfred Hitchcock	Christopher Nolan	James Cameron	Hitchcock directed Psycho in 1960.
+91	Who directed Forrest Gump?	Francis Ford Coppola	Alfred Hitchcock	Quentin Tarantino	Robert Zemeckis	Zemeckis directed it in 1994.
+92	Who directed Back to the Future?	Quentin Tarantino	Ridley Scott	The Wachowskis	Robert Zemeckis	It came out in 1985.
+93	Who directed Blade Runner?	The Wachowskis	The Russo Brothers	Ridley Scott	Martin Scorsese	Ridley Scott directed it in 1982.
+94	Who directed Joker (2019)?	The Wachowskis	Quentin Tarantino	Frank Darabont	Todd Phillips	Todd Phillips directed it.
+95	Who directed Parasite?	Bong Joon-ho	Christopher Nolan	Stanley Kubrick	George Lucas	Bong Joon-ho won the Oscar for Best Director.
+96	Who directed The Matrix?	Ridley Scott	The Wachowskis	Peter Jackson	Bong Joon-ho	The Wachowskis directed it in 1999.
+97	Who directed The Shawshank Redemption?	Frank Darabont	The Wachowskis	Christopher Nolan	Quentin Tarantino	Darabont directed it in 1994.
+98	Who directed Dune?	Alfred Hitchcock	Todd Phillips	Denis Villeneuve	The Wachowskis	Villeneuve directed Dune in 2021.
+99	Who directed Barbie?	Robert Zemeckis	Greta Gerwig	Quentin Tarantino	Denis Villeneuve	Greta Gerwig directed it in 2023.
+100	Who directed The Terminator?	James Cameron	Martin Scorsese	Todd Phillips	Michael Curtiz	James Cameron directed it in 1984.
+101	Who directed Goodfellas?	Martin Scorsese	Michael Curtiz	Alfred Hitchcock	James Cameron	Scorsese directed it in 1990.
+102	Who directed Casablanca?	Denis Villeneuve	Martin Scorsese	Orson Welles	Michael Curtiz	Michael Curtiz directed it in 1942.
+103	Who directed Citizen Kane?	Orson Welles	George Lucas	James Cameron	Greta Gerwig	Welles directed and starred in it.
+104	Who directed The Shining?	Christopher Nolan	Stanley Kubrick	Quentin Tarantino	Frank Darabont	Kubrick directed it in 1980.
+105	Who directed 2001: A Space Odyssey?	Stanley Kubrick	Alfred Hitchcock	Robert Zemeckis	The Russo Brothers	Kubrick directed it in 1968.
+120	Which actor played Ken in the Barbie film?	Ryan Gosling	Jennifer Lawrence	Johnny Depp	Emma Watson	Ryan Gosling played Ken.
+121	Which actor played Oppenheimer?	Cillian Murphy	Jennifer Lawrence	Mark Hamill	Hugh Jackman	Murphy won the Oscar for the role.
+122	Which actor played Batman in Nolan's trilogy?	Christian Bale	Tom Hanks	Chris Evans	Chadwick Boseman	Christian Bale played Batman from 2005 to 2012.
+123	Which actor played Ethan Hunt in Mission: Impossible?	Bruce Willis	Sigourney Weaver	Elijah Wood	Tom Cruise	Tom Cruise does many of his own stunts.
+124	Which actor played Indiana Jones?	Harrison Ford	Keanu Reeves	Johnny Depp	Chadwick Boseman	Harrison Ford played Indiana Jones.
+125	Which actor played Luke Skywalker?	Mark Hamill	Robert Downey Jr.	Tom Hanks	Chris Evans	Mark Hamill starred in the original trilogy.
+126	Which actress played Ripley in Alien?	Elijah Wood	Chadwick Boseman	Keanu Reeves	Sigourney Weaver	Weaver played Ripley in 1979.
+127	Which actor played the Terminator?	Chris Hemsworth	Arnold Schwarzenegger	Ryan Gosling	Bruce Willis	"I'll be back" is his famous line.
+128	Which actor played Rocky Balboa?	Daniel Craig	Sylvester Stallone	Daniel Radcliffe	Ian McKellen	Stallone wrote and starred in Rocky.
+129	Which actor played John McClane in Die Hard?	Joaquin Phoenix	Bruce Willis	Cillian Murphy	Daniel Radcliffe	Bruce Willis starred in Die Hard (1988).
+130	Which actor played Don Corleone in The Godfather?	Marlon Brando	Al Pacino	Eddie Murphy	Bruce Willis	Brando won an Oscar for the role.
+131	Which actor played Michael Corleone?	Elijah Wood	Ryan Gosling	Al Pacino	Jennifer Lawrence	Al Pacino played Michael Corleone.
+132	Which actor played John Wick?	Emma Watson	Al Pacino	Keanu Reeves	Margot Robbie	Keanu Reeves starred in the John Wick films.
+133	Which actress played Hermione Granger?	Robert Downey Jr.	Emma Watson	Mark Hamill	Sylvester Stallone	Emma Watson played Hermione in all eight films.
+134	Which actress played Katniss Everdeen in The Hunger Games?	Emma Watson	Ryan Gosling	Joaquin Phoenix	Jennifer Lawrence	Jennifer Lawrence starred in the series.
+135	Which actor played Gandalf in The Lord of the Rings?	Ian McKellen	Elijah Wood	Christian Bale	Daniel Craig	Ian McKellen played Gandalf the Grey.
+136	Which actor played Frodo?	Cillian Murphy	Al Pacino	Elijah Wood	Leonardo DiCaprio	Elijah Wood played Frodo Baggins.
+143	Which Egyptian actress is called the "queen of seduction"?	Marilyn Monroe	Hind Rostom	Shadia	Samia Gamal	Hind Rostom was known as Egypt's Marilyn Monroe.
+150	Which film, based on an Alaa Al Aswany novel, was directed by Marwan Hamed?	The Island	Dam El Ghazal	Messages from the Sea	The Yacoubian Building	The Yacoubian Building came out in 2006.
+151	Which 2007 film directed by Sherif Arafa starred Ahmed El Sakka and Hend Sabry?	The Island (Al Gezira)	Tito	The Dealer	Badal Faqed	Al Gezira (2007) is an action drama.
+153	Which Youssef Chahine film is about the leader who freed Jerusalem?	Adieu Bonaparte	Destiny	Saladin the Victorious	The Land	Al-Nasser Salah Al-Din (1963) is an epic.
+155	Who directed the film "Cairo Station" (Bab el Hadid), starring Hind Rostom?	Salah Abu Seif	Henry Barakat	Kamal El Sheikh	Youssef Chahine	Chahine directed and acted in it in 1958.
+162	Which actor played Abdel Halim Hafez in the film "Halim"?	Mahmoud Yassin	Adel Imam	Ahmed Helmy	Ahmed Zaki	Halim (2006) was Ahmed Zaki's last film.
+167	Which Egyptian family series that began in 1996 starred Nour El-Sherif?	Layali El Helmeya	Al Shahd wal Dumoo	Al Hag Metwally	Lan A'eesh Fi Gelbab Abi	Lan A'eesh Fi Gelbab Abi (1996) is a family drama.
+172	Which historical Syrian series about the story of Al-Zeer Salem starred Ayman Zidan?	Al Zeer Salem	Al Taghreeba Al Filastiniya	Saqr Quraish	Bab Al-Hara	Al Zeer Salem is based on a pre-Islamic legend.
+173	Which Syrian series about the Palestinian Nakba was directed by Hatem Ali in 2004?	Al Zeer Salem	Al Taghreeba Al Filastiniya	Al Jawarih	Layali Al Salhiya	Al Taghreeba Al Filastiniya follows one family.
+175	Which Saudi series about the 1970s in Riyadh starred Nasser Al-Qasabi?	Tash Ma Tash	Selfie	Al Shahed	Al Asouf	Al Asouf aired in 2018.
+180	Which Turkish action series is about Murat Alamdar and the mafia?	Magnificent Century	Valley of the Wolves	Noor	Forbidden Love	Valley of the Wolves began in 2003.
+183	How many seasons did Game of Thrones have?	5	10	6	8	Game of Thrones ran for eight seasons.
+185	Which actor played Walter White in Breaking Bad?	Peter Dinklage	Hugh Laurie	Ben Affleck	Bryan Cranston	Bryan Cranston won four Emmys for the role.
+191	Which Netflix series starring Jenna Ortega is about a girl at Nevermore Academy?	Stranger Things	The Crown	Wednesday	Bridgerton	Wednesday came out in 2022.
+193	Which series is about the life of Pablo Escobar and the drug trade in Colombia?	Narcos	Breaking Bad	Narnia	Daredevil	Narcos began in 2015.
+194	Which British series is about a modern Sherlock Holmes starring Benedict Cumberbatch?	Sherlock	House	Luther	The Crown	Sherlock began in 2010.
+195	Which series is about Dr Gregory House, starring Hugh Laurie?	House (House, M.D.)	Grey's Anatomy	The Good Doctor	ER	House ran for eight seasons.
+198	Which anime series is about a teenage detective who is turned into a child?	Naruto	Detective Conan	One Piece	Dragon Ball	Detective Conan began in 1996.
+199	Which anime series is about a Japanese footballer called Captain Majid (Captain Tsubasa)?	Naruto	One Piece	Captain Tsubasa	Pokémon	Captain Tsubasa inspired many real players.
+200	Which anime series is about the pirate Luffy and the search for treasure?	One Piece	Naruto	Bleach	Dragon Ball	One Piece began in 1999.
+201	Which anime series is about the young warrior Goku?	One Piece	Dragon Ball	Naruto	Pokémon	Dragon Ball began in 1984.
+206	Who is the villain in The Lion King?	Scar	Mufasa	Rafiki	Timon	Scar is Mufasa's brother.
+208	What is the name of the cooking rat in the film Ratatouille?	Mickey	Jerry	Remy	Percy	Remy dreams of being a chef.
+210	What is the little robot in the film WALL-E called?	EVE	B-MO	Robby	WALL-E	WALL-E is a rubbish-collecting robot.
+212	What is the red car in the film Cars called?	Mater	Sally	Lightning McQueen	Doc	Lightning McQueen is the hero.
+213	What is the panda in Kung Fu Panda called?	Po	Tai Lung	Shifu	Tigress	Po becomes the Dragon Warrior.
+215	What is the blue genie in Aladdin called?	Jafar	Abu	Raja	Genie	Genie was voiced by Robin Williams.
+219	In which year was Titanic first released?	1995	2000	1997	1999	Titanic was released in December 1997.
+221	In which year was the first Harry Potter film released?	2001	1999	2003	2005	The Philosopher's Stone came out in 2001.
+222	In which year was the first Avatar film released?	2006	2012	2014	2009	Avatar was released in December 2009.
+226	In which year was the first Star Wars film released?	1970	1983	1977	1980	Star Wars came out in 1977.
+229	In which year was Avengers: Endgame released?	2017	2019	2021	2018	Endgame came out in April 2019.
+230	In which year was Greta Gerwig's Barbie released?	2021	2022	2023	2024	Barbie came out in July 2023.
+231	In which year was Oppenheimer released?	2021	2022	2024	2023	Oppenheimer came out in July 2023.
+232	In which year was Joker starring Joaquin Phoenix released?	2017	2021	2019	2018	Joker came out in October 2019.
+235	In which year was "Ismailia Rayeh Gayy" released?	1993	2000	2003	1997	It came out in 1997.
+241	What is the flying sport in Harry Potter called?	Hockey	Polo	Quidditch	Rugby	Quidditch is played on broomsticks.
+242	What is the small land where the hobbits live in The Lord of the Rings called?	Rivendell	Mordor	Gondor	The Shire	The Shire is a green countryside.
+243	What is the name of the planet where Avatar is set?	Mirth	Pandora	Krypton	Tatooine	Pandora is a moon in the film.
+244	What is the blue species in Avatar called?	Klingons	Wakandans	Na'vi	Saiyans	The Na'vi live on Pandora.
+245	What is the fictional African country in Black Panther called?	Zamari	Narnia	Gotham	Wakanda	Wakanda is rich in vibranium.
+250	What is Iron Man's real name?	Steve Rogers	Tony Stark	Bruce Banner	Thor	Tony Stark is a billionaire inventor.
+251	What is Captain America's real name?	Tony Stark	Bruce Banner	Steve Rogers	Peter Parker	Steve Rogers was frozen for decades.
+252	What is the real name of the Hulk?	Steve Rogers	Tony Stark	Clint Barton	Bruce Banner	Bruce Banner turns into the Hulk when angry.
+253	Which villain collected the Infinity Stones in The Avengers?	Loki	Hela	Thanos	Ultron	Thanos wanted to wipe out half of all life.
+254	What is Thor's legendary weapon called?	Stormbreaker	Mjölnir	Medusa	Magnus	Mjölnir is his hammer.
+255	Who is the girl in The Hunger Games who is skilled at archery?	Hermione	Katniss Everdeen	Bella Swan	Tris	Katniss volunteers to take her sister's place.
+256	What is the famous British secret agent 007 called?	Ethan Hunt	Jason Bourne	James Bond	John Wick	James Bond works for MI6.
+257	What is James Bond's agent number?	001	007	009	011	Bond is Agent 007.
+258	Which actor played James Bond in the first film, in 1962?	Sean Connery	Roger Moore	Pierce Brosnan	Daniel Craig	Dr. No (1962) starred Sean Connery.
+261	In which film does a giant ape climb the Empire State Building?	Godzilla	King Kong	Jurassic Park	Pacific Rim	King Kong (1933) is a classic.
+262	What is the alien who wants to go home in Spielberg's film called?	E.T.	Yoda	Stitch	Groot	E.T. the Extra-Terrestrial came out in 1982.
+263	Who is the evil octopus-like villain in The Little Mermaid?	Maleficent	Ursula	Cruella	Jafar	Ursula is the sea witch.
+264	What is the Arab princess in Aladdin called?	Jasmine	Genie	Ariel	Mulan	Jasmine is the Sultan's daughter.
+265	Which animated film takes place inside a girl's mind, named Riley?	Inside Out	Zootopia	Coco	Up	Inside Out came out in 2015.
+266	Which animated film is about a house carried by balloons?	Coco	Brave	Cars	Up	Up (2009) is about the old man Carl.
+267	What is the Mexican boy in Coco who dreams of music called?	David	Diego	Juan	Miguel	Miguel loves music despite his family's ban.
+268	What is the brave girl in Moana called?	Merida	Moana	Elsa	Rapunzel	Moana sails across the ocean.
+269	What is the space-ranger toy in Toy Story called?	Buzz Lightyear	Woody	Rex	Slinky	Buzz Lightyear says "To infinity and beyond!"
+271	What is the main prize at the Cannes Film Festival?	The Golden Bear	The Golden Lion	The Palme d'Or	The Golden Palm Tree	The Palme d'Or is Cannes's top prize.
+274	In which city is the Cairo International Film Festival held?	Alexandria	Cairo	El Gouna	Sharm El Sheikh	It is one of the oldest in the region.
+275	In which city is the El Gouna Film Festival held?	Cairo	Alexandria	Luxor	El Gouna	It began in 2017 on the Red Sea.
+279	What is the name of the Academy Award statuette?	Oscar	Max	Edward	Edison	The statuette is called the Oscar.
+280	Who is the villain who wants to regain the Ring in The Lord of the Rings?	Sauron	Gollum	Balrog	Saruman	Sauron is the Dark Lord.
+281	Which Disney heroine disguises herself as a warrior to protect her father?	Jasmine	Mulan	Tiana	Pocahontas	Mulan takes her father's place in the army.
+283	Which actor played Bruce Wayne in Nolan's Batman trilogy?	Ben Affleck	Christian Bale	Robert Pattinson	Michael Keaton	Christian Bale played the billionaire.
+287	Which actor played Jack Sparrow in Pirates of the Caribbean?	Orlando Bloom	Geoffrey Rush	Kevin Kline	Johnny Depp	Johnny Depp played the pirate captain.
+291	Which actor played the young Vito Corleone in The Godfather Part II?	Al Pacino	Marlon Brando	Robert De Niro	James Caan	Robert De Niro won an Oscar for it.
+293	Which actor played Forrest Gump and won an Oscar for the role?	Tim Robbins	Denzel Washington	Bill Murray	Tom Hanks	Tom Hanks won Best Actor for Forrest Gump.
+300	Which actor played the Joker in Suicide Squad (2016)?	Heath Ledger	Jared Leto	Joaquin Phoenix	Jack Nicholson	Jared Leto played the Joker.
+301	Which actor played the Joker in the 1989 Batman?	Jack Nicholson	Heath Ledger	Jared Leto	Joaquin Phoenix	Jack Nicholson played the Joker in Tim Burton's Batman.
+310	Which actress played Furiosa in Mad Max: Fury Road?	Emma Stone	Charlize Theron	Margot Robbie	Kate Winslet	Charlize Theron played Imperator Furiosa.
+312	Which actor played James Bond in GoldenEye?	Daniel Craig	Sean Connery	Roger Moore	Pierce Brosnan	Brosnan's first Bond film was GoldenEye (1995).
+316	Which actor played Brian O'Conner in Fast & Furious?	Vin Diesel	Paul Walker	Dwayne Johnson	Jason Statham	Paul Walker played the undercover cop.
+323	Which actor played Max Rockatansky in Mad Max: Fury Road?	Mel Gibson	Jeremy Renner	Tom Hardy	Ben Affleck	Tom Hardy played Max in 2015.
+331	In which year was Jaws released?	1967	1970	1975	1978	Jaws came out in 1975.
+332	In which year was E.T. released?	1984	1986	1974	1982	E.T. came out in 1982.
+335	In which year was Pulp Fiction released?	1997	1994	1990	2002	Pulp Fiction came out in 1994.
+336	In which year was The Shawshank Redemption released?	1990	2000	1994	1996	It came out in 1994.
+337	In which year was Fight Club released?	1995	2004	1999	1994	Fight Club came out in 1999.
+339	In which year was The Sixth Sense released?	1993	2005	1999	2004	It came out in 1999.
+345	In which year was Batman Begins released?	2007	2004	2009	2005	Batman Begins came out in 2005.
+367	In which year was the animated Beauty and the Beast released?	1981	1991	1986	1996	It came out in 1991.
+369	In which year was the animated The Little Mermaid released?	1989	1990	1993	1985	It came out in 1989.
+374	In which year was Terminator 2 released?	1991	1993	1988	1994	Terminator 2: Judgment Day came out in 1991.
+376	In which year was Braveheart released?	1995	1989	1998	1996	Braveheart came out in 1995.
+377	In which year was The Green Mile released?	1999	1996	1997	1991	The Green Mile came out in 1999.
+384	Who plays the lead role of Jean Valjean in Les Misérables (2012)?	Hugh Jackman	Robert Downey Jr.	Tim Robbins	Sandra Bullock	Hugh Jackman was nominated for an Oscar.
+388	Who plays Andy Dufresne in The Shawshank Redemption?	Carrie-Anne Moss	Haley Joel Osment	Tim Robbins	Kate Winslet	Tim Robbins played the banker Andy.
+393	Who plays the lead role in The Aviator?	Austin Butler	Joaquin Phoenix	Leonardo DiCaprio	Robert Downey Jr.	DiCaprio played Howard Hughes.
+407	Which international actor played Hamza in the film The Message?	Anthony Quinn	Omar Sharif	Anthony Hopkins	James Mason	Anthony Quinn played Hamza in 1976.
+409	Which Adel Imam film, directed by Nader Galal, is about an extremist who enters an ordinary family's home?	The Terrorist	Playing with the Big Boys	The Tiger and the Female	The Advocate	Al-Irhabi (1994) is a well-known drama.
+410	Which Ahmed Zaki film, directed by Atef El-Tayeb, is about a simple country conscript guarding prisoners?	Against the Government	The Bus Driver	The Escape	The Innocent	Al-Bari' (1986) is a famous political film.
+411	Which Nour El-Sherif film, directed by Atef El-Tayeb, is about a bus driver?	The Innocent	The Bus Driver	Against the Government	Love on the Pyramids Plateau	Sawwaq al-Utubis (1982) is a classic.
+412	Which Ahmed Zaki film is about a lawyer who defends the victims of injustice?	The Innocent	Land of Fear	The Pasha	Against the Government	Ded El Hokouma (1992) stars Ahmed Zaki as a lawyer.
+413	Who directed the film "Land of Fear" starring Ahmed Zaki?	Atef El-Tayeb	Mohamed Khan	Khairy Beshara	Daoud Abdel Sayed	Daoud Abdel Sayed directed it in 1999.
+415	Which 1978 film directed by Ali Badrakhan starred Soad Hosny and Ahmed Zaki?	Shafika and Metwalli	Take Care of Zouzou	The Choice	Smile for the Picture	Shafika wa Metwalli is based on a folk tale.
+416	Which Faten Hamama film is based on a novel by Taha Hussein?	The Call of the Curlew	The Sin	Mouths and Rabbits	Empire M	Doaa Al-Karawan (1959) is based on Hussein's novel.
+417	Which film directed by Henry Barakat starring Faten Hamama is about cotton-picking workers?	The Call of the Curlew	The Sin	The Last Night	Mouths and Rabbits	Al-Haram (1965) is a classic of Egyptian cinema.
+418	Which 1960 film directed by Salah Abu Seif is based on Naguib Mahfouz?	Cairo 30	Beginning and End	Chitchat on the Nile	The Thief and the Dogs	Bidaya wa Nihaya was adapted from Mahfouz's novel.
+419	Which 1979 film directed by Youssef Chahine is about the city of Alexandria?	Alexandria... Why?	An Egyptian Story	Alexandria Again and Forever	Destiny	Iskandariyah... Leh? won a Silver Bear in Berlin.
+420	Which Youssef Chahine film is about Ibn Rushd (Averroes)?	Destiny	The Other	Adieu Bonaparte	The Land	Al-Massir (1997) is about the philosopher.
+421	Which Youssef Chahine film is about Napoleon's expedition to Egypt?	Destiny	Adieu Bonaparte	The Other	Saladin the Victorious	Adieu Bonaparte came out in 1985.
+422	Which 1971 film directed by Hussein Kamal is about a group that meets on a houseboat?	Lost Love	Something of Fear	My Father Is Up the Tree	Chitchat on the Nile	Tharthara Fawq al-Nil is based on Mahfouz's novel.
+423	Which famous 1969 film stars Abdel Halim Hafez and Nadia Lutfi?	My Father Is Up the Tree	The Sins	The Empty Pillow	Idol of the Masses	Abi Fawq al-Shajara (1969) is a hit musical drama.
+427	Which Alaa Wali El-Din film is set in a school and features the head teacher?	The Headmaster (El Nazer)	Aboud on the Border	Al Wad Mahrous	Friend of His Friend	El Nazer (2000) is a comedy.
+430	Which American director made A Clockwork Orange and 2001: A Space Odyssey?	Steven Spielberg	Francis Ford Coppola	Orson Welles	Stanley Kubrick	Kubrick was known for his perfectionism.
+431	Which Japanese director made Seven Samurai?	Hayao Miyazaki	Akira Kurosawa	Yasujirō Ozu	Takeshi Kitano	Kurosawa made it in 1954.
+433	Which Charlie Chaplin film mocks Nazi dictatorship, in 1940?	Modern Times	The Great Dictator	The Kid	City Lights	The Great Dictator was Chaplin's first talking film.
+434	Which Charlie Chaplin film mocks industry and machines?	The Great Dictator	Modern Times	The Kid	City Lights	Modern Times came out in 1936.
+435	In which year was the first Academy Awards ceremony held?	1920	1929	1939	1950	The first Oscars were in May 1929.
+440	What was the first talking film in cinema history, in 1927?	Gone with the Wind	Casablanca	Citizen Kane	The Jazz Singer	The Jazz Singer had synchronised speech and song.
+441	What was Disney's first full-length animated feature?	Pinocchio	Snow White and the Seven Dwarfs	Bambi	The Lion King	Snow White came out in 1937.
+446	Which production company has a roaring lion in its logo?	Universal	MGM	Warner	Paramount	MGM's lion is called Leo.
+447	Which production company has a mountain ringed by stars in its logo?	Universal	Fox	Paramount	Warner	Paramount's mountain logo is one of the oldest.
+448	What word does the director say to stop filming?	Cut	Action	Record	Start	"Cut!" ends a take.
+459	Which was the first fully computer-animated feature film?	Shrek	Toy Story	Finding Nemo	Beauty and the Beast	Toy Story came out in 1995.
+460	What word does the director say to start filming?	Cut	Stop	Reset	Action	"Action!" starts a take.
+471	What are the names of Daenerys's three dragons?	Drogon, Rhaegal and Viserion	Smaug, Odin and Thor	Iron, Steel and Fire	Night, Snow and Leaf	They were born from petrified eggs.
+475	In which city is Breaking Bad set?	Los Angeles	Las Vegas	Albuquerque	Houston	Breaking Bad is set in Albuquerque, New Mexico.
+494	Which actor played Mr. Bean?	Jim Carrey	Ben Stiller	Rowan Atkinson	Steve Carell	Rowan Atkinson created the character.
+500	Who is SpongeBob's best friend, the starfish?	Squidward	Patrick	Plankton	Mr. Krabs	Patrick Star lives under a rock.
+507	What is Geppetto's cat called in Disney's Pinocchio?	Figaro	Cheshire	Tom	Oliver	Figaro is the pet kitten.
+513	What is the little pig in the film Charlotte's Web called?	Wilbur	Babe	Pig	Bubbles	Wilbur is saved by a spider.
+514	What is the lion cub called in The Lion King II?	Kiara	Kovu	Nala	Sarabi	Kiara is Simba's daughter.
+520	What is Superman's real name?	Bruce Wayne	Peter Parker	Barry Allen	Clark Kent	Superman's name on Krypton was Kal-El.
+530	Which actress has won four Oscars for Best Actress?	Meryl Streep	Elizabeth Taylor	Katharine Hepburn	Jodie Foster	Katharine Hepburn won four Best Actress awards.
+542	What is Harry Potter's school called?	Hogwarts School of Witchcraft and Wizardry	Beauxbatons	Durmstrang	Broadmoor	Hogwarts is in Scotland.
+551	What is Captain America's weapon called?	The hammer	The bow	The shield	The sceptre	His shield is made of vibranium.
+564	Who directed Corpse Bride?	Tim Burton	Bong Joon-ho	Park Chan-wook	Damien Chazelle	Tim Burton co-directed it in 2005.
+565	Who directed The Grand Budapest Hotel?	Wes Anderson	Ben Affleck	Roman Polanski	Bong Joon-ho	Wes Anderson directed it in 2014.
+566	Who directed Fargo?	Hayao Miyazaki	Jordan Peele	Ridley Scott	The Coen Brothers	The Coens directed Fargo in 1996.
+567	Who directed No Country for Old Men?	Ben Affleck	The Coen Brothers	Francis Ford Coppola	Ridley Scott	It won Best Picture in 2008.
+568	Who directed Pan's Labyrinth?	Martin Scorsese	Ben Affleck	Wes Anderson	Guillermo del Toro	Del Toro directed it in 2006.
+570	Who directed Arrival?	Denis Villeneuve	Damien Chazelle	Park Chan-wook	Christopher Nolan	Villeneuve directed Arrival in 2016.
+573	Who directed Lady Bird?	Greta Gerwig	David Fincher	Francis Ford Coppola	Ridley Scott	Greta Gerwig directed it in 2017.
+574	Who directed Little Women (2019)?	Greta Gerwig	Christopher Nolan	Francis Ford Coppola	Clint Eastwood	Gerwig adapted Louisa May Alcott's novel.
+575	Who directed Snowpiercer?	Clint Eastwood	The Coen Brothers	Ridley Scott	Bong Joon-ho	Bong Joon-ho directed it in 2013.
+602	Who directed Thelma & Louise?	Ridley Scott	David Fincher	The Coen Brothers	Hayao Miyazaki	Ridley Scott directed it in 1991.
+612	Which actor played Spartacus in the 1960 film?	Kirk Douglas	Marlon Brando	Charlton Heston	Peter O'Toole	Kirk Douglas starred in Stanley Kubrick's Spartacus.
+613	Which actor played Moses in the 1956 film The Ten Commandments?	Charlton Heston	Yul Brynner	Burt Lancaster	Kirk Douglas	Charlton Heston also starred in Ben-Hur.
+618	Which actor played Rhett Butler in Gone with the Wind?	Humphrey Bogart	Clark Gable	Cary Grant	James Stewart	Clark Gable played Rhett.
+619	Which actor played Rick in Casablanca?	Clark Gable	Humphrey Bogart	Cary Grant	James Stewart	Bogart played the cafe owner Rick.
+620	Which actress played Ilsa in Casablanca?	Bette Davis	Audrey Hepburn	Greta Garbo	Ingrid Bergman	Ingrid Bergman played Ilsa.
+625	Which actress played Princess Ann in Roman Holiday?	Ingrid Bergman	Audrey Hepburn	Grace Kelly	Elizabeth Taylor	Audrey Hepburn won an Oscar for the role.
+628	Which actor played Professor Henry Jones in the Indiana Jones films?	Harrison Ford	Tim Robbins	Jeff Bridges	Sean Connery	Sean Connery played Indy's father.
+854	In which film does the character Travis Bickle appear?	The Matrix	Fast & Furious	Taxi Driver	Raiders of the Lost Ark	Robert De Niro played Travis Bickle in 1976.
+984	Who directed the classic film Rear Window?	William Wyler	Alfred Hitchcock	Sergei Eisenstein	David Lean	Hitchcock directed it in 1954.
+985	Who directed the classic film Vertigo?	Alfred Hitchcock	Akira Kurosawa	Carol Reed	William Wyler	Hitchcock directed Vertigo in 1958.
+87	Who directed Schindler's List?	Steven Spielberg	Robert Zemeckis	Martin Scorsese	James Cameron	Spielberg won Best Director for it.
+192	Which series starring Cillian Murphy is about the Shelby family in Birmingham?	Vikings	The Crown	Prison Break	Peaky Blinders	Peaky Blinders is set in 1920s Birmingham.
+220	In which year was the original Lion King released?	1990	1994	1998	2001	The Lion King came out in 1994.
+223	In which year was The Dark Knight released?	2005	2008	2010	2012	The Dark Knight came out in 2008.
+224	In which year was Inception released?	2010	2008	2012	2014	Inception came out in 2010.
+225	In which year was the first Jurassic Park released?	1993	1990	1996	2001	It came out in 1993.
+228	In which year was Forrest Gump released?	1990	1998	2000	1994	It came out in 1994.
+233	In which year was Parasite released?	2017	2021	2019	2018	It came out in 2019.
+234	In which year was The Yacoubian Building released?	2006	2004	2008	2010	It came out in 2006.
+259	Which actor played James Bond in Casino Royale in 2006?	Pierce Brosnan	Sean Connery	Daniel Craig	Timothy Dalton	Daniel Craig's first Bond film was Casino Royale.
+260	What is the secret organisation Ethan Hunt works for in Mission: Impossible?	SHIELD	MI6	The CIA	The Impossible Missions Force (IMF)	Ethan Hunt is an IMF agent.
+270	What is the Japanese animated film about a big, gentle creature called Totoro?	My Neighbour Totoro	Spirited Away	Princess Mononoke	Ponyo	My Neighbour Totoro (1988) is a Studio Ghibli classic.
+272	What is the main prize at the Berlin Film Festival?	The Palme d'Or	The Golden Bear	The Golden Lion	The Golden Pyramid	The Golden Bear is the Berlinale's top prize.
+273	What is the main prize at the Venice Film Festival?	The Golden Bear	The Palme d'Or	The Golden Leopard	The Golden Lion	The Golden Lion is Venice's top prize.
+276	Which award is given for best acting in American television drama?	The Oscar	The Grammy	The Emmy	The Tony	The Emmy honours television.
+277	Which award is given for best performance on Broadway?	The Tony	The Emmy	The Oscar	The Golden Globe	The Tony honours theatre.
+278	How many Oscars did Titanic win?	7	9	11	14	Titanic won 11 of its 14 nominations.
+282	Which actor played Tyler Durden in Fight Club?	Edward Norton	Leonardo DiCaprio	Brad Pitt	Jared Leto	Brad Pitt played Tyler Durden.
+284	Which actor played Batman in the 2022 film directed by Matt Reeves?	Christian Bale	Ben Affleck	Robert Pattinson	George Clooney	Robert Pattinson played Batman in The Batman.
+285	Which actor played Superman in the 2013 film Man of Steel?	Brandon Routh	Henry Cavill	Christopher Reeve	David Corenswet	Henry Cavill played Superman.
+286	Which actor played Doctor Strange?	Robert Downey Jr.	Mark Ruffalo	Paul Rudd	Benedict Cumberbatch	Benedict Cumberbatch played the Sorcerer Supreme.
+288	Which actress played Princess Leia in Star Wars?	Natalie Portman	Daisy Ridley	Emma Watson	Carrie Fisher	Carrie Fisher played Leia.
+289	Which actor played Han Solo in the original Star Wars?	Harrison Ford	Mark Hamill	Alec Guinness	Daniel Craig	Harrison Ford played Han Solo.
+292	Which actor played Michael Corleone in The Godfather?	Robert De Niro	Marlon Brando	Al Pacino	James Caan	Al Pacino played Michael.
+294	Which actress played Hermione in the Harry Potter films?	Emma Stone	Emma Thompson	Emma Watson	Eva Green	Emma Watson played Hermione.
+295	Which actor played Severus Snape in the Harry Potter films?	Alan Rickman	Michael Gambon	Jim Broadbent	Ralph Fiennes	Alan Rickman played Snape.
+296	Which actor played Lord Voldemort in the Harry Potter films?	Ralph Fiennes	Alan Rickman	Gary Oldman	David Thewlis	Ralph Fiennes played Voldemort.
+298	Which actor played Hannibal Lecter in The Silence of the Lambs?	Jack Nicholson	Robert De Niro	Morgan Freeman	Anthony Hopkins	Anthony Hopkins won an Oscar for it.
+303	Which actor played Spider-Man in Sam Raimi's trilogy?	Andrew Garfield	Tom Holland	Tobey Maguire	Max Charles	Tobey Maguire played Spider-Man.
+304	Which actor played Spider-Man in The Amazing Spider-Man?	Tobey Maguire	Tom Holland	Andrew Garfield	Jamie Foxx	Andrew Garfield played Peter Parker.
+305	Which actor played Aragorn in The Lord of the Rings?	Orlando Bloom	Sean Bean	Elijah Wood	Viggo Mortensen	Viggo Mortensen played Aragorn.
+306	Which actor played Legolas in The Lord of the Rings?	Viggo Mortensen	Elijah Wood	Orlando Bloom	Sean Astin	Orlando Bloom played Legolas.
+307	Which actor played Frodo in The Lord of the Rings?	Sean Astin	Elijah Wood	Viggo Mortensen	Ian McKellen	Elijah Wood played Frodo.
+309	Which actor played Marty McFly in Back to the Future?	Michael J. Fox	Christopher Lloyd	Robert Downey Jr.	Eric Stoltz	Michael J. Fox played Marty.
+311	Which actor played James Bond in Skyfall?	Pierce Brosnan	Sean Connery	Roger Moore	Daniel Craig	Daniel Craig starred in Skyfall.
+313	Which actor played Ethan Hunt?	Tom Cruise	Matt Damon	Brad Pitt	Ben Affleck	Tom Cruise plays Ethan Hunt.
+314	Which actor played Jason Bourne?	Brad Pitt	Tom Cruise	Ben Affleck	Matt Damon	Matt Damon plays Bourne.
+315	Which actor played Dominic Toretto in Fast & Furious?	Paul Walker	The Rock	Jason Statham	Vin Diesel	Vin Diesel plays Dom Toretto.
+317	Which actor nicknamed "The Rock" appeared in Fast & Furious?	Vin Diesel	Dwayne Johnson	John Cena	Peter Simons	Dwayne Johnson joined the series in Fast Five.
+318	Which actor played the castaway in the film Cast Away?	Tom Hanks	Kevin Costner	Robin Williams	Ben Stiller	Tom Hanks starred in Cast Away.
+319	What is the name of the ball Tom Hanks talks to in Cast Away?	Jerry	Bob	Mike	Wilson	Wilson is a volleyball.
+320	In which film is the line "I'm gonna make him an offer he can't refuse" said?	The Shawshank Redemption	Goodfellas	Scarface	The Godfather	Vito Corleone says it in The Godfather.
+321	Who directed Fight Club?	Martin Scorsese	Quentin Tarantino	Ridley Scott	David Fincher	David Fincher directed it in 1999.
+322	Which actor played Dom Cobb in Inception?	Cillian Murphy	Leonardo DiCaprio	Joseph Gordon-Levitt	Tom Hardy	DiCaprio played Dom Cobb.
+324	In which year was Joker released?	2023	2016	2019	2011	Joker came out in 2019.
+333	In which year was Back to the Future released?	1990	1984	1985	1983	It came out in 1985.
+334	In which year was The Lion King released?	1992	2004	1994	2002	It came out in 1994.
+338	In which year was The Matrix released?	1996	1993	1999	2003	It came out in 1999.
+340	In which year was The Lord of the Rings: The Fellowship of the Ring released?	2001	2004	1996	2002	It came out in 2001.
+341	In which year was Harry Potter and the Philosopher's Stone released?	1997	2001	2003	1998	It came out in 2001.
+342	In which year was Shrek released?	2001	2005	2003	2007	It came out in 2001.
+343	In which year was Finding Nemo released?	1999	2005	1998	2003	It came out in 2003.
+344	In which year was Pirates of the Caribbean: The Curse of the Black Pearl released?	2001	1993	2003	2009	It came out in 2003.
+346	In which year was The Dark Knight Rises released?	2002	2009	2012	2014	It came out in 2012.
+347	In which year was The Avengers released?	2012	2004	2022	2002	It came out in 2012.
+348	In which year was Iron Man released?	2006	2010	2004	2008	It came out in 2008.
+349	In which year was Avatar: The Way of Water released?	2016	2022	2024	2014	It came out in December 2022.
+350	In which year was Black Panther released?	2018	2016	2014	2023	It came out in 2018.
+351	In which year was No Time to Die released?	2021	2024	2019	2023	It came out in 2021.
+352	In which year was Top Gun: Maverick released?	2023	2017	2022	2014	It came out in 2022.
+353	In which year was Barbie released?	2015	2020	2023	2018	It came out in 2023.
+355	In which year was La La Land released?	2016	2010	2015	2014	It came out in 2016.
+356	In which year was Gravity released?	2011	2013	2003	2017	It came out in 2013.
+357	In which year was The Martian released?	2015	2013	2025	2023	It came out in 2015.
+358	In which year was Spider-Man: No Way Home released?	2011	2019	2021	2022	It came out in December 2021.
+359	In which year was Deadpool released?	2011	2008	2016	2006	It came out in 2016.
+360	In which year was the animated film Coco released?	2009	2016	2018	2017	It came out in 2017.
+361	In which year was Up released?	2011	2009	2014	2012	It came out in 2009.
+362	In which year was Ratatouille released?	1999	2006	2007	2008	It came out in 2007.
+363	In which year was WALL-E released?	2016	2008	2011	2006	It came out in 2008.
+364	In which year was Frozen released?	2023	2008	2018	2013	It came out in 2013.
+365	In which year was Moana released?	2017	2013	2016	2018	It came out in 2016.
+366	In which year was Toy Story released?	1995	2003	2000	1985	It came out in 1995.
+368	In which year was the animated Aladdin released?	1993	1997	1998	1992	It came out in 1992.
+375	In which year was Jurassic Park released?	2003	1993	1996	1991	It came out in 1993.
+378	In which year was Gladiator released?	2003	2000	2008	2002	It came out in 2000.
+379	Who plays Rose in Titanic?	Joaquin Phoenix	Rami Malek	Kate Winslet	Hugh Jackman	Kate Winslet played Rose.
+380	Who plays the lead role in La La Land?	Emma Stone	Michael Keaton	Kate Winslet	Rami Malek	Emma Stone played Mia.
+381	Who plays the lead role in Iron Man?	Carrie-Anne Moss	Hugh Jackman	Matt Damon	Robert Downey Jr.	Robert Downey Jr. played Tony Stark.
+382	Who plays the lead role in Barbie?	Margot Robbie	Cillian Murphy	Russell Crowe	Robert Downey Jr.	Margot Robbie played Barbie.
+383	Who plays the lead role in Oppenheimer?	Emma Stone	Halle Berry	Robert Downey Jr.	Cillian Murphy	Cillian Murphy played Oppenheimer.
+385	Who plays the lead role in the 2019 Joker?	Sandra Bullock	Tom Hanks	Joaquin Phoenix	Emma Stone	Joaquin Phoenix played Arthur Fleck.
+386	Who plays the lead role in The Revenant?	Hugh Jackman	Kate Winslet	Carrie-Anne Moss	Leonardo DiCaprio	DiCaprio played Hugh Glass.
+387	Who plays the lead role in The Wolf of Wall Street?	Rami Malek	Margot Robbie	Leonardo DiCaprio	Carrie-Anne Moss	DiCaprio played Jordan Belfort.
+389	Who plays the lead role in The Green Mile?	Russell Crowe	Leonardo DiCaprio	Tom Hanks	Emma Stone	Tom Hanks played Paul Edgecomb.
+390	Who plays the lead role in Saving Private Ryan?	Halle Berry	Tom Hanks	Robert Downey Jr.	Emma Stone	Tom Hanks played Captain Miller.
+391	Who plays Mark Watney in The Martian?	Halle Berry	Margot Robbie	Sandra Bullock	Matt Damon	Matt Damon played the stranded astronaut.
+392	Who plays Dr Ryan Stone in Gravity?	Robert Downey Jr.	Matt Damon	Sandra Bullock	Russell Crowe	Sandra Bullock played Dr Ryan Stone.
+394	Who plays Maximus in Gladiator?	Russell Crowe	Tom Hanks	Robert Downey Jr.	Margot Robbie	Russell Crowe won an Oscar for it.
+395	Which title is the first in the Harry Potter series?	Harry Potter and the Half-Blood Prince	Harry Potter and the Philosopher's Stone	Harry Potter and the Deathly Hallows	Harry Potter and the Chamber of Secrets	The Philosopher's Stone is the first book.
+396	Which title is the second in the Harry Potter series?	The Philosopher's Stone	The Deathly Hallows	The Goblet of Fire	The Chamber of Secrets	The Chamber of Secrets is book two.
+397	Which title is the third in the Harry Potter series?	The Prisoner of Azkaban	The Half-Blood Prince	The Philosopher's Stone	The Chamber of Secrets	The Prisoner of Azkaban is book three.
+398	Which title is the fourth in the Harry Potter series?	The Philosopher's Stone	The Goblet of Fire	The Chamber of Secrets	The Prisoner of Azkaban	The Goblet of Fire is book four.
+399	Which title is the fifth in the Harry Potter series?	The Order of the Phoenix	The Deathly Hallows	The Philosopher's Stone	The Prisoner of Azkaban	The Order of the Phoenix is book five.
+400	Which title is the sixth in the Harry Potter series?	The Deathly Hallows	The Chamber of Secrets	The Half-Blood Prince	The Prisoner of Azkaban	The Half-Blood Prince is book six.
+401	Which title is the final one in the Harry Potter series?	The Philosopher's Stone	The Order of the Phoenix	The Deathly Hallows	The Prisoner of Azkaban	The Deathly Hallows is book seven.
+406	Who directed the 1976 film The Message, about the beginning of Islam?	Moustapha Akkad	Youssef Chahine	Shadi Abdel Salam	Hussam al-Din Mustafa	Moustapha Akkad directed it.
+408	Which film did Moustapha Akkad direct about the Libyan resistance fighter?	The Message	Omar Mukhtar (Lion of the Desert)	The Dawn of Islam	Saladin the Victorious	Lion of the Desert came out in 1981.
+414	Which 1972 film directed by Hassan El Imam brings together Soad Hosny and Hussein Fahmy?	Amira Hobbi Ana	Take Care of Zouzou	Shafika and Metwalli	Al Karnak	Khalli Balak Min Zouzou was a big hit.
+424	Which film directed by Marwan Hamed starring Karim Abdel Aziz and Khaled El Sawy is set in a psychiatric hospital?	Friends or Business	The Blue Elephant	Clash	The Yacoubian Building	The Blue Elephant (2014) is a psychological thriller.
+425	Which 2022 historical film about the 1919 revolution stars Karim Abdel Aziz and Ahmed Ezz?	Kira & El Gin	The Passage	The Cell	The Blue Elephant	Kira & El Gin (2022) is set during the 1919 revolution.
+426	Which film directed by Sherif Arafa starring Mohamed Saad is about a young man who seems foolish?	El Limby	El Nazer	Elli Baly Balak	Bohha	El Limby was a major hit.
+428	Which American director made The Godfather and The Godfather Part II?	Francis Ford Coppola	Martin Scorsese	Stanley Kubrick	Alfred Hitchcock	Coppola won Oscars for both.
+429	Which British director is called the "Master of Suspense"?	Alfred Hitchcock	Stanley Kubrick	Ridley Scott	James Cameron	Hitchcock made Psycho and Vertigo.
+432	Which British actor and director created the Tramp character?	Buster Keaton	Harold Lloyd	Charlie Chaplin	Laurel	Chaplin created the Tramp in 1914.
+436	In which city is the Oscars ceremony held?	New York	Los Angeles	London	Cannes	The Oscars are held in Los Angeles.
+437	In which country is the Cannes Film Festival held?	Italy	Germany	France	Spain	Cannes is on the French Riviera.
+438	Which country's film industry is called Bollywood?	Pakistan	Bangladesh	India	Nigeria	Bollywood is based in Mumbai.
+439	Which country's film industry is called Nollywood?	Ghana	Nigeria	South Africa	Kenya	Nollywood is among the world's most productive.
+442	Who created the character Mickey Mouse?	John Lasseter	Hayao Miyazaki	Steven Spielberg	Walt Disney	Disney created him in 1928.
+443	Which animation studio made Toy Story and Coco?	Pixar	DreamWorks	Blue Sky	Illumination	Pixar made both.
+444	Which company made Shrek?	Pixar	Disney	Illumination	DreamWorks	DreamWorks made Shrek.
+445	Which company made the Minions films?	Illumination	Pixar	DreamWorks	Disney	Illumination made Despicable Me and Minions.
+449	What is the clapperboard used at the start of each take called?	Montage	Script	Clapperboard	Rehearsal	The clapperboard syncs sound and picture.
+450	What is the written text of a film's events called?	Editing	Rehearsal	Set design	Screenplay	The screenplay is the film's script.
+451	What is the process of putting the shots in order after filming called?	Production	Directing	Editing	Dubbing	Editing assembles the film.
+452	What is the process of replacing an actor's voice with another voice in a different language called?	Editing	Directing	Dubbing	Production	Dubbing replaces the dialogue.
+453	What is the person in charge of financing and managing a film's production called?	The director	The screenwriter	The producer	The cinematographer	The producer runs the production.
+454	What is the person in charge of lighting and cinematography called?	The producer	The director of photography	The editor	The director	The director of photography leads the camera crew.
+455	What is the person who performs dangerous scenes in place of an actor called?	The director	The producer	The stunt double	The cameraman	A stunt double does the risky scenes.
+456	What is the visual effect that uses a green background called?	Editing	Chroma key	Dubbing	Animation	Chroma key replaces the green screen.
+457	What is the type of film based on real events, without actors, called?	Romance	Science fiction	Horror	Documentary	Documentaries show real events.
+458	Who invented cinema and showed the first film in Paris in 1895?	The Wright brothers	The Lumière brothers	The Warner brothers	The Marx Brothers	The Lumière brothers held the first public screening.
+461	Which actress played Rachel Green in Friends?	Courteney Cox	Jennifer Aniston	Lisa Kudrow	Reese Witherspoon	Jennifer Aniston played Rachel.
+462	Which actor played Chandler Bing in Friends?	David Schwimmer	Matt LeBlanc	Jim Parsons	Matthew Perry	Matthew Perry played Chandler.
+463	Which actor played Joey Tribbiani in Friends?	Matt LeBlanc	Matthew Perry	David Schwimmer	Tom Selleck	Matt LeBlanc played Joey.
+464	What is the famous song Phoebe sings about a cat called?	Black Cat	Smelly Cat	Cafe Cat	King of Cats	"Smelly Cat" is Phoebe's song.
+465	What is the cafe in Friends called?	Starbucks	The Coffee Shop	Big Ben	Central Perk	The friends meet at Central Perk.
+466	Which actor played Jon Snow in Game of Thrones?	Peter Dinklage	Jason Momoa	Richard Madden	Kit Harington	Kit Harington played Jon Snow.
+467	Which actress played Daenerys Targaryen?	Emilia Clarke	Lena Headey	Sophie Turner	Maisie Williams	Emilia Clarke played Daenerys.
+468	Which actor played Tyrion Lannister and won Emmys?	Nikolaj Coster-Waldau	Kit Harington	Peter Dinklage	Sean Bean	Peter Dinklage won four Emmys.
+469	What is the motto of House Stark in Game of Thrones?	Hear Me Roar	Fire and Blood	Ours Is the Fury	Winter Is Coming	"Winter is coming" is the Stark motto.
+470	What is the motto of House Lannister in Game of Thrones?	Winter Is Coming	Hear Me Roar	Fire and Blood	Unbowed, Unbent, Unbroken	"Hear me roar" is a Lannister motto.
+472	Which actor played Sheldon Cooper?	Jim Parsons	Kaley Cuoco	Johnny Galecki	Simon Helberg	Jim Parsons won four Emmys.
+473	What word does Sheldon say after a joke?	Hello	Bazinga	Woohoo	Boom	"Bazinga!" is his catchphrase.
+474	Which actor played Jesse Pinkman in Breaking Bad?	Bob Odenkirk	Dean Norris	Jonathan Banks	Aaron Paul	Aaron Paul won three Emmys for it.
+476	Which actor played Saul Goodman in Better Call Saul?	Bob Odenkirk	Bryan Cranston	Aaron Paul	Jonathan Banks	Bob Odenkirk played Saul.
+477	Which British crime series is about the detective who lives on Baker Street?	House	Sherlock	Luther	Fargo	Sherlock Holmes lives at 221B Baker Street.
+478	Which actor played Dr Watson in the BBC series Sherlock?	Benedict Cumberbatch	Hugh Laurie	Tom Hardy	Martin Freeman	Martin Freeman played Watson.
+479	Which actor played Sherlock Holmes in the BBC series?	Robert Downey Jr.	Jude Law	Henry Cavill	Benedict Cumberbatch	Benedict Cumberbatch played Sherlock.
+480	Which actor played Dr Gregory House?	Hugh Laurie	Martin Freeman	Benedict Cumberbatch	Steve Carell	Hugh Laurie played Dr House.
+481	Which actress played Eleven in Stranger Things?	Noah Schnapp	Millie Bobby Brown	Finn Wolfhard	Sadie Sink	Millie Bobby Brown played Eleven.
+482	What is the dark other dimension in Stranger Things called?	The Right Side	The Upside Down	The Black World	The Shadow Realm	The Upside Down is a dark mirror world.
+483	What is the famous monster in Stranger Things called?	Godzilla	The Demogorgon	Kong	The Ghost	The Demogorgon comes from the Upside Down.
+484	In which town is Stranger Things set?	Springfield	Hawkins	Riverdale	Hilton	Hawkins, Indiana, is fictional.
+485	In Money Heist, what is the gang leader called?	The Chef	The Professor	The Doctor	The Engineer	The Professor plans the robberies.
+486	In Squid Game, what is the first game the contestants play?	Tug of war	Marbles	The glass bridge	Red Light, Green Light	The first game is Red Light, Green Light.
+487	What is Seong Gi-hun's number in Squid Game?	456	001	218	067	Player 456 is the main character.
+488	Which series about the British royal family begins in the 1940s?	The Crown	Bridgerton	Downton Abbey	Vikings	The Crown follows Queen Elizabeth II.
+489	Which actor played Thomas Shelby?	Cillian Murphy	Tom Hardy	Paul Anderson	Helen McCrory	Cillian Murphy played Tommy Shelby.
+490	Which series is about an upper-class English family and its servants in a country house?	Downton Abbey	The Crown	Bridgerton	Peaky Blinders	Downton Abbey is set in the early 1900s.
+491	Which actor played Michael Scofield in Prison Break?	Wentworth Miller	Dominic Purcell	Robert Knepper	William Fichtner	Wentworth Miller played Michael.
+492	What is the prison in Prison Break called?	Fox River	Alcatraz	Shawshank	Guantánamo	Michael breaks his brother out of Fox River.
+493	Which series is about plane crash survivors on a mysterious island?	Prison Break	The Whistling	Lost	Eureka	Lost aired from 2004 to 2010.
+495	What type of car does Mr Bean drive?	A Volkswagen	A Ferrari	A green Mini	A Fiat	Mr Bean drives a lime-green Mini.
+496	What is the name of Mr Bean's teddy bear?	Paddington	Pooh	Fuzzy	Teddy	His teddy bear is called Teddy.
+497	Who created The Simpsons?	Seth MacFarlane	Walt Disney	Matt Groening	John Lasseter	Matt Groening created The Simpsons.
+498	What is the youngest child in the Simpson family called?	Bart	Lisa	Nelson	Maggie	Maggie is the baby.
+499	What is the underwater town where SpongeBob lives called?	Atlantis	Bikini Bottom	Coropoli	Springfield	SpongeBob lives in Bikini Bottom.
+501	What is the owner of the Krusty Krab called?	Plankton	Mr Krabs	Squidward	Patrick	Mr Krabs owns the restaurant.
+502	What is the little villain in SpongeBob who wants to steal the burger formula called?	Squidward	Sandy	Plankton	Patrick	Plankton wants the Krabby Patty formula.
+503	What is the cartoon about a Stone Age family called?	The Simpsons	Family Guy	The Jetsons	The Flintstones	The Flintstones live in Bedrock.
+504	What is the cartoon about a strong sailor who eats spinach called?	Tom and Jerry	Mickey Mouse	Bugs Bunny	Popeye	Popeye gets strong from spinach.
+505	What is the angry duck in Disney cartoons called?	Donald Duck	Daisy	Daffy Duck	Scrooge	Donald Duck is famous for his temper.
+506	What is Mickey Mouse's dog called?	Goofy	Snoopy	Pluto	Scooby	Pluto is Mickey's pet.
+508	What is the wooden boy whose nose grows when he lies called?	Peter Pan	Pinocchio	Pino	Pedro	Pinocchio's nose grows when he lies.
+509	What is the boy who never grows up and lives in Neverland called?	Mowgli	Tarzan	Aladdin	Peter Pan	Peter Pan lives in Neverland.
+510	What is the boy raised by wolves in The Jungle Book called?	Tarzan	Peter Pan	Mowgli	Simba	Mowgli is raised by wolves.
+511	What is the bear in The Jungle Book called?	Bagheera	Baloo	Kaa	Shere Khan	Baloo sings "The Bare Necessities".
+512	What is the villainous tiger in The Jungle Book called?	Bagheera	Baloo	Kaa	Shere Khan	Shere Khan hunts Mowgli.
+515	What is the little deer in the film Bambi called?	Thumper	Flower	Bambi	Faline	Bambi is the young deer.
+516	What is the realm in the Marvel universe where Thor lives called?	Wakanda	Asgard	Sakaar	Nova	Asgard is the home of the Norse gods.
+517	What is the African nation of warriors in Black Panther called?	Asgard	Wakanda	Gotham	Metropolis	Wakanda is a hidden African nation.
+518	What is the rare metal of the Wakanda world called?	Adamantium	Red vibranium	Stark steel	Vibranium	Vibranium powers Wakanda.
+519	What is the fictional city in the DC world where Superman lives called?	Gotham	Central City	Star City	Metropolis	Superman lives in Metropolis.
+521	What is Wonder Woman's real name?	Diana Prince	Lois Lane	Selina Kyle	Harley Quinn	Her name is Diana Prince.
+522	What is The Flash's real name?	Clark Kent	Barry Allen	Bruce Wayne	Oliver Queen	The Flash is Barry Allen.
+523	What is Batman's secret hideout called?	Wayne Tower	The Citadel	The Hideout	The Batcave	The Batcave lies beneath Wayne Manor.
+524	What is Batman's loyal butler called?	Robin	Gordon	Alfred	Lex	Alfred Pennyworth serves Bruce Wayne.
+525	Who is Gotham's police commissioner and Batman's friend?	Harvey Dent	Alfred	James Gordon	Lucius Fox	Commissioner Gordon works with Batman.
+526	In which fictional city does the Simpson family live?	Gotham	Metropolis	Quahog	Springfield	The Simpsons live in Springfield.
+527	Who is the famous rabbit who says "What's up, Doc?"	Peter Rabbit	Roger Rabbit	Bugs Bunny	Tom	Bugs Bunny says "What's up, Doc?"
+528	How many Oscars did Ben-Hur, Titanic and The Return of the King each win?	9	11	13	7	Each of them won 11 Oscars.
+529	Which actress holds the record for most Oscar nominations, with 21?	Katharine Hepburn	Bette Davis	Meryl Streep	Judi Dench	Meryl Streep has 21 nominations.
+531	Which actor has won three Oscars for Best Actor?	Jack Nicholson	Marlon Brando	Tom Hanks	Daniel Day-Lewis	Day-Lewis won in 1990, 2008 and 2013.
+532	What was Darth Vader's name before he turned to the dark side?	Luke Skywalker	Anakin Skywalker	Obi-Wan Kenobi	Palpatine	Anakin Skywalker became Darth Vader.
+533	What is Han Solo's famous spaceship called?	Enterprise	Death Star	Millennium Falcon	X-wing	The Millennium Falcon made the Kessel Run.
+534	What are the two famous robots in Star Wars called?	Wall-E and EVE	B-MO and Harobot	Bumerang and Bip	R2-D2 and C-3PO	R2-D2 and C-3PO appear in every trilogy.
+535	What is the desert planet where Luke Skywalker grew up called?	Tatooine	Hoth	Naboo	Dagobah	Tatooine has two suns.
+536	What is the glowing weapon of the Jedi called?	A lightsaber	A magic wand	An energy shield	A hammer	A lightsaber is a Jedi's weapon.
+537	What is Luke Skywalker's little green teacher called?	Yoda	Obi-Wan	Mace Windu	Leia	Yoda trained Luke on Dagobah.
+538	What is Frodo's small sword called?	Sting	Anduril	Glamdring	Orcrist	Sting glows when orcs are near.
+539	What is the dragon in The Hobbit called?	Drogon	Fafnir	Smaug	Glaurung	Smaug guards the Lonely Mountain.
+540	What is the creature in The Lord of the Rings who says "my precious" called?	Gollum	Smeagol only	Saruman	Balrog	Gollum was once Sméagol.
+541	Who is the first enemy in The Lord of the Rings?	Gollum	Sauron	Saruman	Balrog	Sauron is the Dark Lord.
+543	What is Harry Potter's owl called?	Errol	Pigwidgeon	Knickers	Hedwig	Hedwig was a snowy owl.
+544	What is the giant gamekeeper at Hogwarts called?	Filch	Flitwick	Hagrid	Daedalus	Rubeus Hagrid is Hogwarts' gamekeeper.
+545	What is the snake that stays with Voldemort called?	Basilisk	Kaa	Nagini	Slytherin	Nagini is Voldemort's snake.
+546	What is the flying broomstick game in Harry Potter called?	Quidball	Fly	Quidditch	Magic rugby	Quidditch has four players' positions.
+547	How many Infinity Stones are there in the Marvel universe?	Five	Seven	Six	Eight	There are six Infinity Stones.
+548	Which tree-like creature says "I am Groot"?	Rocket	Drax	Groot	Thanos	Groot only says those three words.
+549	What is the raccoon in Guardians of the Galaxy called?	Groot	Star-Lord	Rocket	Thanos	Rocket is a genetically modified raccoon.
+550	Who is the director of S.H.I.E.L.D.?	Tony Stark	Nick Fury	Steve Rogers	Maria Hill	Nick Fury leads S.H.I.E.L.D.
+552	What is the realm where Thor lives and Odin rules called?	Wakanda	Sokovia	Asgard	Sakaar	Asgard is the home of the gods.
+553	What is Tony Stark's company called?	Wayne Enterprises	Oscorp	Stark Industries	Omnicorp	Stark Industries makes weapons and tech.
+554	What is the AI that helps Iron Man called?	Friday	J.A.R.V.I.S.	Ultron	Vision	Jarvis is Tony Stark's assistant.
+555	What is the robot villain created by Stark and Banner called?	Ultron	Vision	Jarvis	Thanos	Ultron appears in Age of Ultron.
+556	Who has won the most Oscars in history?	Steven Spielberg	Walt Disney	Alfred Hitchcock	James Cameron	Walt Disney won 22 competitive Oscars.
+557	What are the names of the four Hogwarts houses?	Azkaban, Beauxbatons, Durmstrang and Hogsmeade	Lancaster, York, Tudor and Stuart	Earth, Air, Fire and Water	Gryffindor, Slytherin, Hufflepuff and Ravenclaw	The houses compete for the House Cup.
+558	What is the evil land ruled by Sauron in The Lord of the Rings called?	The Shire	Mordor	Gondor	Rohan	Mordor is where Mount Doom lies.
+559	From which platform does the Hogwarts Express leave?	Nine	Ten	Three and three-quarters	Nine and three-quarters	Platform 9¾ is at King's Cross.
+560	What is the small golden ball in Quidditch called?	The Bludger	The Quaffle	The Red Ball	The Golden Snitch	Catching the Snitch ends the game.
+561	On which mountain is the One Ring destroyed?	Mount Erebor	Mount Caradhras	Mount Shadow	Mount Doom (Mount Orodruin)	Frodo destroys the Ring in Mount Doom.
+562	Who directed Edward Scissorhands?	Tim Burton	Park Chan-wook	Wes Anderson	Mel Gibson	Tim Burton directed it in 1990.
+563	Who directed Beetlejuice?	Guillermo del Toro	Tim Burton	Denis Villeneuve	Bong Joon-ho	Burton directed it in 1988.
+569	Who directed The Shape of Water?	Wes Anderson	Roman Polanski	Guillermo del Toro	Park Chan-wook	Del Toro won an Oscar for it.
+571	Who directed Blade Runner 2049?	Denis Villeneuve	Guillermo del Toro	Ridley Scott	Francis Ford Coppola	Villeneuve directed the sequel.
+572	Who directed Dune (2021)?	Ben Affleck	Denis Villeneuve	Quentin Tarantino	Mel Gibson	Villeneuve adapted Frank Herbert's novel.
+577	Who directed Howl's Moving Castle?	Greta Gerwig	Tim Burton	Hayao Miyazaki	Bong Joon-ho	Miyazaki directed it in 2004.
+578	Who directed Spirited Away?	Clint Eastwood	Christopher Nolan	Hayao Miyazaki	Francis Ford Coppola	It won the Oscar for Best Animated Feature.
+579	Who directed My Neighbour Totoro?	David Fincher	Clint Eastwood	Hayao Miyazaki	The Coen Brothers	It came out in 1988.
+580	Who directed Unforgiven?	Damien Chazelle	Clint Eastwood	Ben Affleck	Hayao Miyazaki	Clint Eastwood won Best Director.
+581	Who directed Million Dollar Baby?	Wes Anderson	Clint Eastwood	Denis Villeneuve	Hayao Miyazaki	Eastwood won Best Director for it.
+582	Who directed The Passion of the Christ?	Tim Burton	Guillermo del Toro	Damien Chazelle	Mel Gibson	Mel Gibson directed it in 2004.
+583	Who directed Braveheart?	Roman Polanski	Martin Scorsese	Christopher Nolan	Mel Gibson	Gibson also starred in it.
+584	Who directed Argo?	Hayao Miyazaki	Ben Affleck	Park Chan-wook	Mel Gibson	Affleck directed and starred in Argo.
+585	Who directed Whiplash?	Denis Villeneuve	Tim Burton	Damien Chazelle	Ridley Scott	Chazelle directed it in 2014.
+586	Who directed Get Out?	Ben Affleck	Wes Anderson	Roman Polanski	Jordan Peele	Peele won an Oscar for the script.
+587	Who directed Apocalypse Now?	Denis Villeneuve	Christopher Nolan	Francis Ford Coppola	Jordan Peele	Coppola directed it in 1979.
+588	Who directed The Pianist?	Francis Ford Coppola	Roman Polanski	Hayao Miyazaki	Damien Chazelle	Polanski won Best Director.
+589	Who directed Taxi Driver?	Ridley Scott	Martin Scorsese	Clint Eastwood	Denis Villeneuve	Scorsese directed it in 1976.
+590	Who directed The Irishman?	Christopher Nolan	The Coen Brothers	Martin Scorsese	Ridley Scott	Scorsese directed it in 2019.
+591	Who directed Inglourious Basterds?	Wes Anderson	Ben Affleck	Quentin Tarantino	Mel Gibson	Tarantino directed it in 2009.
+592	Who directed Kill Bill?	The Coen Brothers	Martin Scorsese	Christopher Nolan	Quentin Tarantino	Tarantino directed it in 2003.
+593	Who directed Django Unchained?	The Coen Brothers	David Fincher	Quentin Tarantino	Tim Burton	It came out in 2012.
+594	Who directed Reservoir Dogs?	Quentin Tarantino	Ridley Scott	Greta Gerwig	Martin Scorsese	It was Tarantino's first feature.
+595	Who directed Dunkirk?	Ridley Scott	Quentin Tarantino	Greta Gerwig	Christopher Nolan	Nolan directed it in 2017.
+596	Who directed Tenet?	Martin Scorsese	Clint Eastwood	Damien Chazelle	Christopher Nolan	Tenet came out in 2020.
+597	Who directed Memento?	Christopher Nolan	David Fincher	Mel Gibson	The Coen Brothers	Nolan directed it in 2000.
+598	Who directed The Prestige?	Clint Eastwood	Quentin Tarantino	Bong Joon-ho	Christopher Nolan	Nolan directed it in 2006.
+599	Who directed Gone Girl?	David Fincher	Greta Gerwig	Bong Joon-ho	Park Chan-wook	Fincher directed it in 2014.
+600	Who directed Se7en?	Ridley Scott	David Fincher	Roman Polanski	Martin Scorsese	Fincher directed it in 1995.
+601	Who directed The Social Network?	Denis Villeneuve	Martin Scorsese	The Coen Brothers	David Fincher	Fincher directed it in 2010.
+603	Who directed Alien?	Christopher Nolan	Ridley Scott	Tim Burton	Ben Affleck	Ridley Scott directed it in 1979.
+604	In which year was Parasite released?	2011	2015	2016	2019	Parasite came out in 2019.
+606	Which actor played the legend Muhammad Ali in the film Ali (2001)?	Will Smith	Denzel Washington	Jamie Foxx	Idris Elba	Will Smith was nominated for an Oscar.
+607	Which actor played King George VI in The King's Speech?	Geoffrey Rush	Hugh Grant	Eddie Redmayne	Colin Firth	Colin Firth won an Oscar for it.
+608	Which actress played Queen Elizabeth II in the film The Queen?	Helen Mirren	Meryl Streep	Olivia Colman	Cate Blanchett	Helen Mirren won an Oscar for it.
+609	Which actor played Steve Jobs in the 2015 film?	Michael Fassbender	Christian Bale	Ashton Kutcher	Jesse Eisenberg	Fassbender was nominated for an Oscar.
+610	Which actor played Mark Zuckerberg in The Social Network?	Andrew Garfield	Justin Timberlake	Jesse Eisenberg	Armie Hammer	Eisenberg was nominated for an Oscar.
+611	Which actor played Winston Churchill in Darkest Hour?	Anthony Hopkins	Albert Finney	Brian Cox	Gary Oldman	Gary Oldman won an Oscar for it.
+614	Which actor played Lawrence in Lawrence of Arabia?	Omar Sharif	Peter O'Toole	Anthony Quinn	Alec Guinness	Peter O'Toole played T. E. Lawrence.
+615	Which Egyptian actor appeared in Doctor Zhivago?	Omar Sharif	Rushdy Abaza	Anwar Wagdi	Ahmed Ramzy	Omar Sharif played Yuri Zhivago.
+616	Who starred in Breakfast at Tiffany's?	Audrey Hepburn	Marilyn Monroe	Grace Kelly	Vivien Leigh	Audrey Hepburn played Holly Golightly.
+617	Who starred in Gone with the Wind?	Joan Crawford	Bette Davis	Vivien Leigh	Ginger Rogers	Vivien Leigh played Scarlett O'Hara.
+621	Which American rapper acted in the film 8 Mile?	Drake	Eminem	Jay-Z	Kanye	Eminem starred in 8 Mile.
+622	Which actress played Katniss Everdeen in The Hunger Games?	Emma Watson	Shailene Woodley	Jennifer Lawrence	Kristen Stewart	Jennifer Lawrence played Katniss.
+623	Which actress played Bella Swan in Twilight?	Emma Watson	Jennifer Lawrence	Amanda Seyfried	Kristen Stewart	Kristen Stewart played Bella.
+624	Which actor played Edward Cullen in Twilight?	Taylor Lautner	Zac Efron	Ryan Gosling	Robert Pattinson	Robert Pattinson played Edward.
+626	Which actor played Oskar Schindler in Schindler's List?	Ralph Fiennes	Liam Neeson	Ben Kingsley	Russell Crowe	Liam Neeson played Schindler.
+629	Which actor played Sherlock Holmes in Guy Ritchie's 2009 and 2011 films?	Robert Downey Jr.	Jude Law	Benedict Cumberbatch	Johnny Depp	RDJ played Holmes.
+630	Which actor played Dr Watson in Guy Ritchie's Sherlock Holmes films?	Robert Downey Jr.	Martin Freeman	Jude Law	James McAvoy	Jude Law played Watson.
+631	Which actor played Rambo?	Arnold Schwarzenegger	Bruce Willis	Sylvester Stallone	Mel Gibson	Stallone played John Rambo.
+632	Which actor played Batman before Christian Bale in Batman & Robin?	George Clooney	Michael Keaton	Val Kilmer	Ben Affleck	George Clooney played Batman in 1997.
+633	Which famous play starring Adel Imam, Saeed Saleh and Ahmed Zaki is set in a school?	Madrasat Al-Moshaghbin	Shahid Mashafsh Haga	Al-Ayal Kebret	Al-Wad Sayyed Al-Shaghal	Madrasat Al-Moshaghbin (1973) is a classic comedy.
+634	Which play starring Adel Imam is about a murder and a witness who saw nothing?	Madrasat Al-Moshaghbin	Al-Zaeem	Bodyguard	Shahid Mashafsh Haga	Shahid Mashafsh Haga (1976) is a classic comedy.
+635	Which 2012 Adel Imam series is about a musical band?	Sahib El Saada	Fergat Naji Attallah	Mamoun and Partners	Ostaz wa Raies Qism	Fergat Naji Attallah aired in 2012.
+636	Which 2020 Mohamed Ramadan series is about a police officer?	Al Ostoura	Al Prince	Nasr Al Saaid	Moussa	Al Prince aired in Ramadan 2020.
+637	Which 2016 Mohamed Ramadan series is about a popular tough guy?	Al Ostoura	Al Prince	Nasr Al Saaid	Moussa	Al Ostoura aired in Ramadan 2016.
+638	Which 2023 Mohamed Ramadan series is about a village mayor?	Al Prince	Al Ostoura	Gaafar El Omda	Nasr Al Saaid	Gaafar El Omda aired in Ramadan 2023.
+639	Which 2012 Mohamed Ramadan film features a thug who became famous?	Ibn Halal	Qalb El Assad	Ehky Ya Shahrazad	Abdo Mouta	Abdo Mouta was his breakout role.
+640	Which Hend Sabry series is about a woman looking for a husband?	Ward Masmoum	Al Gezira	Ayza Atgawez	The Family of Hag Metwally	Ayza Atgawez was based on a blog.
+641	Which 2009 Mona Zaki film was directed by Yousry Nasrallah?	The Best of Times	Welad El Amm	Ehky Ya Shahrazad	Al Gezira	Ehky Ya Shahrazad (Scheherazade, Tell Me a Story) came out in 2009.
+642	Which 2004 Egyptian film stars Hend Sabry, Mona Zaki and Menna Shalabi?	The Best of Times	Ehky Ya Shahrazad	Malak wa Kitaba	Dam El Ghazal	Ahla El Awqat (2004) stars the three.
+643	Which 2009 film brings together Karim Abdel Aziz, Mona Zaki and Ahmed El Sakka?	Welad El Amm	Al Gezira	Tito	The Dealer	Welad El Amm is a spy thriller.
+644	Which old Egyptian comedy series starring Mohamed Sobhy is about a teacher and his family?	Yawmiyyat Wannis	Eilet El Dogheri	Rehlet El Million	Silsal El Dam	Yawmiyyat Wannis is a family classic.
+645	Which actor played the character Professor Wannis in the Egyptian series?	Mohamed Sobhy	Adel Imam	Nour El-Sherif	Yehia El-Fakharany	Mohamed Sobhy played Wannis.
+646	Which famous Egyptian children's show features a doll and a naughty boy?	Alam Simsim	Bakkar	Stories of the Prophets	Bugy and Tamtam	Bugy wa Tamtam was a Ramadan favourite.
+647	Which singer presented the famous Ramadan riddle show "Alf Leila wa Leila"?	Nelly	Sherihan	Dalal Abdel Aziz	Yousra	Sherihan presented it in the 1980s.
+648	Which actress presented the riddle show "Arousty"?	Nelly	Sherihan	Mervat Amin	Laila Elwi	Nelly presented "Arousty".
+649	Which actor presented the famous "Fatouta" riddles?	Adel Imam	Fouad El-Mohandes	Samir Ghanem	Ahmed Zaki	Samir Ghanem presented Fatouta.
+650	In which year was Pixar's Toy Story released?	2000	1988	1999	1995	Toy Story was Pixar's first feature.
+651	In which year was Pixar's A Bug's Life released?	1992	2001	1998	1997	It came out in 1998.
+652	In which year was Pixar's Monsters, Inc. released?	2000	2003	1997	2001	It came out in 2001.
+653	In which year was Pixar's Finding Nemo released?	2010	2011	2004	2003	It came out in 2003.
+654	In which year was Pixar's The Incredibles released?	2001	2002	2004	1998	It came out in 2004.
+655	In which year was Pixar's Cars released?	2000	2006	2014	1998	It came out in 2006.
+656	In which year was Pixar's Ratatouille released?	2004	2005	2007	1999	It came out in 2007.
+657	In which year was Pixar's WALL-E released?	2008	2004	2006	2015	It came out in 2008.
+658	In which year was Pixar's Up released?	2002	2003	2009	2015	It came out in 2009.
+659	In which year was Pixar's Brave released?	2012	2017	2019	2020	It came out in 2012.
+660	In which year was Pixar's Inside Out released?	2011	2015	2013	2007	It came out in 2015.
+661	In which year was Pixar's Finding Dory released?	2018	2016	2013	2022	It came out in 2016.
+662	In which year was Pixar's Coco released?	2017	2010	2022	2015	It came out in 2017.
+663	In which year was Pixar's Soul released?	2016	2014	2020	2023	It came out in 2020.
+664	In which year was Pixar's Luca released?	2017	2019	2022	2021	It came out in 2021.
+665	In which year was Pixar's Turning Red released?	2015	2019	2023	2022	It came out in 2022.
+666	In which year was Disney's classic animation Cinderella released?	1952	1953	1942	1950	It came out in 1950.
+667	In which year was Disney's Sleeping Beauty released?	1954	1959	1955	1951	It came out in 1959.
+668	In which year was Disney's animated The Jungle Book released?	1970	1967	1974	1975	It came out in 1967.
+669	In which year was Disney's Pocahontas released?	1994	1988	1995	1998	It came out in 1995.
+670	In which year was Disney's Hercules released?	1997	2003	2004	1990	It came out in 1997.
+671	In which year was Disney's animated Mulan released?	2000	1995	1996	1998	It came out in 1998.
+672	In which year was Disney's Tarzan released?	2002	1997	1999	1998	It came out in 1999.
+673	In which year was Disney's Tangled released?	2016	2010	2018	2013	It came out in 2010.
+674	In which year was Disney's Big Hero 6 released?	2014	2018	2011	2013	It came out in 2014.
+675	In which year was Disney's Zootopia released?	2009	2016	2018	2019	It came out in 2016.
+676	In which year was Disney's Encanto released?	2016	2021	2014	2022	It came out in 2021.
+677	In which year was Disney's Frozen II released?	2024	2019	2018	2014	It came out in 2019.
+678	In which year was Disney's Raya and the Last Dragon released?	2025	2021	2023	2015	It came out in 2021.
+679	In which year was the first Marvel film Thor released?	2009	2019	2011	2012	It came out in 2011.
+680	In which year was Captain America: The First Avenger released?	2011	2010	2018	2007	It came out in 2011.
+681	In which year was Guardians of the Galaxy released?	2014	2009	2021	2015	It came out in 2014.
+682	In which year was Avengers: Age of Ultron released?	2019	2022	2015	2023	It came out in 2015.
+683	In which year was Ant-Man released?	2015	2019	2013	2007	It came out in 2015.
+684	In which year was Captain America: Civil War released?	2008	2021	2016	2023	It came out in 2016.
+685	In which year was Doctor Strange released?	2020	2016	2013	2023	It came out in 2016.
+686	In which year was Avengers: Infinity War released?	2016	2025	2018	2020	It came out in 2018.
+687	In which year was Shang-Chi released?	2025	2021	2014	2015	It came out in 2021.
+688	In which year was Black Widow released?	2024	2021	2015	2023	It came out in 2021.
+689	In which year was Captain Marvel released?	2012	2019	2022	2015	It came out in 2019.
+690	In which year was Black Panther: Wakanda Forever released?	2018	2020	2022	2021	It came out in 2022.
+691	In which year was Iron Man 2 released?	2009	2018	2010	2003	It came out in 2010.
+692	In which year was The Incredible Hulk released?	2012	2008	2014	2006	It came out in 2008.
+693	In which year was Harry Potter and the Chamber of Secrets released?	2003	1996	1999	2002	It came out in 2002.
+694	In which year was Harry Potter and the Prisoner of Azkaban released?	2004	2008	2011	2000	It came out in 2004.
+695	In which year was Harry Potter and the Goblet of Fire released?	2009	2005	2003	2006	It came out in 2005.
+696	In which year was Harry Potter and the Order of the Phoenix released?	2007	2013	2006	2015	It came out in 2007.
+697	In which year was Harry Potter and the Half-Blood Prince released?	2003	2004	2009	2014	It came out in 2009.
+698	In which year was Harry Potter and the Deathly Hallows Part 1 released?	2008	2010	2006	2007	It came out in 2010.
+699	In which year was Harry Potter and the Deathly Hallows Part 2 released?	2016	2011	2010	2012	It came out in 2011.
+700	In which year was The Lord of the Rings: The Two Towers released?	2000	2005	2007	2002	It came out in 2002.
+701	In which year was The Lord of the Rings: The Return of the King released?	2010	1997	1999	2003	It came out in 2003.
+702	In which year was The Hobbit: An Unexpected Journey released?	2016	2012	2011	2014	It came out in 2012.
+703	In which year was Star Wars: A New Hope released?	1985	1971	1980	1977	It came out in 1977.
+704	In which year was Star Wars: Return of the Jedi released?	1978	1979	1975	1983	It came out in 1983.
+705	In which year was Star Wars: The Phantom Menace released?	1999	1994	2003	2005	It came out in 1999.
+706	In which year was Star Wars: Attack of the Clones released?	1995	2002	1996	1997	It came out in 2002.
+707	In which year was Star Wars: Revenge of the Sith released?	2000	2009	2002	2005	It came out in 2005.
+708	In which year was Star Wars: The Force Awakens released?	2018	2011	2021	2015	It came out in 2015.
+709	In which year was Star Wars: The Last Jedi released?	2016	2018	2017	2023	It came out in 2017.
+710	In which year was Star Wars: The Rise of Skywalker released?	2017	2019	2013	2021	It came out in 2019.
+711	In which year was Rogue One released?	2024	2016	2012	2020	It came out in 2016.
+712	In which year was Christopher Nolan's Memento released?	1993	1995	2000	2004	It came out in 2000.
+713	In which year was Christopher Nolan's The Prestige released?	2010	2006	2014	2007	It came out in 2006.
+714	In which year was Christopher Nolan's Dunkirk released?	2011	2017	2013	2022	It came out in 2017.
+715	In which year was Christopher Nolan's Tenet released?	2020	2019	2012	2013	It came out in 2020.
+716	In which year was Christopher Nolan's Interstellar released?	2014	2017	2013	2006	It came out in 2014.
+717	In which year was Christopher Nolan's Insomnia released?	2008	2002	2010	1997	It came out in 2002.
+718	In which year was Steven Spielberg's Close Encounters of the Third Kind released?	1985	1977	1971	1973	It came out in 1977.
+719	In which year was Steven Spielberg's Raiders of the Lost Ark released?	1985	1978	1981	1983	It came out in 1981.
+720	In which year was Steven Spielberg's The Color Purple released?	1987	1985	1989	1982	It came out in 1985.
+721	In which year was Steven Spielberg's Saving Private Ryan released?	2004	1998	1997	2006	It came out in 1998.
+722	In which year was Steven Spielberg's Minority Report released?	2008	2002	2001	1994	It came out in 2002.
+723	In which year was Steven Spielberg's Catch Me If You Can released?	2009	2003	2005	2002	It came out in 2002.
+724	In which year was Steven Spielberg's War of the Worlds released?	2005	1997	2004	2013	It came out in 2005.
+725	In which year was Steven Spielberg's Lincoln released?	2016	2006	2012	2015	It came out in 2012.
+726	In which year was Steven Spielberg's Bridge of Spies released?	2020	2021	2015	2014	It came out in 2015.
+727	In which year was Steven Spielberg's Ready Player One released?	2017	2021	2015	2018	It came out in 2018.
+728	In which year was Steven Spielberg's West Side Story released?	2017	2018	2014	2021	It came out in 2021.
+729	In which year was Quentin Tarantino's Reservoir Dogs released?	1992	1985	1988	1990	It came out in 1992.
+730	In which year was Quentin Tarantino's Jackie Brown released?	2003	2004	1997	1990	It came out in 1997.
+731	In which year was Quentin Tarantino's Kill Bill released?	1995	2003	1996	2006	Volume 1 came out in 2003.
+732	In which year was Quentin Tarantino's Inglourious Basterds released?	2017	2012	2009	2007	It came out in 2009.
+733	In which year was Quentin Tarantino's Django Unchained released?	2018	2012	2019	2020	It came out in 2012.
+734	In which year was Quentin Tarantino's The Hateful Eight released?	2016	2015	2010	2007	It came out in 2015.
+735	In which year was Quentin Tarantino's Once Upon a Time in Hollywood released?	2014	2022	2023	2019	It came out in 2019.
+736	In which year was James Cameron's The Terminator released?	1986	1984	1978	1988	It came out in 1984.
+737	In which year was James Cameron's True Lies released?	1995	1990	1994	1991	It came out in 1994.
+738	What is Leonardo DiCaprio's nationality?	Austrian	French	Spanish	American	DiCaprio is American.
+739	What is Brad Pitt's nationality?	Austrian	American	New Zealander	French	Pitt is American.
+740	What is Tom Hanks's nationality?	Mexican	American	Australian	Scottish	Hanks is American.
+741	What is Johnny Depp's nationality?	American	French	Austrian	Spanish	Depp is American.
+742	What is Will Smith's nationality?	Scottish	American	New Zealander	French	Smith is American.
+743	What is Robert Downey Jr.'s nationality?	French	Australian	Austrian	American	Downey is American.
+744	What is Hugh Jackman's nationality?	Austrian	Australian	Scottish	Spanish	Jackman is Australian.
+746	What is Cate Blanchett's nationality?	Spanish	Mexican	French	Australian	Blanchett is Australian.
+748	What is Heath Ledger's nationality?	Scottish	French	Australian	Spanish	Ledger was Australian.
+749	What is Christian Bale's nationality?	Scottish	Spanish	Mexican	British	Bale is British.
+750	What is Tom Hardy's nationality?	Mexican	Spanish	New Zealander	British	Hardy is British.
+751	What is Daniel Craig's nationality?	British	New Zealander	French	Scottish	Craig is British.
+752	What is Sean Connery's nationality?	Mexican	Scottish	Australian	French	Connery was Scottish.
+753	What is Arnold Schwarzenegger's nationality?	Mexican	British	Austrian	Spanish	Schwarzenegger was born in Austria.
+754	What is Salma Hayek's nationality?	Australian	New Zealander	Austrian	Mexican	Hayek is Mexican.
+755	What is Penélope Cruz's nationality?	Spanish	Australian	French	New Zealander	Cruz is Spanish.
+756	What is Antonio Banderas's nationality?	Spanish	French	American	Australian	Banderas is Spanish.
+757	What is Marion Cotillard's nationality?	American	French	Austrian	Spanish	Cotillard is French.
+759	What is Richard Gere's nationality?	American	Mexican	British	Australian	Gere is American.
+760	What is Willem Dafoe's nationality?	French	Australian	American	Mexican	Dafoe is American.
+761	What is Steven Spielberg's nationality?	South Korean	American	Spanish	Italian	Spielberg is American.
+762	What is James Cameron's nationality?	New Zealander	Canadian	South Korean	Mexican	Cameron is Canadian.
+763	What is Christopher Nolan's nationality?	British	Spanish	South Korean	American	Nolan is British-American.
+764	What is Ridley Scott's nationality?	Italian	Japanese	British	Mexican	Scott is British.
+765	What is Alfred Hitchcock's nationality?	American	British	Egyptian	South Korean	Hitchcock was British.
+766	What is Quentin Tarantino's nationality?	Egyptian	Japanese	American	British	Tarantino is American.
+767	What is Peter Jackson's nationality?	Mexican	New Zealander	South Korean	American	Jackson is a New Zealander.
+768	What is Alejandro González Iñárritu's nationality?	South Korean	New Zealander	Mexican	Spanish	Iñárritu is Mexican.
+769	What is Alfonso Cuarón's nationality?	New Zealander	South Korean	British	Mexican	Cuarón is Mexican.
+770	What is Guillermo del Toro's nationality?	New Zealander	British	American	Mexican	Del Toro is Mexican.
+771	What is Bong Joon-ho's nationality?	South Korean	Mexican	British	Spanish	Bong is South Korean.
+772	What is Hayao Miyazaki's nationality?	British	American	Canadian	Japanese	Miyazaki is Japanese.
+773	What is Akira Kurosawa's nationality?	New Zealander	Japanese	South Korean	Italian	Kurosawa was Japanese.
+774	What is Denis Villeneuve's nationality?	South Korean	New Zealander	Canadian	American	Villeneuve is Canadian.
+779	Who directed Pirates of the Caribbean: The Curse of the Black Pearl?	Gore Verbinski	J. J. Abrams	Peter Jackson	Tim Burton	Gore Verbinski directed it in 2003.
+780	Who directed The Lord of the Rings trilogy?	Gore Verbinski	Sam Raimi	Peter Jackson	Chris Columbus	Peter Jackson directed all three.
+781	Who directed Harry Potter and the Philosopher's Stone?	Colin Trevorrow	Tim Burton	Joss Whedon	Chris Columbus	Chris Columbus directed the first two films.
+782	Who directed The Avengers (2012)?	Joss Whedon	Chris Columbus	Michael Bay	Brian De Palma	Joss Whedon directed it.
+783	Who directed Iron Man (2008)?	Jon Favreau	Sam Raimi	Brian De Palma	Gore Verbinski	Favreau also played Happy Hogan.
+784	Who directed Black Panther?	Ryan Coogler	Brian De Palma	Todd Phillips	Gore Verbinski	Coogler directed it in 2018.
+785	Who directed The Lion King (2019)?	Jon Favreau	Michael Bay	Tim Burton	Gore Verbinski	It is a photorealistic remake.
+786	Who directed Beauty and the Beast (2017)?	Brian De Palma	Colin Trevorrow	Bill Condon	Ryan Coogler	Bill Condon directed it.
+787	Who directed Star Wars: The Force Awakens?	Gore Verbinski	J. J. Abrams	Todd Phillips	Chris Columbus	J. J. Abrams directed it in 2015.
+788	Who directed Spider-Man (2002)?	Colin Trevorrow	Jon Favreau	Bill Condon	Sam Raimi	Sam Raimi directed the Spider-Man trilogy.
+789	Who directed Batman (1989)?	Rob Cohen	Tim Burton	Gore Verbinski	Todd Phillips	Tim Burton directed it with Michael Keaton.
+790	Who directed Joker (2019)?	Todd Phillips	Jon Favreau	Gore Verbinski	Michael Bay	Todd Phillips also directed The Hangover.
+791	Who directed Transformers?	Michael Bay	Gore Verbinski	Peter Jackson	Rob Cohen	Michael Bay directed it in 2007.
+792	Who directed Jurassic World (2015)?	Sam Raimi	J. J. Abrams	Bill Condon	Colin Trevorrow	Colin Trevorrow directed it.
+793	Who directed the first Fast & Furious film?	Ridley Scott	Gore Verbinski	Rob Cohen	Brian De Palma	Rob Cohen directed The Fast and the Furious (2001).
+794	Who directed the first Mission: Impossible film?	Jon Favreau	Brian De Palma	Michael Bay	Colin Trevorrow	Brian De Palma directed it in 1996.
+795	Who directed The Martian?	Ridley Scott	Jon Favreau	Brian De Palma	Bill Condon	Ridley Scott directed it in 2015.
+796	Which animated film has the song "Let It Go"?	Beauty and the Beast	The Little Mermaid	Toy Story	Frozen	"Let It Go" won an Oscar.
+797	Which animated film has the song "Hakuna Matata"?	Tangled	The Lion King	Moana	Coco	Timon and Pumbaa sing it.
+798	Which animated film has the song "A Whole New World"?	Beauty and the Beast	Mulan	Frozen	Aladdin	Aladdin and Jasmine sing it.
+799	Which animated film has the song "Under the Sea"?	Aladdin	Toy Story	The Little Mermaid	The Jungle Book	Sebastian the crab sings it.
+800	Which animated film has the song "How Far I'll Go"?	The Lion King	Pocahontas	Encanto	Moana	Moana sings it.
+801	Which animated film has the song "Remember Me"?	Tangled	Pocahontas	Coco	Encanto	It is the main song of Coco.
+802	Which animated film has the song "You've Got a Friend in Me"?	Toy Story	Encanto	The Lion King	Frozen	Randy Newman wrote it for Toy Story.
+803	Which animated film has the song "Circle of Life"?	The Lion King	Coco	Pinocchio	The Jungle Book	It opens The Lion King.
+804	Which animated film has the song "The Bare Necessities"?	Mary Poppins	Moana	Beauty and the Beast	The Jungle Book	Baloo sings it.
+805	Which animated film has the song "Colors of the Wind"?	Hercules	The Jungle Book	Pinocchio	Pocahontas	It won the Oscar for Best Song.
+806	Which animated film has the song "Reflection"?	Frozen	Tangled	Mulan	Coco	Mulan sings "Reflection".
+807	Which animated film has the song "We Don't Talk About Bruno"?	Pocahontas	Encanto	The Little Mermaid	Pinocchio	It became a worldwide hit in 2021.
+808	Which animated film has the song "Zero to Hero"?	Tangled	Moana	Beauty and the Beast	Hercules	It is sung by the Muses.
+809	Which animated film has the song "I See the Light"?	Pocahontas	Hercules	Tangled	Mary Poppins	Rapunzel and Flynn sing it.
+810	Which animated film has the song "Part of Your World"?	Hercules	Toy Story	Encanto	The Little Mermaid	Ariel sings it.
+811	Which animated film has the song "Be Our Guest"?	Toy Story	Beauty and the Beast	Frozen	The Lion King	Lumière sings it.
+812	Which animated film has the song "Friend Like Me"?	Aladdin	Mulan	Tangled	Beauty and the Beast	The Genie sings it.
+813	Which animated film has the song "Can You Feel the Love Tonight"?	The Lion King	Toy Story	Pinocchio	The Little Mermaid	It won the Oscar for Best Song.
+814	Which animated film has the song "Do You Want to Build a Snowman?"	Frozen	Pocahontas	Beauty and the Beast	Pinocchio	Anna sings it.
+815	Which animated film has the song "Kiss the Girl"?	Mulan	Toy Story	Frozen	The Little Mermaid	Sebastian sings it.
+816	Which animated film has the song "When You Wish Upon a Star"?	Moana	Toy Story	Pinocchio	Aladdin	Jiminy Cricket sings it.
+817	Which film has the song "Supercalifragilisticexpialidocious"?	Hercules	Mary Poppins	The Little Mermaid	Coco	Julie Andrews sings it.
+818	Which animated film has the song "Surface Pressure"?	Frozen	Mulan	Encanto	Pinocchio	Luisa sings it.
+819	Which animated film has the song "Go the Distance"?	Frozen	The Little Mermaid	Hercules	Mulan	Hercules sings it.
+820	Which film has the song "My Heart Will Go On"?	Goldfinger	Saturday Night Fever	Titanic	La La Land	Celine Dion sang it.
+821	Which film has the song "Skyfall"?	Titanic	Top Gun	A Star Is Born	Skyfall (James Bond)	Adele sang it.
+822	Which film has the song "Shallow"?	Saturday Night Fever	Goldfinger	A Star Is Born	Skyfall (James Bond)	Lady Gaga and Bradley Cooper sang it.
+823	Which film has the song "I Will Always Love You"?	Skyfall (James Bond)	The Bodyguard	Titanic	Goldfinger	Whitney Houston sang it.
+824	Which film has the song "Take My Breath Away"?	The Greatest Showman	La La Land	Goldfinger	Top Gun	Berlin sang it.
+825	Which film has the song "Stayin' Alive"?	Saturday Night Fever	The Greatest Showman	Live and Let Die (James Bond)	Skyfall (James Bond)	The Bee Gees sang it.
+826	Which film has the song "City of Stars"?	La La Land	A Star Is Born	Top Gun	Saturday Night Fever	It won an Oscar in 2017.
+827	Which film has the song "This Is Me"?	La La Land	No Time to Die (James Bond)	The Greatest Showman	Goldfinger	Keala Settle sings it.
+828	Which film has the song "No Time to Die"?	No Time to Die (James Bond)	Skyfall (James Bond)	Top Gun	La La Land	Billie Eilish sang it.
+829	Which film has the song "Goldfinger"?	Top Gun	Goldfinger	Skyfall (James Bond)	Saturday Night Fever	Shirley Bassey sang it.
+830	Which film has the song "Live and Let Die"?	Live and Let Die (James Bond)	Top Gun	Goldfinger	No Time to Die (James Bond)	Paul McCartney wrote it.
+831	Which film has the song "Danger Zone"?	The Bodyguard	Live and Let Die (James Bond)	Top Gun	The Greatest Showman	Kenny Loggins sang it.
+832	In which film is the famous line "May the Force be with you"?	Forrest Gump	The Karate Kid	Star Wars	Finding Nemo	It is a Star Wars line.
+833	In which film is the famous line "I'll be back"?	Apollo 13	Forrest Gump	The Terminator	Star Wars	Schwarzenegger says it in The Terminator.
+834	In which film is the famous line "Houston, we have a problem"?	A Few Good Men	Apollo 13	Forrest Gump	Jaws	Tom Hanks says it in Apollo 13.
+835	In which film is the famous line "Why so serious?"	Toy Story	The Karate Kid	Scarface	The Dark Knight	The Joker says it.
+836	In which film is the famous line "You can't handle the truth!"	The Lord of the Rings	A Few Good Men	Titanic	Apollo 13	Jack Nicholson says it.
+837	In which film is the famous line "I am your father"?	Finding Nemo	Star Wars: The Empire Strikes Back	Titanic	Terminator 2	Darth Vader says it.
+838	In which film is the famous line "To infinity and beyond"?	The Sixth Sense	The Lord of the Rings	Toy Story	The Terminator	Buzz Lightyear says it.
+839	In which film is the famous line "Just keep swimming"?	Casablanca	A Few Good Men	The Lord of the Rings	Finding Nemo	Dory says it.
+840	In which film is the famous line "You're gonna need a bigger boat"?	Jaws	Finding Nemo	The Terminator	Casablanca	Roy Scheider says it in Jaws.
+841	In which film is the famous line "I'm the king of the world!"	Titanic	The Dark Knight	Toy Story	Jaws	Jack shouts it on the bow.
+842	In which film is the famous line "My precious"?	The Karate Kid	The Lord of the Rings	A Few Good Men	The Empire Strikes Back	Gollum says it.
+843	In which film is the famous line "Say hello to my little friend"?	The Karate Kid	Jaws	Apollo 13	Scarface	Tony Montana says it.
+844	In which film is the famous line "Wax on, wax off"?	The Dark Knight	Terminator 2	The Karate Kid	The Sixth Sense	Mr Miyagi says it.
+845	In which film is the famous line "E.T. phone home"?	Toy Story	E.T.	Casablanca	Apollo 13	E.T. says it.
+846	In which film is the famous line "Yippee-ki-yay"?	Casablanca	The Empire Strikes Back	Die Hard	Forrest Gump	John McClane says it.
+847	In which film does the character Hannibal Lecter appear?	Alien	The Shining	The Silence of the Lambs	Back to the Future	Anthony Hopkins played him.
+848	In which film does the character Norman Bates appear?	Psycho	Taxi Driver	The Lord of the Rings	Fast & Furious	Anthony Perkins played Norman Bates.
+849	In which film does the character Jack Torrance appear?	Scarface	The Shining	The Silence of the Lambs	Raiders of the Lost Ark	Jack Nicholson played him.
+850	In which film does the character Indiana Jones appear?	Raiders of the Lost Ark	Die Hard	The Terminator	Fast & Furious	Harrison Ford played Indiana Jones.
+851	In which film does the character Marty McFly appear?	Harry Potter	Back to the Future	The Avengers	Psycho	Michael J. Fox played him.
+852	In which film does the character Vito Corleone appear?	The Hunger Games	The Godfather	The Avengers	Raiders of the Lost Ark	Marlon Brando played Vito.
+853	In which film does the character Tony Montana appear?	Braveheart	The Hunger Games	Psycho	Scarface	Al Pacino played Tony Montana.
+855	In which film does the character Maximus appear?	The Shining	Beauty and the Beast	The Matrix	Gladiator	Russell Crowe played Maximus.
+857	In which film does the character Neo appear?	Twilight	Tangled	Raiders of the Lost Ark	The Matrix	Keanu Reeves played Neo.
+858	In which film does the character Ripley appear?	Scarface	Twilight	Alien	Gladiator	Sigourney Weaver played Ripley.
+860	In which film does the character John McClane appear?	Die Hard	Scarface	Alien	The Hunger Games	Bruce Willis played McClane.
+861	In which film does the character Jack Dawson appear?	The Matrix	Titanic	Alien	The Godfather	DiCaprio played Jack Dawson.
+862	In which film does the character Bane appear?	The Dark Knight Rises	The Hunger Games	The Matrix	Pirates of the Caribbean	Tom Hardy played Bane.
+863	In which film does the character Loki appear?	The Avengers	Braveheart	Psycho	Titanic	Tom Hiddleston plays Loki.
+864	In which film does the character Katniss Everdeen appear?	Harry Potter	Die Hard	The Silence of the Lambs	The Hunger Games	Jennifer Lawrence plays Katniss.
+865	In which film does the character Bella Swan appear?	The Lord of the Rings	The Jungle Book	The Silence of the Lambs	Twilight	Kristen Stewart plays Bella.
+866	In which film does the character Dobby appear?	The Hunger Games	X-Men	Harry Potter	The Jungle Book	Dobby is a house-elf.
+867	In which film does the character Gandalf appear?	The Lord of the Rings	Beauty and the Beast	The Godfather	Back to the Future	Ian McKellen played Gandalf.
+869	In which film does the character Dominic Toretto appear?	The Little Mermaid	Braveheart	Fast & Furious	Scarface	Vin Diesel plays Dom.
+870	In which film does the character Wolverine appear?	The Jungle Book	The Avengers	Fast & Furious	X-Men	Hugh Jackman plays Wolverine.
+871	In which film does the character Belle appear?	The Lord of the Rings	Die Hard	Tangled	Beauty and the Beast	Belle loves reading.
+872	In which film does the character Ariel appear?	Beauty and the Beast	Pirates of the Caribbean	Gladiator	The Little Mermaid	Ariel is a mermaid princess.
+873	In which film does the character Rapunzel appear?	Pirates of the Caribbean	Harry Potter	Tangled	Fast & Furious	Rapunzel has magic hair.
+874	In which film does the character Mowgli appear?	The Terminator	The Jungle Book	Harry Potter	The Godfather	Mowgli is raised by wolves.
+875	In which year did Game of Thrones begin airing?	2008	2009	2011	2007	It began in April 2011.
+877	In which year did Friends begin airing?	1989	1990	1999	1994	It began in September 1994.
+913	In which year was the Egyptian film "Ismailia Rayeh Gayy" released?	2003	1989	1997	2007	It came out in 1997.
+914	In which year was the Egyptian film "Saidi at the American University" released?	1992	2002	1996	1998	It came out in 1998.
+915	In which year was the Egyptian film "Hammam in Amsterdam" released?	2000	1999	1993	1994	It came out in 1999.
+916	In which year was the Egyptian film "El Limby" released?	2000	2010	2007	2002	It came out in 2002.
+917	In which year was the Egyptian film "Ahla El Awqat" released?	2003	2012	2004	2014	It came out in 2004.
+918	In which year was the Egyptian film "The Embassy in the Building" released?	2001	2011	2005	1995	It came out in 2005.
+919	In which year was the Egyptian film "The Yacoubian Building" released?	2016	2006	2009	2004	It came out in 2006.
+920	In which year was the Egyptian film "Al Gezira" released?	2017	2012	2007	2015	It came out in 2007.
+921	In which year was the Egyptian film "Welad El Amm" released?	2009	2010	2019	2015	It came out in 2009.
+922	In which year was the Egyptian film "Asal Eswed" (Black Honey) released?	2015	2010	2013	2007	It came out in 2010.
+923	In which year was the Egyptian film "The Blue Elephant" released?	2014	2008	2020	2022	It came out in 2014.
+924	In which year was the Egyptian film "The Passage" (El Momar) released?	2009	2018	2019	2014	It came out in 2019.
+925	In which year was the Egyptian film "Kira & El Gin" released?	2018	2022	2020	2021	It came out in 2022.
+926	In which year was the Egyptian film "Saladin the Victorious" released?	1960	1963	1969	1964	It came out in 1963.
+927	In which year was the Egyptian film "The Mummy" released?	1969	1970	1965	1966	It came out in 1969.
+928	In which year was the Egyptian film "The Land" (Al-Ard) released?	1968	1960	1970	1976	It came out in 1970.
+949	Which genre does Titanic mostly belong to?	Fantasy	Romantic drama	Sports drama	Horror	Titanic is a romantic drama.
+950	Which genre does Jaws mostly belong to?	Crime drama	Sports drama	Thriller	Animation	Jaws is a thriller.
+951	Which genre does Psycho mostly belong to?	Musical	Drama	Historical action	Horror	Psycho is a horror thriller.
+952	Which genre does Alien mostly belong to?	Science-fiction horror	Science fiction	Historical action	Fantasy	Alien mixes sci-fi and horror.
+953	Which genre does Toy Story mostly belong to?	Animation	Historical action	Sports drama	Drama	Toy Story is an animated film.
+954	Which genre does The Lord of the Rings mostly belong to?	Science fiction	Fantasy	Crime drama	Romantic drama	The Lord of the Rings is fantasy.
+955	Which genre does Casablanca mostly belong to?	Romantic drama	Thriller	Sports drama	Historical action	Casablanca is a romantic drama.
+956	Which genre does The Shawshank Redemption mostly belong to?	Drama	Historical action	Animation	Musical	It is a prison drama.
+957	Which genre does Rocky mostly belong to?	Science fiction	Sports drama	Drama	Family comedy	Rocky is a boxing drama.
+958	Which genre does Saving Private Ryan mostly belong to?	Drama	War	Crime drama	Romantic drama	It is a war film.
+959	Which genre does How to Train Your Dragon mostly belong to?	War	Animation	Thriller	Historical action	It is an animated film.
+960	Which genre does Mamma Mia! mostly belong to?	Sports drama	Action sci-fi	Romantic drama	Musical	Mamma Mia! is a musical.
+961	Which genre does Interstellar mostly belong to?	Family comedy	Science fiction	Romantic drama	Animation	Interstellar is science fiction.
+962	Which genre does Star Wars mostly belong to?	Science fiction	Drama	Sports drama	Space opera	Star Wars is a space opera.
+963	Which genre does The Godfather mostly belong to?	War	Drama	Crime drama	Musical	The Godfather is a crime drama.
+964	Which genre does Gladiator mostly belong to?	Fantasy	Historical action	War	Musical	Gladiator is a historical action film.
+965	Which genre does Home Alone mostly belong to?	Fantasy	Sports drama	Family comedy	Historical action	Home Alone is a family comedy.
+966	Which genre does Scream mostly belong to?	Horror	Crime drama	Action sci-fi	Historical action	Scream is a slasher horror film.
+967	Which genre does La La Land mostly belong to?	Romantic musical	Romantic drama	Action sci-fi	Crime drama	It is a romantic musical.
+968	Which genre does Mad Max: Fury Road mostly belong to?	War	Action sci-fi	Drama	Horror	It is an action film.
+969	Which genre does "Terrorism and Kebab" mostly belong to?	Black comedy	Crime drama	Musical	Animation	It is a dark satire.
+970	Which genre does "El Limby" mostly belong to?	Historical action	Comedy	War	Thriller	El Limby is a comedy.
+971	Which genre does "The Passage" mostly belong to?	Action sci-fi	War	Family comedy	Comedy	Al-Momar is a war film.
+972	Which genre does "The Blue Elephant" mostly belong to?	Psychological thriller	War	Horror	Drama	It is a psychological thriller.
+973	Which genre does "The Yacoubian Building" mostly belong to?	Science fiction	War	Social drama	Crime drama	It is a social drama.
+974	Which genre does "The Mummy" (Shadi Abdel Salam) mostly belong to?	Drama	Historical drama	Sports drama	Fantasy	It is a historical drama.
+986	Who directed the classic film Seven Samurai?	Frank Capra	Robert Wiene	Akira Kurosawa	Sergei Eisenstein	Kurosawa directed it in 1954.
+996	Who directed the classic film Raging Bull?	Stanley Kubrick	Martin Scorsese	Fritz Lang	Vittorio De Sica	Scorsese directed it in 1980.
+1001	Who directed the classic film A Clockwork Orange?	Carol Reed	Vittorio De Sica	John Ford	Stanley Kubrick	Kubrick directed it in 1971.
+775	What is Stanley Kubrick's nationality?	American	Spanish	Canadian	South Korean	Kubrick was American-born.
+776	What is Federico Fellini's nationality?	Japanese	Spanish	Canadian	Italian	Fellini was Italian.
+777	What is Sergio Leone's nationality?	Italian	Spanish	Japanese	Canadian	Leone was Italian.
+778	What is Pedro Almodóvar's nationality?	Japanese	Egyptian	Italian	Spanish	Almodóvar is Spanish.
+856	In which film does the character William Wallace appear?	Gladiator	The Little Mermaid	Braveheart	Die Hard	Mel Gibson played William Wallace.
+859	In which film does the character Sarah Connor appear?	The Shining	Beauty and the Beast	The Terminator	Harry Potter	Linda Hamilton played Sarah Connor.
+868	In which film does the character Elizabeth Swann appear?	The Avengers	X-Men	Pirates of the Caribbean	Psycho	Keira Knightley played Elizabeth Swann.
+876	How many seasons did Game of Thrones have?	5	10	7	8	It ran for eight seasons.
+878	How many seasons did Friends run for?	3	10	11	8	Friends ran for ten seasons.
+879	In which year did Breaking Bad start airing?	2008	2010	2004	2007	It began in January 2008.
+880	How many seasons did Breaking Bad run for?	5	11	2	9	It ran for five seasons.
+881	In which year did Stranger Things start airing?	2018	2011	2016	2019	It began in July 2016.
+882	In which year did Money Heist begin?	2017	2023	2020	2015	It began in 2017.
+883	How many parts did Money Heist run for?	5	7	11	4	It ran for five parts.
+884	In which year did The Simpsons start airing?	1987	1990	1989	1991	It began in December 1989.
+885	In which year did SpongeBob SquarePants start airing?	1999	2000	1994	1995	It began in 1999.
+886	In which year did Prison Break start airing?	2005	2000	2009	2008	It began in 2005.
+888	In which year did Lost start airing?	2010	2003	2006	2004	It began in September 2004.
+889	How many seasons did Lost run for?	5	9	8	6	It ran for six seasons.
+890	In which year did The Big Bang Theory start airing?	2009	2011	2004	2007	It began in 2007.
+891	How many seasons did The Big Bang Theory run for?	2	12	5	4	It ran for twelve seasons.
+892	In which year did the BBC series Sherlock start airing?	2016	2009	2010	2014	It began in July 2010.
+893	How many series did Sherlock run for?	6	9	4	8	It ran for four series.
+894	In which year did House start airing?	2004	2000	2002	2006	It began in 2004.
+895	How many seasons did House run for?	9	8	4	3	It ran for eight seasons.
+896	In which year did Squid Game start airing?	2016	2019	2022	2021	It began in September 2021.
+897	In which year did Peaky Blinders start airing?	2008	2019	2013	2007	It began in 2013.
+898	In which year did Vikings start airing?	2016	2011	2015	2013	It began in 2013.
+899	In which year did The Crown start airing?	2016	2017	2010	2012	It began in November 2016.
+900	In which year did Narcos start airing?	2017	2012	2015	2020	It began in 2015.
+901	In which year did Wednesday start airing?	2024	2025	2021	2022	It began in November 2022.
+902	In which year did the American version of The Office start airing?	2001	2005	2004	2007	It began in 2005.
+903	How many seasons did the American Office run for?	4	12	9	11	It ran for nine seasons.
+904	In which year did Seinfeld start airing?	1992	1993	1989	1994	It began in 1989.
+905	How many seasons did Seinfeld run for?	5	12	6	9	It ran for nine seasons.
+906	In which year did Dexter start airing?	2000	2010	2011	2006	It began in 2006.
+908	In which year did Black Mirror start airing?	2010	2005	2011	2014	It began in 2011.
+909	In which year did the German series Dark start airing?	2016	2017	2019	2014	It began in December 2017.
+910	In which year did Mr. Bean start airing?	1992	1994	1987	1990	It began in 1990.
+911	In which year did The Witcher start airing?	2018	2013	2015	2019	It began in December 2019.
+912	In which year did The Mandalorian start airing?	2016	2014	2019	2022	It began in November 2019.
+929	In which year was the Egyptian film "Alexandria... Why?" released?	1984	1979	1978	1980	It came out in 1979.
+930	In which year was the Egyptian film "Kit Kat" released?	1985	1991	2001	1997	It came out in 1991.
+931	In which year was the Egyptian film "Take Care of Zouzou" released?	1977	1972	1970	1969	It came out in 1972.
+932	In which year was the Egyptian film "Nasser 56" released?	1997	1998	1999	1996	It came out in 1996.
+933	In which year was the Egyptian film "Days of Sadat" released?	1993	1997	2001	2007	It came out in 2001.
+934	In which year was the Egyptian film "Halim" released?	2006	2008	2002	2003	It came out in 2006.
+935	In which year did the Arab series "Yawmiyyat Wannis" start airing?	2000	1997	1994	1992	It began in 1994.
+936	In which year did the Arab series "Umm Kulthum" start airing?	1999	2001	1997	1991	It began in 1999.
+937	In which year did the Arab series "Bab Al-Hara" start airing?	2016	2006	2004	2014	It began in 2006.
+938	In which year did the Arab series "Al Taghreeba Al Filastiniya" start airing?	1996	2004	2014	1999	It began in 2004.
+939	In which year did the Arab series "Al Zeer Salem" start airing?	1992	2001	2003	2000	It began in 2000.
+940	In which year did the Arab series "Tash Ma Tash" start airing?	1988	1993	1997	1998	It began in 1993.
+941	In which year did the Arab series "Al Kabeer Awi" start airing?	2018	2020	2006	2010	It began in 2010.
+942	In which year did the Arab series "Kalabsh" start airing?	2009	2017	2013	2023	It began in 2017.
+943	In which year did the Arab series "Al Ekhtyar" start airing?	2024	2020	2017	2015	It began in Ramadan 2020.
+944	In which year did the Arab series "Tahta Al Wesaya" start airing?	2019	2021	2020	2022	It began in 2020.
+945	In which year did the Arab series "Al Prince" start airing?	2010	2019	2015	2020	It began in 2020.
+946	In which year did the Arab series "Fergat Naji Attallah" start airing?	2017	2018	2006	2012	It began in 2012.
+947	In which year did the Arab series "Sahib Al Saada" start airing?	2008	2011	2016	2013	It began in 2016.
+948	In which year did the Arab series "Ayza Atgawez" start airing?	2016	2011	2015	2010	It began in 2010.
+975	How many main films are there in the Harry Potter series?	5	7	3	8	There are eight Harry Potter films.
+976	How many main films are there in The Lord of the Rings series?	6	3	5	8	There are three Lord of the Rings films.
+977	How many main films are there in The Hobbit series?	3	5	4	6	There are three Hobbit films.
+978	How many main films are there in the Toy Story series?	4	5	9	6	There are four main Toy Story films.
+979	How many main films are there in the Shrek series?	8	2	4	5	There are four main Shrek films.
+980	How many main films are there in The Matrix series?	6	4	2	5	There are four Matrix films.
+981	How many main films are there in The Godfather series?	3	5	10	6	There are three Godfather films.
+982	How many main films are there in the Back to the Future series?	3	6	4	2	There are three films.
+1005	Which director won Best Director for Schindler's List and Saving Private Ryan?	Martin Scorsese	Steven Spielberg	Ridley Scott	James Cameron	Spielberg won both times.

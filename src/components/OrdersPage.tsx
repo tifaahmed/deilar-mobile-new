@@ -284,11 +284,12 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
                 <span>{isAr ? 'الإجمالي' : 'Total'}</span>
                 <span className="font-mono text-[#941946]">{order.total_amount} {currency}</span>
               </div>
-              {(order.wallet_amount ?? 0) > 0 && (
+              {((order.wallet_amount ?? 0) > 0 || (order.points_amount ?? 0) > 0) && (
                 <div data-testid="order-split" className="rounded-xl bg-violet-50 border border-violet-200 p-2 text-xs font-bold text-violet-900 space-y-0.5">
-                  <div className="flex justify-between"><span>{isAr ? '👛 دفعت من المحفظة' : '👛 Paid from wallet'}</span><span className="font-mono">{order.wallet_amount} {currency}</span></div>
-                  <div className="flex justify-between"><span>{isAr ? '💵 دفعت من الفلوس الحقيقية' : '💵 Paid in real money'}</span><span className="font-mono">{order.amount_due ?? Math.max(0, order.total_amount - (order.wallet_amount ?? 0))} {currency}</span></div>
-                  {order.wallet_refunded && <p className="text-emerald-700">{isAr ? 'تم رد المبلغ إلى محفظتك.' : 'The money was returned to your wallet.'}</p>}
+                  {(order.points_amount ?? 0) > 0 && <div data-testid="order-points" className="flex justify-between text-amber-800"><span>{isAr ? `⭐ خصم نقاط الولاء (${order.points_used ?? 0} نقطة)` : `⭐ Loyalty points discount (${order.points_used ?? 0} points)`}</span><span className="font-mono">-{order.points_amount} {currency}</span></div>}
+                  {(order.wallet_amount ?? 0) > 0 && <div className="flex justify-between"><span>{isAr ? '👛 دفعت من المحفظة' : '👛 Paid from wallet'}</span><span className="font-mono">{order.wallet_amount} {currency}</span></div>}
+                  <div className="flex justify-between"><span>{isAr ? '💵 دفعت من الفلوس الحقيقية' : '💵 Paid in real money'}</span><span className="font-mono">{order.amount_due ?? Math.max(0, order.total_amount - (order.wallet_amount ?? 0) - (order.points_amount ?? 0))} {currency}</span></div>
+                  {order.wallet_refunded && <p className="text-emerald-700">{isAr ? 'تم رد المبلغ إلى محفظتك (والنقاط إلى رصيدك).' : 'The money was returned to your wallet (and the points to your balance).'}</p>}
                 </div>
               )}
               {order.membership_number ? (

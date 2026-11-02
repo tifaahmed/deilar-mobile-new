@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Share2 } from 'lucide-react';
+import { useIsAr } from '../context/LanguageContext';
 import { shareResult, type ShareOutcome } from '../utils/shareResult';
 
 /**
@@ -16,6 +17,9 @@ export interface Scene {
   title: string;
   /** Said in turn each time the player taps the face. */
   lines: [string, string, string];
+  /** The same, for an app in English. */
+  titleEn: string;
+  linesEn: [string, string, string];
   /** Tailwind classes of the background. */
   bg: string;
   /** Tailwind class of the text colour. */
@@ -29,32 +33,32 @@ export interface Scene {
 
 export const SCENES: Scene[] = [
   // ----- losing points: -100 ... -10 -----
-  { score: -100, emoji: '🤕', title: 'ضربة قاضية… بس الأبطال بيقوموا!', lines: ['آه! بس مفيش بطل ما وقعش 💪', 'كل غلطة درس جديد', 'جرّب تاني وهتفاجئ نفسك!'], bg: 'from-slate-800 via-zinc-700 to-slate-900', ink: 'text-white', drift: ['💥', '🌩️', '💫'], burst: ['💥', '⭐', '💫'], move: 'shake' },
-  { score: -90, emoji: '🆘', title: 'محتاج إنقاذ!', lines: ['ساعدني! 🙏', 'هنطلع من الحفرة دي سوا', 'الأسئلة الجاية أسهل، صدّقني'], bg: 'from-red-800 via-rose-700 to-red-900', ink: 'text-white', drift: ['🆘', '🌊', '💧'], burst: ['🆘', '🛟', '💧'], move: 'bounce' },
-  { score: -80, emoji: '🌪️', title: 'عاصفة عدّت عليك!', lines: ['العاصفة بتعدي دايماً 🌤️', 'خد نفس عميق', 'الجولة الجاية بداية جديدة'], bg: 'from-gray-700 via-slate-600 to-gray-800', ink: 'text-white', drift: ['🍃', '🌪️', '💨'], burst: ['💨', '🍃', '🌀'], move: 'spin' },
-  { score: -70, emoji: '😵‍💫', title: 'الدنيا لفّت بيك!', lines: ['أنا دايخ 😵‍💫', 'ركّز أكتر الجولة الجاية', 'اسأل نفسك: إيه الأقرب للصح؟'], bg: 'from-purple-900 via-fuchsia-800 to-indigo-900', ink: 'text-white', drift: ['💫', '🌀', '✨'], burst: ['💫', '🌀', '⭐'], move: 'wobble' },
-  { score: -60, emoji: '🥶', title: 'الملعب كان بارد النهارده', lines: ['برررد! 🧊', 'سخّن شوية وارجع', 'الفوز بيحب اللي بيحاول تاني'], bg: 'from-sky-800 via-cyan-700 to-blue-900', ink: 'text-white', drift: ['❄️', '🧊', '☃️'], burst: ['❄️', '🧊', '💎'], move: 'shake' },
-  { score: -50, emoji: '😭', title: 'يوم صعب… بس هيعدّي', lines: ['بكيت شوية 😭', 'امسح دموعك وكمّل', 'نص الأسئلة غلط، يعني نصها صح!'], bg: 'from-blue-900 via-indigo-800 to-slate-900', ink: 'text-white', drift: ['💧', '😭', '🌧️'], burst: ['💧', '💦', '😢'], move: 'drop' },
-  { score: -40, emoji: '😢', title: 'خسارة صغيرة، وهتعوّضها!', lines: ['ولا يهمك، فيها حاجة تتعلّمها', 'كل لاعب كبير خسر قبل ما يكسب', 'العب تاني وخد حقك 💪'], bg: 'from-indigo-800 via-blue-700 to-slate-800', ink: 'text-white', drift: ['💧', '🌧️', '☁️'], burst: ['💧', '💦', '🫧'], move: 'drop' },
-  { score: -30, emoji: '😟', title: 'لسه بتسخّن', lines: ['لسه الشوط الأول 😅', 'الأسئلة السهلة هتفرق', 'ركّز وهتكسب'], bg: 'from-stone-700 via-slate-600 to-stone-800', ink: 'text-white', drift: ['☁️', '🌧️', '💭'], burst: ['💭', '☁️', '💧'], move: 'wobble' },
-  { score: -20, emoji: '😕', title: 'ولا يهمك!', lines: ['غلطتين… عادي 😉', 'ارجع أقوى', 'المرة الجاية أحسن'], bg: 'from-slate-600 via-gray-500 to-slate-700', ink: 'text-white', drift: ['☁️', '💭', '🍂'], burst: ['🍂', '💭', '☁️'], move: 'float' },
-  { score: -10, emoji: '😐', title: 'تعثّر بسيط', lines: ['خطوة صغيرة للخلف بس', 'قوم وكمّل!', 'محتاجة شوية تركيز 🧠'], bg: 'from-gray-500 via-slate-400 to-gray-600', ink: 'text-white', drift: ['💧', '☁️', '🍃'], burst: ['🍃', '💧', '✨'], move: 'float' },
+  { score: -100, emoji: '🤕', titleEn: 'Knockout… but champions get back up!', linesEn: ['Ouch! But every champion has fallen 💪', 'Every mistake is a new lesson', 'Try again and surprise yourself!'], title: 'ضربة قاضية… بس الأبطال بيقوموا!', lines: ['آه! بس مفيش بطل ما وقعش 💪', 'كل غلطة درس جديد', 'جرّب تاني وهتفاجئ نفسك!'], bg: 'from-slate-800 via-zinc-700 to-slate-900', ink: 'text-white', drift: ['💥', '🌩️', '💫'], burst: ['💥', '⭐', '💫'], move: 'shake' },
+  { score: -90, emoji: '🆘', titleEn: 'Needs rescuing!', linesEn: ['Help me! 🙏', 'We will climb out of this hole together', 'The next questions are easier, trust me'], title: 'محتاج إنقاذ!', lines: ['ساعدني! 🙏', 'هنطلع من الحفرة دي سوا', 'الأسئلة الجاية أسهل، صدّقني'], bg: 'from-red-800 via-rose-700 to-red-900', ink: 'text-white', drift: ['🆘', '🌊', '💧'], burst: ['🆘', '🛟', '💧'], move: 'bounce' },
+  { score: -80, emoji: '🌪️', titleEn: 'A storm passed over you!', linesEn: ['Storms always pass 🌤️', 'Take a deep breath', 'The next round is a fresh start'], title: 'عاصفة عدّت عليك!', lines: ['العاصفة بتعدي دايماً 🌤️', 'خد نفس عميق', 'الجولة الجاية بداية جديدة'], bg: 'from-gray-700 via-slate-600 to-gray-800', ink: 'text-white', drift: ['🍃', '🌪️', '💨'], burst: ['💨', '🍃', '🌀'], move: 'spin' },
+  { score: -70, emoji: '😵‍💫', titleEn: 'Your head is spinning!', linesEn: ['I am dizzy 😵‍💫', 'Focus more next round', 'Ask yourself: which is closest to right?'], title: 'الدنيا لفّت بيك!', lines: ['أنا دايخ 😵‍💫', 'ركّز أكتر الجولة الجاية', 'اسأل نفسك: إيه الأقرب للصح؟'], bg: 'from-purple-900 via-fuchsia-800 to-indigo-900', ink: 'text-white', drift: ['💫', '🌀', '✨'], burst: ['💫', '🌀', '⭐'], move: 'wobble' },
+  { score: -60, emoji: '🥶', titleEn: 'The pitch was cold today', linesEn: ['Brrr! 🧊', 'Warm up a little and come back', 'Winning loves those who try again'], title: 'الملعب كان بارد النهارده', lines: ['برررد! 🧊', 'سخّن شوية وارجع', 'الفوز بيحب اللي بيحاول تاني'], bg: 'from-sky-800 via-cyan-700 to-blue-900', ink: 'text-white', drift: ['❄️', '🧊', '☃️'], burst: ['❄️', '🧊', '💎'], move: 'shake' },
+  { score: -50, emoji: '😭', titleEn: 'A hard day… but it will pass', linesEn: ['I cried a little 😭', 'Wipe your tears and keep going', 'Half the answers wrong means half right!'], title: 'يوم صعب… بس هيعدّي', lines: ['بكيت شوية 😭', 'امسح دموعك وكمّل', 'نص الأسئلة غلط، يعني نصها صح!'], bg: 'from-blue-900 via-indigo-800 to-slate-900', ink: 'text-white', drift: ['💧', '😭', '🌧️'], burst: ['💧', '💦', '😢'], move: 'drop' },
+  { score: -40, emoji: '😢', titleEn: 'A small loss, you will make it up!', linesEn: ['Never mind, there is something to learn', 'Every great player lost before winning', 'Play again and take what is yours 💪'], title: 'خسارة صغيرة، وهتعوّضها!', lines: ['ولا يهمك، فيها حاجة تتعلّمها', 'كل لاعب كبير خسر قبل ما يكسب', 'العب تاني وخد حقك 💪'], bg: 'from-indigo-800 via-blue-700 to-slate-800', ink: 'text-white', drift: ['💧', '🌧️', '☁️'], burst: ['💧', '💦', '🫧'], move: 'drop' },
+  { score: -30, emoji: '😟', titleEn: 'Still warming up', linesEn: ['It is only the first half 😅', 'The easy questions will make the difference', 'Focus and you will win'], title: 'لسه بتسخّن', lines: ['لسه الشوط الأول 😅', 'الأسئلة السهلة هتفرق', 'ركّز وهتكسب'], bg: 'from-stone-700 via-slate-600 to-stone-800', ink: 'text-white', drift: ['☁️', '🌧️', '💭'], burst: ['💭', '☁️', '💧'], move: 'wobble' },
+  { score: -20, emoji: '😕', titleEn: 'Never mind!', linesEn: ['Two slips… normal 😉', 'Come back stronger', 'Next time will be better'], title: 'ولا يهمك!', lines: ['غلطتين… عادي 😉', 'ارجع أقوى', 'المرة الجاية أحسن'], bg: 'from-slate-600 via-gray-500 to-slate-700', ink: 'text-white', drift: ['☁️', '💭', '🍂'], burst: ['🍂', '💭', '☁️'], move: 'float' },
+  { score: -10, emoji: '😐', titleEn: 'A small stumble', linesEn: ['Just one small step back', 'Get up and keep going!', 'A little more focus 🧠'], title: 'تعثّر بسيط', lines: ['خطوة صغيرة للخلف بس', 'قوم وكمّل!', 'محتاجة شوية تركيز 🧠'], bg: 'from-gray-500 via-slate-400 to-gray-600', ink: 'text-white', drift: ['💧', '☁️', '🍃'], burst: ['🍃', '💧', '✨'], move: 'float' },
 
   // ----- winning points: +10 ... +100 -----
-  { score: 10, emoji: '🙂', title: 'بداية حلوة!', lines: ['أول نقطة في الجيب ✨', 'كمّل كده!', 'الجاي أحلى'], bg: 'from-emerald-400 via-green-400 to-teal-500', ink: 'text-white', drift: ['✨', '🌱', '⭐'], burst: ['✨', '🌱', '⭐'], move: 'float' },
-  { score: 20, emoji: '😃', title: 'ماشي كويس!', lines: ['شغل جميل 👏', 'إيدك على الصح', 'زوّد السرعة شوية!'], bg: 'from-green-400 via-emerald-500 to-lime-500', ink: 'text-white', drift: ['⭐', '🍀', '✨'], burst: ['⭐', '🍀', '👏'], move: 'bounce' },
-  { score: 30, emoji: '😎', title: 'لاعب شاطر!', lines: ['شكلك فاهم في الكورة 😎', 'ثقة وهدوء', 'ولسه قدامك أكتر'], bg: 'from-lime-400 via-green-500 to-emerald-600', ink: 'text-white', drift: ['🎯', '⭐', '⚽'], burst: ['🎯', '⚽', '⭐'], move: 'wobble' },
-  { score: 40, emoji: '🤩', title: 'أداء رائع!', lines: ['واااو! 🤩', 'الجمهور بيصفّق لك', 'قرّبت من القمة'], bg: 'from-teal-400 via-cyan-500 to-sky-500', ink: 'text-white', drift: ['🌟', '✨', '👏'], burst: ['🌟', '👏', '🎉'], move: 'pulse' },
-  { score: 50, emoji: '🥳', title: 'نص الطريق للقمة!', lines: ['احتفل! 🎉', 'نص الأسئلة ونص نقاط الكمال', 'كمّل وهتوصل'], bg: 'from-yellow-400 via-amber-400 to-orange-500', ink: 'text-white', drift: ['🎉', '🎊', '🎈'], burst: ['🎉', '🎊', '🎈'], move: 'bounce' },
-  { score: 60, emoji: '🔥', title: 'إنت نار!', lines: ['ولّعتها! 🔥', 'مفيش حد يوقفك', 'الأسئلة بتخاف منك'], bg: 'from-orange-500 via-red-500 to-rose-600', ink: 'text-white', drift: ['🔥', '✨', '💥'], burst: ['🔥', '💥', '⭐'], move: 'pulse' },
-  { score: 70, emoji: '🚀', title: 'صاروخ!', lines: ['3… 2… 1… انطلاق 🚀', 'سرعتك مرعبة', 'على وشك النجوم!'], bg: 'from-indigo-600 via-violet-600 to-purple-700', ink: 'text-white', drift: ['⭐', '🌠', '🚀'], burst: ['🚀', '🌠', '⭐'], move: 'float' },
-  { score: 80, emoji: '🏅', title: 'بطل بجد!', lines: ['ميدالية مستحقة 🏅', 'أداء يستاهل التصفيق', 'خطوة وتبقى ملك'], bg: 'from-amber-400 via-yellow-500 to-orange-500', ink: 'text-white', drift: ['🏅', '⭐', '✨'], burst: ['🏅', '⭐', '🥇'], move: 'spin' },
-  { score: 90, emoji: '👑', title: 'ملك الكورة!', lines: ['تاجك يليق بيك 👑', 'غلطة واحدة بس!', 'الكمال على بعد سؤال'], bg: 'from-fuchsia-600 via-purple-600 to-violet-700', ink: 'text-white', drift: ['👑', '💎', '✨'], burst: ['👑', '💎', '🌟'], move: 'pulse' },
-  { score: 100, emoji: '🏆', title: 'نتيجة كاملة! أسطورة!', lines: ['10 من 10! 🏆', 'إنت أسطورة الكورة', 'ابعتها لصحابك وتحدّاهم!'], bg: 'from-yellow-300 via-amber-400 to-yellow-600', ink: 'text-amber-950', drift: ['⚽', '🏆', '🎆'], burst: ['🏆', '⚽', '🎆'], move: 'bounce' },
+  { score: 10, emoji: '🙂', titleEn: 'A nice start!', linesEn: ['The first point is in the pocket ✨', 'Keep it up!', 'The best is yet to come'], title: 'بداية حلوة!', lines: ['أول نقطة في الجيب ✨', 'كمّل كده!', 'الجاي أحلى'], bg: 'from-emerald-400 via-green-400 to-teal-500', ink: 'text-white', drift: ['✨', '🌱', '⭐'], burst: ['✨', '🌱', '⭐'], move: 'float' },
+  { score: 20, emoji: '😃', titleEn: 'Going well!', linesEn: ['Beautiful work 👏', 'Your hand is on the right answers', 'Speed up a little!'], title: 'ماشي كويس!', lines: ['شغل جميل 👏', 'إيدك على الصح', 'زوّد السرعة شوية!'], bg: 'from-green-400 via-emerald-500 to-lime-500', ink: 'text-white', drift: ['⭐', '🍀', '✨'], burst: ['⭐', '🍀', '👏'], move: 'bounce' },
+  { score: 30, emoji: '😎', titleEn: 'Clever player!', linesEn: ['You clearly know your football 😎', 'Confidence and calm', 'And there is more ahead'], title: 'لاعب شاطر!', lines: ['شكلك فاهم في الكورة 😎', 'ثقة وهدوء', 'ولسه قدامك أكتر'], bg: 'from-lime-400 via-green-500 to-emerald-600', ink: 'text-white', drift: ['🎯', '⭐', '⚽'], burst: ['🎯', '⚽', '⭐'], move: 'wobble' },
+  { score: 40, emoji: '🤩', titleEn: 'Great performance!', linesEn: ['Wow! 🤩', 'The crowd is clapping for you', 'Close to the top'], title: 'أداء رائع!', lines: ['واااو! 🤩', 'الجمهور بيصفّق لك', 'قرّبت من القمة'], bg: 'from-teal-400 via-cyan-500 to-sky-500', ink: 'text-white', drift: ['🌟', '✨', '👏'], burst: ['🌟', '👏', '🎉'], move: 'pulse' },
+  { score: 50, emoji: '🥳', titleEn: 'Halfway to the top!', linesEn: ['Celebrate! 🎉', 'Half the questions, half the perfect points', 'Keep going and you will get there'], title: 'نص الطريق للقمة!', lines: ['احتفل! 🎉', 'نص الأسئلة ونص نقاط الكمال', 'كمّل وهتوصل'], bg: 'from-yellow-400 via-amber-400 to-orange-500', ink: 'text-white', drift: ['🎉', '🎊', '🎈'], burst: ['🎉', '🎊', '🎈'], move: 'bounce' },
+  { score: 60, emoji: '🔥', titleEn: 'You are on fire!', linesEn: ['You lit it up! 🔥', 'Nobody can stop you', 'The questions are afraid of you'], title: 'إنت نار!', lines: ['ولّعتها! 🔥', 'مفيش حد يوقفك', 'الأسئلة بتخاف منك'], bg: 'from-orange-500 via-red-500 to-rose-600', ink: 'text-white', drift: ['🔥', '✨', '💥'], burst: ['🔥', '💥', '⭐'], move: 'pulse' },
+  { score: 70, emoji: '🚀', titleEn: 'A rocket!', linesEn: ['3… 2… 1… liftoff 🚀', 'Your speed is scary', 'About to reach the stars!'], title: 'صاروخ!', lines: ['3… 2… 1… انطلاق 🚀', 'سرعتك مرعبة', 'على وشك النجوم!'], bg: 'from-indigo-600 via-violet-600 to-purple-700', ink: 'text-white', drift: ['⭐', '🌠', '🚀'], burst: ['🚀', '🌠', '⭐'], move: 'float' },
+  { score: 80, emoji: '🏅', titleEn: 'A real champion!', linesEn: ['A well-earned medal 🏅', 'A performance worth applauding', 'One step and you are royalty'], title: 'بطل بجد!', lines: ['ميدالية مستحقة 🏅', 'أداء يستاهل التصفيق', 'خطوة وتبقى ملك'], bg: 'from-amber-400 via-yellow-500 to-orange-500', ink: 'text-white', drift: ['🏅', '⭐', '✨'], burst: ['🏅', '⭐', '🥇'], move: 'spin' },
+  { score: 90, emoji: '👑', titleEn: 'King of the game!', linesEn: ['Your crown suits you 👑', 'Just one mistake!', 'Perfection is one question away'], title: 'ملك الكورة!', lines: ['تاجك يليق بيك 👑', 'غلطة واحدة بس!', 'الكمال على بعد سؤال'], bg: 'from-fuchsia-600 via-purple-600 to-violet-700', ink: 'text-white', drift: ['👑', '💎', '✨'], burst: ['👑', '💎', '🌟'], move: 'pulse' },
+  { score: 100, emoji: '🏆', titleEn: 'A perfect score! A legend!', linesEn: ['10 out of 10! 🏆', 'You are a legend', 'Send it to your friends and challenge them!'], title: 'نتيجة كاملة! أسطورة!', lines: ['10 من 10! 🏆', 'إنت أسطورة الكورة', 'ابعتها لصحابك وتحدّاهم!'], bg: 'from-yellow-300 via-amber-400 to-yellow-600', ink: 'text-amber-950', drift: ['⚽', '🏆', '🎆'], burst: ['🏆', '⚽', '🎆'], move: 'bounce' },
 ];
 
 /** A result of exactly 0. */
-const EVEN: Scene = { score: 0, emoji: '😶', title: 'تعادل!', lines: ['لا ربح ولا خسارة 🤝', 'الجولة الجاية تحسم', 'يلا نكسب!'], bg: 'from-slate-500 via-gray-400 to-slate-600', ink: 'text-white', drift: ['⚖️', '🤝', '⚽'], burst: ['⚽', '🤝', '⭐'], move: 'float' };
+const EVEN: Scene = { score: 0, emoji: '😶', titleEn: 'It is a draw!', linesEn: ['No win, no loss 🤝', 'The next round decides', 'Let us win!'], title: 'تعادل!', lines: ['لا ربح ولا خسارة 🤝', 'الجولة الجاية تحسم', 'يلا نكسب!'], bg: 'from-slate-500 via-gray-400 to-slate-600', ink: 'text-white', drift: ['⚖️', '🤝', '⚽'], burst: ['⚽', '🤝', '⭐'], move: 'float' };
 
 /** The scene of a score: its distance from 0 in tens, up to ten steps either way. */
 export function sceneFor(score: number): Scene {
@@ -87,6 +91,7 @@ interface PointsMoodProps {
 }
 
 export const PointsMood: React.FC<PointsMoodProps> = ({ score, shareText }) => {
+  const isAr = useIsAr();
   const scene = sceneFor(score);
   const winning = scene.score > 0;
   const [taps, setTaps] = useState(0);
@@ -138,12 +143,12 @@ export const PointsMood: React.FC<PointsMoodProps> = ({ score, shareText }) => {
         <motion.p key={scene.score} initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 220, damping: 12 }} dir="ltr" className="text-6xl font-black drop-shadow">
           {points}
         </motion.p>
-        <p className="text-sm font-bold opacity-90">نقطة ولاء</p>
+        <p className="text-sm font-bold opacity-90">{isAr ? 'نقطة ولاء' : 'loyalty points'}</p>
 
         <div className="relative mx-auto my-3 flex h-40 w-40 items-center justify-center">
           <motion.button
             type="button"
-            aria-label="اضغط عليّ"
+            aria-label={isAr ? 'اضغط عليّ' : 'Tap me'}
             onClick={tap}
             whileTap={{ scale: 0.8, rotate: winning ? 12 : -12 }}
             animate={move.animate}
@@ -161,22 +166,22 @@ export const PointsMood: React.FC<PointsMoodProps> = ({ score, shareText }) => {
           </AnimatePresence>
         </div>
 
-        <h2 className="text-xl font-black leading-snug drop-shadow">{scene.title}</h2>
+        <h2 className="text-xl font-black leading-snug drop-shadow">{isAr ? scene.title : scene.titleEn}</h2>
 
         <AnimatePresence mode="wait">
           <motion.p key={taps} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mx-auto mt-2 min-h-10 max-w-xs rounded-2xl bg-black/20 px-3 py-2 text-sm font-bold">
-            {taps === 0 ? '👆 اضغط على الوش!' : scene.lines[(taps - 1) % scene.lines.length]}
+            {taps === 0 ? (isAr ? '👆 اضغط على الوش!' : '👆 Tap the face!') : (isAr ? scene.lines : scene.linesEn)[(taps - 1) % scene.lines.length]}
           </motion.p>
         </AnimatePresence>
 
         {shareText && (
           <div className="mt-3">
             <motion.button whileTap={{ scale: 0.93 }} type="button" onClick={share} className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-base font-black text-slate-900 shadow-[0_4px_0_rgba(0,0,0,0.25)]">
-              <Share2 className="h-5 w-5" /> شارك نتيجتك
+              <Share2 className="h-5 w-5" /> {isAr ? 'شارك نتيجتك' : 'Share your result'}
             </motion.button>
-            {shared === 'copied' && <p className="mt-1.5 text-xs font-bold">✔ اتنسخت النتيجة — الصقها في أي محادثة</p>}
-            {shared === 'shared' && <p className="mt-1.5 text-xs font-bold">✔ تمت المشاركة</p>}
-            {shared === 'whatsapp' && <p className="mt-1.5 text-xs font-bold">فتحنا واتساب لمشاركة نتيجتك</p>}
+            {shared === 'copied' && <p className="mt-1.5 text-xs font-bold">{isAr ? '✔ اتنسخت النتيجة — الصقها في أي محادثة' : '✔ Result copied — paste it in any chat'}</p>}
+            {shared === 'shared' && <p className="mt-1.5 text-xs font-bold">{isAr ? '✔ تمت المشاركة' : '✔ Shared'}</p>}
+            {shared === 'whatsapp' && <p className="mt-1.5 text-xs font-bold">{isAr ? 'فتحنا واتساب لمشاركة نتيجتك' : 'We opened WhatsApp to share your result'}</p>}
           </div>
         )}
       </div>
@@ -189,6 +194,7 @@ export const PointsMood: React.FC<PointsMoodProps> = ({ score, shareText }) => {
  * scores); the others stay dark and locked, so each is a goal to reach.
  */
 export const PointsGallery: React.FC<{ selected: number | null; onSelect: (score: number | null) => void; shareFor: (score: number) => string; seen: ReadonlySet<number> }> = ({ selected, onSelect, shareFor, seen }) => {
+  const isAr = useIsAr();
   const [hint, setHint] = useState<number | null>(null);
 
   // A scene that is not unlocked cannot be opened, not even from the address.
@@ -197,7 +203,7 @@ export const PointsGallery: React.FC<{ selected: number | null; onSelect: (score
       <div className="space-y-3">
         <PointsMood score={selected} shareText={shareFor(selected)} />
         <button type="button" onClick={() => onSelect(null)} className="w-full cursor-pointer rounded-2xl border-2 border-slate-200 bg-white py-3 text-sm font-black text-slate-800">
-          ← كل الحالات
+          {isAr ? '← كل الحالات' : '← All screens'}
         </button>
       </div>
     );
@@ -216,7 +222,7 @@ export const PointsGallery: React.FC<{ selected: number | null; onSelect: (score
               <span className="mt-1 text-[11px] font-black" dir="ltr">{s.score > 0 ? `+${s.score}` : s.score}</span>
             </motion.button>
           ) : (
-            <motion.button key={s.score} whileTap={{ x: [0, -4, 4, -3, 3, 0] }} type="button" aria-label="شاشة مقفولة" onClick={() => setHint(s.score)} className="flex cursor-pointer flex-col items-center rounded-2xl border border-slate-700 bg-slate-950 px-1 py-2 text-slate-600">
+            <motion.button key={s.score} whileTap={{ x: [0, -4, 4, -3, 3, 0] }} type="button" aria-label={isAr ? 'شاشة مقفولة' : 'Locked screen'} onClick={() => setHint(s.score)} className="flex cursor-pointer flex-col items-center rounded-2xl border border-slate-700 bg-slate-950 px-1 py-2 text-slate-600">
               <span className="text-3xl leading-none opacity-60">🔒</span>
               <span className="mt-1 text-[11px] font-black">؟</span>
             </motion.button>
@@ -228,13 +234,13 @@ export const PointsGallery: React.FC<{ selected: number | null; onSelect: (score
 
   return (
     <div className="space-y-3">
-      <h1 className="text-xl font-black text-slate-900">🎭 شاشات النقاط</h1>
+      <h1 className="text-xl font-black text-slate-900">{isAr ? '🎭 شاشات النقاط' : '🎭 Points screens'}</h1>
       <p className="text-xs font-semibold text-slate-500">
-        فتحت <span className="font-black text-slate-800">{unlocked}</span> من {SCENES.length} شاشة. كل نتيجة تحققها في لعبة بتفتح شاشتها هنا، والباقي مظلم لحد ما توصله.
+        {isAr ? <>فتحت <span className="font-black text-slate-800">{unlocked}</span> من {SCENES.length} شاشة. كل نتيجة تحققها في لعبة بتفتح شاشتها هنا، والباقي مظلم لحد ما توصله.</> : <>You unlocked <span className="font-black text-slate-800">{unlocked}</span> of {SCENES.length} screens. Each result you reach in a game unlocks its screen here; the rest stay dark until you get there.</>}
       </p>
-      {hint !== null && <p className="rounded-2xl bg-slate-900 px-3 py-2 text-center text-xs font-bold text-amber-300">🔒 العب وحقق النتيجة دي عشان تفتح الشاشة دي</p>}
-      {group('😢 لما تخسر نقاط (10 حالات)', [...SCENES.filter((s) => s.score < 0)].sort((a, b) => b.score - a.score))}
-      {group('🎉 لما تكسب نقاط (10 حالات)', SCENES.filter((s) => s.score > 0))}
+      {hint !== null && <p className="rounded-2xl bg-slate-900 px-3 py-2 text-center text-xs font-bold text-amber-300">{isAr ? '🔒 العب وحقق النتيجة دي عشان تفتح الشاشة دي' : '🔒 Play and reach this result to unlock this screen'}</p>}
+      {group(isAr ? '😢 لما تخسر نقاط (10 حالات)' : '😢 When you lose points (10 screens)', [...SCENES.filter((s) => s.score < 0)].sort((a, b) => b.score - a.score))}
+      {group(isAr ? '🎉 لما تكسب نقاط (10 حالات)' : '🎉 When you win points (10 screens)', SCENES.filter((s) => s.score > 0))}
     </div>
   );
 };

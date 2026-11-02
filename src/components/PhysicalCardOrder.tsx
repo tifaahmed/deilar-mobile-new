@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, CreditCard, Loader2, Minus, Plus, 
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/http';
 import { fetchProfile, fetchSavedAddress } from '../api/auth';
-import { fetchPhysicalCards, placePhysicalCardOrder, type PhysicalCardInfo } from '../api/physicalCards';
+import { fetchMyCards, fetchPhysicalCards, placePhysicalCardOrder, type MyCard, type PhysicalCardInfo } from '../api/physicalCards';
 import { fetchOrder, payOrder, uploadReceipt, type OnlineChannel, type PlacedOrder } from '../api/orders';
 import { fetchShopSettings } from '../api/endpoints';
 import { navigate, routeHref } from '../router';
@@ -36,6 +36,14 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
   const [pixel, setPixel] = useState<PixelSession | null>(null);
   const [walletNumber, setWalletNumber] = useState<string | null>(null);
   const [receiptSent, setReceiptSent] = useState(false);
+  const [myCards, setMyCards] = useState<MyCard[]>([]);
+
+  // The cards already held (physical and soft); the list is a nicety, so a failure only hides it.
+  useEffect(() => {
+    let alive = true;
+    fetchMyCards(token).then((c) => { if (alive) setMyCards(c); }, (e) => reportClientError('fetchMyCards failed', e));
+    return () => { alive = false; };
+  }, [token]);
 
   useEffect(() => {
     let alive = true;
@@ -202,6 +210,19 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
   return (
     <form noValidate onSubmit={submit} className="rounded-2xl p-4 border bg-white border-slate-200/90 space-y-4 text-slate-900">
       {header}
+      {myCards.length > 0 && (
+        <div className="space-y-2" data-testid="my-cards">
+          <h3 className="text-xs font-black">{isAr ? 'كروتي' : 'My cards'}</h3>
+          {myCards.map((c) => (
+            <div key={c.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs">
+              <span className="flex-1 min-w-0 truncate font-bold">{c.is_me ? (isAr ? 'أنت' : 'You') : c.holder_name}</span>
+              <span dir="ltr" className="tabular-nums">{c.number}</span>
+              <span className="rounded-md bg-slate-100 px-2 py-0.5">{c.kind === 'physical' ? (isAr ? 'فيزيكال' : 'Physical') : (isAr ? 'سوفت' : 'Soft')}</span>
+              {c.status === 'requested' && <span className="rounded-md bg-amber-100 px-2 py-0.5 text-amber-800">{isAr ? 'في انتظار الموافقة' : 'Waiting for approval'}</span>}
+            </div>
+          ))}
+        </div>
+      )}
       <div className="space-y-1">
         <h2 className="text-base font-black">{isAr ? 'اطلب كارتاً فيزيكال' : 'Order a physical card'}</h2>
         <p className="text-xs text-slate-500">{isAr ? 'يصلك كارت حقيقي أنت وأفراد أسرتك، ويمكنك طلب أكثر من كارت لنفس الرقم.' : 'A real card is delivered to you and your family; you can order several copies of the same number.'}</p>

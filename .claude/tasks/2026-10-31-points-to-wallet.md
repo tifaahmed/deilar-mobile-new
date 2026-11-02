@@ -16,3 +16,4 @@
 
 ## 2026-10-31 سعر النقطة
 - [x] طلب المستخدم: 100 نقطة = 1 جنيه. DEFAULT_POINTS_PER_EGP=100 (باك)، صف الإعداد loyalty_points_per_egp في القاعدة اتحدّث من 10 إلى 100، بند 13 في الأربع ملفات، fallback التطبيق للحد الأدنى 20. اختبار LoyaltyWalletTest (الافتراضي 100) مكتوب — ⏳ بيتشغل بعد ما التشغيل الكامل في الخلفية يخلص (نفس قاعدة الاختبار).
+- [x] (بعد التشغيل الكامل) 3 اختبارات كانت بتفترض 10 نقاط=جنيه اتعدّلت لـ 100 (LoyaltyWalletTest، QuizLoyaltyTest، AdminQuizLoyaltyTest)؛ مجموعة المحفظة/الولاء/التحويل/الأدمن كلها عدّت (62 اختبار). التشغيل الكامل للباك إند: 66 فشل في ملفات مش متعلقة (StoreMembership 9، PartnerFreeDelivery 6، Profile 5، AreaFiling 4، Auth*، SettingCrud، TrialCard، VisitorTracking، MobileApi...) — ما اتأكدتش إنها قديمة بمقارنة قبل/بعد.

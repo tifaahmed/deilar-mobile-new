@@ -554,6 +554,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
+/** Like `useLanguage().isAr` but never throws: outside a provider the app's default (Arabic) applies. */
+export const useIsAr = (): boolean => useContext(LanguageContext)?.isAr ?? true;
+
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
   if (!context) {

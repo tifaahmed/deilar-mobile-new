@@ -72,6 +72,8 @@ export interface Product {
   storeName?: string;
   /** The admin allowed the wallet to pay for it. */
   walletPayable?: boolean;
+  /** The admin allowed a loyalty-points discount on it. */
+  pointsPayable?: boolean;
 }
 
 /**

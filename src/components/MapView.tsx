@@ -8,6 +8,7 @@ import { api, PATHS } from '../api/endpoints';
 import { directionsUrl, formatKm, roundCoord } from '../api/adapters';
 import { useApi } from '../hooks/useApi';
 import { RADIUS_OPTIONS, radiusToTryNext } from '../utils/widenRadius';
+import { placeName } from '../utils/geo';
 import { useDebounced } from '../hooks/useDebounced';
 import { usePaged } from '../hooks/usePaged';
 import { isAbort } from '../api/http';
@@ -249,7 +250,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
       });
       // Above the branch pins, whose labels sit over their point: a branch at the same spot shows its label and the user's dot together.
       const userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon, zIndexOffset: 1000 });
-      userMarker.bindTooltip(`<b>${isAr ? 'موقعك' : 'You'}:</b> ${escapeHtml(userLocation.name)}`, { direction: 'top', offset: [0, -10] });
+      userMarker.bindTooltip(`<b>${isAr ? 'موقعك' : 'You'}:</b> ${escapeHtml(placeName(userLocation.name, isAr))}`, { direction: 'top', offset: [0, -10] });
       layer.addLayer(userMarker);
 
       // Merge pins that would overlap on screen into one numbered cluster.

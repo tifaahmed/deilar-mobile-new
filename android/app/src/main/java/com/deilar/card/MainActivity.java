@@ -34,20 +34,55 @@ public class MainActivity extends BridgeActivity {
     }
 
     /**
-     * Android 15+ draws the app edge-to-edge, which puts the header under the
-     * status bar / camera cutout. Keep the WebView inside the safe area.
+     * Android 15+ draws the app edge-to-edge, which puts the header under the status bar / camera cutout. Keep the
+     * WebView inside the safe area.
+     *
+     * Older Androids (an Oppo A31 on Android 9/10) already leave the status bar and the navigation keys OUT of the
+     * content frame yet still report the same insets, so adding the whole inset as a margin counted the bars twice
+     * and left a blank band above and below the page. The margin is therefore only what the content frame has NOT
+     * already left free around the WebView.
      */
     private void padForSystemBars() {
         View webView = getBridge().getWebView();
         ViewCompat.setOnApplyWindowInsetsListener(webView, (v, windowInsets) -> {
-            Insets bars = windowInsets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-            Insets nav = windowInsets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars());
-            setMargins(v, bars.left, bars.top, bars.right, Math.max(bars.bottom, nav.bottom));
+            fitToSafeArea(windowInsets);
             return WindowInsetsCompat.CONSUMED;
         });
         ViewCompat.requestApplyInsets(webView);
-        guardAgainstOverlap(webView);
+
+        // Layout is not done when the first insets arrive, and some phones (OEM skins, 3-button navigation, gesture
+        // pill) report the navigation bar late: measure again after every layout, from the window's own insets.
+        View decor = getWindow().getDecorView();
+        decor.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            WindowInsetsCompat root = ViewCompat.getRootWindowInsets(decor);
+            if (root != null) fitToSafeArea(root);
+        });
+    }
+
+    private void fitToSafeArea(WindowInsetsCompat windowInsets) {
+        View webView = getBridge().getWebView();
+        View parent = (View) webView.getParent();
+        View decor = getWindow().getDecorView();
+        if (parent == null || parent.getHeight() == 0 || parent.getWidth() == 0 || decor.getHeight() == 0) return;
+
+        Insets bars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+        // Ignoring visibility also covers bars the OEM reports as hidden but still draws.
+        Insets nav = windowInsets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars());
+
+        int[] d = new int[2];
+        int[] p = new int[2];
+        decor.getLocationOnScreen(d);
+        parent.getLocationOnScreen(p);
+        int freeLeft = Math.max(0, p[0] - d[0]);
+        int freeTop = Math.max(0, p[1] - d[1]);
+        int freeRight = Math.max(0, (d[0] + decor.getWidth()) - (p[0] + parent.getWidth()));
+        int freeBottom = Math.max(0, (d[1] + decor.getHeight()) - (p[1] + parent.getHeight()));
+
+        setMargins(webView,
+                Math.max(0, bars.left - freeLeft),
+                Math.max(0, bars.top - freeTop),
+                Math.max(0, bars.right - freeRight),
+                Math.max(0, Math.max(bars.bottom, nav.bottom) - freeBottom));
     }
 
     /**
@@ -59,32 +94,6 @@ public class MainActivity extends BridgeActivity {
         if (lp.leftMargin == left && lp.topMargin == top && lp.rightMargin == right && lp.bottomMargin == bottom) return;
         lp.setMargins(left, top, right, bottom);
         v.setLayoutParams(lp);
-    }
-
-    /**
-     * Some phones (OEM skins, 3-button navigation, gesture pill) report the
-     * navigation bar late or not at all, so the bottom tab bar ends up behind
-     * the system keys. Measure where the WebView really ends on screen and, if
-     * it overlaps the navigation bar, push its bottom margin up by the overlap.
-     */
-    private void guardAgainstOverlap(View webView) {
-        View decor = getWindow().getDecorView();
-        decor.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            WindowInsetsCompat root = ViewCompat.getRootWindowInsets(decor);
-            if (root == null || decor.getHeight() == 0) return;
-            // Ignoring visibility also covers bars the OEM reports as hidden but still draws.
-            int navInset = Math.max(
-                    root.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom,
-                    root.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.navigationBars()).bottom);
-            int[] loc = new int[2];
-            webView.getLocationInWindow(loc);
-            int contentBottom = loc[1] + webView.getHeight();
-            int overlap = contentBottom - (decor.getHeight() - navInset);
-            if (overlap > 0) {
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) webView.getLayoutParams();
-                setMargins(webView, lp.leftMargin, lp.topMargin, lp.rightMargin, lp.bottomMargin + overlap);
-            }
-        });
     }
 
     @Override

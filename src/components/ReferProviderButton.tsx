@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
-import { Gift, X, CheckCircle2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { BadgePercent, X, CheckCircle2 } from 'lucide-react';
 import { ApiError, postContactMessage } from '../api/http';
 import { useLanguage } from '../context/LanguageContext';
 import { useSession } from '../utils/session';
 import { reportClientError } from '../utils/reportError';
 import { REFERRAL_KINDS, REFERRAL_SUBJECT, type ReferralKind, isValidProviderPhone, referralKindLabel, referralMessage } from '../utils/providerReferral';
+
+/** How often the label beside the icon shows itself (3.5 minutes), when the first one comes, and how long it stays. */
+export const NUDGE_EVERY_MS = 210_000;
+export const NUDGE_FIRST_MS = 60_000;
+export const NUDGE_SHOWN_MS = 9_000;
 
 /** A fixed icon: tap it, type the name and phone of a place you deal with and its kind; the team rings them and you get the discount. */
 export const ReferProviderButton: React.FC = () => {
@@ -17,6 +22,17 @@ export const ReferProviderButton: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [nudge, setNudge] = useState(false);
+
+  // Every few minutes a short line appears beside the icon, so members remember they can recommend a provider for a discount.
+  useEffect(() => {
+    if (open) { setNudge(false); return; }
+    let hide: ReturnType<typeof setTimeout> | undefined;
+    const show = () => { setNudge(true); clearTimeout(hide); hide = setTimeout(() => setNudge(false), NUDGE_SHOWN_MS); };
+    const first = setTimeout(show, NUDGE_FIRST_MS);
+    const every = setInterval(show, NUDGE_EVERY_MS);
+    return () => { clearTimeout(first); clearInterval(every); clearTimeout(hide); };
+  }, [open]);
 
   const close = () => { setOpen(false); setSent(false); setError(null); };
 
@@ -33,7 +49,7 @@ export const ReferProviderButton: React.FC = () => {
         phone: phone.replace(/[\s-]/g, ''),
         name: name.trim(),
         subject: REFERRAL_SUBJECT,
-        message: referralMessage({ providerName: name.trim(), providerPhone: phone.trim(), kind, from: { name: session.name, phone: session.phone, card: session.cardNumber } }),
+        message: referralMessage({ providerName: name.trim(), providerPhone: phone.trim(), kind, from: { name: session.name, phone: session.phone, card: session.cardNumber }, isAr }),
         source: 'provider_referral',
       });
       setSent(true);
@@ -52,10 +68,21 @@ export const ReferProviderButton: React.FC = () => {
         type="button"
         aria-label={isAr ? 'رشّح مقدم خدمة' : 'Recommend a provider'}
         onClick={() => setOpen(true)}
-        className="fixed bottom-36 left-4 sm:left-6 z-40 w-12 h-12 rounded-full bg-[#941946] text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform"
+        className={`fixed bottom-36 left-4 sm:left-6 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg ring-2 ring-white flex items-center justify-center active:scale-95 transition-transform ${nudge ? 'animate-bounce' : ''}`}
       >
-        <Gift className="w-5 h-5" />
+        <BadgePercent className="w-6 h-6" />
       </button>
+      {nudge && (
+        <button
+          type="button"
+          data-testid="referral-nudge"
+          onClick={() => setOpen(true)}
+          dir={isAr ? 'rtl' : 'ltr'}
+          className="fixed bottom-[9.4rem] left-[4.75rem] sm:left-[5.75rem] z-40 max-w-[11rem] rounded-2xl rounded-bl-sm bg-orange-500 px-3 py-2 text-[11px] font-black leading-snug text-white shadow-lg animate-in fade-in slide-in-from-left-2 duration-300 cursor-pointer"
+        >
+          {isAr ? 'رشّح مقدم خدمة عايز عليه خصم' : 'Recommend a provider you want a discount on'}
+        </button>
+      )}
 
       {open && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true">

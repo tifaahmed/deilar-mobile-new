@@ -18,13 +18,32 @@ function deg2rad(deg: number): number {
   return deg * (Math.PI / 180);
 }
 
-export function formatDistance(distanceKm: number): string {
+export function formatDistance(distanceKm: number, isAr = true): string {
   if (distanceKm < 1) {
     const meters = Math.round(distanceKm * 1000);
-    return `${meters} م`;
+    return `${meters} ${isAr ? 'م' : 'm'}`;
   }
-  return `${distanceKm.toFixed(1)} كم`;
+  return `${distanceKm.toFixed(1)} ${isAr ? 'كم' : 'km'}`;
 }
+
+/** The English names of the places the app itself names (the presets below and the GPS / default labels). */
+const PLACE_EN: Record<string, string> = {
+  'موقعي الحالي (GPS)': 'My current location (GPS)',
+  'موقعي الحالي (GPS مباشر)': 'My current location (live GPS)',
+  'موقعي المحفوظ': 'My saved location',
+  'موقعي (القاهرة)': 'My location (Cairo)',
+  'القاهرة - وسط البلد': 'Cairo - Downtown',
+  'القاهرة - وسط البلد (افتراضي)': 'Cairo - Downtown (default)',
+  'القاهرة - المعادي': 'Cairo - Maadi',
+  'القاهرة - مدينة نصر': 'Cairo - Nasr City',
+  'القاهرة - مصر الجديدة': 'Cairo - Heliopolis',
+  'القاهرة - التجمع الخامس': 'Cairo - Fifth Settlement',
+  'الجيزة - الدقي والمهندسين': 'Giza - Dokki & Mohandessin',
+  'الإسكندرية - سموحة ورشدي': 'Alexandria - Smouha & Rushdy',
+};
+
+/** A place name as the app names it, in the language of the app (names that came from elsewhere are left as they are). */
+export const placeName = (name: string, isAr: boolean): string => (isAr ? name : PLACE_EN[name] ?? name);
 
 // Default benchmark locations in Egypt for quick selector
 export const PRESET_LOCATIONS = [

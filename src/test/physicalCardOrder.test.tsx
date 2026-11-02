@@ -14,6 +14,11 @@ const info = vi.hoisted(() => ({
 
 vi.mock('../api/physicalCards', () => ({
   fetchPhysicalCards: vi.fn().mockResolvedValue(info),
+  fetchMyCards: vi.fn().mockResolvedValue([
+    { id: 1, kind: 'physical', status: 'active', number: '100001', holder_name: 'Ahmed Ali', is_me: true, copy_of: null },
+    { id: 2, kind: 'soft', status: 'active', number: '100001', holder_name: 'Ahmed Ali', is_me: true, copy_of: 1 },
+    { id: 3, kind: 'physical', status: 'requested', number: '777001', holder_name: 'Mona Hassan', is_me: false, copy_of: null },
+  ]),
   placePhysicalCardOrder: vi.fn(),
 }));
 vi.mock('../api/auth', () => ({
@@ -25,9 +30,18 @@ vi.mock('../api/endpoints', () => ({ fetchShopSettings: vi.fn().mockResolvedValu
 const wrap = () => render(<LanguageProvider><PhysicalCardOrder token="t" /></LanguageProvider>);
 
 describe('PhysicalCardOrder', () => {
+  it('lists the cards already held: physical with its soft copy, and a waiting one', async () => {
+    wrap();
+    await waitFor(() => expect(screen.getByTestId('my-cards')).toBeTruthy());
+    const box = screen.getByTestId('my-cards');
+    expect(box.textContent).toContain('Soft');
+    expect(box.textContent).toContain('777001');
+    expect(box.textContent).toContain('Waiting for approval');
+  });
+
   it('draws the backend prices and a running total per copy', async () => {
     wrap();
-    await waitFor(() => expect(screen.getByText('Mona Hassan')).toBeTruthy());
+    await waitFor(() => expect(screen.getAllByText('Mona Hassan').length).toBeGreaterThan(0));
 
     // One card for the holder to start with: 1 × 50 + 50 shipping = 100.
     expect(screen.getAllByText(/100/).length).toBeGreaterThan(0);

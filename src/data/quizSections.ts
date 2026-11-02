@@ -4,6 +4,12 @@ import general from './generalQuiz.json';
 import history from './historyQuiz.json';
 import cinema from './cinemaQuiz.json';
 import { SECTION_META } from './quizSectionsMeta';
+import footballEn from './en/footballQuiz.en.json';
+import fawazeerEn from './en/fawazeerQuiz.en.json';
+import generalEn from './en/generalQuiz.en.json';
+import historyEn from './en/historyQuiz.en.json';
+import cinemaEn from './en/cinemaQuiz.en.json';
+import type { QuizLang } from './quizLanguage';
 
 /** The ways a question can be drawn (see LOOKS in components/QuizGame.tsx). */
 export type QuizDesign = 'cards' | 'grid' | 'bubbles' | 'stadium' | 'poster' | 'polaroid' | 'neon' | 'comic';
@@ -126,3 +132,28 @@ export const SECTIONS: QuizSection[] = [
     imageOf: (name) => cinemaImages[`../assets/cinema/${name}`],
   },
 ];
+
+/**
+ * English questions live in src/data/en/<section>Quiz.en.json (same fields as the Arabic files, no pictures: each names an
+ * `emoji`). Their ids are moved up by EN_ID_OFFSET so a player's progress and answers in English never mix with the Arabic ones.
+ */
+export const EN_ID_OFFSET = 100000;
+
+const bankEn = (file: unknown): Question[] => (file as { questions: Question[] }).questions.map((q) => ({ ...q, id: q.id + EN_ID_OFFSET }));
+
+const EN: Record<string, { topic: string; introTitle: string; questions: Question[] }> = {
+  football: { topic: 'football', introTitle: 'Football Trivia Challenge', questions: bankEn(footballEn) },
+  fawazeer: { topic: 'riddles', introTitle: 'Riddles & Puzzles Challenge', questions: bankEn(fawazeerEn) },
+  general: { topic: 'general knowledge', introTitle: 'General Knowledge Challenge', questions: bankEn(generalEn) },
+  history: { topic: 'history', introTitle: 'History Challenge', questions: bankEn(historyEn) },
+  cinema: { topic: 'movies & series', introTitle: 'Movies & Series Challenge', questions: bankEn(cinemaEn) },
+};
+
+/** A section in the language the player chose: the English one has its own title, topic and questions, and no pictures. */
+export function sectionIn(section: QuizSection, lang: QuizLang | null): QuizSection {
+  if (lang !== 'en') return section;
+  const en = EN[section.id];
+  if (!en) return section;
+  const titleEn = (SECTION_META as Record<string, { titleEn?: string }>)[section.id]?.titleEn ?? section.title;
+  return { ...section, title: titleEn, topic: en.topic, introTitle: en.introTitle, questions: en.questions, imageOf: () => undefined };
+}

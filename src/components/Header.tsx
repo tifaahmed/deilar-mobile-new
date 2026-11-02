@@ -1,6 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { MapPin, Navigation, PackageSearch, ShoppingCart } from 'lucide-react';
-import { PRESET_LOCATIONS } from '../utils/geo';
+import { PRESET_LOCATIONS, placeName } from '../utils/geo';
 import { useStoredOrders } from '../utils/orders';
 import { Link } from '../router';
 import { useArea } from '../utils/area';
@@ -48,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const [showCityPopup, setShowCityPopup] = React.useState(false);
   const openLocation = () => (area ? setShowCityPopup(true) : setShowLocationDropdown(!showLocationDropdown));
-  const areaLabel = area ? [area.governorate.name, area.city?.name].filter(Boolean).join(' - ') : currentLocationName;
+  const areaLabel = area ? [area.governorate.name, area.city?.name].filter(Boolean).join(' - ') : placeName(currentLocationName, isAr);
 
   // Dynamic Scroll Direction Detection:
   // - Scroll DOWN -> Hide header smoothly
@@ -168,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
                   }}
                   className={`w-full ${isAr ? 'text-right' : 'text-left'} px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer`}
                 >
-                  <span>{loc.name}</span>
+                  <span>{placeName(loc.name, isAr)}</span>
                   <span className="text-[10px] text-slate-400">{isAr ? 'مصر' : 'Egypt'}</span>
                 </button>
               ))}

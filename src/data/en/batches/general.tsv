@@ -1,0 +1,992 @@
+1	What is the capital of Egypt?	Alexandria	Aswan	Cairo	Giza	Cairo is Egypt's capital and largest city.
+2	Which planet is closest to the Sun?	Venus	Earth	Mars	Mercury	Mercury is the closest planet to the Sun.
+3	What is the longest river in the world?	The Mississippi	The Amazon	The Yangtze	The Nile	The Nile in Africa is more than 6,650 km long.
+4	Which is the largest continent by area and population?	Africa	Europe	Asia	North America	Asia is the largest continent in both area and population.
+5	Which gas do living things need to breathe to survive?	Hydrogen	Oxygen	Nitrogen	Carbon dioxide	Oxygen is vital for cell respiration.
+6	What is the largest mammal on Earth?	The giraffe	The great white shark	The African elephant	The blue whale	The blue whale is the biggest animal ever to have lived.
+7	Which organ pumps blood around the human body?	The heart	The liver	The brain	The lungs	The heart pumps oxygen-rich blood to every part of the body.
+8	How many main colours does a rainbow have?	5	7	8	6	A rainbow has seven colours, made when light is split.
+9	What is the capital of Saudi Arabia?	Riyadh	Jeddah	Dammam	Mecca	Riyadh is the capital and political centre of Saudi Arabia.
+10	Which mineral gives bones their hardness?	Calcium	Iron	Potassium	Sodium	Calcium is the main mineral in bones and teeth.
+18	What is the capital of the United Arab Emirates?	Abu Dhabi	Dubai	Sharjah	Al Ain	Abu Dhabi is the capital of the UAE.
+21	Which is the smallest continent by area?	South America	Antarctica	Europe	Australia	Australia is the smallest continent.
+22	Which organs filter the blood and produce urine?	The gallbladder	The stomach	The lungs	The kidneys	The kidneys remove waste and toxins from the blood.
+23	Which chemical element has the symbol O?	Gold	Aluminium	Carbon oxide	Oxygen	O is the chemical symbol for oxygen.
+25	Who invented the practical electric light bulb?	Thomas Edison	Alexander Graham Bell	Nikola Tesla	Albert Einstein	Edison produced a commercial light bulb in 1879.
+26	What is the longest wall ever built by humans?	The Berlin Wall	Hadrian's Wall	The Wall of Jerusalem	The Great Wall of China	The Great Wall was built for defence against attacks from the north.
+29	Which is the only bird that can fly backwards?	The hummingbird	The falcon	The owl	The hoopoe	Its special wing muscles let the hummingbird fly backwards.
+33	Which metal is liquid at ordinary room temperature?	Lead	Mercury	Silver	Bromine	Mercury is a liquid metal at normal temperatures.
+34	In which country are the Pyramids of Giza and the Sphinx?	Sudan	Mexico	Iraq	Egypt	They stand on the Giza plateau near Cairo.
+35	Which is the largest freshwater lake in the world by area?	Lake Superior	Lake Baikal	Lake Michigan	Lake Victoria	Lake Superior lies on the border of the USA and Canada.
+37	What is the capital of Russia?	Kazan	Moscow	Sochi	Saint Petersburg	Moscow is Russia's capital and its political and economic centre.
+39	Which volcano destroyed the Roman city of Pompeii in 79 AD?	Mount Fuji	Mount Etna	Krakatoa	Mount Vesuvius	Vesuvius buried Pompeii under volcanic ash.
+41	What is the capital of Germany?	Berlin	Hamburg	Frankfurt	Munich	Berlin is Germany's capital and the biggest city in the EU by population.
+42	Which pigment gives skin and hair their colour?	Collagen	Iron	Keratin	Melanin	Melanin sets the shade of skin, eyes and hair.
+44	Which gas is the main cause of global warming?	Helium	Nitrogen	Carbon dioxide	Oxygen	Carbon dioxide is released in large amounts by burning fossil fuels.
+45	What is the capital of Spain?	Valencia	Madrid	Seville	Barcelona	Madrid is the capital of Spain.
+46	Which is the largest organ of the human body?	The liver	The small intestine	The brain	The skin	The skin is the body's biggest organ.
+49	What is the capital of Brazil?	Brasília	Salvador	Rio de Janeiro	São Paulo	Brasília is Brazil's capital.
+50	What is the capital of Turkey?	Izmir	Istanbul	Ankara	Bursa	Ankara is Turkey's capital, not Istanbul.
+51	What is the capital of India?	Kolkata	Chennai	New Delhi	Mumbai	New Delhi is India's capital.
+52	What is the capital of Morocco?	Casablanca	Fez	Rabat	Marrakesh	Rabat is Morocco's capital.
+60	What is the capital of China?	Beijing	Shenzhen	Guangzhou	Shanghai	Beijing is China's capital.
+61	What is the capital of the United States?	Washington, D.C.	New York	Chicago	Los Angeles	Washington, D.C. is the US capital.
+64	What is the capital of Nigeria?	Kano	Lagos	Ibadan	Abuja	Abuja is Nigeria's capital.
+65	What is the capital of Kazakhstan?	Shymkent	Almaty	Astana	Aktobe	Astana is Kazakhstan's capital.
+66	What is the capital of Switzerland?	Zurich	Basel	Geneva	Bern	Bern is Switzerland's capital.
+67	What is the capital of Sweden?	Stockholm	Gothenburg	Malmö	Uppsala	Stockholm is Sweden's capital.
+68	What is the capital of Norway?	Bergen	Trondheim	Stavanger	Oslo	Oslo is Norway's capital.
+69	What is the capital of Finland?	Oulu	Helsinki	Turku	Tampere	Helsinki is Finland's capital.
+70	What is the capital of Denmark?	Aarhus	Aalborg	Odense	Copenhagen	Copenhagen is Denmark's capital.
+71	What is the capital of Greece?	Thessaloniki	Heraklion	Athens	Patras	Athens is Greece's capital.
+73	What is the capital of the Netherlands?	Utrecht	The Hague	Amsterdam	Rotterdam	Amsterdam is the capital of the Netherlands.
+76	What is the capital of Hungary?	Miskolc	Szeged	Debrecen	Budapest	Budapest is Hungary's capital.
+77	What is the capital of Poland?	Wrocław	Warsaw	Kraków	Łódź	Warsaw is Poland's capital.
+78	What is the capital of the Czech Republic?	Prague	Plzeň	Brno	Ostrava	Prague is the capital of the Czech Republic.
+79	What is the capital of South Korea?	Incheon	Daegu	Seoul	Busan	Seoul is South Korea's capital.
+80	What is the capital of Indonesia?	Jakarta	Surabaya	Medan	Bandung	Jakarta is Indonesia's capital.
+82	What is the capital of Thailand?	Phuket	Chiang Mai	Pattaya	Bangkok	Bangkok is Thailand's capital.
+86	What is the capital of Vietnam?	Ho Chi Minh City	Haiphong	Hanoi	Da Nang	Hanoi is Vietnam's capital.
+87	What is the capital of New Zealand?	Wellington	Auckland	Hamilton	Christchurch	Wellington is New Zealand's capital.
+92	What is the capital of Mexico?	Mexico City	Monterrey	Guadalajara	Puebla	Mexico City is Mexico's capital.
+93	What is the capital of Uruguay?	Montevideo	Ciudad de la Costa	Paysandú	Salto	Montevideo is Uruguay's capital.
+97	What is the capital of Angola?	Benguela	Lobito	Huambo	Luanda	Luanda is Angola's capital.
+98	What is the capital of Ghana?	Takoradi	Accra	Kumasi	Tema	Accra is Ghana's capital.
+99	What is the official capital of Ivory Coast?	San-Pédro	Yamoussoukro	Abidjan	Bouaké	Yamoussoukro is the official capital; Abidjan is the largest city.
+100	What is the capital of Tanzania?	Arusha	Dar es Salaam	Mwanza	Dodoma	Dodoma is Tanzania's capital.
+148	What is the capital of Libya?	Tripoli	Al Bayda	Misrata	Benghazi	Tripoli is Libya's capital.
+153	What is the capital of Oman?	Muscat	Nizwa	Salalah	Sohar	Muscat is Oman's capital.
+179	What is the unit of electrical resistance?	Ampere	Ohm	Joule	Volt	Electrical resistance is measured in ohms.
+197	Which science studies ancient remains and the material traces of past civilizations?	Archaeology	Mythology	Anthropology	Geology	Archaeology studies the physical remains of the past.
+201	What is the official currency of Egypt?	The Egyptian pound	The UAE dirham	The yen	The ringgit	Egypt uses the Egyptian pound.
+202	What is the official currency of Saudi Arabia?	The yen	The UAE dirham	The Algerian dinar	The Saudi riyal	Saudi Arabia uses the Saudi riyal.
+204	What is the official currency of Kuwait?	The Philippine peso	The dong	The Kuwaiti dinar	The lira	Kuwait uses the Kuwaiti dinar.
+205	What is the official currency of Jordan?	The yen	The Saudi riyal	The Iraqi dinar	The Jordanian dinar	Jordan uses the Jordanian dinar.
+206	What is the official currency of Iraq?	The Iraqi dinar	The rouble	The naira	The Bahraini dinar	Iraq uses the Iraqi dinar.
+207	What is the official currency of Morocco?	The rand	The Mexican peso	The Bahraini dinar	The Moroccan dirham	Morocco uses the Moroccan dirham.
+208	What is the official currency of Tunisia?	The Brazilian real	The Tunisian dinar	The Moroccan dirham	The ringgit	Tunisia uses the Tunisian dinar.
+210	What is the official currency of Japan?	The naira	The yen	The Kuwaiti dinar	The yuan	Japan uses the yen.
+211	What is the official currency of China?	The Philippine peso	The yuan	The Algerian dinar	The UAE dirham	China uses the yuan (renminbi).
+241	Which chemical element has the symbol H?	Hydrogen	Zinc	Neon	Lithium	H stands for hydrogen.
+296	In which country is the Eiffel Tower?	France	Egypt	Germany	Canada	The Eiffel Tower stands in Paris, France.
+297	In which country is the Statue of Liberty?	France	Saudi Arabia	The United States	Palestine	The Statue of Liberty stands in New York Harbor.
+299	In which country is the Colosseum?	Cambodia	Egypt	Italy	Japan	The Colosseum is in Rome, Italy.
+300	In which country is the Taj Mahal?	Morocco	The United States	Chile	India	The Taj Mahal is in Agra, India.
+302	In which country is Machu Picchu?	Tunisia	Peru	Egypt	The UAE	Machu Picchu is an Inca site in Peru.
+306	In which country are the Pyramids?	Saudi Arabia	The United States	Spain	Egypt	The famous pyramids stand at Giza in Egypt.
+310	In which country is the Burj Khalifa?	The UAE	India	Morocco	Spain	The Burj Khalifa is in Dubai.
+312	In which country is the Dome of the Rock?	Italy	France	Germany	Palestine	The Dome of the Rock is in Jerusalem.
+314	In which country is the Parthenon?	Britain	Greece	Peru	Peru and Bolivia	The Parthenon stands on the Acropolis in Athens.
+320	In which country is the Zaytuna Mosque?	Tunisia	Australia	Britain	Saudi Arabia	The Zaytuna Mosque is in Tunis.
+322	In which country is Mount Fuji?	Canada and the United States	Palestine	Britain	Japan	Mount Fuji is Japan's highest mountain.
+336	What is the largest gland in the human body?	The pancreas	The thyroid	The spleen	The liver	The liver is the body's largest gland.
+344	Which element is part of haemoglobin?	Calcium	Potassium	Iron	Zinc	Iron lets haemoglobin carry oxygen in the blood.
+357	Which land animal lives the longest?	The elephant	The lion	The giant tortoise	The whale	Giant tortoises can live for well over a century.
+384	What is the largest enclosed sea in the world?	The Black Sea	The Caspian Sea	The Dead Sea	The Baltic Sea	The Caspian Sea is the biggest inland body of water.
+385	What is the lowest place on dry land?	Death Valley	The Dead Sea shore	Lake Baikal	The Mariana Trench	The shore of the Dead Sea is the lowest point on land.
+398	Which strait links the Persian Gulf to the Arabian Sea?	Bab-el-Mandeb	Gibraltar	The Strait of Hormuz	The Bosphorus	The Strait of Hormuz connects the Gulf to the Gulf of Oman and the Arabian Sea.
+399	Which strait links the Red Sea to the Gulf of Aden?	Hormuz	Gibraltar	The Dardanelles	Bab-el-Mandeb	Bab-el-Mandeb separates Yemen from Djibouti and Eritrea.
+400	Which is the largest Arab country by area?	Algeria	Saudi Arabia	Sudan	Libya	Algeria is the biggest Arab country by area.
+401	Which is the smallest Arab country by area?	Bahrain	Qatar	Kuwait	Lebanon	Bahrain is the smallest Arab country by area.
+11	What is the capital of France?	Lyon	Marseille	Nice	Paris	Paris has been France's capital for centuries.
+12	What is the fastest land animal in the world?	The lion	The cheetah	The gazelle	The tiger	A cheetah can reach about 110 km/h in short bursts.
+13	Which is the largest ocean in the world by area?	The Pacific Ocean	The Indian Ocean	The Arctic Ocean	The Atlantic Ocean	The Pacific covers about a third of the Earth.
+14	What is the first main meal people eat in the morning called?	Suhoor	Lunch	Breakfast	Dinner	Breakfast literally "breaks" the night's fast.
+15	What is the capital of the United Kingdom?	Edinburgh	London	Birmingham	Manchester	London is the capital of the UK.
+16	Which part of a plant takes in water and nutrients from the soil?	The flowers	The stem	The leaves	The roots	Roots anchor the plant and absorb water.
+17	What is the star closest to Earth that gives us light and heat?	The North Pole	The North Star	The Sun	Sirius	The Sun is the star at the centre of our solar system.
+28	What is the capital of Japan?	Tokyo	Osaka	Hiroshima	Kyoto	Tokyo is Japan's capital and largest city.
+30	Which language has the most native speakers in the world?	English	Chinese (Mandarin)	Spanish	Hindi	Mandarin has the most native speakers.
+31	Which organ is responsible for thinking, storing memories and controlling the nerves?	The brain	The spinal cord	The spine	The heart	The brain controls the whole body.
+32	What is the capital of Italy?	Milan	Florence	Rome	Naples	Rome is Italy's capital.
+53	What is the capital of Iraq?	Baghdad	Erbil	Mosul	Basra	Baghdad is Iraq's capital.
+54	What is the capital of Jordan?	Zarqa	Aqaba	Amman	Irbid	Amman is Jordan's capital.
+55	What is the capital of Lebanon?	Tyre	Sidon	Tripoli	Beirut	Beirut is Lebanon's capital.
+62	What is the capital of Argentina?	Rosario	La Plata	Buenos Aires	Córdoba	Buenos Aires is Argentina's capital.
+63	What is the capital of Ethiopia?	Hawassa	Dire Dawa	Addis Ababa	Bahir Dar	Addis Ababa is Ethiopia's capital.
+72	What is the capital of Portugal?	Coimbra	Lisbon	Porto	Braga	Lisbon is Portugal's capital.
+74	What is the capital of Belgium?	Liège	Ghent	Antwerp	Brussels	Brussels is Belgium's capital.
+75	What is the capital of Austria?	Vienna	Graz	Linz	Salzburg	Vienna is Austria's capital.
+81	What is the capital of Malaysia?	Penang	Johor Bahru	Ipoh	Kuala Lumpur	Kuala Lumpur is Malaysia's capital.
+83	What is the capital of the Philippines?	Davao	Manila	Cebu	Quezon City	Manila is the capital of the Philippines.
+84	What is the capital of Pakistan?	Rawalpindi	Karachi	Lahore	Islamabad	Islamabad is Pakistan's capital.
+85	What is the capital of Bangladesh?	Dhaka	Chittagong	Khulna	Rajshahi	Dhaka is Bangladesh's capital.
+88	What is the capital of Chile?	Concepción	Santiago	Antofagasta	Valparaíso	Santiago is Chile's capital.
+89	What is the capital of Colombia?	Cali	Bogotá	Medellín	Barranquilla	Bogotá is Colombia's capital.
+90	What is the capital of Peru?	Lima	Cusco	Arequipa	Trujillo	Lima is Peru's capital.
+91	What is the capital of Cuba?	Santiago de Cuba	Holguín	Havana	Camagüey	Havana is Cuba's capital.
+94	What is the capital of Venezuela?	Caracas	Maracaibo	Valencia	Barquisimeto	Caracas is Venezuela's capital.
+95	What is the capital of Kenya?	Mombasa	Nakuru	Nairobi	Kisumu	Nairobi is Kenya's capital.
+96	What is the capital of Senegal?	Ziguinchor	Dakar	Thiès	Saint-Louis	Dakar is Senegal's capital.
+101	What is the capital of Cameroon?	Yaoundé	Bamenda	Garoua	Douala	Yaoundé is Cameroon's capital.
+102	What is the capital of Azerbaijan?	Sumqayit	Ganja	Mingachevir	Baku	Baku is Azerbaijan's capital.
+103	What is the capital of Armenia?	Vagharshapat	Gyumri	Vanadzor	Yerevan	Yerevan is Armenia's capital.
+104	What is the capital of Georgia?	Kutaisi	Tbilisi	Rustavi	Batumi	Tbilisi is Georgia's capital.
+105	What is the capital of Uzbekistan?	Samarkand	Tashkent	Namangan	Bukhara	Tashkent is Uzbekistan's capital.
+106	What is the capital of Turkmenistan?	Mary	Ashgabat	Dashoguz	Türkmenbaşy	Ashgabat is Turkmenistan's capital.
+107	What is the capital of Kyrgyzstan?	Jalal-Abad	Osh	Karakol	Bishkek	Bishkek is Kyrgyzstan's capital.
+108	What is the capital of Tajikistan?	Khujand	Bokhtar	Dushanbe	Kulob	Dushanbe is Tajikistan's capital.
+109	What is the capital of Mongolia?	Choibalsan	Ulaanbaatar	Erdenet	Darkhan	Ulaanbaatar is Mongolia's capital.
+110	What is the capital of Iceland?	Keflavík	Reykjavík	Akureyri	Garðabær	Reykjavík is Iceland's capital.
+111	What is the capital of Ireland?	Galway	Cork	Dublin	Limerick	Dublin is Ireland's capital.
+112	What is the capital of Slovakia?	Prešov	Košice	Žilina	Bratislava	Bratislava is Slovakia's capital.
+113	What is the capital of Slovenia?	Ljubljana	Kranj	Celje	Maribor	Ljubljana is Slovenia's capital.
+114	What is the capital of Croatia?	Rijeka	Zagreb	Split	Osijek	Zagreb is Croatia's capital.
+120	What is the capital of Ukraine?	Kyiv	Dnipro	Kharkiv	Odesa	Kyiv is Ukraine's capital.
+149	What is the capital of Mauritania?	Kiffa	Nouadhibou	Rosso	Nouakchott	Nouakchott is Mauritania's capital.
+157	How many continents are there in the most common division?	5	6	7	8	The usual count is seven continents.
+158	Which artificial waterway connects the Mediterranean Sea to the Red Sea?	The Panama Canal	The Kiel Canal	The Suez Canal	The Corinth Canal	The Suez Canal opened in 1869.
+159	Which drink is consumed the most in the world after water?	Juice	Coffee	Milk	Tea	Tea is the world's most popular drink after water.
+161	Which Greek scholar discovered the law of buoyancy in the bath and shouted "Eureka"?	Thales	Archimedes	Euclid	Pythagoras	Archimedes realised that water is displaced by a body.
+162	What is the largest island in the world by area?	Greenland	Madagascar	Borneo	New Guinea	Greenland is the largest island.
+164	Which country is famous for windmills, tulips and dikes?	Denmark	The Netherlands	Sweden	Belgium	The Netherlands is known for all three.
+169	Who was the first person to walk on the Moon, in 1969?	Neil Armstrong	John Glenn	Buzz Aldrin	Yuri Gagarin	Armstrong stepped out of Apollo 11 on 20 July 1969.
+176	What is the unit of electrical power?	The watt	The volt	The ohm	The ampere	Power is measured in watts.
+177	What is the unit of electric potential difference?	The volt	The coulomb	The ampere	The ohm	Voltage is measured in volts.
+212	What is the official currency of India?	The zloty	The Moroccan dirham	The rupee	The Brazilian real	India uses the Indian rupee.
+213	What is the official currency of Russia?	The lira	The Mexican peso	The rouble	The Iranian rial	Russia uses the rouble.
+214	What is the official currency of Turkey?	The lira	The Omani rial	The rand	The Kenyan shilling	Turkey uses the Turkish lira.
+217	What is the official currency of Canada?	The rouble	The Bahraini dinar	The UAE dirham	The Canadian dollar	Canada uses the Canadian dollar.
+222	What is the official currency of Nigeria?	The naira	The Moroccan dirham	The Philippine peso	The Swedish krona	Nigeria uses the naira.
+225	What is the official currency of Poland?	The pound sterling	The zloty	The rand	The Kuwaiti dinar	Poland uses the zloty.
+226	What is the official currency of Malaysia?	The Bahraini dinar	The ringgit	The Australian dollar	The Kenyan shilling	Malaysia uses the ringgit.
+227	What is the official currency of Thailand?	The baht	The won	The Iraqi dinar	The rand	Thailand uses the baht.
+229	What is the official currency of Qatar?	The Algerian dinar	The Qatari riyal	The Omani rial	The dong	Qatar uses the Qatari riyal.
+230	What is the official currency of Oman?	The Omani rial	The pound sterling	The Australian dollar	The Philippine peso	Oman uses the Omani rial.
+231	What is the official currency of Bahrain?	The Bahraini dinar	The rupee	The Canadian dollar	The Jordanian dinar	Bahrain uses the Bahraini dinar.
+298	In which country is the Leaning Tower of Pisa?	Britain	Cambodia	Italy	India	The tower stands in Pisa, Italy.
+301	In which country is the Great Wall?	India	Turkey	Tunisia	China	The Great Wall stretches across northern China.
+303	In which country is the statue of Christ the Redeemer?	Brazil	Egypt	China	Chile	It overlooks Rio de Janeiro.
+304	In which country is the ancient city of Petra?	Egypt	Tunisia	Saudi Arabia	Jordan	Petra is the rose-red city of the Nabataeans.
+305	In which country are the temples of Abu Simbel?	Tunisia	Egypt	Canada	Morocco	Ramses II built them in southern Egypt.
+307	In which country is the temple of Angkor Wat?	Tunisia	Australia	Britain	Cambodia	Angkor Wat is the largest religious monument in the world.
+308	In which country is the Sagrada Família?	Canada and the United States	Italy	Spain	Greece	Gaudí's basilica is in Barcelona.
+309	In which country is the Brandenburg Gate?	Canada	India	Germany	Morocco	It stands in Berlin.
+311	In which country is the Kaaba?	Russia	Morocco	Saudi Arabia	Peru and Bolivia	The Kaaba is in Mecca.
+313	In which country is the Sydney Opera House?	Saudi Arabia	Italy	Australia	Jordan	The Opera House stands on Sydney Harbour.
+315	In which country is the Alhambra?	Russia	Australia	Chile	Spain	The Alhambra is in Granada.
+319	In which country are the ruins of Carthage?	Tunisia	Russia	Britain	Cambodia	Carthage lies near modern Tunis.
+321	In which country is Luxor?	Cambodia	Palestine	India	Egypt	Luxor is home to Karnak and the Valley of the Kings.
+323	In which country is the CN Tower?	Greece	China	Canada	Egypt	The CN Tower is in Toronto.
+324	In which country is Easter Island?	Cambodia	Morocco	Chile	India	Easter Island is famous for its moai statues.
+326	In which country is the Palace of Versailles?	Canada	France	The UAE	Britain	Versailles is near Paris.
+327	In which country is the Louvre Museum?	The United States	France	Russia	Jordan	The Louvre is in Paris and holds the Mona Lisa.
+329	How many bones does an adult human have?	180	300	250	206	Babies are born with more bones that later fuse.
+332	What is the largest bone in the human body?	The shin bone	The pelvis	The arm bone	The thigh bone	The femur is the longest and strongest bone.
+335	Which organ produces insulin?	The liver	The kidneys	The pancreas	The spleen	The pancreas controls blood sugar with insulin.
+364	Which animal sleeps standing up?	The lion	The horse	The dog	The cat	Horses can doze while standing.
+387	What is the highest mountain in Africa?	Mount Kenya	Kilimanjaro	Mount Elgon	Mount Sinai	Kilimanjaro in Tanzania is 5,895 m high.
+404	Which is the largest country in Africa by area?	Sudan	Congo	Algeria	Libya	Algeria is Africa's largest country.
+424	Who invented the radio (wireless telegraphy)?	Thomas Edison	Nikola Tesla	Alexander Bell	Guglielmo Marconi	Marconi sent wireless signals across the Atlantic in 1901.
+426	Who discovered penicillin?	Louis Pasteur	Alexander Fleming	Marie Curie	Edward Jenner	Fleming discovered it in 1928.
+428	Who developed the first vaccine against smallpox?	Edward Jenner	Louis Pasteur	Robert Koch	Jonas Salk	Jenner developed it in 1796.
+438	In which year was the first iPhone released?	2003	2010	2007	2005	Apple released it in 2007.
+456	Which planet is the hottest in the solar system?	Mercury	Mars	Jupiter	Venus	Venus is hotter than Mercury because of its thick atmosphere.
+461	What was the first artificial satellite, launched in 1957?	Apollo 11	Voyager	Sputnik 1	Hubble	The Soviet Union launched Sputnik 1.
+463	What is the famous space telescope launched in 1990 called?	James Webb	Kepler	Hubble	Spitzer	The Hubble Space Telescope is still working.
+468	About how many minutes does sunlight take to reach Earth?	1 minute	20 minutes	60 minutes	8 minutes	Sunlight takes about 8 minutes and 20 seconds.
+470	About how many days does the Moon take to orbit the Earth?	About 7	About 60	About 100	About 27	The Moon orbits the Earth in about 27 days.
+476	What is the chemical formula of table salt?	NaCl	H2O	CO2	HCl	Table salt is sodium chloride.
+480	What is the approximate speed of light?	3,000 km per second	30,000 km per second	3 million km per second	300,000 km per second	Light travels about 300,000 km every second.
+482	Which is the lightest gas in the universe?	Hydrogen	Helium	Nitrogen	Oxygen	Hydrogen is the lightest and most common element.
+486	Which instrument measures air pressure?	A barometer	A thermometer	A seismograph	A hygrometer	A barometer measures atmospheric pressure.
+492	Who painted The Last Supper?	Raphael	Michelangelo	Titian	Leonardo da Vinci	Leonardo painted it in Milan in the 1490s.
+499	Who wrote the novel Les Misérables?	Balzac	Dumas	Zola	Victor Hugo	Victor Hugo published it in 1862.
+506	Who wrote The Lord of the Rings?	J. K. Rowling	C. S. Lewis	J. R. R. Tolkien	Dickens	Tolkien published it in the 1950s.
+507	Who wrote the novel The Little Prince?	Victor Hugo	Camus	Antoine de Saint-Exupéry	Sartre	It was published in 1943.
+514	Who wrote the autobiographical novel "The Days" (Al-Ayyam)?	Naguib Mahfouz	Al-Aqqad	Al-Mazini	Taha Hussein	Taha Hussein is called the Dean of Arabic Literature.
+544	Which Austrian composer was a child prodigy?	Beethoven	Mozart	Bach	Liszt	Mozart composed his first pieces as a small child.
+545	Which country does the flamenco dance come from?	Spain	Italy	Portugal	Mexico	Flamenco comes from Andalusia in Spain.
+547	Which country does the samba dance come from?	Brazil	Argentina	Mexico	Cuba	Samba is the soul of Brazilian carnival.
+20	Which planet is nicknamed the "Red Planet"?	Venus	Mars	Jupiter	Saturn	Mars looks red because of iron oxide.
+43	What is the longest mountain range on land?	The Alps	The Himalayas	The Rockies	The Andes	The Andes stretch about 7,000 km.
+56	What is the capital of Tunisia?	Sfax	Sousse	Tunis	Bizerte	Tunis is Tunisia's capital.
+57	What is the capital of Algeria?	Oran	Algiers	Annaba	Constantine	Algiers is Algeria's capital.
+58	What is the capital of Sudan?	Port Sudan	Kassala	Khartoum	Omdurman	Khartoum lies where the Blue and White Nile meet.
+115	What is the capital of Serbia?	Belgrade	Niš	Novi Sad	Kragujevac	Belgrade is Serbia's capital.
+116	What is the capital of Bosnia and Herzegovina?	Sarajevo	Mostar	Tuzla	Banja Luka	Sarajevo is its capital.
+117	What is the capital of Albania?	Shkodër	Vlorë	Durrës	Tirana	Tirana is Albania's capital.
+118	What is the capital of Bulgaria?	Varna	Burgas	Sofia	Plovdiv	Sofia is Bulgaria's capital.
+119	What is the capital of Romania?	Timișoara	Bucharest	Iași	Cluj-Napoca	Bucharest is Romania's capital.
+121	What is the capital of Belarus?	Minsk	Vitebsk	Mogilev	Gomel	Minsk is Belarus's capital.
+122	What is the capital of Moldova?	Tiraspol	Bender	Chișinău	Bălți	Chișinău is Moldova's capital.
+123	What is the capital of Lithuania?	Klaipėda	Vilnius	Šiauliai	Kaunas	Vilnius is Lithuania's capital.
+124	What is the capital of Latvia?	Daugavpils	Jelgava	Liepāja	Riga	Riga is Latvia's capital.
+125	What is the capital of Estonia?	Tartu	Tallinn	Narva	Pärnu	Tallinn is Estonia's capital.
+126	What is the capital of Luxembourg?	Dudelange	Esch-sur-Alzette	Differdange	Luxembourg City	Luxembourg City is its capital.
+127	What is the capital of Malta?	Mosta	Valletta	Birkirkara	Qormi	Valletta is Malta's capital.
+128	What is the capital of Cyprus?	Limassol	Paphos	Nicosia	Larnaca	Nicosia is Cyprus's capital.
+129	What is the capital of Afghanistan?	Herat	Kabul	Mazar-i-Sharif	Kandahar	Kabul is Afghanistan's capital.
+130	What is the capital of Nepal?	Pokhara	Kathmandu	Lalitpur	Biratnagar	Kathmandu is Nepal's capital.
+131	What is the capital of Sri Lanka?	Galle	Jaffna	Kandy	Colombo	Colombo is the commercial capital; Sri Jayawardenepura Kotte is the official one.
+132	What is the capital of Myanmar?	Naypyidaw	Bagan	Mandalay	Yangon	Naypyidaw has been the capital since 2006.
+133	What is the capital of Cambodia?	Phnom Penh	Siem Reap	Battambang	Sihanoukville	Phnom Penh is Cambodia's capital.
+134	What is the capital of Laos?	Vientiane	Savannakhet	Luang Prabang	Pakse	Vientiane is Laos's capital.
+135	What is the capital of Brunei?	Bandar Seri Begawan	Kuala Belait	Seria	Tutong	Bandar Seri Begawan is Brunei's capital.
+136	What is the capital of Costa Rica?	Heredia	Cartago	Alajuela	San José	San José is Costa Rica's capital.
+137	What is the capital of Panama?	Colón	Panama City	David	La Chorrera	Panama City is Panama's capital.
+138	What is the capital of Jamaica?	Montego Bay	Spanish Town	Sherwood	Kingston	Kingston is Jamaica's capital.
+139	What is the capital of Haiti?	Gonaïves	Port-au-Prince	Cap-Haïtien	Jacmel	Port-au-Prince is Haiti's capital.
+140	What is the capital of the Dominican Republic?	Santiago de los Caballeros	La Romana	Santo Domingo	San Pedro	Santo Domingo is the capital.
+141	What is the capital of Ecuador?	Guayaquil	Ambato	Cuenca	Quito	Quito is Ecuador's capital.
+142	What is the capital of Paraguay?	Ciudad del Este	Luque	Asunción	San Lorenzo	Asunción is Paraguay's capital.
+143	What is the capital of Mozambique?	Nampula	Maputo	Beira	Matola	Maputo is Mozambique's capital.
+150	What is the capital of Somalia?	Bosaso	Kismayo	Mogadishu	Hargeisa	Mogadishu is Somalia's capital.
+151	What is the capital of Djibouti?	Dikhil	Djibouti City	Ali Sabieh	Tadjoura	Djibouti City is the capital.
+154	What is the capital of Qatar?	Al Khor	Doha	Al Wakrah	Al Rayyan	Doha is Qatar's capital.
+155	What is the capital of Kuwait?	Kuwait City	Salmiya	Hawally	Ahmadi	Kuwait City is Kuwait's capital.
+156	What is the capital of Bahrain?	Riffa	Isa Town	Muharraq	Manama	Manama is Bahrain's capital.
+165	What is the largest and most important artery in the human body, leaving the heart directly?	The carotid artery	The pulmonary artery	The aorta	The coronary artery	The aorta carries blood from the heart to the body.
+167	Which instrument measures a person's blood pressure?	A thermometer	A hydrometer	A sphygmomanometer	A barometer	A sphygmomanometer measures blood pressure.
+168	Who was the first person in space, in 1961?	Buzz Aldrin	Yuri Gagarin	Neil Armstrong	Valentina Tereshkova	Gagarin orbited the Earth on 12 April 1961.
+172	Which gas do trees and plants give off by day during photosynthesis?	Methane	Oxygen	Nitrogen	Carbon dioxide	Plants release oxygen in photosynthesis.
+173	Which gas is found in coal mines and natural gas and can cause explosions?	Ethane	Methane	Butane	Propane	Methane is the main part of natural gas.
+174	What is the SI unit of force?	The newton	The joule	The pascal	The watt	Force is measured in newtons.
+175	What is the SI unit of energy and work?	The volt	The joule	The ohm	The watt	Energy is measured in joules.
+178	What is the unit of electric current?	The ohm	The volt	The ampere	The watt	Current is measured in amperes.
+180	Which science studies rocks and the layers of the Earth?	Meteorology	Geology	Astronomy	Biology	Geology studies the Earth's structure.
+181	Which science studies weather, climate and the atmosphere?	Archaeology	Meteorology	Geology	Biology	Meteorology studies the weather.
+182	Which science studies space, stars, planets and galaxies?	Ecology	Geology	Astronomy	Biology	Astronomy studies the universe.
+183	Which tough protein makes up human nails and hair?	Elastin	Collagen	Melanin	Keratin	Keratin is the main protein of hair and nails.
+184	Which is the most plentiful protein in connective tissue, skin and bones?	Albumin	Collagen	Haemoglobin	Keratin	Collagen holds the body together.
+185	Which part of the eye gives it its colour (brown, blue, green)?	The iris	The pupil	The cornea	The retina	The iris controls the pupil's size too.
+186	Which light-sensitive layer at the back of the eye receives images?	The retina	The sclera	The cornea	The iris	The retina turns light into nerve signals.
+187	Which muscle beats without rest throughout a person's life and pumps blood?	The thigh muscle	The heart muscle	The tongue muscle	The calf muscle	The heart muscle never rests.
+188	Which organ stores bile to help digest fats?	The pancreas	The spleen	The liver	The gallbladder	The gallbladder stores bile made by the liver.
+189	Which organ destroys and recycles old red blood cells?	The liver	The pancreas	The spleen	The kidneys	The spleen filters old blood cells.
+190	Which continent has the most independent countries, 54?	Africa	Asia	Europe	North America	Africa has 54 countries.
+191	Which is the longest undefended land border between two countries?	Argentina–Chile	Russia–China	India–Pakistan	Canada–United States	The Canada–US border is about 8,900 km.
+192	Which country produces the most coffee in the world?	Brazil	Vietnam	Colombia	Ethiopia	Brazil grows about a third of the world's coffee.
+193	Which country produces the most tea in the world?	China	India	Sri Lanka	Kenya	China is the largest tea producer.
+194	Which country produces and exports the most olives and olive oil?	Spain	Italy	Greece	Tunisia	Spain leads the world in olive oil.
+195	Which alphabet, created by the Phoenicians, led to the Greek and Latin alphabets?	Hieroglyphs	The Greek alphabet	Cuneiform	The Phoenician alphabet	The Phoenician alphabet is the ancestor of many scripts.
+196	Which country has the most Nubian (Kushite) pyramids in the world?	Peru	Sudan	Egypt	Mexico	Sudan has more pyramids than Egypt.
+198	Which commercial maglev train in Shanghai reaches about 430 km/h?	Japan's bullet train	Germany's Velaro	The Shanghai Maglev	France's TGV	The Shanghai Maglev opened in 2004.
+199	Which nuclear reactor had the worst nuclear accident in history in 1986?	Three Mile Island	Zaporizhzhia	Chernobyl	Fukushima	Chernobyl is in Ukraine.
+200	In which country is the very dry Atacama Desert?	Argentina	Chile	Mexico	Peru	The Atacama is the driest non-polar desert on Earth.
+203	What is the official currency of the UAE?	The Saudi riyal	The UAE dirham	The Tunisian dinar	The rouble	The UAE uses the dirham.
+209	What is the official currency of Algeria?	The Qatari riyal	The Tunisian dinar	The Kuwaiti dinar	The Algerian dinar	Algeria uses the dinar.
+215	What is the official currency of Britain?	The UAE dirham	The Argentine peso	The pound sterling	The Brazilian real	Britain uses the pound sterling.
+216	What is the official currency of Switzerland?	The Swiss franc	The Pakistani rupee	The zloty	The Indonesian rupiah	Switzerland uses the franc.
+218	What is the official currency of Australia?	The Australian dollar	The UAE dirham	The Qatari riyal	The rouble	Australia uses the Australian dollar.
+219	What is the official currency of Brazil?	The Brazilian real	The Bahraini dinar	The Tunisian dinar	The Lebanese pound	Brazil uses the real.
+220	What is the official currency of Mexico?	The Egyptian pound	The Kenyan shilling	The Mexican peso	The Bahraini dinar	Mexico uses the peso.
+221	What is the official currency of South Africa?	The Brazilian real	The Kenyan shilling	The rand	The Swiss franc	South Africa uses the rand.
+223	What is the official currency of South Korea?	The pound sterling	The won	The dong	The ringgit	South Korea uses the won.
+224	What is the official currency of Sweden?	The Iranian rial	The Swedish krona	The Kuwaiti dinar	The Moroccan dirham	Sweden uses the krona.
+228	What is the official currency of Indonesia?	The baht	The Indonesian rupiah	The Kuwaiti dinar	The ringgit	Indonesia uses the rupiah.
+232	What is the official currency of Lebanon?	The Lebanese pound	The Sudanese pound	The Iraqi dinar	The Qatari riyal	Lebanon uses the Lebanese pound.
+233	What is the official currency of Sudan?	The Sudanese pound	The Iranian rial	The yen	The Indonesian rupiah	Sudan uses the Sudanese pound.
+234	What is the official currency of Libya?	The Libyan dinar	The rand	The dong	The Sudanese pound	Libya uses the dinar.
+235	What is the official currency of Pakistan?	The yen	The rand	The Jordanian dinar	The Pakistani rupee	Pakistan uses the rupee.
+236	What is the official currency of Vietnam?	The dong	The Indonesian rupiah	The Argentine peso	The Sudanese pound	Vietnam uses the dong.
+237	What is the official currency of the Philippines?	The rouble	The naira	The Philippine peso	The Egyptian pound	The Philippines uses the peso.
+238	What is the official currency of Argentina?	The won	The Omani rial	The Argentine peso	The Lebanese pound	Argentina uses the peso.
+239	What is the official currency of Kenya?	The Kenyan shilling	The Swiss franc	The rupee	The Saudi riyal	Kenya uses the shilling.
+240	What is the official currency of Iran?	The Jordanian dinar	The Moroccan dirham	The Iranian rial	The Mexican peso	Iran uses the rial.
+271	What is the main official language of Brazil?	Persian	Indonesian	Spanish	Portuguese	Brazil is the largest Portuguese-speaking country.
+272	What is the main official language of Argentina?	Italian	Hebrew	Pashto and Dari	Spanish	Argentina speaks Spanish.
+273	What is the main official language of Mexico?	Italian	Korean	Turkish	Spanish	Mexico speaks Spanish.
+274	What is the main official language of France?	French	Indonesian	Russian	Chinese (Mandarin)	French is France's official language.
+275	What is the main official language of Germany?	German	Hebrew	Urdu	Swedish	German is Germany's official language.
+277	What is the main official language of Russia?	French	Portuguese	Russian	Korean	Russian is Russia's official language.
+316	In which country is the Citadel of Saladin?	Japan	Canada and the United States	Jordan	Egypt	The Citadel of Saladin is in Cairo.
+317	In which country is the Al-Qarawiyyin Mosque?	Italy	Morocco	Brazil	Peru and Bolivia	It is in Fez, and has a famous university.
+318	In which country is the Hassan II Mosque?	Cambodia	Germany	France	Morocco	It stands on the coast in Casablanca.
+325	In which country is the city of Venice?	Japan	Italy	Greece	Peru	Venice is built on a lagoon in Italy.
+328	In which country is the Hermitage Museum?	Jordan	Australia	Russia	Brazil	The Hermitage is in Saint Petersburg.
+330	How many teeth does an adult usually have?	28	36	30	32	An adult has 32 teeth including wisdom teeth.
+331	How many chambers does the human heart have?	Three	Two	Five	Four	Two atria and two ventricles.
+333	What is the smallest bone in the human body?	A finger bone	The stapes in the ear	The nose bone	A wrist bone	The stapes is about 3 mm long.
+337	What colour is oxygenated blood in the arteries?	Blue	Very dark red	Purple	Bright red	Oxygen-rich blood is bright red.
+338	Which blood cells carry oxygen?	White blood cells	Red blood cells	Platelets	Plasma	Red blood cells carry oxygen with haemoglobin.
+339	Which blood cells fight disease?	Red blood cells	Platelets	White blood cells	Haemoglobin	White blood cells defend the body.
+342	Which vitamin is important for eyesight and found in carrots?	Vitamin D	Vitamin C	Vitamin E	Vitamin A	Carrots are rich in beta-carotene.
+348	About how many beats per minute is a normal adult heart rate?	20 to 40	60 to 100	120 to 160	200	A resting adult heart beats 60–100 times a minute.
+349	What is the normal temperature of the human body?	37 °C	35 °C	40 °C	33 °C	Normal body temperature is about 37 °C.
+350	Which part of the eye controls the amount of light that enters?	The retina	The iris	The cornea	The lens	The iris adjusts the pupil.
+351	Which sense is responsible for smell?	The ear	The nose	The tongue	The skin	The nose detects smells.
+352	How many chromosomes are in a normal human cell?	23	48	46	44	Humans have 46 chromosomes, in 23 pairs.
+353	What is the tallest animal in the world?	The elephant	The ostrich	The giraffe	The polar bear	Giraffes reach about 5.5 metres.
+354	What is the largest bird in the world?	The ostrich	The eagle	The penguin	The goose	The ostrich can weigh over 100 kg.
+355	What is the slowest-moving animal in the world?	The sloth	The tortoise	The snail	The bear	The sloth moves very slowly.
+356	What is the fastest bird in a dive?	The eagle	The peregrine falcon	The parrot	The pigeon	A peregrine falcon can dive faster than 300 km/h.
+358	What is the largest land animal of all?	The rhinoceros	The giraffe	The polar bear	The African elephant	The African elephant can weigh over 6 tonnes.
+359	Which animal is called the king of the jungle?	The tiger	The lion	The elephant	The bear	The lion has this nickname.
+360	Which animal is called the "ship of the desert"?	The horse	The donkey	The elephant	The camel	Camels cross deserts with little water.
+362	Which mammal lays eggs?	The platypus	The dolphin	The bat	The kangaroo	The platypus and the echidna lay eggs.
+365	Which animal has the biggest heart in the world?	The elephant	The giraffe	The shark	The blue whale	A blue whale's heart is the size of a small car.
+366	How many legs does a spider have?	Eight	Six	Ten	Four	Spiders have eight legs.
+367	How many legs does an insect usually have?	Four	Six	Eight	Ten	Insects have six legs.
+368	Which insect makes honey?	The ant	The bee	The wasp	The butterfly	Bees make honey from nectar.
+370	What is a baby dog called?	A puppy	A foal	A lamb	A calf	A baby dog is a puppy.
+371	What is a baby horse called?	A puppy	A foal	A lamb	A chick	A baby horse is a foal.
+372	What is a baby lion called?	A puppy	A lamb	A chick	A cub	A baby lion is a cub.
+373	What is a baby chicken called?	A chick	A cub	A kid	A colt	A baby chicken is a chick.
+374	What is a baby goat called?	A lamb	A foal	A calf	A kid	A baby goat is a kid.
+375	What is a baby cow called?	A calf	A lamb	A foal	A kid	A baby cow is a calf.
+376	What is a baby frog called?	A puppy	A chick	A tadpole	A larva	A tadpole grows into a frog.
+379	Which substance makes plants green?	Melanin	Keratin	Haemoglobin	Chlorophyll	Chlorophyll absorbs sunlight for photosynthesis.
+380	What is the tallest tree in the world?	The palm	The sequoia	The pine	The olive	Coast redwoods (sequoias) reach over 110 metres.
+381	Which tree is the national symbol of Lebanon?	The olive	The palm	The cypress	The cedar	The cedar is on Lebanon's flag.
+382	Which tree is a symbol of peace?	The pine	The palm	The olive	The cedar	An olive branch means peace.
+389	What is the deepest lake in the world?	Lake Victoria	Lake Superior	Lake Titicaca	Lake Baikal	Lake Baikal in Russia is over 1,600 m deep.
+390	What is the largest island in the Mediterranean Sea?	Sicily	Sardinia	Cyprus	Crete	Sicily is the largest Mediterranean island.
+392	On which river is the city of Baghdad?	The Euphrates	The Nile	The Jordan	The Tigris	Baghdad lies on the Tigris.
+393	On which river is the city of Paris?	The Thames	The Rhine	The Seine	The Danube	Paris lies on the Seine.
+394	On which river is the city of London?	The Seine	The Danube	The Thames	The Rhine	London lies on the Thames.
+395	On which river is Khartoum, where the two Niles meet?	The Nile	The Congo	The Niger	The Zambezi	Khartoum is where the Blue and White Niles join.
+396	Which canal links the Atlantic and Pacific oceans?	The Suez Canal	The Panama Canal	The Kiel Canal	The Corinth Canal	The Panama Canal opened in 1914.
+397	Which strait separates Africa from Europe?	The Strait of Hormuz	The Bosphorus	The Strait of Gibraltar	Bab-el-Mandeb	The Strait of Gibraltar is only about 14 km wide.
+402	Which Arab country has the largest population?	Algeria	Sudan	Egypt	Morocco	Egypt has over 100 million people.
+405	Which country has the largest population in the world today?	China	India	The United States	Indonesia	India has overtaken China.
+407	Which country is nicknamed "the Land of a Thousand Lakes"?	Sweden	Norway	Canada	Finland	Finland has about 188,000 lakes.
+409	Which country is nicknamed "the Land of the Cedars"?	Syria	Jordan	Turkey	Lebanon	The cedar is Lebanon's symbol.
+410	Which country is nicknamed "the Land of a Million Martyrs"?	Libya	Tunisia	Algeria	Morocco	The nickname refers to Algeria's war of independence.
+412	Which continent contains the Kalahari Desert?	Africa	Asia	Australia	South America	The Kalahari is in southern Africa.
+413	What is the largest continuous sand desert in the world, in the Arabian Peninsula, called?	An-Nafud	Ad-Dahna	The Empty Quarter (Rub' al Khali)	As-Summan	The Empty Quarter covers about 650,000 km².
+415	What is the longest river in Asia?	The Euphrates	The Ganges	The Yangtze	The Mekong	The Yangtze is about 6,300 km long.
+423	Who invented the modern movable-type printing press in Europe?	Leonardo da Vinci	Johannes Gutenberg	Isaac Newton	Galileo	Gutenberg built his press around 1440.
+427	Who discovered radium and polonium?	Rosalind Franklin	Marie Curie	Margaret Mead	Irène Joliot-Curie	Marie Curie won two Nobel Prizes.
+429	Who developed the polio vaccine?	Jonas Salk	Louis Pasteur	Alexander Fleming	Edward Jenner	Salk announced it in 1955.
+435	Who co-founded Google with Sergey Brin?	Mark Zuckerberg	Larry Page	Jack Dorsey	Steve Jobs	Page and Brin founded Google in 1998.
+436	Who founded Twitter?	Jack Dorsey	Mark Zuckerberg	Elon Musk	Bill Gates	Dorsey co-founded it in 2006.
+437	In which year was YouTube launched?	2001	2008	2005	2010	YouTube started in 2005.
+439	In which year was Facebook launched?	2001	2008	2010	2004	Facebook started in 2004.
+445	Which programming language is named after a snake?	Java	C	Ruby	Python	Python is named after Monty Python, but its logo is a snake.
+447	What is Apple's voice assistant called?	Alexa	Siri	Cortana	Bixby	Siri was introduced in 2011.
+448	What is Amazon's voice assistant called?	Siri	Cortana	Google	Alexa	Alexa runs on Echo devices.
+453	What is the smallest planet in the solar system?	Mars	Mercury	Venus	Pluto	Mercury is the smallest planet.
+455	Which planet is called Earth's twin?	Mars	Venus	Mercury	Neptune	Venus is almost the same size as Earth.
+460	Who was the first human in space?	Yuri Gagarin	Neil Armstrong	John Glenn	Buzz Aldrin	Gagarin flew on Vostok 1.
+462	What was the name of the spacecraft that landed on the Moon in 1969?	Sputnik	Voyager 1	Apollo 11	Gemini	Apollo 11 landed on 20 July 1969.
+464	What is the newest space telescope, launched in 2021, called?	James Webb	Hubble	Kepler	Spitzer	The James Webb Space Telescope launched in December 2021.
+466	What is the European space agency called?	ESA	NASA	JAXA	Roscosmos	ESA is the European Space Agency.
+474	About what percentage of the air is oxygen?	21%	50%	78%	10%	Air is about 21% oxygen.
+477	What is the chemical formula of carbon dioxide?	CO	O2	CO2	H2O	Carbon dioxide has one carbon and two oxygen atoms.
+483	Which is the most abundant element in the universe?	Oxygen	Iron	Hydrogen	Carbon	Hydrogen makes up about 75% of ordinary matter.
+519	Who wrote the novel "The Yacoubian Building"?	Naguib Mahfouz	Alaa Al Aswany	Bahaa Taher	Youssef Ziedan	Alaa Al Aswany wrote it in 2002.
+521	Which Egyptian author wrote the "Ma Wara' Al-Tabi'a" (Beyond the Supernatural) series?	Ahmed Mourad	Nabil Farouk	Youssef Ziedan	Ahmed Khaled Tawfik	Ahmed Khaled Tawfik wrote the horror series.
+528	Which pre-Islamic poet wrote the ode beginning "Qifa nabki"?	Imru' al-Qais	Antarah ibn Shaddad	Zuhayr ibn Abi Sulma	Tarafa ibn al-Abd	It is one of the Mu'allaqat.
+548	What is the traditional Japanese dress called?	The sari	The kimono	The kilt	The hanbok	The kimono is Japan's traditional dress.
+563	On which continent is India?	Africa	Asia	Europe	Oceania	India is in Asia.
+564	On which continent is Indonesia?	Asia	North America	Africa	South America	Indonesia is in Asia.
+565	On which continent is Thailand?	Asia	Africa	South America	North America	Thailand is in Asia.
+566	On which continent is Vietnam?	Oceania	North America	Africa	Asia	Vietnam is in Asia.
+567	On which continent is Kazakhstan?	South America	North America	Africa	Asia	Kazakhstan is mostly in Asia.
+568	On which continent is Nepal?	Europe	Asia	South America	Oceania	Nepal is in Asia.
+569	On which continent is Mongolia?	Asia	South America	North America	Africa	Mongolia is in Asia.
+570	On which continent is Sri Lanka?	Oceania	Europe	South America	Asia	Sri Lanka is in Asia.
+571	On which continent are the Philippines?	Asia	Oceania	Africa	North America	The Philippines is in Asia.
+572	On which continent is Malaysia?	North America	Asia	Oceania	South America	Malaysia is in Asia.
+574	On which continent is Nigeria?	Europe	Africa	Asia	South America	Nigeria is in Africa.
+575	On which continent is Kenya?	Oceania	North America	Africa	South America	Kenya is in Africa.
+576	On which continent is Ethiopia?	Asia	Europe	North America	Africa	Ethiopia is in Africa.
+577	On which continent is Ghana?	Oceania	Africa	North America	Europe	Ghana is in Africa.
+578	On which continent is Cameroon?	North America	Africa	Asia	Europe	Cameroon is in Africa.
+579	On which continent is Angola?	South America	Africa	Oceania	Europe	Angola is in Africa.
+580	On which continent is Zambia?	Africa	South America	Europe	North America	Zambia is in Africa.
+581	On which continent is Madagascar?	Africa	Europe	South America	Oceania	Madagascar is an island off Africa.
+582	On which continent is Senegal?	Africa	North America	South America	Asia	Senegal is in West Africa.
+583	On which continent is Tanzania?	North America	Africa	Oceania	Europe	Tanzania is in East Africa.
+584	On which continent is Mozambique?	Europe	Asia	Oceania	Africa	Mozambique is in southern Africa.
+586	On which continent is Germany?	Asia	North America	Europe	Africa	Germany is in Europe.
+587	On which continent is Italy?	South America	Europe	Oceania	Asia	Italy is in Europe.
+588	On which continent is Spain?	Africa	Europe	North America	Asia	Spain is in Europe.
+589	On which continent is Sweden?	North America	Europe	South America	Oceania	Sweden is in Europe.
+608	On which continent is Cuba?	Oceania	Asia	North America	Europe	Cuba is in North America.
+616	In which country is the city of Jeddah?	Spain	Egypt	Syria	Saudi Arabia	Jeddah is on the Red Sea coast of Saudi Arabia.
+620	In which country is the city of Marrakesh?	The UAE	Germany	Morocco	Britain	Marrakesh is in Morocco.
+621	In which country is the city of Oran?	Algeria	Australia	France	The Czech Republic	Oran is Algeria's second city.
+622	In which country is the city of Sfax?	Australia	Britain	Tunisia	Pakistan	Sfax is in Tunisia.
+625	In which country is the city of Aleppo?	The United States	Turkey	Syria	Pakistan	Aleppo is in Syria.
+626	In which country is the city of Damascus?	Italy	Belgium	India	Syria	Damascus is Syria's capital.
+627	In which country is the city of Benghazi?	Canada	Saudi Arabia	Iraq	Libya	Benghazi is in Libya.
+630	In which country is the city of Ankara?	Turkey	Russia	Algeria	Syria	Ankara is Turkey's capital.
+632	In which country is the city of Naples?	Britain	Italy	China	Austria	Naples is in Italy.
+633	In which country is the city of Barcelona?	Canada	Nigeria	Tunisia	Spain	Barcelona is in Spain.
+635	In which country is the city of Munich?	Spain	Austria	Canada	Germany	Munich is in Bavaria, Germany.
+638	In which country is the city of Lyon?	Iraq	France	Switzerland	Morocco	Lyon is in France.
+641	In which country is the city of Osaka?	The UAE	China	Japan	Switzerland	Osaka is in Japan.
+643	In which country is the city of Shanghai?	Saudi Arabia	Turkey	China	Brazil	Shanghai is in China.
+644	In which country is the city of Mumbai?	Morocco	Pakistan	India	Russia	Mumbai is in India.
+647	In which country is the city of Sydney?	Pakistan	Belgium	Australia	India	Sydney is in Australia.
+648	In which country is the city of Melbourne?	Australia	Canada	Iraq	The UAE	Melbourne is in Australia.
+649	In which country is the city of Toronto?	Canada	The UAE	The Czech Republic	France	Toronto is in Canada.
+655	In which country is the city of Zurich?	Switzerland	Russia	Spain	The Netherlands	Zurich is in Switzerland.
+656	In which country is the city of Geneva?	France	Spain	Switzerland	The Czech Republic	Geneva is in Switzerland.
+668	How many main blood groups are there?	Three	Four (A, B, AB and O)	Six	Eight	The main groups are A, B, AB and O.
+672	What is the hard substance that covers and protects the teeth from decay?	Dentine	Pulp	Root	Enamel	Enamel is the hardest tissue in the body.
+673	Which hormone controls blood sugar?	Insulin	Adrenaline	Thyroxine	Testosterone	Insulin lowers blood sugar.
+681	What is the disease caused by lack of iron?	Rickets	Anaemia	Scurvy	Diabetes	Iron deficiency causes anaemia.
+683	Which disease is spread by the bite of the Anopheles mosquito?	Malaria	Cholera	Measles	Tuberculosis	Malaria is spread by Anopheles mosquitoes.
+690	What is the lowest layer of the atmosphere, where we live, called?	The troposphere	The stratosphere	The mesosphere	The ionosphere	Weather happens in the troposphere.
+691	What is the hardest natural substance?	Graphite	Iron	Diamond	Quartz	Diamond tops the Mohs scale.
+692	Which metal has the symbol Au?	Silver	Gold	Aluminium	Argon	Au comes from the Latin "aurum".
+702	Which particle in the nucleus of an atom has no charge?	The electron	The proton	The quark	The neutron	Neutrons are electrically neutral.
+716	Who built and flew the first powered aeroplane with his brother in 1903?	James Watt	Marconi	Orville Wright	Montgolfier	Orville and Wilbur Wright flew at Kitty Hawk.
+819	Which chemical element has the symbol C?	Platinum	Magnesium	Iron	Carbon	C stands for carbon.
+820	Which chemical element has the symbol N?	Tin	Nitrogen	Mercury	Sulphur	N stands for nitrogen.
+826	Which chemical element has the symbol P?	Phosphorus	Chlorine	Nickel	Platinum	P stands for phosphorus.
+827	Which chemical element has the symbol S?	Lead	Iodine	Chlorine	Sulphur	S stands for sulphur.
+829	Which chemical element has the symbol K?	Sodium	Potassium	Lithium	Silicon	K comes from the Latin "kalium".
+839	Which chemical element has the symbol U?	Silicon	Lead	Nickel	Uranium	U stands for uranium.
+840	Which chemical element has the symbol I?	Lead	Iodine	Lithium	Potassium	I stands for iodine.
+845	Which chemical element has the symbol W?	Phosphorus	Tungsten	Gold	Iron	W comes from "wolfram".
+892	In which country or countries is Mount Everest?	Russia	Nepal and China (Tibet)	Japan	Syria and Lebanon	Everest sits on the Nepal–China border.
+894	In which country is Mount Kilimanjaro?	Tanzania	Morocco, Algeria and Tunisia	South America	Argentina	Kilimanjaro is in Tanzania.
+895	In which country or countries is Mont Blanc?	Pakistan and China	Turkey	Britain	France and Italy	Mont Blanc stands on the French–Italian border.
+896	In which country is Mount Fuji?	Nepal and China	Japan	France and Italy	Syria and Lebanon	Mount Fuji is Japan's highest mountain.
+144	What is the capital of Zimbabwe?	Harare	Mutare	Chitungwiza	Bulawayo	Harare is Zimbabwe's capital.
+145	What is the capital of Zambia?	Ndola	Kitwe	Chingola	Lusaka	Lusaka is Zambia's capital.
+146	What is the capital of Madagascar?	Mahajanga	Antsirabe	Toamasina	Antananarivo	Antananarivo is Madagascar's capital.
+147	What is the capital of Mauritius?	Curepipe	Beau Bassin-Rose Hill	Port Louis	Vacoas	Port Louis is the capital.
+152	What is the capital of the Comoros?	Domoni	Moroni	Fomboni	Mutsamudu	Moroni is the capital.
+163	Which animal can sleep for up to three years without waking?	The grizzly bear	The frog	The snail	The sloth	Snails can sleep for years in dry weather.
+171	Which bird is the fastest in straight, level flight over short distances?	The eagle	The swift	The falcon	The penguin	The common swift is a very fast flyer.
+276	What is the main official language of Italy?	Spanish	Polish	Korean	Italian	Italian is Italy's official language.
+278	What is the main official language of Iran?	Pashto and Dari	Persian	Thai	Japanese	Persian (Farsi) is the language of Iran.
+279	What is the main official language of Turkey?	Portuguese	Vietnamese	Turkish	Greek	Turkish is Turkey's language.
+280	What is the main official language of Japan?	Greek	Korean	Japanese	German	Japanese is Japan's language.
+281	What is the main official language of South Korea?	Amharic	Chinese (Mandarin)	Indonesian	Korean	Korean is spoken in both Koreas.
+282	What is the main official language of China?	Chinese (Mandarin)	Indonesian	Italian	Turkish	Mandarin is China's national language.
+283	What is the main official language of Angola?	Chinese (Mandarin)	Spanish	French	Portuguese	Angola was a Portuguese colony.
+284	What is the main official language of the Netherlands?	Turkish	Dutch	Portuguese	Italian	Dutch is the Netherlands' language.
+285	What is the main official language of Sweden?	Swedish	Pashto and Dari	Japanese	Amharic	Swedish is Sweden's language.
+286	What is the main official language of Greece?	Swahili and English	Greek	Turkish	Hebrew	Greek is Greece's language.
+287	What is the main official language of Poland?	Swedish	Chinese (Mandarin)	Greek	Polish	Polish is Poland's language.
+288	What is the main official language of Israel?	Dutch	Urdu	Hebrew	Vietnamese	Hebrew is Israel's main official language.
+289	What is the main official language of Pakistan?	Urdu	Vietnamese	Swahili and English	Hebrew	Urdu is Pakistan's national language.
+290	What is the main official language of Indonesia?	French	Indonesian	Pashto and Dari	Persian	Bahasa Indonesia is the official language.
+291	What is the main official language of Vietnam?	German	Portuguese	Indonesian	Vietnamese	Vietnamese is the official language.
+292	What is the main official language of Thailand?	Thai	Chinese (Mandarin)	Russian	Spanish	Thai is Thailand's language.
+293	What is the main official language of Ethiopia?	Greek	Italian	Amharic	Vietnamese	Amharic is the federal working language.
+294	What is the main official language of Kenya?	Portuguese	Swahili and English	Russian	Swedish	Kenya uses Swahili and English.
+295	What is the main official language of Afghanistan?	Portuguese	Swahili and English	French	Pashto and Dari	Pashto and Dari are official.
+334	Which organ filters waste from the blood?	The liver	The spleen	The kidneys	The stomach	The kidneys clean the blood.
+340	Which vitamin do we get from sunlight?	Vitamin D	Vitamin C	Vitamin B	Vitamin A	The skin makes vitamin D in sunlight.
+341	Which vitamin is plentiful in oranges and lemons?	Vitamin D	Vitamin C	Vitamin K	Vitamin B12	Citrus fruits are rich in vitamin C.
+343	Which mineral helps build bones and teeth?	Calcium	Iron	Sodium	Iodine	Milk is rich in calcium.
+345	Which organs sit inside the rib cage and help us breathe?	The lungs	The liver	The stomach	The kidneys	The lungs take in oxygen.
+346	What is the longest muscle in the human body?	The thigh muscle	The tongue	The calf muscle	The sartorius	The sartorius runs down the thigh.
+347	Which is the strongest muscle in the body for its size?	The heart	The calf muscle	The arm muscle	The masseter (jaw muscle)	The masseter gives a very strong bite.
+361	Which animal is known for changing its colour?	The gecko	The chameleon	The frog	The snake	Chameleons change colour to communicate.
+363	Which is the only mammal that can fly?	The bat	The flying squirrel	The hummingbird	The mole	Bats are the only flying mammals.
+369	Which ocean animal has eight arms?	The squid	The dolphin	The octopus	The whale	An octopus has eight arms.
+377	Which gas do plants take in from the air?	Oxygen	Nitrogen	Hydrogen	Carbon dioxide	Plants absorb carbon dioxide.
+383	What is the largest ocean on Earth?	The Pacific Ocean	The Atlantic Ocean	The Indian Ocean	The Arctic Ocean	The Pacific is the largest and deepest.
+386	What is the highest mountain in the world above sea level?	K2	Everest	Kilimanjaro	Mont Blanc	Everest is 8,849 m high.
+388	What is the highest mountain in Europe?	Mont Blanc	The Alps	Elbrus	Olympus	Mount Elbrus in Russia is the highest.
+391	What is the longest river in Europe?	The Danube	The Volga	The Rhine	The Seine	The Volga is about 3,530 km long.
+403	What is the largest country in South America?	Brazil	Argentina	Peru	Colombia	Brazil is the largest.
+408	Which country is nicknamed the "Land of the Pharaohs"?	Iraq	Egypt	Greece	Sudan	Ancient Egypt was ruled by pharaohs.
+411	Which country is nicknamed the "Land of the Two Holy Mosques"?	Saudi Arabia	Egypt	Jordan	Iraq	Mecca and Medina are in Saudi Arabia.
+414	What is the largest active volcano in Europe?	Etna	Vesuvius	Stromboli	Hekla	Mount Etna in Sicily is Europe's biggest.
+417	What is the longest river in North America?	The Missouri–Mississippi	The Colorado	The Rio Grande	The Hudson	The Missouri–Mississippi system is the longest.
+418	What is the tallest waterfall in the world?	Niagara Falls	Victoria Falls	Angel Falls	Iguazu Falls	Angel Falls in Venezuela is 979 m high.
+419	Which waterfall lies on the border between Zambia and Zimbabwe?	Iguazu Falls	Niagara Falls	Angel Falls	Victoria Falls	Victoria Falls is on the Zambezi River.
+420	Who invented the telephone?	Thomas Edison	Nikola Tesla	Guglielmo Marconi	Alexander Graham Bell	Bell patented it in 1876.
+421	Who invented the practical light bulb?	Alexander Bell	Michael Faraday	Thomas Edison	Albert Einstein	Edison made it practical in 1879.
+425	Who discovered gravity after an apple fell, according to the popular story?	Galileo	Isaac Newton	Einstein	Copernicus	Newton explained gravity in 1687.
+430	Who founded Microsoft?	Steve Jobs	Mark Zuckerberg	Bill Gates	Elon Musk	Bill Gates co-founded it in 1975.
+431	Who founded Apple?	Bill Gates	Larry Page	Steve Jobs	Jeff Bezos	Steve Jobs co-founded Apple in 1976.
+432	Who founded Amazon?	Elon Musk	Jeff Bezos	Mark Zuckerberg	Bill Gates	Jeff Bezos founded Amazon in 1994.
+433	Who founded Facebook?	Elon Musk	Mark Zuckerberg	Jack Dorsey	Bill Gates	Zuckerberg founded it in 2004.
+440	Which operating system is made by Google for phones?	iOS	Android	Windows	Linux	Android is made by Google.
+441	Which operating system is made by Apple for the iPhone?	Android	Windows	iOS	Linux	iOS runs on the iPhone.
+442	What is the English abbreviation for artificial intelligence?	VR	AI	IT	UX	AI stands for artificial intelligence.
+443	What is the most popular search engine in the world?	Bing	Yahoo	Google	DuckDuckGo	Google handles most searches.
+446	Which short-range wireless technology is named after a Danish king?	Bluetooth	Wi-Fi	NFC	LTE	Bluetooth is named after Harald Bluetooth.
+450	What is the Red Planet called?	Venus	Jupiter	Saturn	Mars	Mars is the Red Planet.
+451	Which planet is known for its rings?	Jupiter	Uranus	Saturn	Neptune	Saturn has the brightest rings.
+452	What is the largest planet in the solar system?	Saturn	Earth	Jupiter	Neptune	Jupiter is the largest.
+454	How many planets are there in the solar system?	Nine	Eight	Seven	Ten	There are eight planets.
+457	What is the Earth's only natural satellite?	Phobos	Europa	The Moon	Titan	The Moon orbits the Earth.
+458	What is Saturn's largest moon?	Europa	Ganymede	Callisto	Titan	Titan is bigger than Mercury.
+459	What is Jupiter's largest moon?	Titan	Ganymede	Europa	Phobos	Ganymede is the biggest moon in the solar system.
+465	What is the American space agency called?	ESA	Roscosmos	NASA	JAXA	NASA was founded in 1958.
+467	What is our galaxy called?	Andromeda	The Milky Way	Triangulum	Whirlpool	We live in the Milky Way.
+469	About how many days does the Earth take to orbit the Sun?	300	400	365	180	A year is about 365 days.
+473	Which is the most abundant gas in Earth's atmosphere?	Nitrogen	Oxygen	Carbon dioxide	Argon	Nitrogen is 78% of the air.
+475	What is the chemical formula of water?	CO2	O2	NaCl	H2O	Water is H2O.
+478	At what temperature in °C does water boil at sea level?	100	90	120	80	Water boils at 100 °C.
+479	At what temperature in °C does water freeze?	Zero	10	−10	5	Water freezes at 0 °C.
+484	Which type of lens brings light rays together?	Concave	Flat	Convex	Cylindrical	A convex lens converges light.
+485	Which instrument measures earthquakes?	A barometer	A thermometer	A seismograph	An anemometer	A seismograph records earthquakes.
+487	Which instrument measures temperature?	A barometer	An ammeter	A voltmeter	A thermometer	A thermometer measures temperature.
+488	Which instrument measures wind speed?	A barometer	A thermometer	A seismograph	An anemometer	An anemometer measures wind speed.
+489	Who painted the Mona Lisa?	Michelangelo	Picasso	Van Gogh	Leonardo da Vinci	Leonardo painted it in the early 1500s.
+490	Who painted "The Starry Night"?	Claude Monet	Vincent van Gogh	Salvador Dalí	Rembrandt	Van Gogh painted it in 1889.
+491	Who painted "Guernica"?	Salvador Dalí	Da Vinci	Monet	Pablo Picasso	Picasso painted it in 1937.
+493	Who painted the ceiling of the Sistine Chapel?	Leonardo da Vinci	Raphael	Michelangelo	Botticelli	Michelangelo painted it between 1508 and 1512.
+494	Who painted "The Scream"?	Edvard Munch	Van Gogh	Monet	Dalí	Edvard Munch painted it in 1893.
+495	Which Surrealist painted "The Persistence of Memory", with melting clocks?	Salvador Dalí	Picasso	Matisse	Miró	Dalí painted it in 1931.
+496	Which French sculptor made "The Thinker"?	Michelangelo	Donatello	Bernini	Auguste Rodin	Rodin made it around 1880.
+497	Who wrote the play Romeo and Juliet?	William Shakespeare	Charles Dickens	Homer	Dante	Shakespeare wrote it in the 1590s.
+498	Who wrote the play Hamlet?	William Shakespeare	Molière	Chekhov	Ibsen	Shakespeare wrote Hamlet around 1600.
+500	Who wrote the novel Crime and Punishment?	Tolstoy	Chekhov	Gogol	Dostoevsky	Dostoevsky published it in 1866.
+501	Who wrote the novel War and Peace?	Leo Tolstoy	Dostoevsky	Chekhov	Pushkin	Tolstoy published it in 1869.
+502	Who wrote the novel The Old Man and the Sea?	William Faulkner	Steinbeck	Fitzgerald	Ernest Hemingway	Hemingway won the Nobel Prize in 1954.
+503	Who wrote the novel Don Quixote?	Miguel de Cervantes	Lorca	Márquez	Borges	Cervantes published it in 1605.
+504	Who wrote the novel One Hundred Years of Solitude?	Gabriel García Márquez	Borges	Mario Vargas Llosa	Isabel Allende	Márquez won the Nobel Prize in 1982.
+508	Who wrote the novel The Stranger?	Sartre	Kafka	Albert Camus	Proust	Camus published it in 1942.
+509	Who wrote the novella The Metamorphosis?	Dostoevsky	Camus	Márquez	Franz Kafka	Kafka published it in 1915.
+510	Who wrote the novel 1984?	Aldous Huxley	H. G. Wells	Jules Verne	George Orwell	Orwell published it in 1949.
+512	Who was the only Arab writer to win the Nobel Prize in Literature up to 2000?	Taha Hussein	Tawfiq al-Hakim	Yusuf Idris	Naguib Mahfouz	Mahfouz won the Nobel Prize in 1988.
+513	Who wrote the Cairo Trilogy (Palace Walk, Palace of Desire, Sugar Street)?	Naguib Mahfouz	Taha Hussein	Youssef El-Sebai	Ihsan Abdel Quddous	Mahfouz wrote it in the 1950s.
+515	Who wrote the novel "Return of the Spirit"?	Tawfiq al-Hakim	Yusuf Idris	Naguib Mahfouz	Taha Hussein	Al-Hakim published it in 1933.
+516	Who wrote the novel "The Land" about the peasants of the countryside?	Naguib Mahfouz	Abdel Rahman al-Sharqawi	Youssef El-Sebai	Ihsan Abdel Quddous	Al-Sharqawi wrote Al-Ard in 1954.
+517	Who wrote the novel "Season of Migration to the North"?	Tayeb Salih	Naguib Mahfouz	Ghassan Kanafani	Abdelrahman Munif	Tayeb Salih is a Sudanese writer.
+518	Who wrote the novel "Men in the Sun"?	Emile Habibi	Ghassan Kanafani	Mahmoud Darwish	Jabra Ibrahim Jabra	Kanafani published it in 1963.
+520	Who wrote the novel "Azazeel"?	Youssef Ziedan	Alaa Al Aswany	Ahmed Khaled Tawfik	Ahmed Mourad	Ziedan won the Arab Booker Prize for it.
+522	Which poet is nicknamed the "Poet of the Nile"?	Ahmed Shawqi	Mahmoud Darwish	Hafez Ibrahim	Nizar Qabbani	Hafez Ibrahim was called the Poet of the Nile.
+523	Which poet is called the "Prince of Poets"?	Hafez Ibrahim	Nizar Qabbani	Ahmed Shawqi	Al-Mutanabbi	Shawqi received this title in 1927.
+524	Which Palestinian poet wrote "Why Did You Leave the Horse Alone?"	Samih al-Qasim	Nizar Qabbani	Mahmoud Darwish	Tawfiq Zayyad	Darwish published it in 1995.
+525	Which Syrian poet is famous for his love poems?	Mahmoud Darwish	Adonis	Badr Shakir al-Sayyab	Nizar Qabbani	Nizar Qabbani wrote many love poems.
+526	Which Iraqi poet pioneered free verse and wrote "The Rain Song"?	Nazik al-Malaika	Badr Shakir al-Sayyab	Al-Jawahiri	Al-Bayati	Al-Sayyab wrote "Unshudat al-Matar".
+527	Which Abbasid poet was called "the one who filled the world and kept people busy"?	Abu Tammam	Al-Mutanabbi	Al-Buhturi	Abu Nuwas	Al-Mutanabbi is among the greatest Arab poets.
+529	Which pre-Islamic knight-poet is famous for his love of Abla?	Imru' al-Qais	Al-A'sha	Antarah ibn Shaddad	Labid	Antarah's love for Abla is a famous story.
+533	Which composer is called "the Artist of the People"?	Sayed Darwish	Mohamed Abdel Wahab	Zakariyya Ahmad	Riyad Al Sunbati	Sayed Darwish was a pioneer of modern Egyptian music.
+534	Which Egyptian singer is nicknamed "El Hadaba" (the Plateau)?	Tamer Hosny	Amr Diab	Mohamed Mounir	Hany Shaker	Amr Diab is nicknamed El Hadaba.
+535	Which Egyptian artist is nicknamed "the King"?	Amr Diab	Mohamed Mounir	Mohamed Fouad	Ali El Haggar	Mohamed Mounir is called "the King".
+538	Which city does The Beatles come from?	London	Manchester	Liverpool	Birmingham	The Beatles formed in Liverpool.
+539	Which American singer is called the "Queen of Pop"?	Beyoncé	Adele	Madonna	Lady Gaga	Madonna is the Queen of Pop.
+540	Which British singer sang the song "Hello"?	Rihanna	Adele	Beyoncé	Dua Lipa	Adele released "Hello" in 2015.
+543	How many keys does a piano have?	76	88	100	61	A standard piano has 88 keys.
+546	Which famous dance comes from Argentina?	Salsa	Flamenco	Samba	Tango	The tango began in Buenos Aires.
+549	What is the traditional Indian dress for women called?	The sari	The kimono	The hanbok	The kebaya	The sari is a long wrapped cloth.
+553	What is the famous Spanish dish of rice and seafood called?	Pasta	Risotto	Paella	Sushi	Paella comes from Valencia.
+561	On which continent is Japan?	Africa	Europe	Asia	Oceania	Japan is in Asia.
+562	On which continent is China?	South America	Asia	Oceania	Africa	China is in Asia.
+585	On which continent is France?	South America	Europe	Asia	Africa	France is in Europe.
+590	On which continent is Poland?	Europe	North America	South America	Asia	Poland is in Europe.
+591	On which continent is Greece?	South America	North America	Europe	Oceania	Greece is in Europe.
+592	On which continent is Norway?	Oceania	Africa	North America	Europe	Norway is in Europe.
+593	On which continent is the Netherlands?	Europe	Oceania	North America	South America	The Netherlands is in Europe.
+594	On which continent is Switzerland?	South America	Asia	Europe	Oceania	Switzerland is in Europe.
+595	On which continent is Austria?	Asia	Africa	Europe	North America	Austria is in Europe.
+596	On which continent is Brazil?	Asia	Oceania	South America	North America	Brazil is in South America.
+597	On which continent is Argentina?	South America	Africa	North America	Europe	Argentina is in South America.
+598	On which continent is Chile?	North America	Asia	Oceania	South America	Chile is in South America.
+599	On which continent is Peru?	Asia	Europe	North America	South America	Peru is in South America.
+600	On which continent is Colombia?	North America	Africa	Oceania	South America	Colombia is in South America.
+601	On which continent is Ecuador?	Europe	Oceania	Africa	South America	Ecuador is in South America.
+602	On which continent is Paraguay?	Asia	South America	North America	Africa	Paraguay is in South America.
+603	On which continent is Uruguay?	North America	Europe	Asia	South America	Uruguay is in South America.
+604	On which continent is Bolivia?	Europe	Africa	South America	North America	Bolivia is in South America.
+605	On which continent is Venezuela?	South America	Europe	Asia	North America	Venezuela is in South America.
+606	On which continent is Canada?	Asia	North America	Oceania	South America	Canada is in North America.
+607	On which continent is Mexico?	Africa	North America	Asia	Europe	Mexico is in North America.
+609	On which continent is Jamaica?	North America	Oceania	Europe	Africa	Jamaica is in North America.
+610	On which continent is Costa Rica?	Africa	South America	North America	Oceania	Costa Rica is in North America.
+611	On which continent is Panama?	Africa	North America	Asia	South America	Panama is in North America.
+612	On which continent is Australia?	Europe	North America	Asia	Oceania	Australia is in Oceania.
+613	On which continent is New Zealand?	Europe	Asia	North America	Oceania	New Zealand is in Oceania.
+614	In which country is the city of Cairo?	Egypt	China	India	Turkey	Cairo is the capital of Egypt.
+615	In which country is the city of Alexandria?	South Africa	The Czech Republic	Egypt	Nigeria	Alexandria is on Egypt's Mediterranean coast.
+617	In which country is the city of Mecca?	Germany	South Africa	Russia	Saudi Arabia	Mecca is in Saudi Arabia.
+619	In which country is the city of Casablanca?	Morocco	The UAE	Egypt	Britain	Casablanca is Morocco's biggest city.
+623	In which country is the city of Mosul?	Iraq	Pakistan	South Africa	Turkey	Mosul is in northern Iraq.
+624	In which country is the city of Basra?	Australia	Iraq	Sudan	Spain	Basra is Iraq's main port.
+628	In which country is the city of Omdurman?	Sudan	Germany	Turkey	The Czech Republic	Omdurman is across the Nile from Khartoum.
+629	In which country is the city of Istanbul?	Turkey	Canada	The United States	Pakistan	Istanbul is Turkey's largest city.
+631	In which country is the city of Milan?	Italy	Saudi Arabia	The United States	India	Milan is in northern Italy.
+634	In which country is the city of Seville?	The Czech Republic	Spain	Morocco	Germany	Seville is in Andalusia, Spain.
+636	In which country is the city of Hamburg?	Germany	Britain	The United States	Pakistan	Hamburg is a port city in Germany.
+637	In which country is the city of Marseille?	Switzerland	France	Pakistan	Russia	Marseille is a French port on the Mediterranean.
+846	Which group of animals does a whale belong to?	Fish	Mammals	Insects	Birds	A whale is a mammal.
+847	Which group of animals does a dolphin belong to?	Insects	Amphibians	Mammals	Fish	A dolphin is a mammal.
+848	Which group of animals does a bat belong to?	Mammals	Fish	Amphibians	Insects	A bat is a mammal.
+849	Which group of animals does an elephant belong to?	Birds	Insects	Mammals	Amphibians	An elephant is a mammal.
+850	Which group of animals does a dog belong to?	Insects	Mammals	Reptiles	Fish	A dog is a mammal.
+851	Which group of animals does a cat belong to?	Reptiles	Amphibians	Mammals	Birds	A cat is a mammal.
+852	Which group of animals does a horse belong to?	Insects	Reptiles	Fish	Mammals	A horse is a mammal.
+853	Which group of animals does a rabbit belong to?	Insects	Mammals	Birds	Reptiles	A rabbit is a mammal.
+854	Which group of animals does a giraffe belong to?	Reptiles	Birds	Mammals	Amphibians	A giraffe is a mammal.
+855	Which group of animals does a camel belong to?	Reptiles	Mammals	Birds	Insects	A camel is a mammal.
+856	Which group of animals does a lion belong to?	Fish	Amphibians	Mammals	Reptiles	A lion is a mammal.
+857	Which group of animals does a bear belong to?	Mammals	Birds	Reptiles	Amphibians	A bear is a mammal.
+858	Which group of animals does a kangaroo belong to?	Fish	Birds	Mammals	Reptiles	A kangaroo is a mammal.
+859	Which group of animals does a monkey belong to?	Insects	Birds	Mammals	Reptiles	A monkey is a mammal.
+860	Which group of animals does a sheep belong to?	Birds	Mammals	Reptiles	Amphibians	A sheep is a mammal.
+861	Which group of animals does an eagle belong to?	Insects	Fish	Reptiles	Birds	An eagle is a bird.
+862	Which group of animals does a penguin belong to?	Fish	Amphibians	Reptiles	Birds	A penguin is a bird.
+863	Which group of animals does an ostrich belong to?	Fish	Mammals	Birds	Insects	An ostrich is a bird.
+864	Which group of animals does a parrot belong to?	Reptiles	Birds	Fish	Amphibians	A parrot is a bird.
+865	Which group of animals does a pigeon belong to?	Fish	Amphibians	Birds	Reptiles	A pigeon is a bird.
+866	Which group of animals does an owl belong to?	Reptiles	Birds	Mammals	Insects	An owl is a bird.
+867	Which group of animals does a falcon belong to?	Birds	Reptiles	Fish	Amphibians	A falcon is a bird.
+868	Which group of animals does a swan belong to?	Birds	Amphibians	Fish	Insects	A swan is a bird.
+869	Which group of animals does a peacock belong to?	Fish	Reptiles	Birds	Amphibians	A peacock is a bird.
+870	Which group of animals does a chicken belong to?	Fish	Birds	Insects	Reptiles	A chicken is a bird.
+871	Which group of animals does a duck belong to?	Mammals	Reptiles	Insects	Birds	A duck is a bird.
+872	Which group of animals does a crow belong to?	Amphibians	Reptiles	Birds	Fish	A crow is a bird.
+873	Which group of animals does a hoopoe belong to?	Reptiles	Insects	Birds	Amphibians	A hoopoe is a bird.
+874	Which group of animals does a crocodile belong to?	Amphibians	Mammals	Reptiles	Insects	A crocodile is a reptile.
+875	Which group of animals does a tortoise belong to?	Amphibians	Reptiles	Birds	Insects	A tortoise is a reptile.
+876	Which group of animals does a snake belong to?	Insects	Reptiles	Amphibians	Mammals	A snake is a reptile.
+877	Which group of animals does a chameleon belong to?	Amphibians	Mammals	Insects	Reptiles	A chameleon is a reptile.
+878	Which group of animals does a lizard belong to?	Reptiles	Insects	Mammals	Amphibians	A lizard is a reptile.
+879	Which group of animals does a shark belong to?	Reptiles	Fish	Insects	Amphibians	A shark is a fish.
+880	Which group of animals does a tuna belong to?	Birds	Mammals	Fish	Reptiles	A tuna is a fish.
+881	Which group of animals does a salmon belong to?	Fish	Birds	Amphibians	Mammals	A salmon is a fish.
+882	Which group of animals does a sardine belong to?	Reptiles	Fish	Amphibians	Insects	A sardine is a fish.
+883	Which group of animals does an ant belong to?	Insects	Mammals	Reptiles	Fish	An ant is an insect.
+884	Which group of animals does a bee belong to?	Amphibians	Reptiles	Birds	Insects	A bee is an insect.
+885	Which group of animals does a butterfly belong to?	Insects	Reptiles	Fish	Mammals	A butterfly is an insect.
+886	Which group of animals does a fly belong to?	Reptiles	Fish	Insects	Amphibians	A fly is an insect.
+887	Which group of animals does a cockroach belong to?	Insects	Reptiles	Fish	Birds	A cockroach is an insect.
+888	Which group of animals does a grasshopper belong to?	Fish	Insects	Birds	Mammals	A grasshopper is an insect.
+889	Which group of animals does a dragonfly belong to?	Birds	Insects	Fish	Amphibians	A dragonfly is an insect.
+890	Which group of animals does a beetle belong to?	Mammals	Reptiles	Insects	Amphibians	A beetle is an insect.
+891	Which group of animals does a frog belong to?	Mammals	Fish	Insects	Amphibians	A frog is an amphibian.
+378	What is the process by which plants make their food called?	Respiration	Photosynthesis	Digestion	Evaporation	Plants make food from sunlight in photosynthesis.
+406	Which country is called the "Land of the Rising Sun"?	China	Korea	Japan	Thailand	Japan's name means "origin of the sun".
+416	Which river flows through Egypt, Sudan and Uganda?	The Nile	The Congo	The Niger	The Zambezi	The Nile flows through several countries.
+422	Who built the first aeroplane together with his brother?	The Lumière brothers	The Wright brothers	The Grimm brothers	The Warner brothers	The Wright brothers flew in 1903.
+434	Who is the well-known owner of Tesla today?	Jeff Bezos	Bill Gates	Elon Musk	Larry Page	Elon Musk leads Tesla.
+444	What does WWW stand for in website addresses?	Wide Wireless Communication	World Wide Sites	World Wireless Web	World Wide Web	WWW stands for World Wide Web.
+449	What is the chatbot from OpenAI that became famous in 2022 called?	Siri	Alexa	ChatGPT	Deep Blue	ChatGPT launched in November 2022.
+471	What is it called when the Moon blocks the Sun?	A lunar eclipse	An equinox	A solstice	A solar eclipse	In a solar eclipse the Moon passes in front of the Sun.
+472	What is it called when the Earth's shadow covers the Moon?	A solar eclipse	A high tide	A low tide	A lunar eclipse	The Earth's shadow falls on the Moon.
+481	Which law of motion says that every action has an equal and opposite reaction?	Newton's first law	Newton's second law	Newton's third law	The law of gravity	This is Newton's third law.
+505	Who wrote the Harry Potter series?	Stephen King	J. K. Rowling	J. R. R. Tolkien	Roald Dahl	J. K. Rowling wrote all seven books.
+511	Which Egyptian writer is called the "Dean of Arabic Literature"?	Naguib Mahfouz	Taha Hussein	Tawfiq al-Hakim	Al-Aqqad	Taha Hussein earned this title.
+530	Which Egyptian singer is called "Kawkab al-Sharq" (Star of the East)?	Umm Kulthum	Fairuz	Asmahan	Layla Murad	Umm Kulthum was the greatest Arab singer.
+531	Which Egyptian singer is nicknamed "the Dark Nightingale"?	Mohamed Abdel Wahab	Farid al-Atrash	Abdel Halim Hafez	Mohamed Mounir	Abdel Halim Hafez was called the Dark Nightingale.
+532	Which composer is called the "Musician of Generations"?	Abdel Halim Hafez	Farid al-Atrash	Mohamed Abdel Wahab	Sayed Darwish	Mohamed Abdel Wahab earned this title.
+536	Which worldwide star is called the "King of Pop"?	Elvis Presley	Elton John	Bruce Springsteen	Michael Jackson	Michael Jackson is the King of Pop.
+537	Which worldwide star is called the "King of Rock and Roll"?	Michael Jackson	Bob Marley	John Lennon	Elvis Presley	Elvis Presley is the King of Rock and Roll.
+541	Which stringed Eastern instrument is played with a plectrum?	The nay	The tabla	The mizmar	The oud	The oud is an Eastern stringed instrument.
+542	Which famous Eastern instrument is made from reed?	The oud	The qanun	The nay	The rebab	The nay is an end-blown reed flute.
+550	What is the famous Italian dish made from dough, cheese and sauce?	Pizza	Sushi	Tacos	Paella	Pizza comes from Naples.
+551	What is the famous Japanese dish of rice and raw fish?	Tacos	Paella	Sushi	Curry	Sushi is Japanese.
+552	What is the famous Mexican dish of a filled tortilla?	Sushi	Paella	Tacos	Pasta	Tacos are Mexican.
+554	What is the popular Egyptian dish of rice, lentils and pasta?	Molokhia	Fattah	Koshari	Mahshi	Koshari is Egypt's national dish.
+555	What is the Egyptian dish made from slow-cooked fava beans called?	Ta'amiya	Koshari	Molokhia	Ful	Ful medames is a staple breakfast.
+556	What is the famous Moroccan dish of semolina, vegetables and meat?	Tagine	Bastilla	Couscous	Harira	Couscous is a North African staple.
+557	What is the famous Saudi dish of rice and meat?	Mansaf	Mandi	Maqluba	Kabsa	Kabsa is Saudi Arabia's national dish.
+558	What is the famous Jordanian dish with jameed yoghurt called?	Kabsa	Maqluba	Mahshi	Mansaf	Mansaf is Jordan's national dish.
+559	What is the Eastern sweet made from pistachios, thin pastry and syrup?	Baklava	Kunafa	Qatayef	Basbousa	Baklava has layers of pastry.
+560	Which country is famous for chocolate, watches and cheese?	Switzerland	Belgium	France	Germany	Switzerland is known for all three.
+573	On which continent is Egypt?	Africa	Asia	Europe	South America	Egypt is in Africa.
+618	In which country is the city of Dubai?	China	The UAE	Algeria	Turkey	Dubai is in the UAE.
+639	In which country is the city of Manchester?	Brazil	Belgium	Britain	Argentina	Manchester is in England.
+640	In which country is the city of Liverpool?	Britain	China	Brazil	Italy	Liverpool is in England.
+642	In which country is the city of Kyoto?	Argentina	Japan	Saudi Arabia	Sudan	Kyoto is in Japan.
+645	In which country is the city of Cape Town?	South Africa	Russia	Pakistan	China	Cape Town is in South Africa.
+646	In which country is the city of Johannesburg?	Germany	South Africa	Brazil	Morocco	Johannesburg is in South Africa.
+650	In which country is the city of New York?	Belgium	The United States	The UAE	Spain	New York is in the USA.
+651	In which country is the city of Rio de Janeiro?	The UAE	Brazil	Russia	The Czech Republic	Rio is in Brazil.
+652	In which country is the city of São Paulo?	Canada	India	Brazil	Turkey	São Paulo is in Brazil.
+653	In which country is the city of Buenos Aires?	Argentina	Saudi Arabia	The Czech Republic	Belgium	Buenos Aires is in Argentina.
+654	In which country is the city of Saint Petersburg?	Russia	Brazil	Saudi Arabia	Switzerland	Saint Petersburg is in Russia.
+657	In which country is the city of Amsterdam?	China	Iraq	Argentina	The Netherlands	Amsterdam is in the Netherlands.
+658	In which country is the city of Brussels?	Brazil	Belgium	Canada	South Africa	Brussels is in Belgium.
+659	In which country is the city of Vienna?	Austria	The United States	China	Pakistan	Vienna is in Austria.
+660	Which organ pumps blood around the body?	The lungs	The liver	The heart	The brain	The heart pumps blood.
+661	How many basic senses are there?	Five	Four	Six	Seven	The five senses are sight, hearing, smell, taste and touch.
+662	What is the largest muscle in the human body?	The heart muscle	The tongue	The gluteus maximus	The calf muscle	The gluteus maximus is the largest.
+663	What is the tube that carries food from the mouth to the stomach called?	The windpipe	The intestine	The oesophagus	The larynx	The oesophagus carries food.
+664	What is the tube that carries air to the lungs called?	The oesophagus	The larynx	The windpipe (trachea)	The pharynx	The trachea carries air.
+665	What is the longest part of the digestive system?	The stomach	The small intestine	The oesophagus	The large intestine	The small intestine is about 6 metres long.
+666	What is the fluid made by the liver that helps digest fats?	Insulin	Saliva	Bile	Gastric juice	Bile is stored in the gallbladder.
+667	What helps blood to clot?	Red blood cells	Plasma	Haemoglobin	Platelets	Platelets help blood clot.
+669	Which blood group is known as the universal donor?	AB positive	A positive	B negative	O negative	O negative can be given to almost anyone.
+670	Which blood group is known as the universal recipient?	AB positive	O negative	A negative	B negative	AB positive can receive any group.
+671	Which part of the brain controls balance and coordination?	The cerebrum	The brain stem	The spinal cord	The cerebellum	The cerebellum coordinates movement.
+674	Which hormone is released during fear and stress?	Adrenaline	Insulin	Melatonin	Oestrogen	Adrenaline prepares the body for "fight or flight".
+675	Which gland produces the hormone thyroxine?	The pituitary gland	The pancreas	The thyroid gland	The adrenal gland	The thyroid gland is in the neck.
+676	What are the tissues that join muscle to bone called?	Ligaments	Cartilage	Tendons	Nerves	Tendons connect muscle to bone.
+677	What are the tissues that join bone to bone called?	Ligaments	Tendons	Cartilage	Nerves	Ligaments connect bone to bone.
+678	Which disease is caused by a lack of vitamin C?	Scurvy	Rickets	Night blindness	Beriberi	Sailors used to get scurvy.
+679	Which disease is caused by a lack of vitamin D?	Scurvy	Night blindness	Anaemia	Rickets	Rickets weakens the bones.
+680	Which disease is caused by a lack of vitamin A and affects night vision?	Rickets	Night blindness	Scurvy	Anaemia	Vitamin A helps eyes see in the dark.
+682	Which chronic disease is linked to high blood sugar?	High blood pressure	Diabetes	Asthma	Malaria	Diabetes affects how the body uses sugar.
+684	Which disease is caused by the novel coronavirus of 2019?	Ebola	Influenza	COVID-19	Measles	COVID-19 spread worldwide from 2020.
+685	Who developed the rabies vaccine in the 19th century?	Edward Jenner	Louis Pasteur	Robert Koch	Joseph Lister	Pasteur developed it in 1885.
+686	Who discovered the germ that causes tuberculosis?	Louis Pasteur	Robert Koch	Alexander Fleming	Edward Jenner	Koch discovered it in 1882.
+687	Which gas do we breathe in and need to live?	Carbon dioxide	Hydrogen	Oxygen	Methane	We need oxygen to breathe.
+688	Which gas do we breathe out?	Oxygen	Argon	Hydrogen	Carbon dioxide	We breathe out carbon dioxide.
+689	Which layer of the atmosphere protects the Earth from ultraviolet rays?	The ozone layer	The troposphere	The ionosphere	The mesosphere	The ozone layer absorbs UV rays.
+693	Which metal has the symbol Fe?	Fluorine	Francium	Phosphorus	Iron	Fe comes from the Latin "ferrum".
+694	Which metal has the symbol Cu?	Chromium	Calcium	Carbon	Copper	Cu comes from the Latin "cuprum".
+696	What is the process of a liquid turning into a gas called?	Evaporation	Condensation	Freezing	Melting	Evaporation turns liquid into gas.
+697	What is the process of a gas turning into a liquid called?	Evaporation	Condensation	Freezing	Melting	Condensation turns gas into liquid.
+698	What is the process of a solid turning into a liquid called?	Evaporation	Melting	Condensation	Sublimation	Melting turns a solid into a liquid.
+699	What is the fourth state of matter after solid, liquid and gas?	Steam	Gel	Foam	Plasma	Plasma is an ionised gas.
+700	Which particle in an atom carries a negative charge?	The proton	The electron	The neutron	The photon	Electrons are negatively charged.
+701	Which particle in an atom carries a positive charge?	The electron	The neutron	The photon	The proton	Protons are positively charged.
+703	What is the unit of frequency?	The watt	The volt	The hertz	The ohm	Frequency is measured in hertz.
+704	What is the SI unit of force?	The joule	The pascal	The watt	The newton	Force is measured in newtons.
+705	What is the unit of pressure?	The pascal	The joule	The newton	The volt	Pressure is measured in pascals.
+706	What is the unit of work and energy?	The watt	The joule	The newton	The ampere	Energy is measured in joules.
+707	Which instrument makes very tiny things look bigger?	A microscope	A telescope	Binoculars	A camera	A microscope magnifies small objects.
+708	Which instrument lets us see distant objects in the sky?	A telescope	A microscope	An autoscope	A radar	A telescope shows far-away stars.
+709	Which instrument measures time?	A scale	A ruler	A clock	A compass	A clock measures time.
+710	Which instrument shows directions?	A compass	A scale	A clock	A ruler	A compass points north.
+711	Which scientist set out the laws of motion and gravity?	Albert Einstein	Isaac Newton	Galileo	Copernicus	Newton published them in 1687.
+712	Who put forward the theory of evolution?	Galileo	Newton	Charles Darwin	Mendel	Darwin published On the Origin of Species in 1859.
+713	Who is called the father of genetics?	Darwin	Gregor Mendel	Pasteur	Watson	Mendel studied pea plants.
+714	Which scientist discovered the electron?	Rutherford	Bohr	Dalton	J. J. Thomson	Thomson discovered it in 1897.
+715	Who drew up the periodic table of the elements?	Marie Curie	Dmitri Mendeleev	Einstein	Bohr	Mendeleev published it in 1869.
+717	Who invented the World Wide Web?	Bill Gates	Steve Jobs	Tim Berners-Lee	Larry Page	Berners-Lee invented it in 1989.
+718	Who improved the steam engine?	Edison	Faraday	Marconi	James Watt	Watt improved the steam engine in the 1760s.
+719	Who invented dynamite?	Alfred Nobel	Einstein	Faraday	Edison	Nobel patented it in 1867.
+720	Who founded the Nobel Prizes?	Albert Einstein	Alfred Nobel	Marie Curie	Niels Bohr	The prizes began in 1901.
+721	Which city hosted the 2024 Summer Olympics?	Sydney	Berlin	Paris	Los Angeles	Paris hosted in 2024.
+722	Which city hosted the 2020 Summer Olympics, held in 2021?	Athens	Paris	Munich	Tokyo	Tokyo hosted the delayed Games.
+723	Which city hosted the 2016 Summer Olympics?	Rio de Janeiro	Sydney	Montreal	Tokyo	Rio hosted the 2016 Games.
+724	Which city hosted the 2012 Summer Olympics?	Athens	Seoul	Beijing	London	London hosted in 2012.
+725	Which city hosted the 2008 Summer Olympics?	Montreal	Beijing	Rio de Janeiro	Munich	Beijing hosted in 2008.
+726	Which city hosted the 2004 Summer Olympics?	Athens	Paris	Barcelona	Rome	The Games returned to Athens in 2004.
+727	Which city hosted the 2000 Summer Olympics?	Seoul	Sydney	Moscow	Paris	Sydney hosted in 2000.
+728	Which city hosted the 1996 Summer Olympics?	Rio de Janeiro	Atlanta	Barcelona	Sydney	Atlanta hosted the centenary Games.
+729	Which city hosted the 1992 Summer Olympics?	Rome	Barcelona	Munich	Sydney	Barcelona hosted in 1992.
+730	Which city hosted the 1988 Summer Olympics?	Los Angeles	Barcelona	Seoul	Tokyo	Seoul hosted in 1988.
+731	Which city hosted the 1984 Summer Olympics?	Barcelona	Los Angeles	Athens	Moscow	Los Angeles hosted in 1984.
+732	Which city hosted the 1980 Summer Olympics?	Moscow	Barcelona	Rio de Janeiro	Munich	Moscow hosted in 1980.
+733	Which city hosted the 1976 Summer Olympics?	Beijing	Athens	Los Angeles	Montreal	Montreal hosted in 1976.
+734	Which city hosted the 1972 Summer Olympics?	London	Moscow	Munich	Rio de Janeiro	Munich hosted in 1972.
+735	Which city hosted the 1968 Summer Olympics?	Los Angeles	Mexico City	Athens	Rio de Janeiro	Mexico City hosted in 1968.
+736	Which city hosted the 1964 Summer Olympics?	Seoul	Tokyo	Sydney	Athens	Tokyo hosted in 1964.
+737	Which city hosted the 1960 Summer Olympics?	Moscow	Athens	Rome	Rio de Janeiro	Rome hosted in 1960.
+738	Which city hosted the 1956 Summer Olympics?	Moscow	Montreal	Athens	Melbourne	Melbourne hosted in 1956.
+739	Which city hosted the 1952 Summer Olympics?	Tokyo	Seoul	Athens	Helsinki	Helsinki hosted in 1952.
+740	Which city hosted the 1948 Summer Olympics?	Seoul	London	Moscow	Tokyo	London hosted in 1948.
+741	Which city hosted the 1936 Summer Olympics?	London	Tokyo	Moscow	Berlin	Berlin hosted in 1936.
+742	Which city hosted the first modern Olympics in 1896?	Sydney	Paris	Athens	London	Athens hosted in 1896.
+743	Which city hosted the 2022 Winter Olympics?	Beijing	Sochi	Sapporo	Sarajevo	Beijing hosted in 2022.
+744	Which city hosted the 2018 Winter Olympics?	Turin	Pyeongchang	Sarajevo	Beijing	Pyeongchang hosted in 2018.
+745	Which city hosted the 2014 Winter Olympics?	Sarajevo	Pyeongchang	Beijing	Sochi	Sochi hosted in 2014.
+746	Which city hosted the 2010 Winter Olympics?	Vancouver	Turin	Beijing	Sapporo	Vancouver hosted in 2010.
+747	Which city hosted the 2006 Winter Olympics?	Beijing	Turin	Sochi	Vancouver	Turin hosted in 2006.
+748	Which city hosted the 2002 Winter Olympics?	Beijing	Sochi	Salt Lake City	Oslo	Salt Lake City hosted in 2002.
+749	How long is a marathon race?	42.195 km	50 km	35 km	40 km	A marathon is 42.195 km.
+750	How many players does a basketball team have on court?	Four	Six	Seven	Five	Each team has five players on court.
+751	How many players does a volleyball team have on court?	Seven	Five	Six	Eight	A volleyball team has six players.
+752	How many players does a handball team have on court?	Five	Seven	Six	Nine	A handball team has seven players.
+753	How many players are in a rugby union team?	Nine	Twelve	Fifteen	Eleven	A rugby union team has fifteen players.
+754	How many players does an ice hockey team have on the ice?	Six	Eleven	Five	Seven	An ice hockey team has six players.
+755	How many rings are in the Olympic logo?	Five	Seven	Four	Six	The five rings stand for five continents.
+756	Which sport is played at Wimbledon?	Cricket	Rugby	Golf	Tennis	Wimbledon is a tennis tournament.
+757	On which surface is the French Open played?	Clay	Concrete	Carpet	Grass	Roland Garros has clay courts.
+758	On which surface is Wimbledon played?	Clay	Wood	Concrete	Grass	Wimbledon is played on grass.
+759	Who has won the most men's tennis Grand Slam titles up to 2024?	Roger Federer	Andy Murray	Rafael Nadal	Novak Djokovic	Djokovic has won 24 Grand Slams.
+760	Which American tennis player has won 23 Grand Slam titles?	Venus Williams	Martina Navratilova	Serena Williams	Steffi Graf	Serena Williams won 23.
+761	Which legendary American basketball player wore number 23 for the Chicago Bulls?	Kobe Bryant	LeBron James	Magic Johnson	Michael Jordan	Jordan won six NBA titles with the Bulls.
+762	Which team did Kobe Bryant play for throughout his career?	Boston Celtics	Los Angeles Lakers	Chicago Bulls	Miami Heat	Kobe spent 20 years with the Lakers.
+763	Which Formula 1 driver has won seven world titles and is British?	Lewis Hamilton	Fernando Alonso	Max Verstappen	Sebastian Vettel	Hamilton has seven world titles.
+764	Which German Formula 1 driver won seven world titles before Hamilton?	Nico Rosberg	Michael Schumacher	Heinz-Harald Frentzen	Sebastian Vettel	Schumacher won seven titles.
+765	Which Dutch driver won the Formula 1 world title from 2021 to 2024?	Lewis Hamilton	Charles Leclerc	Sergio Pérez	Max Verstappen	Verstappen won four in a row.
+766	Which Jamaican sprinter holds the 100 m world record of 9.58 seconds?	Usain Bolt	Tyson Gay	Carl Lewis	Justin Gatlin	Bolt set it in 2009.
+767	Which American boxer is nicknamed "The Greatest"?	Mike Tyson	Muhammad Ali	Joe Frazier	George Foreman	Ali called himself The Greatest.
+768	Which famous American golfer is nicknamed "The Tiger"?	Jack Nicklaus	Phil Mickelson	Rickie Fowler	Tiger Woods	Tiger Woods has won 15 majors.
+769	Which Egyptian squash player became world number one?	Ali Farag	Karim Darwish	Amr Shabana	Mohamed El Shorbagy	Ali Farag reached world number one.
+770	Which Egyptian squash player is known as the world number one Nour El Sherbini?	Nouran Gohar	Hania El Hammamy	Raneem El Weleily	Nour El Sherbini	Nour El Sherbini has been world number one.
+771	Which sport did Egypt's Karam Gaber win Olympic gold in, in 2004?	Judo	Weightlifting	Boxing	Wrestling	Karam Gaber won gold in Greco-Roman wrestling.
+772	Which game is called the "sport of kings"?	Golf	Chess	Tennis	Horse riding	Horse racing is called the sport of kings.
+773	Which sport uses a racket and a shuttlecock?	Squash	Tennis	Badminton	Padel	Badminton uses a shuttlecock.
+774	Which game is played by two people on a board with 64 squares?	Dominoes	Draughts	Backgammon	Chess	Chess is played on an 8×8 board.
+775	How many pieces does each player have at the start of a chess game?	20	8	12	16	Each player starts with 16 pieces.
+776	How long is an NBA game?	60 minutes	40 minutes	90 minutes	48 minutes	An NBA game has four 12-minute quarters.
+785	What is the capital of Bolivia?	Nairobi	Vienna	La Paz	Addis Ababa	La Paz is the seat of government; Sucre is the constitutional capital.
+792	What is the capital of Ecuador?	Quito	Harare	Warsaw	Buenos Aires	Quito is Ecuador's capital.
+793	What is the capital of Ethiopia?	Brussels	Vienna	Bangkok	Addis Ababa	Addis Ababa is Ethiopia's capital.
+799	What is the capital of Indonesia?	Jakarta	Budapest	Kuala Lumpur	Addis Ababa	Jakarta is the capital.
+800	What is the capital of Iran?	Athens	Tehran	Vienna	Helsinki	Tehran is Iran's capital.
+816	What is the capital of South Africa?	Hanoi	Pretoria	Caracas	Belgrade	Pretoria is the executive capital.
+817	Which chemical element has the symbol He?	Iodine	Phosphorus	Helium	Magnesium	He stands for helium.
+818	Which chemical element has the symbol Li?	Magnesium	Lithium	Hydrogen	Mercury	Li stands for lithium.
+821	Which chemical element has the symbol Ne?	Zinc	Potassium	Platinum	Neon	Ne stands for neon.
+822	Which chemical element has the symbol Na?	Sodium	Silver	Potassium	Bromine	Na comes from "natrium".
+823	Which chemical element has the symbol Mg?	Magnesium	Chlorine	Hydrogen	Copper	Mg stands for magnesium.
+824	Which chemical element has the symbol Al?	Gold	Neon	Calcium	Aluminium	Al stands for aluminium.
+825	Which chemical element has the symbol Si?	Tungsten	Silicon	Zinc	Lead	Si stands for silicon.
+828	Which chemical element has the symbol Cl?	Chlorine	Aluminium	Nitrogen	Sulphur	Cl stands for chlorine.
+830	Which chemical element has the symbol Ca?	Helium	Silver	Iodine	Calcium	Ca stands for calcium.
+831	Which chemical element has the symbol Fe?	Carbon	Aluminium	Calcium	Iron	Fe stands for iron.
+832	Which chemical element has the symbol Cu?	Carbon	Copper	Iodine	Silicon	Cu stands for copper.
+833	Which chemical element has the symbol Zn?	Zinc	Mercury	Argon	Iron	Zn stands for zinc.
+834	Which chemical element has the symbol Ag?	Sulphur	Silver	Argon	Tin	Ag comes from "argentum".
+835	Which chemical element has the symbol Au?	Bromine	Gold	Helium	Calcium	Au comes from "aurum".
+836	Which chemical element has the symbol Hg?	Lithium	Iodine	Mercury	Copper	Hg comes from "hydrargyrum".
+837	Which chemical element has the symbol Pb?	Zinc	Lead	Helium	Sulphur	Pb comes from "plumbum".
+838	Which chemical element has the symbol Sn?	Sodium	Sulphur	Nitrogen	Tin	Sn comes from "stannum".
+841	Which chemical element has the symbol Br?	Zinc	Bromine	Calcium	Lithium	Br stands for bromine.
+842	Which chemical element has the symbol Ar?	Iodine	Argon	Copper	Aluminium	Ar stands for argon.
+843	Which chemical element has the symbol Ni?	Lithium	Calcium	Silver	Nickel	Ni stands for nickel.
+844	Which chemical element has the symbol Pt?	Helium	Platinum	Nickel	Tin	Pt stands for platinum.
+899	In which country is Mount Ararat?	Asia	Morocco, Algeria and Tunisia	Nepal and China (Tibet)	Turkey	Mount Ararat is in eastern Turkey.
+900	In which countries is the Atlas Mountains range?	South America	Morocco, Algeria and Tunisia	Nepal and China (Tibet)	Asia	The Atlas range crosses North Africa.
+901	In which country is Mount Elbrus?	Turkey	Syria and Lebanon	Nepal and China (Tibet)	Russia	Elbrus is Europe's highest peak.
+902	In which country is Aconcagua?	Egypt	Argentina	Pakistan and China	Turkey	Aconcagua is the highest peak in the Americas.
+903	In which countries does the Amazon River flow?	Several countries in Southeast Asia	Zambia, Zimbabwe and Mozambique	Brazil, Peru and Colombia	Britain	The Amazon flows through South America.
+904	In which country does the Volga River flow?	Iraq and Turkey	Zambia, Zimbabwe and Mozambique	Russia	DR Congo and the Republic of the Congo	The Volga is Europe's longest river.
+905	In which country does the Yangtze River flow?	Italy	India and Bangladesh	Russia	China	The Yangtze is Asia's longest river.
+906	In which country does the River Thames flow?	Italy	Germany, Switzerland, France and the Netherlands	China	Britain	The Thames flows through London.
+907	In which country does the River Seine flow?	China	India and Bangladesh	Zambia, Zimbabwe and Mozambique	France	The Seine flows through Paris.
+908	In which country does the River Tiber flow?	Zambia, Zimbabwe and Mozambique	Several countries in Southeast Asia	Italy	India and Bangladesh	The Tiber flows through Rome.
+909	In which countries does the Congo River flow?	Russia	Italy	Mali, Niger and Nigeria	DR Congo and the Republic of the Congo	The Congo is Africa's second-longest river.
+910	In which country does the Mississippi River flow?	Britain	Zambia, Zimbabwe and Mozambique	Jordan and Palestine	The United States	The Mississippi flows to the Gulf of Mexico.
+911	Where is the Sahara Desert?	The United States	North Africa	Australia	The Arabian Peninsula	The Sahara covers North Africa.
+912	Where is the Kalahari Desert?	The Arabian Peninsula	Southern Africa	Egypt	Mongolia and China	The Kalahari is in southern Africa.
+913	Where is the Gobi Desert?	Egypt and Libya	Mongolia and China	The United States	India and Pakistan	The Gobi spans Mongolia and China.
+914	Where is the Atacama Desert?	The United States	India and Pakistan	The Arabian Peninsula	Chile	The Atacama is in northern Chile.
+915	Where is the Empty Quarter (Rub' al Khali)?	North Africa	Chile	Southern Africa	The Arabian Peninsula	It is the world's largest sand desert.
+916	Where is the Namib Desert?	Egypt	Mongolia and China	Namibia	North Africa	The Namib runs along Namibia's coast.
+917	Where is the Thar Desert?	South Africa	Mongolia and China	Israel	India and Pakistan	The Thar Desert is in India and Pakistan.
+918	Where is the Great Victoria Desert?	Israel	South Africa	India and Pakistan	Australia	It is Australia's largest desert.
+919	Where is the Mojave Desert?	The Arabian Peninsula	North Africa	Egypt	The United States	The Mojave is in California.
+920	Which country does the island of Sicily belong to?	Greece	Yemen	Italy	Canada	Sicily belongs to Italy.
+921	Which country does the island of Crete belong to?	Spain	Indonesia	Greece	France	Crete belongs to Greece.
+922	Which country does the island of Sardinia belong to?	Tunisia	The United States	Spain	Italy	Sardinia belongs to Italy.
+923	Which country does the island of Corsica belong to?	Yemen	The United States	France	Greece	Corsica belongs to France.
+924	Which country does the island of Rhodes belong to?	Tanzania	Indonesia	Greece	The United States	Rhodes belongs to Greece.
+925	Which country does the island of Bali belong to?	Greece	The United States	Indonesia	Canada	Bali belongs to Indonesia.
+926	Which country does the island of Java belong to?	Indonesia	Spain	France	Yemen	Java belongs to Indonesia.
+927	Which country does the island of Hawaii belong to?	Italy	The United States	Tunisia	Greece	Hawaii is a US state.
+928	Which country does the island of Socotra belong to?	Indonesia	Canada	Yemen	Tanzania	Socotra belongs to Yemen.
+929	Which country does the island of Djerba belong to?	Tunisia	Tanzania	Indonesia	France	Djerba belongs to Tunisia.
+930	Which country does the island of Zanzibar belong to?	Tanzania	Yemen	Greece	France	Zanzibar is part of Tanzania.
+931	Which country does the island of Newfoundland belong to?	Yemen	Canada	Greece	Indonesia	Newfoundland belongs to Canada.
+932	Which country does the island of Tenerife belong to?	Spain	Yemen	France	Indonesia	Tenerife belongs to Spain.
+933	Which country does the island of Majorca belong to?	Greece	Indonesia	Spain	France	Majorca belongs to Spain.
+934	Which country does the island of Santorini belong to?	Yemen	Spain	Canada	Greece	Santorini belongs to Greece.
+935	Where is the headquarters of the United Nations?	Rome	The Hague	Jeddah	New York	The UN is based in New York.
+936	Where is the headquarters of UNESCO?	Cairo	Lausanne	Rome	Paris	UNESCO is based in Paris.
+937	Where is the headquarters of the World Health Organization?	Lausanne	Geneva	Vienna	New York	The WHO is based in Geneva.
+938	Where is the headquarters of FIFA?	Zurich	Washington	Paris	Addis Ababa	FIFA is based in Zurich.
+939	Where is the headquarters of the International Olympic Committee?	Jeddah	Rome	Lausanne	Geneva	The IOC is based in Lausanne.
+940	Where is the headquarters of the Arab League?	Paris	Cairo	Addis Ababa	Lausanne	The Arab League is based in Cairo.
+941	Where is the headquarters of OPEC?	Vienna	Lausanne	New York	Geneva	OPEC is based in Vienna.
+942	Where is the headquarters of NATO?	Zurich	Jeddah	Vienna	Brussels	NATO is based in Brussels.
+943	Where is the headquarters of the European Union?	Lausanne	Brussels	Washington	Jeddah	The EU is based in Brussels.
+944	Where is the headquarters of the World Bank?	Washington	Geneva	Brussels	Jeddah	The World Bank is in Washington, D.C.
+945	Where is the headquarters of the International Monetary Fund?	Addis Ababa	Washington	Paris	Brussels	The IMF is in Washington, D.C.
+946	Where is the headquarters of the International Court of Justice?	Geneva	The Hague	Lausanne	Paris	The ICJ sits in The Hague.
+947	Where is the headquarters of the Organisation of Islamic Cooperation?	Addis Ababa	Rome	Jeddah	London	The OIC is based in Jeddah.
+948	Where is the headquarters of the International Committee of the Red Cross?	Lausanne	Geneva	The Hague	Zurich	The ICRC is based in Geneva.
+949	Where is the headquarters of the World Trade Organization?	Paris	Rome	Washington	Geneva	The WTO is based in Geneva.
+950	Where is the headquarters of the African Union?	Berlin	Addis Ababa	London	Cairo	The AU is based in Addis Ababa.
+951	Where is the headquarters of the Gulf Cooperation Council?	Riyadh	Paris	Washington	New York	The GCC is based in Riyadh.
+952	Where is the headquarters of the Food and Agriculture Organization (FAO)?	Berlin	New York	Rome	Paris	The FAO is based in Rome.
+953	In which country did Toyota begin?	The United States	The Netherlands	Japan	India	Toyota is Japanese.
+954	In which country did Samsung begin?	The Netherlands and Britain	South Korea	The United States	Denmark	Samsung is South Korean.
+955	In which country did Nokia begin?	Spain	Denmark	China	Finland	Nokia is Finnish.
+956	In which country did IKEA begin?	The Netherlands	Germany	Sweden	Japan	IKEA is Swedish.
+957	In which country did LEGO begin?	South Korea	The Netherlands	Spain	Denmark	LEGO is Danish.
+958	In which country did Nestlé begin?	India	Switzerland	Japan	Spain	Nestlé is Swiss.
+959	In which country did Volkswagen begin?	China	Germany	Italy	France	Volkswagen is German.
+960	In which country did Fiat begin?	Italy	Finland	China	The Netherlands and Britain	Fiat is Italian.
+961	In which country did Zara begin?	Sweden	Finland	Spain	Switzerland	Zara is Spanish.
+962	In which country did Adidas begin?	China	Austria	Spain	Germany	Adidas is German.
+963	In which country did Nike begin?	The United States	Germany	India	Spain	Nike is American.
+964	In which country did Sony begin?	The Netherlands	Sweden	India	Japan	Sony is Japanese.
+965	In which country did Huawei begin?	China	France	Japan	India	Huawei is Chinese.
+966	In which country did Xiaomi begin?	Austria	Sweden	The United States	China	Xiaomi is Chinese.
+967	In which country did Ferrari begin?	Italy	Denmark	Sweden	Japan	Ferrari is Italian.
+968	In which country did Volvo begin?	Finland	Sweden	China	The Netherlands and Britain	Volvo is Swedish.
+969	In which country did Renault begin?	China	France	The United States	Germany	Renault is French.
+970	In which country did Hyundai begin?	Austria	India	South Korea	China	Hyundai is South Korean.
+971	In which country did Tata begin?	Switzerland	Germany	The United States	India	Tata is Indian.
+972	In which country did BMW begin?	Germany	The Netherlands	France	China	BMW is German.
+973	In which country did Mercedes begin?	Switzerland	Denmark	Italy	Germany	Mercedes is German.
+974	In which country did Honda begin?	Denmark	Sweden	Japan	China	Honda is Japanese.
+975	In which country did Puma begin?	Germany	Italy	Spain	Japan	Puma is German.
+976	In which country did Red Bull begin?	Denmark	The United States	Austria	Spain	Red Bull is Austrian.
+977	In which country did L'Oréal begin?	France	The Netherlands and Britain	India	Denmark	L'Oréal is French.
+978	In which country did McDonald's begin?	Germany	Italy	South Korea	The United States	McDonald's is American.
+979	In which country did Starbucks begin?	Italy	The Netherlands	The United States	Spain	Starbucks began in Seattle.
+980	In which country did LG begin?	South Korea	India	Denmark	The Netherlands	LG is South Korean.
+981	In which country did Ericsson begin?	Sweden	Spain	Germany	Japan	Ericsson is Swedish.
+982	In which country did Philips begin?	France	Sweden	Denmark	The Netherlands	Philips is Dutch.
+983	In which country did Peugeot begin?	The Netherlands and Britain	France	Japan	Sweden	Peugeot is French.
+984	In which country did Siemens begin?	Germany	Denmark	France	India	Siemens is German.
+985	In which country did Nintendo begin?	South Korea	Japan	China	France	Nintendo is Japanese.
+986	In which field did Anwar Sadat win a Nobel Prize?	Peace	Economics	Literature	Medicine	Sadat shared the 1978 Peace Prize.
+987	In which field did Naguib Mahfouz win a Nobel Prize?	Economics	Literature	Physics	Peace	Mahfouz won in 1988.
+988	In which field did Ahmed Zewail win a Nobel Prize?	Chemistry	Medicine	Physics	Economics	Zewail won in 1999.
+989	In which field did Mohamed ElBaradei win a Nobel Prize?	Physics	Economics	Medicine	Peace	ElBaradei and the IAEA won in 2005.
+990	In which field did Albert Einstein win a Nobel Prize?	Medicine	Literature	Physics	Chemistry	Einstein won in 1921.
+991	In which field did Malala Yousafzai win a Nobel Prize?	Peace	Chemistry	Literature	Economics	Malala won in 2014.
+992	In which field did Nelson Mandela win a Nobel Prize?	Economics	Medicine	Peace	Literature	Mandela won in 1993.
+993	In which field did Mother Teresa win a Nobel Prize?	Peace	Chemistry	Physics	Medicine	She won in 1979.
+994	In which field did Alexander Fleming win a Nobel Prize?	Medicine	Literature	Chemistry	Physics	Fleming shared the 1945 prize.
+995	Which description fits Japan's flag?	Green, white and orange vertical	Red, white and black with an eagle	Black, white and green with a red triangle	White with a red circle in the middle	Japan's flag is a red disc on white.
+996	Which description fits Canada's flag?	Red with a green star	Red and white with a maple leaf	White with a red circle	Green with a yellow diamond and a blue circle	Canada's flag has a red maple leaf.
+997	Which description fits Turkey's flag?	Red with a green star	Red with a crescent and star	Blue, white and red vertical	Black, white and green with a red triangle	Turkey's flag is red with a white crescent and star.
+998	Which description fits Brazil's flag?	Red and white with a maple leaf	Black, white and green with a red triangle	Blue with a yellow cross	Green with a yellow diamond and a blue circle	Brazil's flag is green with a yellow diamond.
+999	Which description fits Italy's flag?	Black, white and green with a red triangle	Green, white and red vertical	Red with a white cross	Red with a white circle, crescent and star	Italy's flag is a green, white and red tricolour.
+1009	Which description fits the flag of the United States?	Red and white with a maple leaf	Black, white and green with a red triangle	Red and white stripes with stars on blue	Blue, white and red vertical	The US flag has 13 stripes and 50 stars.
+1012	What is the most populous city in Australia?	Melbourne	Brisbane	Sydney	Canberra	Sydney is Australia's largest city.
+1013	What is the most populous city in Turkey?	Ankara	Izmir	Bursa	Istanbul	Istanbul is Turkey's largest city.
+1014	What is the largest city in Morocco?	Rabat	Casablanca	Marrakesh	Fez	Casablanca is Morocco's largest city.
+1015	What is the largest city in Saudi Arabia?	Riyadh	Jeddah	Mecca	Dammam	Riyadh is the largest city.
+1016	What is the largest city in the UAE?	Dubai	Abu Dhabi	Sharjah	Al Ain	Dubai is the most populous.
+1017	What is the largest city in Canada?	Montreal	Ottawa	Vancouver	Toronto	Toronto is Canada's largest city.
+1018	What is the largest city in the United States?	Los Angeles	New York	Chicago	Washington	New York is the largest US city.
+1019	What is the largest city in Switzerland?	Geneva	Zurich	Bern	Basel	Zurich is Switzerland's largest city.
+1020	What is the largest city in Brazil?	São Paulo	Rio de Janeiro	Brasília	Salvador	São Paulo is Brazil's largest city.
+1021	What is the largest city in India?	Delhi	Kolkata	Mumbai	Bangalore	Mumbai is often named India's largest city.
+1022	What is the largest city in China?	Beijing	Shenzhen	Guangzhou	Shanghai	Shanghai is China's largest city.
+1023	What is the largest city in Russia?	Saint Petersburg	Novosibirsk	Moscow	Kazan	Moscow is Russia's largest city.
+1024	What is the most populous city in Italy?	Milan	Naples	Turin	Rome	Rome is Italy's largest city.
+1027	What is the largest city in the United Kingdom?	Manchester	London	Birmingham	Liverpool	London is the UK's largest city.
+1028	What is the largest city in Algeria?	Oran	Algiers	Constantine	Annaba	Algiers is the largest city.
+1029	What is the largest city in Iraq?	Mosul	Baghdad	Basra	Erbil	Baghdad is Iraq's largest city.
+1031	What is the largest city in Jordan?	Amman	Zarqa	Irbid	Aqaba	Amman is Jordan's largest city.
+1033	What is the largest city in Tunisia?	Sfax	Sousse	Kairouan	Tunis	Tunis is Tunisia's largest city.
+1034	What is the largest city in Libya?	Benghazi	Misrata	Tripoli	Sabha	Tripoli is Libya's largest city.
+1035	What is the largest city in Nigeria?	Abuja	Kano	Lagos	Ibadan	Lagos is Nigeria's largest city.
+1036	What is the largest city in Kenya?	Nairobi	Mombasa	Kisumu	Nakuru	Nairobi is Kenya's largest city.
+1037	What is the largest city in Indonesia?	Surabaya	Bandung	Jakarta	Medan	Jakarta is Indonesia's largest city.
+1038	What is the largest city in Pakistan?	Lahore	Islamabad	Faisalabad	Karachi	Karachi is Pakistan's largest city.
+1039	What is the largest city in Iran?	Isfahan	Tehran	Mashhad	Tabriz	Tehran is Iran's largest city.
+1040	What is the largest city in Mexico?	Guadalajara	Monterrey	Mexico City	Cancún	Mexico City is Mexico's largest city.
+1041	What is the largest city in Argentina?	Rosario	Córdoba	Buenos Aires	Mendoza	Buenos Aires is Argentina's largest city.
+1042	What is the largest island in the world?	Madagascar	Borneo	Greenland	Australia	Greenland is the largest island.
+1043	What is the largest lake in Africa?	Lake Chad	Lake Victoria	Lake Tanganyika	Lake Nasser	Lake Victoria is Africa's largest lake.
+1044	What is the huge artificial lake behind the High Dam called?	Lake Qarun	Lake Manzala	Lake Nasser	Lake Bardawil	Lake Nasser lies in Egypt and Sudan.
+1047	What is the capital of Aswan Governorate?	Edfu	Kom Ombo	Daraw	Aswan	Aswan is the capital.
+1048	What is the capital of the Red Sea Governorate?	Ras Gharib	Safaga	Hurghada	Quseir	Hurghada is the capital.
+1049	What is the capital of South Sinai Governorate?	Sharm El Sheikh	El Tor	Dahab	Nuweiba	El Tor is the capital.
+1050	What is the capital of North Sinai Governorate?	Rafah	El Arish	Sheikh Zuweid	Bir al-Abd	El Arish is the capital.
+1051	What is the capital of Matrouh Governorate?	El Alamein	Siwa	Marsa Matruh	Salloum	Marsa Matruh is the capital.
+1052	What is the capital of Sharqia Governorate?	Bilbeis	10th of Ramadan City	Faqous	Zagazig	Zagazig is the capital.
+1053	What is the capital of Dakahlia Governorate?	Mansoura	Mit Ghamr	Talkha	Dikirnis	Mansoura is the capital.
+1055	What is the capital of Monufia Governorate?	Menouf	Sadat City	Shebin El Kom	Ashmoun	Shebin El Kom is the capital.
+1056	What is the capital of Qalyubia Governorate?	Shubra El Kheima	Qalyub	Khanka	Banha	Banha is the capital.
+1059	What is the capital of Damietta Governorate?	Ras El Bar	Damietta	Faraskur	Kafr Saad	Damietta is the capital.
+1060	What is the capital of Faiyum Governorate?	Sinnuris	Faiyum	Tamiya	Itsa	Faiyum is the capital.
+1066	What is the capital of Luxor Governorate?	Luxor	Esna	Armant	Qurna	Luxor is the capital.
+1068	What is the capital of Ismailia Governorate?	Fayed	Qantara	Tell el-Kebir	Ismailia	Ismailia is the capital.
+1069	What is the capital of Suez Governorate?	Arbaeen	Faisal	Ataqa	Suez	Suez is the capital.
+166	What is the largest and highest plateau in the world, called the "Roof of the World"?	The Great Basin Plateau	The Deccan Plateau	The Anatolian Plateau	The Tibetan Plateau	The Tibetan Plateau averages over 4,500 m high.
+170	What was the longest battle of World War I, lasting about ten months?	The Battle of Ypres	The Battle of the Marne	The Battle of the Somme	The Battle of Verdun	Verdun lasted from February to December 1916.
+893	In which country or countries is K2?	Pakistan and China	Nepal and China (Tibet)	Britain	Asia	K2 is on the Pakistan–China border.
+898	In which countries is Mount Hermon?	Turkey	Syria and Lebanon	Britain	Europe	Mount Hermon lies on the Syria–Lebanon border.
+1000	Which description fits Germany's flag?	Green, white and red vertical	Red with a white circle, crescent and star	Red, white and black with an eagle	Black, red and gold horizontal	Germany's flag is a black-red-gold tricolour.
+1001	Which description fits France's flag?	Red, white and black with the takbir	Blue, white and red vertical	Red with a crescent and star	Black, white and green with a red triangle and star	France's flag is the blue-white-red tricolour.
+1002	Which description fits Ireland's flag?	Green, white and red vertical	Green, white and orange vertical	Black, red and yellow horizontal	Green with a sword	Ireland's flag is green, white and orange.
+1003	Which description fits Sweden's flag?	Blue, white and red vertical	White with a red circle	Red, white and black with an eagle	Blue with a yellow cross	Sweden's flag is blue with a yellow cross.
+1004	Which description fits Switzerland's flag?	Red with a white circle, crescent and star	Green with a yellow diamond and blue circle	Red with a white cross	Red, white and black with an eagle	Switzerland's flag is red with a white cross.
+1005	Which description fits Egypt's flag?	Red, white and black with an eagle	Blue with a yellow cross	Green, white and orange vertical	Blue, red and white (Union Jack)	Egypt's flag has the Eagle of Saladin.
+1006	Which description fits Morocco's flag?	Red and white stripes with stars on blue	Black, white and green with a red triangle and star	Blue, white and red vertical	Red with a green star	Morocco's flag is red with a green pentagram.
+1007	Which description fits Algeria's flag?	Blue, red and white (Union Jack)	Green and white with a red crescent and star	Green, white and red vertical	White with a red circle	Algeria's flag is green and white with a red crescent.
+1008	Which description fits Tunisia's flag?	Red with a white circle, crescent and star	Blue, white and red vertical	Green with a yellow diamond and blue circle	Red, white and black with the takbir	Tunisia's flag is red with a white disc.
+1010	Which description fits the flag of the United Kingdom?	Green and white with a red crescent and star	Blue, red and white (Union Jack)	Black, red and yellow horizontal	White with a red circle	It combines the crosses of three nations.
+1011	What is the most populous city in South America?	Buenos Aires	Lima	Bogotá	São Paulo	São Paulo is South America's largest city.
+1025	What is the most populous city in Germany?	Berlin	Hamburg	Munich	Frankfurt	Berlin is Germany's largest city.
+1026	What is the most populous city in Spain?	Madrid	Barcelona	Valencia	Seville	Madrid is Spain's largest city.
+1045	What is the largest governorate in Egypt by area?	Matrouh	Red Sea	New Valley	South Sinai	The New Valley covers almost half of Egypt.
+1054	What is the capital of Gharbia Governorate?	El Mahalla El Kubra	Kafr El Zayat	Zifta	Tanta	Tanta is the capital.
+1057	What is the capital of Beheira Governorate?	Damanhur	Kafr El Dawwar	Rosetta	Edku	Damanhur is the capital.
+1058	What is the capital of Kafr El Sheikh Governorate?	Desouk	Kafr El Sheikh	Baltim	Fuwwah	Kafr El Sheikh is the capital.
+1061	What is the capital of Beni Suef Governorate?	Beni Suef	El Wasta	Nasser	Biba	Beni Suef is the capital.
+1062	What is the capital of Minya Governorate?	Mallawi	Samalut	Minya	Abu Qurqas	Minya is the capital.
+1063	What is the capital of Asyut Governorate?	Dairut	Asyut	Manfalut	Abnub	Asyut is the capital.
+1064	What is the capital of Sohag Governorate?	Girga	Akhmim	Sohag	Tahta	Sohag is the capital.
+1065	What is the capital of Qena Governorate?	Nag Hammadi	Dishna	Qus	Qena	Qena is the capital.
+1067	What is the capital of the New Valley Governorate?	Dakhla	Paris	Farafra	Kharga	Kharga is the capital.
+1070	What is the capital of Giza Governorate?	6th of October	Giza	Sheikh Zayed	Ayat	Giza is the capital.

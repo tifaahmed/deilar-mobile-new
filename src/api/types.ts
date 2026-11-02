@@ -127,6 +127,8 @@ export interface ProductCard {
   purchasable: boolean;
   /** The admin allowed the wallet to pay for it (delivery is never paid from the wallet). */
   wallet_payable?: boolean;
+  /** The admin allowed a loyalty-points discount on it. */
+  points_payable?: boolean;
 }
 
 export interface ProductDetail extends ProductCard {

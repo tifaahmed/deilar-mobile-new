@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { DeilarLogo } from './DeilarLogo';
+import { useIsAr } from '../context/LanguageContext';
 
 /** Seconds each light of the start lights stays lit, like the start of a race. */
 export const LIGHT_SECONDS = 0.85;
@@ -81,6 +82,7 @@ const Stars: React.FC = () => {
  * then the Deilar logo and name arrive in a burst of stars. When it ends, `onDone` starts the questions.
  */
 export const QuizLaunch: React.FC<{ sound: boolean; onDone: () => void }> = ({ sound, onDone }) => {
+  const isAr = useIsAr();
   const [phase, setPhase] = useState<Phase>('lights');
   const [lit, setLit] = useState(0);
   const sfx = useLaunchSound(sound);
@@ -103,7 +105,7 @@ export const QuizLaunch: React.FC<{ sound: boolean; onDone: () => void }> = ({ s
   return (
     <motion.div
       role="dialog"
-      aria-label="بداية التحدي"
+      aria-label={isAr ? 'بداية التحدي' : 'Challenge start'}
       dir="rtl"
       className="fixed inset-0 z-[300] flex items-center justify-center overflow-hidden bg-[#12041f]"
       initial={{ opacity: 0 }}
@@ -138,7 +140,7 @@ export const QuizLaunch: React.FC<{ sound: boolean; onDone: () => void }> = ({ s
                 className={`text-8xl font-black leading-none ${phase === 'go' ? 'text-emerald-300' : 'text-white'}`}
                 style={{ textShadow: '0 0 30px rgba(255,255,255,0.5)' }}
               >
-                {phase === 'go' ? 'انطلق!' : lit || ''}
+                {phase === 'go' ? (isAr ? 'انطلق!' : 'Go!') : lit || ''}
               </motion.div>
             </div>
           </motion.div>
@@ -171,18 +173,18 @@ export const QuizLaunch: React.FC<{ sound: boolean; onDone: () => void }> = ({ s
                 className="text-6xl font-black bg-gradient-to-b from-yellow-200 via-amber-400 to-orange-500 bg-clip-text text-transparent"
                 style={{ filter: 'drop-shadow(0 0 18px rgba(251,191,36,0.8))' }}
               >
-                ديلر
+                {isAr ? 'ديلر' : 'DEILAR'}
               </motion.div>
             </div>
             <motion.p initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3 }} className="relative mt-8 text-xl font-black text-amber-200">
-              ✨ يلا نبدأ التحدي ✨
+              {isAr ? '✨ يلا نبدأ التحدي ✨' : '✨ Let\'s start the challenge ✨'}
             </motion.p>
           </motion.div>
         )}
       </AnimatePresence>
 
       <button onClick={() => done.current()} className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-5 py-2 text-xs font-bold text-white/70 cursor-pointer">
-        تخطي
+        {isAr ? 'تخطي' : 'Skip'}
       </button>
     </motion.div>
   );

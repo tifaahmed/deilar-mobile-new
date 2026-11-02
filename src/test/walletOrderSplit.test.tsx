@@ -38,8 +38,9 @@ describe('wallet in the membership and the cart', () => {
     expect(form.get('plan')).toBe('year');
   });
 
-  it('carries the product flag the admin set for paying from the wallet', () => {
-    const card = { id: 1, slug: 'a', name: 'A', image: '', price: 10, old_price: null, store: null, wallet_payable: true } as never;
+  it('carries the product flags the admin set (wallet is legacy, points discount is live)', () => {
+    const card = { id: 1, slug: 'a', name: 'A', image: '', price: 10, old_price: null, store: null, wallet_payable: true, points_payable: true } as never;
     expect(toCartProduct(card).walletPayable).toBe(true);
+    expect(toCartProduct(card).pointsPayable).toBe(true);
   });
 });

@@ -15,10 +15,19 @@ export const referralKindLabel = (kind: ReferralKind, isAr: boolean) => (isAr ? 
  * The inbox message for one recommendation. The staff ring the PROVIDER (so its phone is the message's phone and its name the
  * message's name); who recommended it, and their card, ride in the text so they get the discount.
  */
-export function referralMessage(input: { providerName: string; providerPhone: string; kind: ReferralKind; from: { name?: string; phone?: string; card?: string } }): string {
-  const { providerName, providerPhone, kind, from } = input;
+export function referralMessage(input: { providerName: string; providerPhone: string; kind: ReferralKind; from: { name?: string; phone?: string; card?: string }; isAr?: boolean }): string {
+  const { providerName, providerPhone, kind, from, isAr = true } = input;
+  // The first line stays the fixed Arabic subject: the staff inbox files the message by it.
+  if (!isAr) {
+    return [
+      REFERRAL_SUBJECT,
+      `Place type: ${referralKindLabel(kind, false)}`,
+      `Provider: ${providerName}`,
+      `Provider phone: ${providerPhone}`,
+      `Recommended by: ${from.name || '—'}${from.phone ? ` — ${from.phone}` : ''}${from.card ? ` — card ${from.card}` : ''}`,
+    ].join('\n');
+  }
   return [
-    REFERRAL_SUBJECT,
     `نوع المكان: ${referralKindLabel(kind, true)}`,
     `مقدم الخدمة: ${providerName}`,
     `تليفون مقدم الخدمة: ${providerPhone}`,

@@ -40,6 +40,7 @@ import {
   LogOut,
   Trash2,
   PackageSearch,
+  Wallet,
 } from 'lucide-react';
 import { Beneficiary } from '../types';
 import { MembershipCardImage } from './MembershipCardImage';
@@ -50,6 +51,7 @@ import { getSession } from '../utils/session';
 import { useApi } from '../hooks/useApi';
 import { fetchFamily } from '../api/family';
 import { AddChildForm } from './AddChildForm';
+import { WalletScreen } from './WalletScreen';
 import { CardStatusBanner } from './CardStatusBanner';
 import { CardExpiry } from './CardExpiry';
 import { SubscribePanel } from './SubscribePanel';
@@ -73,7 +75,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { LegalSheet, type LegalKind } from './LegalPages';
 import { DeleteAccountModal } from './DeleteAccountModal';
 
-export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay' | 'physical';
+export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay' | 'physical' | 'wallet';
 
 export interface ProfileAccount {
   name: string;
@@ -407,6 +409,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   // Red once the name is empty or too short, and from the first failed save.
   const nameBad = personalInfo.fullName.trim().length < 3 && (nameTried || !personalInfo.fullName.trim());
 
+  // /account/wallet is the wallet screen and nothing else.
+  if (activeSection === 'wallet') {
+    return (
+      <div className={`pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
+        <WalletScreen />
+      </div>
+    );
+  }
+
   // /card/physical is the physical-card order form and nothing else.
   if (activeSection === 'physical') {
     return (
@@ -583,6 +594,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             { key: 'personal', icon: UserCheck, label: t('tabPersonal'), go: () => setActiveSection('personal') },
             { key: 'addresses', icon: MapPin, label: isAr ? 'عناويني' : 'Addresses', go: () => setActiveSection('addresses') },
             { key: 'orders', icon: PackageSearch, label: isAr ? 'طلباتي' : 'My orders', go: () => navigate(routeHref({ orders: { code: null } })) },
+            ...(account.signedIn ? [{ key: 'wallet', icon: Wallet, label: isAr ? 'محفظتي' : 'My wallet', go: () => setActiveSection('wallet') }] : []),
             ...(account.signedIn ? [{ key: 'physical', icon: CreditCard, label: isAr ? 'طلب كارت فيزيكال' : 'Order a physical card', go: () => navigate(routeHref({ tab: 'mycard', section: 'physical' })) }] : []),
             { key: 'support', icon: Headphones, label: t('tabSupport'), go: () => setActiveSection('support') },
             { key: 'theme', icon: Palette, label: t('tabTheme'), go: () => setActiveSection('theme') },

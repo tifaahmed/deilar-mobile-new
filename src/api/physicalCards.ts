@@ -18,6 +18,21 @@ export interface PhysicalCardInfo {
 
 export const fetchPhysicalCards = (token: string) => apiGetAuth<{ data: PhysicalCardInfo }>('/mobile/physical-cards', token).then((r) => r.data);
 
+/** One extra card the member (or a relative) holds. An approved physical card comes with its soft copy (`copy_of` = the physical card's id). */
+export interface MyCard {
+  id: number;
+  kind: 'physical' | 'soft';
+  /** `requested` = ordered, waiting for staff; `active` = approved. */
+  status: 'requested' | 'active';
+  /** The number the card shows: its own, else the member's. */
+  number: string;
+  holder_name: string | null;
+  is_me: boolean;
+  copy_of: number | null;
+}
+
+export const fetchMyCards = (token: string) => apiGetAuth<{ data: { cards: MyCard[] } }>('/mobile/my-cards', token).then((r) => r.data.cards);
+
 export interface PhysicalCardOrderBody {
   items: { membership_number: string; quantity: number }[];
   name: string;

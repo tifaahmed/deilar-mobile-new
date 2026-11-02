@@ -26,15 +26,41 @@ export const QUIZ_SPEED_TIERS = [
 ] as const;
 /** The most one answer can pay. */
 export const QUIZ_POINTS = QUIZ_SPEED_TIERS[0].points;
-/** What a wrong answer or a missed clock costs. */
-export const QUIZ_WRONG_POINTS = -100;
+/** What a wrong answer costs until the backend has said otherwise (the admin setting `loyalty_points_wrong`, 0 = nothing). */
+export const QUIZ_WRONG_POINTS = 0;
+
+const RULES_KEY = 'deilar_quiz_rules';
+
+type SpeedTier = { up_to_seconds: number; points: number };
+
+/** The scoring rules as the backend last said them, kept on the phone so the game scores the same with no connection. */
+interface QuizRules {
+  points_wrong: number;
+  speed_tiers?: SpeedTier[];
+}
+
+const rulesOf = (): QuizRules | null => {
+  const r = parse<QuizRules | null>(read(RULES_KEY), null);
+  return r && typeof r.points_wrong === 'number' ? r : null;
+};
+
+/** Keeps the rules in a reply (`points_wrong`, `speed_tiers`) for offline play. */
+function saveRules(d: { points_wrong?: number; speed_tiers?: SpeedTier[] }): void {
+  if (typeof d.points_wrong !== 'number') return;
+  write(RULES_KEY, JSON.stringify({ points_wrong: Math.min(0, d.points_wrong), speed_tiers: d.speed_tiers } satisfies QuizRules));
+}
+
+/** What a wrong answer or a missed clock adds to the balance now: zero or negative. */
+export const wrongPoints = (): number => Math.min(0, rulesOf()?.points_wrong ?? QUIZ_WRONG_POINTS);
 
 /** Points of one answer. `seconds` unknown pays the lowest tier, like the backend. */
 export function quizPoints(correct: boolean, seconds?: number | null): number {
-  if (!correct) return QUIZ_WRONG_POINTS;
-  if (seconds == null || seconds < 0) return QUIZ_SPEED_TIERS[QUIZ_SPEED_TIERS.length - 1].points;
-  const tier = QUIZ_SPEED_TIERS.find((t) => seconds <= t.upTo);
-  return (tier ?? QUIZ_SPEED_TIERS[QUIZ_SPEED_TIERS.length - 1]).points;
+  if (!correct) return wrongPoints();
+  const saved = rulesOf()?.speed_tiers;
+  const tiers = saved && saved.length > 0 ? [...saved].sort((a, b) => a.up_to_seconds - b.up_to_seconds).map((t) => ({ upTo: t.up_to_seconds, points: t.points })) : QUIZ_SPEED_TIERS;
+  if (seconds == null || seconds < 0) return tiers[tiers.length - 1].points;
+  const tier = tiers.find((t) => seconds <= t.upTo);
+  return (tier ?? tiers[tiers.length - 1]).points;
 }
 
 export interface QuizAnswer {
@@ -74,7 +100,8 @@ export type HistoryEntry =
   | { type: 'play'; at: string; play_id: string; quiz: string | null; right: number; wrong: number; points: number }
   | { type: 'badge'; at: string; quiz: string; key: string; kind: string | null; threshold: number | null; title: string | null; icon: string | null; points: number }
   | { type: 'admin'; at: string; points: number; note: string | null }
-  | { type: 'wallet'; at: string; points: number; note: string | null };
+  | { type: 'wallet'; at: string; points: number; note: string | null }
+  | { type: 'transfer'; at: string; points: number; note: string | null };
 
 interface HistoryCache {
   token: string;
@@ -107,6 +134,8 @@ interface LoyaltyData {
   points: number;
   badges?: BadgeInfo[];
   points_per_egp?: number;
+  points_wrong?: number;
+  speed_tiers?: SpeedTier[];
   wallet_balance?: number;
   wallet_enabled?: boolean;
   wallet_min_egp?: number;
@@ -257,6 +286,7 @@ export async function flushQuizAnswers(): Promise<void> {
       const sent = new Set(batch.map((b) => b.id));
       write(QUEUE_KEY, JSON.stringify(getQueue().filter((q) => !sent.has(q.id))));
       write(SERVER_KEY, JSON.stringify({ points: result.data.points, badges: result.data.badges, money: moneyOf(result.data), token } satisfies Server));
+      saveRules(result.data);
       void refreshHistory();
     }
   } catch (error) {
@@ -278,6 +308,7 @@ export async function convertPointsToWallet(egp: number): Promise<{ ok: true } |
   try {
     const { data } = await apiPost<{ data: LoyaltyData }>('/loyalty/convert', { egp, id: newId() }, undefined, token);
     write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, money: moneyOf(data), token } satisfies Server));
+    saveRules(data);
     void refreshHistory();
     return { ok: true };
   } catch (e) {
@@ -312,6 +343,7 @@ export async function refreshLoyalty(): Promise<void> {
   try {
     const { data } = await apiGetAuth<{ data: LoyaltyData }>('/loyalty', token);
     write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, money: moneyOf(data), token } satisfies Server));
+    saveRules(data);
   } catch {
     /* offline or signed out: keep what we have */
   }
@@ -333,8 +365,9 @@ const CATALOG_KEY = 'deilar_badge_catalog';
 /** Reads every badge on offer (public: no sign-in needed) and keeps it on the phone for offline. Quiet on failure. */
 export async function refreshBadgeCatalog(): Promise<void> {
   try {
-    const { data } = await apiGet<{ data: { badges: BadgeDef[] } }>('/mobile/loyalty/badges', undefined, { ttl: 0 });
+    const { data } = await apiGet<{ data: { badges: BadgeDef[]; points_wrong?: number; speed_tiers?: SpeedTier[] } }>('/mobile/loyalty/badges', undefined, { ttl: 0 });
     write(CATALOG_KEY, JSON.stringify(data.badges));
+    saveRules(data);
   } catch {
     /* offline: the saved list stays */
   }

@@ -37,6 +37,7 @@ import { rememberOrder } from '../utils/orders';
 import { getArea } from '../utils/area';
 import { downloadInvoicePdf } from '../utils/invoicePdf';
 import { navigate, routeHref } from '../router';
+import { useLanguage } from '../context/LanguageContext';
 
 interface CartCheckoutModalProps {
   /** Rendered as a full page (`/cart`, `/checkout`) rather than a popup. */
@@ -61,6 +62,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   onRemoveFromCart,
   onClearCart,
 }) => {
+  const { isAr } = useLanguage();
   const [step, setStepState] = useState<'cart' | 'checkout' | 'success'>(initialStep);
 
   // As a page, moving between the basket and the payment is moving between URLs, so back/refresh/links work.
@@ -74,6 +76,8 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   }, [asPage, initialStep]);
   
   // Payment Method: 'wallet' (محفظة إلكترونية / فودافون كاش) or 'cod' (الدفع عند الاستلام)
+  // Spend loyalty points on the products that accept them (on by default; the buyer may switch it off).
+  const [usePoints, setUsePoints] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'cod' | 'online'>('online');
   // With `online`: Paymob's bank-card form or its mobile-wallet page.
   const [onlineChannel, setOnlineChannel] = useState<OnlineChannel>('card');
@@ -175,13 +179,21 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const onlineWalletAvailable = !!methods?.online_wallet;
   const onlineAvailable = cardAvailable || onlineWalletAvailable;
   const remainingForFree = freeFrom !== null && shippingFee > 0 ? Math.max(0, freeFrom - totalCartPrice) : 0;
-  // The wallet is used AUTOMATICALLY for products the admin allowed (never for delivery): an estimate while shopping, the server's figure once placed.
+  // Loyalty points cut the price of the products that accept them, then the wallet pays for ANY product (never delivery): both are
+  // estimates while shopping, mirroring the server's rule (whole pounds); the server's figures replace them once the order is placed.
   const loyalty = useLoyalty();
+  const pointsRate = loyalty.money?.points_per_egp ?? 0;
+  // Only what the backend holds counts: points still waiting on this phone are not the server's yet.
+  const pointsHeld = session.token ? Math.max(0, loyalty.total - loyalty.pending) : 0;
+  const pointsEligible = cart.reduce((sum, item) => sum + (item.product.pointsPayable ? item.product.price * item.quantity : 0), 0);
+  const pointsEgpAvailable = pointsRate > 0 ? Math.floor(Math.min(pointsHeld / pointsRate, pointsEligible)) : 0;
+  const canUsePoints = pointsEgpAvailable > 0;
+  const pointsEgp = placed ? placed.points_amount ?? 0 : usePoints ? pointsEgpAvailable : 0;
+  const pointsSpent = placed ? placed.points_used ?? 0 : pointsEgp * pointsRate;
   const walletBalance = session.token ? loyalty.money?.wallet_balance ?? 0 : 0;
-  const walletEligible = cart.reduce((sum, item) => sum + (item.product.walletPayable ? item.product.price * item.quantity : 0), 0);
-  const walletShown = placed ? placed.wallet_amount ?? 0 : Math.min(walletBalance, walletEligible);
+  const walletShown = placed ? placed.wallet_amount ?? 0 : Math.min(walletBalance, Math.max(0, totalCartPrice - pointsEgp));
   // An estimate while shopping; once the order is placed the server's figures replace it.
-  const finalTotal = placed ? placed.amount_due ?? placed.total_amount : Math.max(0, totalCartPrice + shippingFee + codFee - walletShown);
+  const finalTotal = placed ? placed.amount_due ?? placed.total_amount : Math.max(0, totalCartPrice + shippingFee + codFee - pointsEgp - walletShown);
 
   useEffect(() => {
     if (!shop.data) return;
@@ -213,7 +225,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
         member: totalCartSavings > 0 ? session.cardNumber : null,
       });
     } catch {
-      setSubmitError('تعذر إنشاء ملف PDF، حاول مرة أخرى');
+      setSubmitError((isAr ? 'تعذر إنشاء ملف PDF، حاول مرة أخرى' : 'Could not create the PDF, please try again'));
     } finally {
       setPdfBusy(false);
     }
@@ -236,12 +248,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
       } else if (fresh?.payment_status.value === 'rejected') {
         // A declined attempt needs a fresh form, not the old one.
         setPixel(null);
-        setPayMessage('لم تتم عملية الدفع. يمكنك المحاولة مرة أخرى.');
+        setPayMessage((isAr ? 'لم تتم عملية الدفع. يمكنك المحاولة مرة أخرى.' : 'The payment did not go through. You can try again.'));
       } else {
-        setPayMessage('لم يصل تأكيد الدفع بعد. انتظر لحظات ثم اضغط «تحديث حالة الدفع».');
+        setPayMessage((isAr ? 'لم يصل تأكيد الدفع بعد. انتظر لحظات ثم اضغط «تحديث حالة الدفع».' : 'Payment confirmation has not arrived yet. Wait a moment, then press “Refresh payment status”.'));
       }
     } catch (err) {
-      setPayMessage('تعذر التحقق من حالة الدفع الآن.');
+      setPayMessage((isAr ? 'تعذر التحقق من حالة الدفع الآن.' : 'Could not check the payment status now.'));
       reportClientError('Payment status check failed', err, { order: placed.order_code });
     } finally {
       setPayBusy(false);
@@ -260,10 +272,10 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
           : { clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url });
         setPayMessage(null);
       } else {
-        setPayMessage('تعذر فتح نموذج الدفع. حاول مرة أخرى.');
+        setPayMessage((isAr ? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.' : 'Could not open the payment form. Please try again.'));
       }
     } catch (err) {
-      setPayMessage('تعذر فتح نموذج الدفع. حاول مرة أخرى.');
+      setPayMessage((isAr ? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.' : 'Could not open the payment form. Please try again.'));
       reportClientError('Payment form could not be reopened', err, { order: placed.order_code });
     } finally {
       setPayBusy(false);
@@ -300,6 +312,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
           paymobChannel: paymentMethod === 'online' ? onlineChannel : undefined,
           email: customerEmail,
           membershipNumber: session.cardNumber,
+          usePoints: usePoints && canUsePoints,
           items: cart.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
         },
         session.token,
@@ -331,8 +344,8 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
         err instanceof ApiError && err.status === 422
           ? errors ? Object.values(errors).flat()[0] ?? err.message : err.message
           : err instanceof ApiError && err.status === 429
-            ? 'محاولات كثيرة، انتظر قليلاً ثم حاول مرة أخرى'
-            : 'تعذر تسجيل الطلب، تأكد من اتصالك بالإنترنت وحاول مرة أخرى',
+            ? (isAr ? 'محاولات كثيرة، انتظر قليلاً ثم حاول مرة أخرى' : 'Too many attempts, wait a little then try again')
+            : (isAr ? 'تعذر تسجيل الطلب، تأكد من اتصالك بالإنترنت وحاول مرة أخرى' : 'Could not place the order, check your connection and try again'),
       );
     } finally {
       setIsPlacing(false);
@@ -342,7 +355,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const handleSendWhatsAppConfirmation = () => {
     const paymentLabel = paymentMethod === 'wallet'
       ? `تحويل محفظة إلكترونية (فودافون كاش) من رقم: ${senderWalletNumber || 'غير محدد'}`
-      : 'الدفع عند الاستلام';
+      : (isAr ? 'الدفع عند الاستلام' : 'Cash on delivery');
 
     let message = `🛒 *طلب جديد من متجر ديلر - رقم الطلب: #${orderId}*\n\n`;
     message += `👤 *بيانات العميل:*\n`;
@@ -353,7 +366,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
     message += `\n📦 *المنتجات المطلوبة:*\n`;
     cart.forEach((item, idx) => {
-      message += `${idx + 1}. ${item.product.name} (الكمية: ${item.quantity}) - السعر: ${item.product.price * item.quantity} ج.م [المتجر: ${item.product.storeName || 'ديلر'}]\n`;
+      message += `${idx + 1}. ${item.product.name} (الكمية: ${item.quantity}) - السعر: ${item.product.price * item.quantity} {isAr ? 'ج.م' : 'EGP'} [المتجر: ${item.product.storeName || 'ديلر'}]\n`;
     });
 
     message += `\n💰 *الحساب المالي:*\n`;
@@ -379,14 +392,14 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-extrabold text-slate-900 leading-tight">
-                {step === 'cart' && `عربة المشتريات (${totalCartCount} منتجات)`}
-                {step === 'checkout' && 'إتمام الشراء والدفع بالتحويل'}
-                {step === 'success' && 'تم استلام وتأكيد طلبك بنجاح!'}
+                {step === 'cart' && (isAr ? `عربة المشتريات (${totalCartCount} منتجات)` : `Shopping cart (${totalCartCount} items)`)}
+                {step === 'checkout' && (isAr ? 'إتمام الشراء والدفع بالتحويل' : 'Checkout and payment by transfer')}
+                {step === 'success' && (isAr ? 'تم استلام وتأكيد طلبك بنجاح!' : 'Your order was received and confirmed!')}
               </h2>
               <p className="text-[10px] text-slate-400">
-                {step === 'cart' && 'المنتجات التي قمت بتجميعها من المتاجر'}
-                {step === 'checkout' && 'اختر التحويل البنكي أو المحفظة الإلكترونية'}
-                {step === 'success' && `رقم مرجع الفاتورة: #${orderId}`}
+                {step === 'cart' && (isAr ? 'المنتجات التي قمت بتجميعها من المتاجر' : 'The products you collected from the stores')}
+                {step === 'checkout' && (isAr ? 'اختر التحويل البنكي أو المحفظة الإلكترونية' : 'Choose bank transfer or e-wallet')}
+                {step === 'success' && (isAr ? `رقم مرجع الفاتورة: #${orderId}` : `Invoice reference: #${orderId}`)}
               </p>
             </div>
           </div>
@@ -409,15 +422,15 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <div className="w-16 h-16 rounded-full bg-rose-50 text-[#941946] flex items-center justify-center mx-auto">
                     <ShoppingBag className="w-8 h-8" />
                   </div>
-                  <h3 className="text-sm font-bold text-slate-800">عربة المشتريات فارغة حالياً</h3>
+                  <h3 className="text-sm font-bold text-slate-800">{isAr ? 'عربة المشتريات فارغة حالياً' : 'Your shopping cart is empty'}</h3>
                   <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                    تصفح منتجات البن الفاخر، عسل النحل الطبيعي، وزيت الزيتون البكر وأضف ما تحتاجه للسلة.
+                    {isAr ? 'تصفح منتجات البن الفاخر، عسل النحل الطبيعي، وزيت الزيتون البكر وأضف ما تحتاجه للسلة.' : 'Browse the products and add what you need to your cart.'}
                   </p>
                   <button
                     onClick={onClose}
                     className="mt-2 px-5 py-2 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
                   >
-                    تصفح المنتجات الآن
+                    {isAr ? 'تصفح المنتجات الآن' : 'Browse products now'}
                   </button>
                 </div>
               ) : (
@@ -444,9 +457,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                               )}
                             </div>
                             <div className="text-xs font-black text-[#941946] font-mono mt-1">
-                              {item.product.price * item.quantity} ج.م
+                              {item.product.price * item.quantity} {isAr ? 'ج.م' : 'EGP'}
                               <span className="text-[10px] text-slate-400 font-sans mr-1">
-                                ({item.product.price} ج.م للقطعة)
+                                ({item.product.price} {isAr ? 'ج.م للقطعة' : 'EGP each'})
                               </span>
                             </div>
                           </div>
@@ -470,7 +483,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                           <button
                             onClick={() => onRemoveFromCart(item.product.id)}
                             className="p-1 text-rose-500 hover:text-rose-700 mr-1"
-                            title="حذف"
+                            title={isAr ? 'حذف' : 'Remove'}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -482,35 +495,47 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   {/* Order Summary Box */}
                   <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
                     <div className="flex justify-between text-slate-600">
-                      <span>إجمالي قيمة المنتجات:</span>
-                      <span>{totalCartPrice + totalCartSavings} ج.م</span>
+                      <span>{isAr ? 'إجمالي قيمة المنتجات:' : 'Products total:'}</span>
+                      <span>{totalCartPrice + totalCartSavings} {isAr ? 'ج.م' : 'EGP'}</span>
                     </div>
                     {totalCartSavings > 0 && (
                       <div className="flex justify-between text-emerald-600 font-bold">
-                        <span>خصم وتوفير كارت ديلر:</span>
-                        <span>-{totalCartSavings} ج.م</span>
+                        <span>{isAr ? 'خصم وتوفير كارت ديلر:' : 'Deilar card discount:'}</span>
+                        <span>-{totalCartSavings} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                     )}
                     <div className="flex justify-between text-slate-600">
-                      <span>تكلفة الشحن والتوصيل:</span>
-                      <span>{shippingFee === 0 ? `مجاناً (لطلبات ${freeFrom} ج.م فأكثر)` : `${shippingFee} ج.م`}</span>
+                      <span>{isAr ? 'تكلفة الشحن والتوصيل:' : 'Shipping & delivery:'}</span>
+                      <span>{shippingFee === 0 ? (isAr ? `مجاناً (لطلبات ${freeFrom} ج.م فأكثر)` : `Free (orders of ${freeFrom} EGP or more)`) : `${shippingFee} ${isAr ? 'ج.م' : 'EGP'}`}</span>
                     </div>
                     {codFee > 0 && (
                       <div className="flex justify-between text-slate-600">
-                        <span>رسوم الدفع عند الاستلام:</span>
-                        <span>{codFee} ج.م</span>
+                        <span>{isAr ? 'رسوم الدفع عند الاستلام:' : 'Cash on delivery fee:'}</span>
+                        <span>{codFee} {isAr ? 'ج.م' : 'EGP'}</span>
+                      </div>
+                    )}
+                    {canUsePoints && !placed && (
+                      <label data-testid="points-toggle" className="flex items-center justify-between gap-2 rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] font-bold text-amber-900">
+                        <span>{isAr ? `⭐ استخدم نقاط الولاء (${pointsEgpAvailable * pointsRate} نقطة = ${pointsEgpAvailable} ج.م خصم)` : `⭐ Use my loyalty points (${pointsEgpAvailable * pointsRate} points = ${pointsEgpAvailable} EGP off)`}</span>
+                        <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} className="h-4 w-4 accent-amber-600" />
+                      </label>
+                    )}
+                    {pointsEgp > 0 && (
+                      <div data-testid="points-line-cart" className="flex justify-between text-amber-800 font-bold">
+                        <span>{isAr ? `⭐ خصم نقاط الولاء (${pointsSpent} نقطة):` : `⭐ Loyalty points discount (${pointsSpent} points):`}</span>
+                        <span>-{pointsEgp} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                     )}
                     {walletShown > 0 && (
                       <div data-testid="wallet-line-cart" className="flex justify-between text-violet-800 font-bold">
-                        <span>👛 هيتخصم تلقائياً من محفظتك:</span>
-                        <span>-{walletShown} ج.م</span>
+                        <span>{isAr ? '👛 هيتخصم تلقائياً من محفظتك:' : '👛 Taken automatically from your wallet:'}</span>
+                        <span>-{walletShown} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                     )}
-                    {remainingForFree > 0 && <p className="text-[10px] text-amber-700 font-bold">أضف منتجات بـ {remainingForFree} ج.م لتحصل على توصيل مجاني</p>}
+                    {remainingForFree > 0 && <p className="text-[10px] text-amber-700 font-bold">{isAr ? `أضف منتجات بـ ${remainingForFree} ج.م لتحصل على توصيل مجاني` : `Add ${remainingForFree} EGP more to get free delivery`}</p>}
                     <div className="flex justify-between text-slate-900 font-black border-t border-slate-200 pt-2 text-sm">
-                      <span>المبلغ الإجمالي للدفع:</span>
-                      <span className="text-[#941946] font-mono">{finalTotal} ج.م</span>
+                      <span>{isAr ? 'المبلغ الإجمالي للدفع:' : 'Total to pay:'}</span>
+                      <span className="text-[#941946] font-mono">{finalTotal} {isAr ? 'ج.م' : 'EGP'}</span>
                     </div>
                   </div>
 
@@ -519,7 +544,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     onClick={() => setStep('checkout')}
                     className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all"
                   >
-                    <span>متابعة الشراء واختيار طريقة التحويل (بنك / محفظة)</span>
+                    <span>{isAr ? 'متابعة الشراء واختيار طريقة التحويل (بنك / محفظة)' : 'Continue and choose the transfer method (bank / wallet)'}</span>
                     <ArrowRight className="w-4 h-4 rotate-180" />
                   </button>
                 </div>
@@ -536,20 +561,21 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 onClick={() => setStep('cart')}
                 className="text-xs font-bold text-[#941946] hover:underline flex items-center gap-1"
               >
-                <span>← العودة لتعديل المنتجات</span>
+                <span>{isAr ? '← العودة لتعديل المنتجات' : '← Back to edit products'}</span>
               </button>
 
               {/* Amount to transfer banner */}
               <div className="p-3 bg-rose-50 border border-rose-200/90 rounded-2xl flex items-center justify-between">
                 <div>
-                  {walletShown > 0 && <span data-testid="wallet-line-checkout" className="block text-[10px] text-violet-800 font-bold">👛 بعد خصم {walletShown} ج.م من محفظتك تلقائياً</span>}
-                  <span className="text-[10px] text-rose-800 font-bold">المطلوب تحويله بالكامل:</span>
+                  {pointsEgp > 0 && <span data-testid="points-line-checkout" className="block text-[10px] text-amber-800 font-bold">{isAr ? `⭐ بعد خصم ${pointsEgp} ج.م من نقاط الولاء (${pointsSpent} نقطة)` : `⭐ After ${pointsEgp} EGP off from loyalty points (${pointsSpent} points)`}</span>}
+                  {walletShown > 0 && <span data-testid="wallet-line-checkout" className="block text-[10px] text-violet-800 font-bold">{isAr ? `👛 بعد خصم ${walletShown} ج.م من محفظتك تلقائياً` : `👛 After ${walletShown} EGP is taken from your wallet automatically`}</span>}
+                  <span className="text-[10px] text-rose-800 font-bold">{isAr ? 'المطلوب تحويله بالكامل:' : 'Total to transfer:'}</span>
                   <div className="text-base sm:text-lg font-black text-[#941946] font-mono leading-none mt-0.5">
-                    {finalTotal} <span className="text-xs font-sans">ج.م فقط</span>
+                    {finalTotal} <span className="text-xs font-sans">{isAr ? 'ج.م فقط' : 'EGP only'}</span>
                   </div>
                 </div>
                 <span className="text-[10px] font-bold text-emerald-700 bg-white px-2 py-1 rounded-lg border border-emerald-200 shadow-2xs">
-                  وفرت +{totalCartSavings} ج.م
+                  {isAr ? 'وفرت' : 'You saved'} +{totalCartSavings} {isAr ? 'ج.م' : 'EGP'}
                 </span>
               </div>
 
@@ -559,7 +585,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
               */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-900 block">
-                  اختر طريقة التحويل وسداد قيمة المنتجات:
+                  {isAr ? 'اختر طريقة التحويل وسداد قيمة المنتجات:' : 'Choose how to pay for the products:'}
                 </label>
 
                 <div className="grid grid-cols-1 gap-2">
@@ -578,13 +604,13 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                         <Smartphone className="w-4 h-4" />
                       </div>
                       <div>
-                        <h4 className="text-xs font-bold text-slate-900">تحويل محفظة</h4>
-                        <p className="text-[9.5px] text-slate-500">فودافون كاش / أورنج / اتصالات / وي</p>
+                        <h4 className="text-xs font-bold text-slate-900">{isAr ? 'تحويل محفظة' : 'Wallet transfer'}</h4>
+                        <p className="text-[9.5px] text-slate-500">{isAr ? 'فودافون كاش / أورنج / اتصالات / وي' : 'Vodafone Cash / Orange / Etisalat / WE'}</p>
                       </div>
                     </div>
                     <div className="mt-2 text-[10px] font-bold text-emerald-600 flex items-center gap-1">
                       <Check className="w-3 h-3" />
-                      <span>تحويل فوري وسريع</span>
+                      <span>{isAr ? 'تحويل فوري وسريع' : 'Instant, fast transfer'}</span>
                     </div>
                   </div>
                   )}
@@ -602,17 +628,17 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     <Truck className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">الدفع عند الاستلام</h4>
-                    <p className="text-[9.5px] text-slate-500">ادفع للمندوب عند وصول الطلب</p>
-                    {(shop.data?.cod_fee ?? 0) > 0 && <p className="text-[9.5px] font-bold text-amber-700">+ {shop.data?.cod_fee} ج.م رسوم الدفع عند الاستلام</p>}
+                    <h4 className="text-xs font-bold text-slate-900">{isAr ? 'الدفع عند الاستلام' : 'Cash on delivery'}</h4>
+                    <p className="text-[9.5px] text-slate-500">{isAr ? 'ادفع للمندوب عند وصول الطلب' : 'Pay the courier when the order arrives'}</p>
+                    {(shop.data?.cod_fee ?? 0) > 0 && <p className="text-[9.5px] font-bold text-amber-700">+ {shop.data?.cod_fee} ج.م رسوم {isAr ? 'الدفع عند الاستلام' : 'Cash on delivery'}</p>}
                   </div>
                 </div>
                 )}
 
                 {/* Option C: pay online with Paymob — its bank-card form, or a mobile wallet (Vodafone Cash…) */}
                 {([
-                  { channel: 'card' as const, on: cardAvailable, icon: <CreditCard className="w-4 h-4" />, title: 'الدفع بالبطاقة', note: 'فيزا / ماستركارد / ميزة — دفع آمن عبر Paymob', tone: 'bg-indigo-100 text-indigo-700' },
-                  { channel: 'wallet' as const, on: onlineWalletAvailable, icon: <Smartphone className="w-4 h-4" />, title: 'الدفع بالمحفظة الإلكترونية', note: 'فودافون كاش وباقي المحافظ — دفع آمن عبر Paymob', tone: 'bg-rose-100 text-[#941946]' },
+                  { channel: 'card' as const, on: cardAvailable, icon: <CreditCard className="w-4 h-4" />, title: (isAr ? 'الدفع بالبطاقة' : 'Pay by card'), note: (isAr ? 'فيزا / ماستركارد / ميزة — دفع آمن عبر Paymob' : 'Visa / Mastercard / Meeza — secure payment via Paymob'), tone: 'bg-indigo-100 text-indigo-700' },
+                  { channel: 'wallet' as const, on: onlineWalletAvailable, icon: <Smartphone className="w-4 h-4" />, title: (isAr ? 'الدفع بالمحفظة الإلكترونية' : 'Pay by e-wallet'), note: (isAr ? 'فودافون كاش وباقي المحافظ — دفع آمن عبر Paymob' : 'Vodafone Cash and other wallets — secure payment via Paymob'), tone: 'bg-rose-100 text-[#941946]' },
                 ]).map((o) => {
                   const selected = paymentMethod === 'online' && onlineChannel === o.channel;
                   return (
@@ -628,7 +654,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${o.tone}`}>{o.icon}</div>
                       <div>
                         <h4 className="text-xs font-bold text-slate-900">{o.title}</h4>
-                        <p className="text-[9.5px] text-slate-500">{o.on ? o.note : 'غير متاحة حالياً'}</p>
+                        <p className="text-[9.5px] text-slate-500">{o.on ? o.note : (isAr ? 'غير متاحة حالياً' : 'Not available now')}</p>
                       </div>
                     </div>
                   );
@@ -640,15 +666,15 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 /* WALLET DETAILS */
                 <div className="p-3.5 bg-gradient-to-br from-rose-50 to-orange-50 rounded-2xl border border-rose-200 space-y-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800">بيانات محفظة التحويل (كاش):</span>
+                    <span className="text-xs font-bold text-slate-800">{isAr ? 'بيانات محفظة التحويل (كاش):' : 'Transfer wallet details (cash):'}</span>
                     <span className="text-[9.5px] font-bold text-[#941946] bg-white px-2 py-0.5 rounded-full border border-rose-200">
-                      فودافون كاش / إلكتروني
+                      {isAr ? 'فودافون كاش / إلكتروني' : 'Vodafone Cash / electronic'}
                     </span>
                   </div>
 
                   <div className="bg-white p-2.5 rounded-xl border border-rose-200/80 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] text-slate-400 block">رقم المحفظة لتحويل المبلغ:</span>
+                      <span className="text-[10px] text-slate-400 block">{isAr ? 'رقم المحفظة لتحويل المبلغ:' : 'Wallet number to transfer to:'}</span>
                       <span dir="ltr" className="text-sm font-black text-slate-900 font-mono tracking-wider">
                         {walletNumber ?? '—'}
                       </span>
@@ -662,12 +688,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       {copiedWallet ? (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-                          <span>تم النسخ!</span>
+                          <span>{isAr ? 'تم النسخ!' : 'Copied!'}</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5" />
-                          <span>نسخ الرقم</span>
+                          <span>{isAr ? 'نسخ الرقم' : 'Copy number'}</span>
                         </>
                       )}
                     </button>
@@ -675,14 +701,14 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
                   <div>
                     <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                      رقم المحفظة التي قمت بالتحويل منها (لتأكيد استلام الحوالة):
+                      {isAr ? 'رقم المحفظة التي قمت بالتحويل منها (لتأكيد استلام الحوالة):' : 'The wallet number you transferred from (to confirm we received it):'}
                     </label>
                     <input
                       type="text"
                       required
                       value={senderWalletNumber}
                       onChange={(e) => setSenderWalletNumber(e.target.value)}
-                      placeholder="مثال: 010xxxxxxxx"
+                      placeholder={isAr ? 'مثال: 010xxxxxxxx' : 'e.g. 010xxxxxxxx'}
                       className="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#941946]/20 focus:border-[#941946]"
                     />
                   </div>
@@ -691,18 +717,18 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 /* PAYING ONLINE WITH PAYMOB */
                 <div className="p-3 bg-indigo-50 rounded-2xl border border-indigo-200 text-[11px] text-indigo-900 leading-relaxed">
                   {onlineChannel === 'wallet'
-                    ? 'ستدفع بالمحفظة الإلكترونية (فودافون كاش وغيرها) عبر Paymob بعد تأكيد الطلب. لا حاجة لأي تحويل يدوي ولا لرفع إيصال.'
-                    : 'ستدفع بالبطاقة (فيزا / ماستركارد / ميزة) عبر Paymob بعد تأكيد الطلب. بيانات بطاقتك تُدخل لدى Paymob ولا تصل إلى خوادمنا، ولا حاجة لرفع إيصال.'}
+                    ? (isAr ? 'ستدفع بالمحفظة الإلكترونية (فودافون كاش وغيرها) عبر Paymob بعد تأكيد الطلب. لا حاجة لأي تحويل يدوي ولا لرفع إيصال.' : 'You will pay by e-wallet (Vodafone Cash and others) through Paymob after confirming the order. No manual transfer or receipt upload is needed.')
+                    : (isAr ? 'ستدفع بالبطاقة (فيزا / ماستركارد / ميزة) عبر Paymob بعد تأكيد الطلب. بيانات بطاقتك تُدخل لدى Paymob ولا تصل إلى خوادمنا، ولا حاجة لرفع إيصال.' : 'You will pay by card (Visa / Mastercard / Meeza) through Paymob after confirming the order. Your card details are entered at Paymob and never reach our servers; no receipt upload is needed.')}
                 </div>
               ) : (
                 <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-[11px] text-emerald-900 leading-relaxed">
-                  ستدفع قيمة الطلب للمندوب عند الاستلام. لا حاجة لأي تحويل الآن.
+                  {isAr ? 'ستدفع قيمة الطلب للمندوب عند الاستلام. لا حاجة لأي تحويل الآن.' : 'You will pay the courier on delivery. No transfer is needed now.'}
                 </div>
               )}
 
               {paymentMethod === 'wallet' && (
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-1">صورة إيصال التحويل (اختياري - يمكن إرسالها لاحقاً):</label>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">{isAr ? 'صورة إيصال التحويل (اختياري - يمكن إرسالها لاحقاً):' : 'Transfer receipt photo (optional — can be sent later):'}</label>
                   <input
                     type="file"
                     accept="image/*,application/pdf"
@@ -716,33 +742,33 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
               <div className="space-y-2 pt-1 border-t border-slate-100">
                 <span className="text-xs font-bold text-slate-900 block flex items-center gap-1">
                   <Truck className="w-3.5 h-3.5 text-[#941946]" />
-                  <span>عنوان التوصيل واستلام المنتجات:</span>
+                  <span>{isAr ? 'عنوان التوصيل واستلام المنتجات:' : 'Delivery address:'}</span>
                 </span>
 
                 {(() => {
                   const input = 'w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs focus:outline-none focus:bg-white focus:border-[#941946]';
                   const label = 'text-[11px] font-bold text-slate-700 block mb-1';
                   const star = <span className="text-rose-500">*</span>;
-                  const kinds: ['home' | 'work' | 'other', string][] = [['home', 'المنزل'], ['work', 'العمل'], ['other', 'آخر']];
+                  const kinds: ['home' | 'work' | 'other', string][] = [['home', (isAr ? 'المنزل' : 'Home')], ['work', (isAr ? 'العمل' : 'Work')], ['other', (isAr ? 'آخر' : 'Other')]];
                   return (
                     <div className="space-y-2.5">
                       <div>
-                        <label className={label}>الاسم بالكامل {star}</label>
-                        <input type="text" required minLength={3} autoComplete="name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="الاسم الذي نسأل عنه عند التوصيل" className={input} />
+                        <label className={label}>{isAr ? 'الاسم بالكامل' : 'Full name'} {star}</label>
+                        <input type="text" required minLength={3} autoComplete="name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder={isAr ? 'الاسم الذي نسأل عنه عند التوصيل' : 'The name we ask for on delivery'} className={input} />
                       </div>
 
                       <div>
-                        <label className={label}>رقم الهاتف {star}</label>
+                        <label className={label}>{isAr ? 'رقم الهاتف' : 'Phone number'} {star}</label>
                         <input type="tel" required inputMode="tel" dir="ltr" autoComplete="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="01X XXXX XXXX" className={`${input} font-mono text-right`} />
                       </div>
 
                       <div>
-                        <label className={label}>البريد الإلكتروني (لإرسال الإيصال)</label>
-                        <input type="email" inputMode="email" dir="ltr" autoComplete="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder="اختياري — name@example.com" className={`${input} text-right`} />
+                        <label className={label}>{isAr ? 'البريد الإلكتروني (لإرسال الإيصال)' : 'Email (to send the receipt)'}</label>
+                        <input type="email" inputMode="email" dir="ltr" autoComplete="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder={isAr ? 'اختياري — name@example.com' : 'Optional — name@example.com'} className={`${input} text-right`} />
                       </div>
 
                       <div>
-                        <span className={label}>نوع العنوان</span>
+                        <span className={label}>{isAr ? 'نوع العنوان' : 'Address type'}</span>
                         <div className="flex flex-wrap gap-2">
                           {kinds.map(([value, text]) => (
                             <label key={value} className={`flex cursor-pointer items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold transition-colors ${addressType === value ? 'border-[#941946] bg-rose-50 text-[#941946]' : 'border-slate-200 text-slate-500 hover:border-[#941946]/40'}`}>
@@ -755,48 +781,48 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className={label}>المحافظة {star}</label>
+                          <label className={label}>{isAr ? 'المحافظة' : 'Governorate'} {star}</label>
                           <select required value={customerGovernorate} onChange={(e) => setCustomerGovernorate(e.target.value)} className={input}>
-                            <option value="">مثال: القاهرة</option>
+                            <option value="">{isAr ? 'مثال: القاهرة' : 'e.g. Cairo'}</option>
                             {(governorates.data ?? []).map((g) => (
                               <option key={g.id} value={g.name}>{g.name}</option>
                             ))}
                           </select>
                         </div>
                         <div>
-                          <label className={label}>المدينة {star}</label>
-                          <input type="text" required autoComplete="address-level2" value={customerCity} onChange={(e) => setCustomerCity(e.target.value)} placeholder="مثال: مدينة نصر" className={input} />
+                          <label className={label}>{isAr ? 'المدينة' : 'City'} {star}</label>
+                          <input type="text" required autoComplete="address-level2" value={customerCity} onChange={(e) => setCustomerCity(e.target.value)} placeholder={isAr ? 'مثال: مدينة نصر' : 'e.g. Nasr City'} className={input} />
                         </div>
                       </div>
 
                       <div>
-                        <label className={label}>الشارع {star}</label>
-                        <input type="text" required autoComplete="street-address" value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} placeholder="اسم الشارع" className={input} />
+                        <label className={label}>{isAr ? 'الشارع' : 'Street'} {star}</label>
+                        <input type="text" required autoComplete="street-address" value={customerStreet} onChange={(e) => setCustomerStreet(e.target.value)} placeholder={isAr ? 'اسم الشارع' : 'Street name'} className={input} />
                       </div>
 
                       <div className="grid grid-cols-3 gap-2">
                         <div>
-                          <label className={label}>رقم العمارة</label>
-                          <input type="text" inputMode="numeric" value={buildingNumber} onChange={(e) => setBuildingNumber(e.target.value)} placeholder="اختياري" className={input} />
+                          <label className={label}>{isAr ? 'رقم العمارة' : 'Building number'}</label>
+                          <input type="text" inputMode="numeric" value={buildingNumber} onChange={(e) => setBuildingNumber(e.target.value)} placeholder={isAr ? 'اختياري' : 'Optional'} className={input} />
                         </div>
                         <div>
-                          <label className={label}>الدور</label>
-                          <input type="text" value={floorNumber} onChange={(e) => setFloorNumber(e.target.value)} placeholder="اختياري" className={input} />
+                          <label className={label}>{isAr ? 'الدور' : 'Floor'}</label>
+                          <input type="text" value={floorNumber} onChange={(e) => setFloorNumber(e.target.value)} placeholder={isAr ? 'اختياري' : 'Optional'} className={input} />
                         </div>
                         <div>
-                          <label className={label}>رقم الشقة</label>
-                          <input type="text" value={apartmentNumber} onChange={(e) => setApartmentNumber(e.target.value)} placeholder="اختياري" className={input} />
+                          <label className={label}>{isAr ? 'رقم الشقة' : 'Apartment number'}</label>
+                          <input type="text" value={apartmentNumber} onChange={(e) => setApartmentNumber(e.target.value)} placeholder={isAr ? 'اختياري' : 'Optional'} className={input} />
                         </div>
                       </div>
 
                       <div>
-                        <label className={label}>علامة مميزة</label>
-                        <input type="text" value={specialMark} onChange={(e) => setSpecialMark(e.target.value)} placeholder="اختياري — جوار الصيدلية مثلًا" className={input} />
+                        <label className={label}>{isAr ? 'علامة مميزة' : 'Landmark'}</label>
+                        <input type="text" value={specialMark} onChange={(e) => setSpecialMark(e.target.value)} placeholder={isAr ? 'اختياري — جوار الصيدلية مثلًا' : 'Optional — e.g. next to the pharmacy'} className={input} />
                       </div>
 
                       <div>
-                        <label className={label}>ملاحظات</label>
-                        <textarea rows={2} value={customerNotes} onChange={(e) => setCustomerNotes(e.target.value)} placeholder="اختياري — موعد توصيل مناسب لك مثلًا" className={input} />
+                        <label className={label}>{isAr ? 'ملاحظات' : 'Notes'}</label>
+                        <textarea rows={2} value={customerNotes} onChange={(e) => setCustomerNotes(e.target.value)} placeholder={isAr ? 'اختياري — موعد توصيل مناسب لك مثلًا' : 'Optional — e.g. a delivery time that suits you'} className={input} />
                       </div>
                     </div>
                   );
@@ -816,7 +842,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 className="w-full py-2.5 bg-white hover:bg-slate-50 disabled:opacity-60 border border-slate-300 text-slate-700 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 {pdfBusy ? <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" /> : <Download className="w-4 h-4" />}
-                <span>تحميل ملخص الطلب PDF</span>
+                <span>{isAr ? 'تحميل ملخص الطلب PDF' : 'Download order summary PDF'}</span>
               </button>
 
               {/* Submit Button */}
@@ -826,7 +852,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 className="disabled:opacity-60 w-full py-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all"
               >
                 {isPlacing ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
-                <span>{isPlacing ? 'جاري تسجيل الطلب...' : paymentMethod === 'cod' ? 'تأكيد الطلب' : paymentMethod === 'online' ? 'تأكيد الطلب والدفع الآن' : 'تأكيد تسجيل الطلب وإرسال إشعار التحويل'}</span>
+                <span>{isPlacing ? (isAr ? 'جاري تسجيل الطلب...' : 'Placing the order...') : paymentMethod === 'cod' ? (isAr ? 'تأكيد الطلب' : 'Confirm order') : paymentMethod === 'online' ? (isAr ? 'تأكيد الطلب والدفع الآن' : 'Confirm order and pay now') : (isAr ? 'تأكيد تسجيل الطلب وإرسال إشعار التحويل' : 'Confirm the order and send the transfer notice')}</span>
               </button>
             </form>
           )}
@@ -840,66 +866,66 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
               <div className="space-y-1">
                 <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  تم تسجيل طلبك بنجاح
+                  {isAr ? 'تم تسجيل طلبك بنجاح' : 'Your order was placed successfully'}
                 </span>
                 <h3 className="text-base font-extrabold text-slate-900 mt-1">
-                  شكراً لتسوقك من متاجر ديلر الطبيعية
+                  {isAr ? 'شكراً لتسوقك من متاجر ديلر الطبيعية' : 'Thank you for shopping at Deilar stores'}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  رقم الطلب: <span className="font-mono font-bold text-slate-800">#{orderId}</span>
+                  {isAr ? 'رقم الطلب:' : 'Order number:'} <span className="font-mono font-bold text-slate-800">#{orderId}</span>
                 </p>
               </div>
 
               {/* Order summary pill */}
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-right text-xs space-y-1.5">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">العميل المستلم:</span>
+                  <span className="text-slate-500">{isAr ? 'العميل المستلم:' : 'Recipient:'}</span>
                   <span className="font-bold text-slate-800">{customerName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">العنوان:</span>
+                  <span className="text-slate-500">{isAr ? 'العنوان:' : 'Address:'}</span>
                   <span className="font-bold text-slate-800">{customerAddress}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">طريقة السداد:</span>
+                  <span className="text-slate-500">{isAr ? 'طريقة السداد:' : 'Payment method:'}</span>
                   <span className="font-bold text-[#941946]">
-                    {paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : paymentMethod === 'online' ? 'دفع إلكتروني' : 'الدفع عند الاستلام'}
+                    {paymentMethod === 'wallet' ? (isAr ? 'تحويل محفظة إلكترونية' : 'E-wallet transfer') : paymentMethod === 'online' ? (isAr ? 'دفع إلكتروني' : 'Online payment') : (isAr ? 'الدفع عند الاستلام' : 'Cash on delivery')}
                   </span>
                 </div>
                 {placed && placed.cod_fee > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">رسوم الدفع عند الاستلام:</span>
-                    <span className="font-bold text-slate-800 font-mono">{placed.cod_fee} ج.م</span>
+                    <span className="text-slate-500">{isAr ? 'رسوم الدفع عند الاستلام:' : 'Cash on delivery fee:'}</span>
+                    <span className="font-bold text-slate-800 font-mono">{placed.cod_fee} {isAr ? 'ج.م' : 'EGP'}</span>
                   </div>
                 )}
                 {placed && placed.delivery_price > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">مصاريف الشحن:</span>
-                    <span className="font-bold text-slate-800 font-mono">{placed.delivery_price} ج.م</span>
+                    <span className="text-slate-500">{isAr ? 'مصاريف الشحن:' : 'Shipping:'}</span>
+                    <span className="font-bold text-slate-800 font-mono">{placed.delivery_price} {isAr ? 'ج.م' : 'EGP'}</span>
                   </div>
                 )}
                 {placed && placed.delivery_price === 0 && (
                   <div className="flex justify-between">
-                    <span className="text-slate-500">مصاريف الشحن:</span>
-                    <span className="font-bold text-emerald-700">مجاناً</span>
+                    <span className="text-slate-500">{isAr ? 'مصاريف الشحن:' : 'Shipping:'}</span>
+                    <span className="font-bold text-emerald-700">{isAr ? 'مجاناً' : 'Free'}</span>
                   </div>
                 )}
                 {walletShown > 0 && (
                   <div data-testid="wallet-line" className="flex justify-between text-violet-800">
-                    <span>👛 {placed ? 'دفعت من المحفظة:' : 'هيتخصم تلقائياً من محفظتك:'}</span>
-                    <span className="font-bold font-mono">- {walletShown} ج.م</span>
+                    <span>👛 {placed ? (isAr ? 'دفعت من المحفظة:' : 'Paid from the wallet:') : (isAr ? 'هيتخصم تلقائياً من محفظتك:' : 'Taken automatically from your wallet:')}</span>
+                    <span className="font-bold font-mono">- {walletShown} {isAr ? 'ج.م' : 'EGP'}</span>
                   </div>
                 )}
                 <div className="flex justify-between border-t border-slate-200 pt-1 font-bold">
-                  <span>{paymentMethod === 'cod' ? 'المبلغ المطلوب عند الاستلام:' : paymentMethod === 'online' ? 'المبلغ المطلوب دفعه:' : 'المبلغ المطلوب تحويله:'}</span>
-                  <span className="text-emerald-700 font-mono">{finalTotal} ج.م</span>
+                  <span>{paymentMethod === 'cod' ? (isAr ? 'المبلغ المطلوب عند الاستلام:' : 'Amount due on delivery:') : paymentMethod === 'online' ? (isAr ? 'المبلغ المطلوب دفعه:' : 'Amount to pay:') : (isAr ? 'المبلغ المطلوب تحويله:' : 'Amount to transfer:')}</span>
+                  <span className="text-emerald-700 font-mono">{finalTotal} {isAr ? 'ج.م' : 'EGP'}</span>
                 </div>
               </div>
 
               {paymentMethod === 'online' && (
                 <div className="p-3 rounded-2xl border border-indigo-200 bg-indigo-50 text-right space-y-3">
                   {paidOnline ? (
-                    <p className="text-xs font-bold text-emerald-700">تم استلام الدفع بنجاح ✓ — سيصلك الإيصال على بريدك إن أضفته.</p>
+                    <p className="text-xs font-bold text-emerald-700">{isAr ? 'تم استلام الدفع بنجاح ✓ — سيصلك الإيصال على بريدك إن أضفته.' : 'Payment received ✓ — the receipt will be emailed to you if you added an email.'}</p>
                   ) : (
                     <>
                       {pixel ? (
@@ -914,7 +940,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                           <PaymobPixel publicKey={pixel.publicKey} clientSecret={pixel.clientSecret} fallbackUrl={pixel.checkoutUrl} onComplete={checkPayment} />
                         )
                       ) : (
-                        <p className="text-xs font-bold text-indigo-900">{payMessage ?? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.'}</p>
+                        <p className="text-xs font-bold text-indigo-900">{payMessage ?? (isAr ? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.' : 'Could not open the payment form. Please try again.')}</p>
                       )}
                       {payMessage && pixel && <p className="text-[11px] font-bold text-indigo-900">{payMessage}</p>}
                       <div className="flex gap-2">
@@ -926,7 +952,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                             className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
                           >
                             <CreditCard className="w-4 h-4" />
-                            <span>حاول الدفع مرة أخرى</span>
+                            <span>{isAr ? 'حاول الدفع مرة أخرى' : 'Try paying again'}</span>
                           </button>
                         )}
                         <button
@@ -936,7 +962,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                           className="flex-1 py-2.5 bg-white hover:bg-slate-50 disabled:opacity-60 border border-indigo-300 text-indigo-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
                         >
                           <RefreshCw className="w-4 h-4" />
-                          <span>تحديث حالة الدفع</span>
+                          <span>{isAr ? 'تحديث حالة الدفع' : 'Refresh payment status'}</span>
                         </button>
                       </div>
                     </>
@@ -946,7 +972,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
               {receiptFailed && (
                 <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                  تم تسجيل طلبك لكن تعذر رفع صورة الإيصال. أرسلها لنا عبر واتساب برقم الطلب.
+                  {isAr ? 'تم تسجيل طلبك لكن تعذر رفع صورة الإيصال. أرسلها لنا عبر واتساب برقم الطلب.' : 'Your order was placed but the receipt photo could not be uploaded. Send it to us on WhatsApp with the order number.'}
                 </p>
               )}
 
@@ -957,7 +983,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>{paymentMethod === 'cod' ? 'إرسال تفاصيل الطلب عبر واتساب' : 'إرسال تفاصيل الطلب وإشعار التحويل عبر واتساب فوراً'}</span>
+                  <span>{paymentMethod === 'cod' ? (isAr ? 'إرسال تفاصيل الطلب عبر واتساب' : 'Send order details on WhatsApp') : (isAr ? 'إرسال تفاصيل الطلب وإشعار التحويل عبر واتساب فوراً' : 'Send order details and transfer notice on WhatsApp now')}</span>
                 </button>
 
                 <button
@@ -967,7 +993,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   className="w-full py-3 bg-white hover:bg-slate-50 disabled:opacity-60 border border-slate-300 text-slate-800 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-colors"
                 >
                   {pdfBusy ? <span className="w-4 h-4 border-2 border-slate-300 border-t-slate-700 rounded-full animate-spin" /> : <Download className="w-4 h-4" />}
-                  <span>تحميل الفاتورة PDF</span>
+                  <span>{isAr ? 'تحميل الفاتورة PDF' : 'Download invoice PDF'}</span>
                 </button>
 
                 <button
@@ -982,7 +1008,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   }}
                   className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold transition-colors"
                 >
-                  تتبع طلبي
+                  {isAr ? 'تتبع طلبي' : 'Track my order'}
                 </button>
 
                 <button
@@ -995,7 +1021,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   }}
                   className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
                 >
-                  العودة للمتجر
+                  {isAr ? 'العودة للمتجر' : 'Back to the store'}
                 </button>
               </div>
             </div>

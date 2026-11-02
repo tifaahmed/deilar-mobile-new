@@ -76,9 +76,9 @@ describe('quiz answer queue', () => {
     recordQuizAnswer(answer(true)); // account A
     clearSession();
     recordQuizAnswer(answer(true));
-    recordQuizAnswer(answer(false)); // guest: +100 -100
+    recordQuizAnswer(answer(false)); // guest: +100, and a wrong answer costs nothing by default
 
-    expect(previewSignIn({ card: '222222' })).toEqual({ move: { answers: 2, points: 0 }, remove: { answers: 1, points: 100 } });
+    expect(previewSignIn({ card: '222222' })).toEqual({ move: { answers: 2, points: 100 }, remove: { answers: 1, points: 100 } });
     expect(previewSignIn({ card: '111111' }).remove.answers).toBe(0);
   });
 
@@ -93,12 +93,22 @@ describe('quiz answer queue', () => {
     expect(result.current.has('p1')).toBe(false);
   });
 
-  it('pays a right answer by speed (5 s = 100, 10 s = 75, 15 s = 50, 20 s = 25) and charges 100 for a wrong one', () => {
+  it('pays a right answer by speed (5 s = 100, 10 s = 75, 15 s = 50, 20 s = 25) and charges nothing for a wrong one', () => {
     expect([0, 4.9, 5].map((s) => quizPoints(true, s))).toEqual([100, 100, 100]);
     expect([5.1, 8, 10].map((s) => quizPoints(true, s))).toEqual([75, 75, 75]);
     expect([10.5, 15].map((s) => quizPoints(true, s))).toEqual([50, 50]);
     expect([15.1, 19.9, 20, 99].map((s) => quizPoints(true, s))).toEqual([25, 25, 25, 25]);
     expect(quizPoints(true)).toBe(25);
-    expect([quizPoints(false, 1), quizPoints(false)]).toEqual([-100, -100]);
+    expect([quizPoints(false, 1), quizPoints(false)]).toEqual([0, 0]);
+  });
+
+  it('scores with the rules the backend last sent, kept on the phone, so the game plays the same offline', () => {
+    localStorage.setItem('deilar_quiz_rules', JSON.stringify({ points_wrong: -7, speed_tiers: [{ up_to_seconds: 10, points: 40 }, { up_to_seconds: 20, points: 10 }] }));
+    expect([quizPoints(false, 1), quizPoints(false)]).toEqual([-7, -7]);
+    expect([quizPoints(true, 3), quizPoints(true, 12), quizPoints(true)]).toEqual([40, 10, 10]);
+
+    // a positive number can never become a reward for a wrong answer
+    localStorage.setItem('deilar_quiz_rules', JSON.stringify({ points_wrong: 5 }));
+    expect(quizPoints(false)).toBe(0);
   });
 });

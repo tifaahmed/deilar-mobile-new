@@ -9,6 +9,9 @@ export interface PlacedOrder {
   cod_fee: number;
   /** What the member's wallet paid automatically (products only, never delivery); 0 = nothing. */
   wallet_amount?: number;
+  /** Loyalty points spent as a discount (products that accept them), and what they were worth in pounds. */
+  points_used?: number;
+  points_amount?: number;
   /** What is left to pay in REAL money. */
   amount_due?: number;
 }
@@ -46,6 +49,8 @@ export interface NewOrder {
   email?: string;
   /** The buyer's card: it, not this field, is what earns the member price — the server checks it. */
   membershipNumber?: string;
+  /** Spend loyalty points on the products that accept them (default true; the server decides the figures). */
+  usePoints?: boolean;
   items: { slug: string; quantity: number }[];
 }
 
@@ -79,6 +84,7 @@ export async function placeOrder(order: NewOrder, token?: string): Promise<Place
       payment_type: order.payment,
       paymob_channel: order.payment === 'paymob' ? order.paymobChannel ?? null : null,
       membership_number: order.membershipNumber || null,
+      use_points: order.usePoints ?? true,
       items: order.items,
     },
     undefined,
@@ -144,6 +150,8 @@ export interface OrderDetail {
   delivery_price: number;
   cod_fee?: number;
   wallet_amount?: number;
+  points_used?: number;
+  points_amount?: number;
   amount_due?: number;
   /** The money went back to the wallet (the order was refused or cancelled after the sale). */
   wallet_refunded?: boolean;

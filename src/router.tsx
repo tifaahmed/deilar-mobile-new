@@ -17,7 +17,7 @@ import type { NavTab } from './components/BottomNav';
  *   /card/pay              pay for the card with Paymob (card or mobile wallet)
  *   /card/physical         order physical (plastic) cards for the member and the family
  *   /account               the account list («حسابي» tab): one row per page
- *   /account/personal  /account/addresses  /account/support  /account/theme   the account's pages
+ *   /account/personal  /account/addresses  /account/support  /account/theme  /account/wallet   the account's pages
  *                          (the old /card/personal etc. still open the same pages)
  *   /products/:slug        one product
  *   /cart  /checkout       the basket / the payment page
@@ -58,7 +58,7 @@ export interface Route {
 /** Pages of the «كارتي» tab. */
 export const CARD_SECTIONS = ['members', 'pay', 'physical'] as const;
 /** Pages of the account list. */
-export const ACCOUNT_SECTIONS = ['personal', 'addresses', 'support', 'theme'] as const;
+export const ACCOUNT_SECTIONS = ['personal', 'addresses', 'support', 'theme', 'wallet'] as const;
 export const PROFILE_SECTIONS = [...CARD_SECTIONS, ...ACCOUNT_SECTIONS] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 

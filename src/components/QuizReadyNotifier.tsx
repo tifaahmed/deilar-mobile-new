@@ -3,6 +3,7 @@ import { SECTION_LIST } from '../data/quizSectionsMeta';
 import { lockedSections, markReopenedNotified, nextOpenAt, systemNotice, unseenReopened, useUsageRaw } from '../utils/quizLimit';
 import { navigate } from '../router';
 import { useSwipeDismiss } from '../hooks/useSwipeDismiss';
+import { useIsAr } from '../context/LanguageContext';
 
 const KEYS = SECTION_LIST.map((s) => s.key);
 const titleOf = (key: string) => SECTION_LIST.find((s) => s.key === key);
@@ -13,6 +14,7 @@ const titleOf = (key: string) => SECTION_LIST.find((s) => s.key === key);
  * countdown ended while the app was closed, the banner appears the next time it opens.
  */
 export const QuizReadyNotifier: React.FC = () => {
+  const isAr = useIsAr();
   const usage = useUsageRaw();
   const [ready, setReady] = useState<string[]>([]);
   const swipe = useSwipeDismiss(() => setReady([]));
@@ -22,7 +24,7 @@ export const QuizReadyNotifier: React.FC = () => {
     setReady(keys);
     markReopenedNotified(keys);
     const names = keys.map((k) => titleOf(k)?.title).filter(Boolean).join(' و');
-    systemNotice('ديلر — تقدر تلعب دلوقتي! 🎮', `محاولاتك اتجددت في ${names}. تعالى كمّل التحدي!`);
+    systemNotice(isAr ? 'ديلر — تقدر تلعب دلوقتي! 🎮' : 'Deilar — you can play now! 🎮', isAr ? `محاولاتك اتجددت في ${names}. تعالى كمّل التحدي!` : `Your plays are back in ${names}. Come and continue the challenge!`);
   };
 
   // The player was away when the countdown ended.
@@ -59,8 +61,8 @@ export const QuizReadyNotifier: React.FC = () => {
         >
           <span className="text-3xl">🎮</span>
           <div className="min-w-0 flex-1 text-right">
-            <p className="text-sm font-black">تقدر تلعب دلوقتي!</p>
-            <p className="text-xs font-semibold text-emerald-50">محاولاتك اتجددت في {ready.map((k) => `${titleOf(k)?.emoji ?? ''} ${titleOf(k)?.title ?? ''}`).join(' و')}</p>
+            <p className="text-sm font-black">{isAr ? 'تقدر تلعب دلوقتي!' : 'You can play now!'}</p>
+            <p className="text-xs font-semibold text-emerald-50">{isAr ? 'محاولاتك اتجددت في' : 'Your plays are back in'} {ready.map((k) => `${titleOf(k)?.emoji ?? ''} ${titleOf(k)?.title ?? ''}`).join(' و')}</p>
           </div>
           <button
             type="button"
@@ -70,9 +72,9 @@ export const QuizReadyNotifier: React.FC = () => {
             }}
             className="shrink-0 cursor-pointer rounded-xl bg-white px-3 py-2 text-sm font-black text-emerald-700"
           >
-            العب
+            {isAr ? 'العب' : 'Play'}
           </button>
-          <button type="button" aria-label="إغلاق" onClick={() => setReady([])} className="shrink-0 cursor-pointer text-lg font-black text-white/80">
+          <button type="button" aria-label={isAr ? 'إغلاق' : 'Close'} onClick={() => setReady([])} className="shrink-0 cursor-pointer text-lg font-black text-white/80">
             ✕
           </button>
         </div>

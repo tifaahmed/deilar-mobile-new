@@ -33,6 +33,20 @@ const dvhFallback = () => ({
 });
 dvhFallback.postcss = true;
 
+/**
+ * Tailwind v4 writes gradients as `linear-gradient(to right in oklab, a, b)`. The `in <colour space>` part is Chrome 111+;
+ * an older WebView drops the WHOLE `background-image`, so every gradient header/card disappears (white text on white).
+ * Without it the browser interpolates in plain sRGB, which is what every gradient looked like before.
+ */
+const gradientSpace = () => ({
+  postcssPlugin: 'gradient-space',
+  Declaration(decl) {
+    if (decl.prop !== '--tw-gradient-position' || !/\sin\s/.test(decl.value)) return;
+    decl.value = decl.value.replace(/\s+in\s+[a-z-]+(\s+(shorter|longer|increasing|decreasing)\s+hue)?/g, '');
+  },
+});
+gradientSpace.postcss = true;
+
 export default {
-  plugins: [cascadeLayers(), oklab({preserve: false}), propertyDefaults(), dvhFallback()],
+  plugins: [cascadeLayers(), oklab({preserve: false}), propertyDefaults(), dvhFallback(), gradientSpace()],
 };
