@@ -3,6 +3,8 @@ import { Phone, Sparkles, UserRound } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/http';
 import { startTrial } from '../api/membership';
+import { claimReferral } from '../api/referral';
+import { clearReferralCode, pendingReferralCode, referralReasonText } from '../utils/referral';
 import { requestOtp, verifyOtp } from '../api/auth';
 import { getSession, updateSession } from '../utils/session';
 import { reportClientError } from '../utils/reportError';
@@ -31,6 +33,8 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
   const [lastName, setLastName] = useState(() => defaultName.trim().split(/\s+/).slice(1).join(' '));
   const name = `${firstName.trim()} ${lastName.trim()}`.trim();
   const [gender, setGender] = useState<'male' | 'female' | null>(null);
+  /** The card number of the member who brought this one (optional): from an invitation link, or typed. */
+  const [referrer, setReferrer] = useState(() => pendingReferralCode() ?? '');
   // The number the sign-in code proved, shown in the form. Changing it means proving the new one with its own code.
   const [token, setToken] = useState(signedInToken);
   const [confirmedPhone, setConfirmedPhone] = useState(getSession().phone ?? '');
@@ -117,6 +121,23 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
     setError(null);
 
     try {
+      // Who brought me (optional). A code the backend refuses is shown so it can be fixed; "already told us" is fine.
+      const code = referrer.trim();
+      if (code) {
+        try {
+          await claimReferral(token, code, code === pendingReferralCode() ? 'link' : 'card');
+          clearReferralCode();
+        } catch (claimError) {
+          const claimReason = claimError instanceof ApiError ? claimError.reason : undefined;
+          if (claimReason !== 'already_referred') {
+            setError(claimError instanceof ApiError && claimError.status === 422 ? referralReasonText(claimReason, isAr) : isAr ? 'تعذر التحقق من الكود الآن. حاول مرة أخرى.' : 'The code could not be checked now. Please try again.');
+            if (!(claimError instanceof ApiError) || claimError.status >= 500) reportClientError('Referral claim from the card form failed', claimError);
+            setBusy(false);
+            return;
+          }
+          clearReferralCode();
+        }
+      }
       const status = await startTrial(token, { name, gender: gender ?? undefined });
       onCreated(status.membership_number ?? '', name);
     } catch (err) {
@@ -194,6 +215,12 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
           </button>
         ))}
       </div>
+
+      <label className="block space-y-1">
+        <span className="text-[11px] font-bold text-slate-600">{isAr ? 'رقم عضوية اللي جابك (اختياري)' : 'Card number of the member who brought you (optional)'}</span>
+        <input type="text" inputMode="numeric" dir="ltr" maxLength={32} placeholder="123456" value={referrer} onChange={(e) => { setReferrer(e.target.value.replace(/[^A-Za-z0-9-]/g, '')); setError(null); }} className={`${field} font-mono`} data-testid="referrer-input" />
+        <span className="block text-[10px] text-slate-500">{isAr ? 'لو زميلك جابك لديلر، اكتب رقم عضويته وهتاخد خصم على الاشتراك.' : 'If a friend brought you to Deilar, enter their card number to get a subscription discount.'}</span>
+      </label>
 
       <p className="text-[11px] text-slate-500 leading-relaxed">
         {isAr

@@ -22,6 +22,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Invitation links (https://deilar.com/r/<card number>) open the app when it is installed. Verified by the site's
+                 /.well-known/assetlinks.json (set DEILAR_ANDROID_SHA256 on the site); until then Android just asks the browser. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="deilar.com" android:pathPrefix="/r/" />
+                <data android:scheme="https" android:host="www.deilar.com" android:pathPrefix="/r/" />
+            </intent-filter>
+
         </activity>
 
         <provider

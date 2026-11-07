@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 const auth = vi.hoisted(() => ({ fetchProfile: vi.fn() }));
 vi.mock('../api/auth', () => auth);
@@ -23,19 +23,10 @@ const open = () =>
 beforeEach(() => vi.clearAllMocks());
 
 describe('payment page', () => {
-  it('fills the email box with the email saved on the profile', async () => {
-    auth.fetchProfile.mockResolvedValue({ email: 'mona@example.com' });
+  it('does not ask for or show an email', async () => {
     open();
 
-    await waitFor(() => expect(screen.getByPlaceholderText(/Email for your receipt/)).toHaveValue('mona@example.com'));
-    expect(auth.fetchProfile).toHaveBeenCalledWith('tok');
-  });
-
-  it('leaves the box empty when the profile has no email', async () => {
-    auth.fetchProfile.mockResolvedValue({ email: null });
-    open();
-
-    await waitFor(() => expect(auth.fetchProfile).toHaveBeenCalled());
-    expect(screen.getByPlaceholderText(/Email for your receipt/)).toHaveValue('');
+    expect(screen.queryByPlaceholderText(/Email/i)).toBeNull();
+    expect(auth.fetchProfile).not.toHaveBeenCalled();
   });
 });

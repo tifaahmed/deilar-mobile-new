@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence, animate, useMotionValue } from 'motion/react';
+import { motion, AnimatePresence, animate, useMotionValue, useTransform } from 'motion/react';
 import { ArrowRight, CloudCheck, Smartphone, Trophy, RotateCcw, Star, Volume2, VolumeX } from 'lucide-react';
 import { SECTIONS as BASE_SECTIONS, sectionIn, type Question, type QuizDesign, type QuizSection } from '../data/quizSections';
 import { navigate, useRoute } from '../router';
@@ -245,6 +245,8 @@ function optionClass(design: Design, i: number, right: boolean, wrong: boolean):
 
 /** Seconds a member has for each question, and how long the right / wrong sign stays before the next one. */
 const SECONDS_PER_QUESTION = 20;
+/** In the last 5 seconds the clock beeps, faster and higher as the time runs out (ms from the start of the question). */
+const WARNING_BEEPS_MS = [15000, 16000, 17000, 17700, 18300, 18800, 19200, 19550, 19800];
 const FEEDBACK_MS = 1300;
 /** Points won for a right answer and lost for a wrong one or a missed clock; the total may go below zero. Shared with the upload queue, which mirrors the backend's figure. */
 
@@ -405,6 +407,11 @@ const QuizGameInner: React.FC = () => {
   // How much of the line around the question card is used up: 0 = full time left, 1 = none.
   const spent = useMotionValue(0);
   const beep = useBeep(sound);
+  // The clock effect below lives for a whole question, so it reads the latest beep (sound on / off) through a ref.
+  const beepRef = useRef(beep);
+  beepRef.current = beep;
+  // The line's colour follows the time left: calm blue → green → yellow → orange → red.
+  const lineColor = useTransform(spent, [0, 0.4, 0.6, 0.75, 1], ['#38bdf8', '#22c55e', '#facc15', '#f97316', '#ef4444']);
   const session = useSession();
   const playId = useRef(newId());
   const loyalty = useLoyalty();
@@ -464,6 +471,7 @@ const QuizGameInner: React.FC = () => {
     spent.set(0);
     const line = animate(spent, 1, { duration: SECONDS_PER_QUESTION, ease: 'linear' });
     const tick = setInterval(() => setTimeLeft((t) => Math.max(0, t - 1)), 1000);
+    const warnings = WARNING_BEEPS_MS.map((at, i) => setTimeout(() => beepRef.current([880 + i * 70]), at));
     const stop = setTimeout(() => {
       setTimedOut(true);
       book(false, true, SECONDS_PER_QUESTION);
@@ -477,6 +485,7 @@ const QuizGameInner: React.FC = () => {
       line.stop();
       clearInterval(tick);
       clearTimeout(stop);
+      warnings.forEach(clearTimeout);
     };
   }, [started, launching, finished, index, answered]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -635,7 +644,7 @@ const QuizGameInner: React.FC = () => {
 
         {!started && step === 'moods' && (
           <motion.div key="moods" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <PointsGallery selected={moodScore} onSelect={(score) => go(score === null ? 'moods' : `moods/${score}`)} seen={seenScenes} shareFor={(s) => resultShareText(s, Math.max(0, Math.round((s + 100) / 20)), PLAY_SIZE, sceneFor(s).emoji, section.topic, isAr)} />
+            <PointsGallery selected={moodScore} onSelect={(score) => go(score === null ? 'moods' : `moods/${score}`)} seen={seenScenes} shareFor={(s) => resultShareText(s, null, PLAY_SIZE, sceneFor(s).emoji, section.topic, isAr)} />
           </motion.div>
         )}
 
@@ -842,7 +851,7 @@ const QuizGameInner: React.FC = () => {
             <div className={`rounded-3xl p-2.5 overflow-hidden relative ${look.wrap}`}>
               {/* The clock: a line that runs round the card's border and is used up in SECONDS_PER_QUESTION seconds. */}
               <svg className="absolute inset-0 w-full h-full z-20 pointer-events-none" aria-hidden>
-                <motion.rect x="0" y="0" width="100%" height="100%" rx="24" fill="none" strokeWidth="8" strokeLinecap="round" pathLength={1} strokeDasharray={1} style={{ strokeDashoffset: spent, stroke: timeLeft <= 5 && !answered ? '#ef4444' : '#38bdf8' }} />
+                <motion.rect x="0" y="0" width="100%" height="100%" rx="24" fill="none" strokeWidth="8" strokeLinecap="round" pathLength={1} strokeDasharray={1} style={{ strokeDashoffset: spent, stroke: lineColor }} />
               </svg>
               <AnimatePresence>
                 {answered && (

@@ -33,7 +33,6 @@ const CHANNELS: { id: OnlineChannel; icon: React.ElementType; ar: string; en: st
 export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
   const { isAr } = useLanguage();
   const [busy, setBusy] = useState<OnlineChannel | null>(null);
-  const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pixel, setPixel] = useState<PixelSession | null>(null);
   const Back = isAr ? ArrowRight : ArrowLeft;
@@ -41,19 +40,6 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
   const [planKey, setPlanKey] = useState<string | undefined>(plans[0]?.key);
   const plan = plans.find((p) => p.key === planKey) ?? plans[0];
 
-  // The email saved on the member's profile is already filled in; typing a different one here wins.
-  useEffect(() => {
-    let alive = true;
-    fetchProfile(token).then(
-      (p) => {
-        if (alive && p.email) setEmail((current) => current || p.email!);
-      },
-      () => undefined,
-    );
-    return () => {
-      alive = false;
-    };
-  }, [token]);
 
   const available = new Set<OnlineChannel>(status.can_pay_online ? status.online_channels ?? ['card'] : []);
   const phone = status.contact?.phone_international ?? status.contact?.phone ?? null;
@@ -64,7 +50,7 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
     setBusy(channel);
     setError(null);
     try {
-      const result = await subscribe(token, { method: 'paymob', plan: plan?.key, paymobChannel: channel, email: email.trim() || undefined });
+      const result = await subscribe(token, { method: 'paymob', plan: plan?.key, paymobChannel: channel });
       if (channel !== 'wallet' && result.client_secret && result.public_key) {
         setPixel({ clientSecret: result.client_secret, publicKey: result.public_key, checkoutUrl: result.checkout_url });
       } else if (result.checkout_url) {
@@ -143,7 +129,6 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
         })}
       </div>
 
-      <input type="email" dir="ltr" placeholder={isAr ? 'بريدك لاستلام الإيصال (اختياري)' : 'Email for your receipt (optional)'} value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white text-xs focus:outline-none focus:border-[#941946]" />
 
       {error && <p role="alert" className="text-[11px] font-bold rounded-xl px-3 py-2 border text-rose-600 bg-rose-50 border-rose-200">{error}</p>}
 

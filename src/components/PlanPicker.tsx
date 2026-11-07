@@ -44,7 +44,14 @@ export const PlanPicker: React.FC<PlanPickerProps> = ({ plans, value, onChange, 
           >
             {on && <Check className="absolute top-1.5 end-1.5 w-4 h-4" />}
             <span className="block text-xs font-black">{planName(plan, isAr)}</span>
-            <span className="block text-sm font-black">{formatNumber(plan.price, isAr)} {currency}</span>
+            {plan.discounted_price !== undefined && plan.discounted_price < plan.price ? (
+              <>
+                <span className="block text-[11px] font-bold line-through opacity-60" data-testid="plan-old-price">{formatNumber(plan.price, isAr)} {currency}</span>
+                <span className="block text-sm font-black" data-testid="plan-discounted-price">{formatNumber(plan.discounted_price, isAr)} {currency}</span>
+              </>
+            ) : (
+              <span className="block text-sm font-black">{formatNumber(plan.price, isAr)} {currency}</span>
+            )}
             <span className="block text-[10px] font-medium opacity-80">{isAr ? `${formatNumber(plan.months, true)} شهور` : `${plan.months} months`}</span>
           </button>
         );

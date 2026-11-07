@@ -27,7 +27,7 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
   const [info, setInfo] = useState<PhysicalCardInfo | null>(null);
   const [failed, setFailed] = useState(false);
   const [copies, setCopies] = useState<Record<string, number>>({});
-  const [form, setForm] = useState({ name: '', phone: '', governorate: '', city: '', street: '', specialMark: '', notes: '', email: '' });
+  const [form, setForm] = useState({ name: '', phone: '', governorate: '', city: '', street: '', specialMark: '', notes: '' });
   const [choice, setChoice] = useState<Choice | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +64,6 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
         ...f,
         name: f.name || p?.name || '',
         phone: f.phone || (p?.phone ?? '').replace(/\D/g, ''),
-        email: f.email || p?.email || '',
         governorate: f.governorate || a?.governorate || '',
         city: f.city || a?.city || '',
         street: f.street || a?.street || '',
@@ -140,7 +139,7 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
       const order = await placePhysicalCardOrder(token, {
         items: Object.entries(copies).filter(([, q]) => q > 0).map(([membership_number, quantity]) => ({ membership_number, quantity })),
         name: form.name.trim(), phone: form.phone, governorate: form.governorate.trim(), city: form.city.trim(), street: form.street.trim(),
-        specialMark: form.specialMark, notes: form.notes, email: form.email,
+        specialMark: form.specialMark, notes: form.notes,
         payment: choice.startsWith('paymob') ? 'paymob' : (choice as 'cod' | 'transfer-wallet'),
       });
       setPlaced(order);
@@ -260,7 +259,6 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
         </div>
         <input className={input(tried && bad.street)} placeholder={isAr ? 'العنوان (الشارع، العمارة، الدور، الشقة)' : 'Address (street, building, floor, flat)'} value={form.street} onChange={(e) => setForm({ ...form, street: e.target.value })} />
         <input className={input(false)} placeholder={isAr ? 'علامة مميزة (اختياري)' : 'Landmark (optional)'} value={form.specialMark} onChange={(e) => setForm({ ...form, specialMark: e.target.value })} />
-        <input className={input(false)} dir="ltr" type="email" placeholder={isAr ? 'بريدك لاستلام الإيصال (اختياري)' : 'Email for the receipt (optional)'} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
       </div>
 
       <div className="space-y-2">

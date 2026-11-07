@@ -86,7 +86,6 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   // Customer shipping info
   const [customerName, setCustomerName] = useState(session.name ?? '');
   const [customerPhone, setCustomerPhone] = useState(session.phone ?? session.leadPhone ?? '');
-  const [customerEmail, setCustomerEmail] = useState('');
   const [addressType, setAddressType] = useState<'home' | 'work' | 'other'>('home');
   // Opens on the area the visitor picked when the app first asked for their location.
   const [customerGovernorate, setCustomerGovernorate] = useState(() => getArea()?.governorate.name ?? '');
@@ -310,7 +309,6 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
           notes: [customerNotes.trim(), transferNote].filter(Boolean).join('\n'),
           payment: paymentMethod === 'cod' ? 'cod' : paymentMethod === 'online' ? 'paymob' : 'transfer-wallet',
           paymobChannel: paymentMethod === 'online' ? onlineChannel : undefined,
-          email: customerEmail,
           membershipNumber: session.cardNumber,
           usePoints: usePoints && canUsePoints,
           items: cart.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
@@ -762,10 +760,6 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                         <input type="tel" required inputMode="tel" dir="ltr" autoComplete="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="01X XXXX XXXX" className={`${input} font-mono text-right`} />
                       </div>
 
-                      <div>
-                        <label className={label}>{isAr ? 'البريد الإلكتروني (لإرسال الإيصال)' : 'Email (to send the receipt)'}</label>
-                        <input type="email" inputMode="email" dir="ltr" autoComplete="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} placeholder={isAr ? 'اختياري — name@example.com' : 'Optional — name@example.com'} className={`${input} text-right`} />
-                      </div>
 
                       <div>
                         <span className={label}>{isAr ? 'نوع العنوان' : 'Address type'}</span>
@@ -925,7 +919,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
               {paymentMethod === 'online' && (
                 <div className="p-3 rounded-2xl border border-indigo-200 bg-indigo-50 text-right space-y-3">
                   {paidOnline ? (
-                    <p className="text-xs font-bold text-emerald-700">{isAr ? 'تم استلام الدفع بنجاح ✓ — سيصلك الإيصال على بريدك إن أضفته.' : 'Payment received ✓ — the receipt will be emailed to you if you added an email.'}</p>
+                    <p className="text-xs font-bold text-emerald-700">{isAr ? 'تم استلام الدفع بنجاح ✓' : 'Payment received ✓'}</p>
                   ) : (
                     <>
                       {pixel ? (

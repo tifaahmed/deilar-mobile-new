@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useIsAr } from '../context/LanguageContext';
+import { WithdrawPanel } from './WithdrawPanel';
 import { convertPointsToWallet, pointsToEgp, refreshLoyalty, startWalletTopup, useLoyalty } from '../utils/quizStore';
 
 const REASONS_EN: Record<string, string> = {
@@ -125,6 +126,8 @@ export const WalletPanel: React.FC<{ signedIn: boolean }> = ({ signedIn }) => {
           </button>
         </div>
       )}
+
+      {signedIn && <WithdrawPanel />}
 
       {note && <p className={`mt-2 text-xs font-bold ${note.ok ? 'text-emerald-700' : 'text-red-600'}`} role="status">{note.text}</p>}
     </div>

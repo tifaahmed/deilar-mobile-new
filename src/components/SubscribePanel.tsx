@@ -32,7 +32,6 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
   // Only what the admin shows; customer services stays reachable through the card's contact buttons.
   const manual = MANUAL.filter((m) => status.payment_methods?.includes(m.value));
   const [method, setMethod] = useState<Exclude<PayMethod, 'paymob'>>('cash_on_delivery');
-  const [email, setEmail] = useState('');
   const [reference, setReference] = useState('');
   const [receipt, setReceipt] = useState<File | null>(null);
   const [busy, setBusy] = useState<'manual' | null>(null);
@@ -47,7 +46,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
   // The wallet buys the YEARLY plan, and only when it holds the whole price (the backend decides; this just offers the button).
   const money = useLoyalty().money;
   const yearly = plans.find((p) => p.key === 'year');
-  const canUseWallet = !!yearly && !!money && money.wallet_membership_enabled !== false && money.wallet_balance >= yearly.price;
+  const canUseWallet = !!yearly && !!money && money.wallet_membership_enabled !== false && money.wallet_balance >= (yearly.discounted_price ?? yearly.price);
   const payWithWallet = async () => {
     setBusy('manual');
     setMessage(null);
@@ -76,7 +75,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     setBusy('manual');
     setMessage(null);
     try {
-      await subscribe(token, { method: chosen.value, plan: plan?.key, email, reference, receipt });
+      await subscribe(token, { method: chosen.value, plan: plan?.key, reference, receipt });
       setMessage({ ok: true, text: isAr ? 'شكراً — ستراجع خدمة العملاء الدفع وتفعّل كارتك.' : 'Thanks — customer service will check and activate your card.' });
       setReceipt(null);
       onDone();
@@ -149,7 +148,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
 
       {canUseWallet && yearly && (
         <button type="button" disabled={busy !== null} onClick={payWithWallet} className="w-full py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold cursor-pointer">
-          {isAr ? `👛 اشترِ العضوية السنوية من المحفظة (${yearly.price} ج.م)` : `👛 Buy the yearly membership from the wallet (${yearly.price} EGP)`}
+          {isAr ? `👛 اشترِ العضوية السنوية من المحفظة (${yearly.discounted_price ?? yearly.price} ج.م)` : `👛 Buy the yearly membership from the wallet (${yearly.discounted_price ?? yearly.price} EGP)`}
         </button>
       )}
 
@@ -175,7 +174,6 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
             <input type="text" dir="ltr" placeholder={isAr ? 'مرجع التحويل (اختياري)' : 'Transfer reference (optional)'} value={reference} onChange={(e) => setReference(e.target.value)} className={field} />
           </>
         )}
-        <input type="email" dir="ltr" placeholder={isAr ? 'بريدك لاستلام الإيصال (اختياري)' : 'Email for your receipt (optional)'} value={email} onChange={(e) => setEmail(e.target.value)} className={field} />
 
         {message && (
           <p role="alert" className={`text-[11px] font-bold rounded-xl px-3 py-2 border ${message.ok ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-rose-600 bg-rose-50 border-rose-200'}`}>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { apiGet } from '../api/http';
 
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.deilar.card';
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.deilar.card';
 /** iOS has no Play Store: the server's `store_url` must be the App Store page; without one the update screen never shows there. */
 const IS_IOS = Capacitor.getPlatform() === 'ios';
 

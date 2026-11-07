@@ -29,6 +29,8 @@ export function walletSourceLabel(source: string, amount: number, isAr = true): 
       case 'order': return amount < 0 ? 'Paid part of an order' : 'Order amount';
       case 'membership': return 'Card subscription payment';
       case 'refund': return 'Refund to the wallet';
+      case 'referral': return 'Invitation reward';
+      case 'withdrawal': return 'Cash out to Vodafone Cash';
       case 'transfer': return amount < 0 ? 'Sent to a member' : 'Received from a member';
       case 'admin': return amount < 0 ? 'Deducted by admin' : 'Added by admin';
       default: return 'Wallet movement';
@@ -40,6 +42,8 @@ export function walletSourceLabel(source: string, amount: number, isAr = true): 
     case 'order': return amount < 0 ? 'دفع جزء من طلب' : 'مبلغ طلب';
     case 'membership': return 'دفع اشتراك الكارت';
     case 'refund': return 'استرداد إلى المحفظة';
+    case 'referral': return 'مكافأة دعوة صديق';
+    case 'withdrawal': return 'سحب إلى فودافون كاش';
     case 'transfer': return amount < 0 ? 'تحويل إلى عضو' : 'تحويل من عضو';
     case 'admin': return amount < 0 ? 'خصم من الإدارة' : 'إضافة من الإدارة';
     default: return 'حركة على المحفظة';

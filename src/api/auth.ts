@@ -111,7 +111,7 @@ export interface Profile {
   jobTitle: string | null;
   companyName: string | null;
   /** How complete the profile is, as the backend counts it (`RegistrationProgress`) — never counted here. */
-  progress: { percent: number; missing: string[] } | null;
+  progress: { percent: number; missing: string[]; total?: number } | null;
   governorateId: number | null;
   cityId: number | null;
   /** False when the member has no membership row at all, so there is nowhere to save an area. */
@@ -123,7 +123,7 @@ export interface Profile {
 interface ProfileResponse {
   data: {
     user: { name: string | null; email: string | null; phone: string | null; avatar_url?: string | null; gender?: string | null; date_of_birth?: string | null; membership: { national_id: string | null; job_title?: string | null; company_name?: string | null; governorate_id: number | null; city_id: number | null } | null };
-    registration?: { overall?: { percent: number; missing: string[] } };
+    registration?: { overall?: { percent: number; missing: string[]; total?: number } };
     national_id_change?: Profile['idChange'];
   };
 }
@@ -138,7 +138,7 @@ export const fetchProfile = (token: string): Promise<Profile> =>
     dob: user.date_of_birth ?? null,
     jobTitle: user.membership?.job_title ?? null,
     companyName: user.membership?.company_name ?? null,
-    progress: registration?.overall ? { percent: registration.overall.percent, missing: registration.overall.missing } : null,
+    progress: registration?.overall ? { percent: registration.overall.percent, missing: registration.overall.missing, total: registration.overall.total } : null,
     gender: user.gender === 'male' || user.gender === 'female' ? user.gender : null,
     governorateId: user.membership?.governorate_id ?? null,
     cityId: user.membership?.city_id ?? null,
@@ -147,7 +147,7 @@ export const fetchProfile = (token: string): Promise<Profile> =>
   }));
 
 /** Saves the editable details. The phone is the login, so it is never changed from here. Throws `ApiError` (422 carries `errors`). */
-export const updateProfile = (token: string, body: { name: string; email: string | null; gender?: 'male' | 'female' | null; date_of_birth?: string | null; job_title?: string | null; company_name?: string | null; national_id?: string | null; governorate_id: number | null; city_id?: number | null }) =>
+export const updateProfile = (token: string, body: { name: string; email?: string | null; gender?: 'male' | 'female' | null; date_of_birth?: string | null; job_title?: string | null; company_name?: string | null; national_id?: string | null; governorate_id: number | null; city_id?: number | null }) =>
   apiPut('/profile', body, token);
 
 /** Saves the governorate (and city) on the member's card — the permanent copy of the area picked on this device. */

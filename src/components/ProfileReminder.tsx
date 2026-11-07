@@ -1,3 +1,4 @@
+import { appProgress } from '../utils/profileProgress';
 import { REMINDER_EVERY_MS } from '../utils/reminderEvery';
 import React, { useEffect, useState } from 'react';
 import { UserRoundCheck } from 'lucide-react';
@@ -15,13 +16,10 @@ const VISIBLE_MS = 12_000;
 
 const FIELD_LABELS: Record<string, { ar: string; en: string }> = {
   name: { ar: 'الاسم', en: 'name' },
-  email: { ar: 'البريد الإلكتروني', en: 'email' },
   gender: { ar: 'النوع', en: 'gender' },
   governorate_id: { ar: 'المحافظة', en: 'governorate' },
   city_id: { ar: 'المدينة', en: 'city' },
   national_id: { ar: 'الرقم القومي', en: 'national ID' },
-  job_title: { ar: 'المسمى الوظيفي', en: 'job title' },
-  company_name: { ar: 'جهة العمل', en: 'company' },
   address: { ar: 'العنوان', en: 'address' },
   avatar: { ar: 'الصورة', en: 'photo' },
 };
@@ -57,7 +55,7 @@ export const ProfileReminder: React.FC = () => {
         const current = await fetchMembership(token);
 
         if (!current.has_card) return;
-        if (current.progress.overall.complete) {
+        if (appProgress(current.progress.overall).complete) {
           finished = true;
           return;
         }
@@ -81,7 +79,7 @@ export const ProfileReminder: React.FC = () => {
   usePopupHash('profile-popup', !!status);
   if (!status) return null;
 
-  const { percent, missing } = status.progress.overall;
+  const { percent, missing } = appProgress(status.progress.overall);
   const fields = missing.map((key) => (FIELD_LABELS[key] ? (isAr ? FIELD_LABELS[key].ar : FIELD_LABELS[key].en) : key)).join(isAr ? '، ' : ', ');
 
   return (

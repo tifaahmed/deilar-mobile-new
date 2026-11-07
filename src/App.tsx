@@ -60,6 +60,7 @@ import { useApi } from './hooks/useApi';
 import { useIsMember } from './utils/pricing';
 import { getArea, useArea } from './utils/area';
 import { flushQuizAnswers, startQuizSync } from './utils/quizStore';
+import { claimPendingReferral } from './utils/referral';
 import { clearSession, markPopupClosed, popupDueIn, popupSilenced, updateSession, useSession } from './utils/session';
 import { ProfileReminder } from './components/ProfileReminder';
 import { MembershipReminder } from './components/MembershipReminder';
@@ -124,6 +125,10 @@ export default function App() {
   }, [routeKey, session.token]);
   // Quiz answers played offline (or before signing in) go up whenever there is a member and a connection.
   useEffect(() => startQuizSync(), []);
+  // A code left by an invitation link is sent once there is a signed-in member (the backend decides if it counts).
+  useEffect(() => {
+    if (session.token) void claimPendingReferral(session.token);
+  }, [session.token]);
   useEffect(() => {
     const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => number }).requestIdleCallback;
     const id = idle ? idle(() => void loadQuiz()) : window.setTimeout(() => void loadQuiz(), 3000);

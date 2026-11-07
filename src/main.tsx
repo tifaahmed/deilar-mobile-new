@@ -15,9 +15,12 @@ import '@fontsource/cairo/latin-800.css';
 import './index.css';
 import { LanguageProvider } from './context/LanguageContext';
 import { installKeyboardGuard } from './utils/keyboardGuard';
+import { captureReferralLinks } from './utils/referral';
 
 // Any field being typed in is scrolled clear of the on-screen keyboard (one rule for every form).
 installKeyboardGuard();
+// A shared invitation link (/r/<card number>) leaves its code on the phone until the member signs in.
+captureReferralLinks();
 
 createRoot(document.getElementById('root')!).render(
   <LanguageProvider>

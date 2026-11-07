@@ -1,3 +1,4 @@
+import { appProgress } from '../utils/profileProgress';
 import React, { useEffect, useState } from 'react';
 import { 
   User, 
@@ -41,6 +42,7 @@ import {
   Trash2,
   PackageSearch,
   Wallet,
+  Gift,
 } from 'lucide-react';
 import { Beneficiary } from '../types';
 import { MembershipCardImage } from './MembershipCardImage';
@@ -52,6 +54,7 @@ import { useApi } from '../hooks/useApi';
 import { fetchFamily } from '../api/family';
 import { AddChildForm } from './AddChildForm';
 import { WalletScreen } from './WalletScreen';
+import { ReferralScreen } from './ReferralScreen';
 import { CardStatusBanner } from './CardStatusBanner';
 import { CardExpiry } from './CardExpiry';
 import { SubscribePanel } from './SubscribePanel';
@@ -75,7 +78,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { LegalSheet, type LegalKind } from './LegalPages';
 import { DeleteAccountModal } from './DeleteAccountModal';
 
-export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay' | 'physical' | 'wallet';
+export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay' | 'physical' | 'wallet' | 'invite';
 
 export interface ProfileAccount {
   name: string;
@@ -106,13 +109,10 @@ interface ProfileViewProps {
 
 const FIELD_LABELS: Record<string, { ar: string; en: string }> = {
   name: { ar: 'الاسم', en: 'name' },
-  email: { ar: 'البريد الإلكتروني', en: 'email' },
   gender: { ar: 'النوع', en: 'gender' },
   governorate_id: { ar: 'المحافظة', en: 'governorate' },
   city_id: { ar: 'المدينة', en: 'city' },
   national_id: { ar: 'الرقم القومي', en: 'national ID' },
-  job_title: { ar: 'المسمى الوظيفي', en: 'job title' },
-  company_name: { ar: 'جهة العمل', en: 'company' },
   address: { ar: 'العنوان', en: 'address' },
   avatar: { ar: 'الصورة الشخصية', en: 'profile photo' },
 };
@@ -150,12 +150,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [personalInfo, setPersonalInfo] = useState({
     fullName: account.name,
     phone: account.phone,
-    email: '',
     governorateId: '' as string,
     cityId: '' as string,
     nationalId: '',
     gender: '' as '' | 'male' | 'female',
-    jobTitle: '',
     companyName: '',
     dob: '',
     address: '',
@@ -208,7 +206,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     const t = getSession().token;
     if (!t) return;
     let alive = true;
-    fetchProfile(t).then((p) => { if (alive) { setAvatarUrl(p.avatarUrl); setProgress(p.progress); } }, () => undefined);
+    fetchProfile(t).then((p) => { if (alive) { setAvatarUrl(p.avatarUrl); setProgress(p.progress ? appProgress(p.progress) : null); } }, () => undefined);
     return () => { alive = false; };
   }, []);
 
@@ -233,18 +231,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         setPersonalInfo((cur) => ({
           fullName: p.name ?? cur.fullName,
           phone: p.phone ?? cur.phone,
-          email: p.email ?? '',
           governorateId: p.governorateId ? String(p.governorateId) : '',
           cityId: p.cityId ? String(p.cityId) : '',
           nationalId: p.nationalId ?? '',
           gender: p.gender ?? '',
-          jobTitle: p.jobTitle ?? '',
           companyName: p.companyName ?? '',
           dob: p.dob ?? '',
           address: cur.address,
           building: cur.building,
         }));
-        setProgress(p.progress);
+        setProgress(p.progress ? appProgress(p.progress) : null);
         setIdChange(p.idChange);
         setSavedNationalId(p.nationalId ?? '');
         fetchSavedAddress(token).then(
@@ -334,9 +330,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     try {
       await updateProfile(token, {
         name: personalInfo.fullName.trim(),
-        email: personalInfo.email.trim() || null,
         ...(personalInfo.gender ? { gender: personalInfo.gender } : {}),
-        job_title: personalInfo.jobTitle.trim() || null,
         company_name: personalInfo.companyName.trim() || null,
         date_of_birth: personalInfo.dob || null,
         // An ID that is already on the card is changed only through a request (see <NationalIdChange>).
@@ -358,7 +352,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         });
       }
       // The percentage is the backend's count; ask it again rather than guessing what changed.
-      fetchProfile(token).then((p) => setProgress(p.progress), () => undefined);
+      fetchProfile(token).then((p) => setProgress(p.progress ? appProgress(p.progress) : null), () => undefined);
       setPersonalSaveSuccess(true);
       setTimeout(() => setPersonalSaveSuccess(false), 3500);
     } catch (err) {
@@ -414,6 +408,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     return (
       <div className={`pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
         <WalletScreen />
+      </div>
+    );
+  }
+
+  // /account/invite: my code, the QR, the share buttons and who I brought.
+  if (activeSection === 'invite') {
+    return (
+      <div className={`pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
+        <ReferralScreen />
       </div>
     );
   }
@@ -595,6 +598,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             { key: 'addresses', icon: MapPin, label: isAr ? 'عناويني' : 'Addresses', go: () => setActiveSection('addresses') },
             { key: 'orders', icon: PackageSearch, label: isAr ? 'طلباتي' : 'My orders', go: () => navigate(routeHref({ orders: { code: null } })) },
             ...(account.signedIn ? [{ key: 'wallet', icon: Wallet, label: isAr ? 'محفظتي' : 'My wallet', go: () => setActiveSection('wallet') }] : []),
+            ...(account.signedIn ? [{ key: 'invite', icon: Gift, label: isAr ? 'ادعُ أصدقاءك واكسب' : 'Invite friends & earn', go: () => setActiveSection('invite') }] : []),
             ...(account.signedIn ? [{ key: 'physical', icon: CreditCard, label: isAr ? 'طلب كارت فيزيكال' : 'Order a physical card', go: () => navigate(routeHref({ tab: 'mycard', section: 'physical' })) }] : []),
             { key: 'support', icon: Headphones, label: t('tabSupport'), go: () => setActiveSection('support') },
             { key: 'theme', icon: Palette, label: t('tabTheme'), go: () => setActiveSection('theme') },
@@ -1183,22 +1187,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </div>
               </div>
 
-              <div>
-                <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                  {t('emailPrompt')}
-                </label>
-                <div className="relative">
-                  <Mail className={`w-4 h-4 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`} />
-                  <input
-                    type="email"
-                    value={personalInfo.email}
-                    onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
-                    className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
-                      isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
-                    }`}
-                  />
-                </div>
-              </div>
             </div>
 
             <div>
@@ -1262,19 +1250,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
 
             <div>
-              <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'المسمى الوظيفي' : 'Job title'}</label>
-              <input
-                type="text"
-                value={personalInfo.jobTitle}
-                maxLength={255}
-                onChange={(e) => setPersonalInfo({ ...personalInfo, jobTitle: e.target.value })}
-                className={`w-full px-3 py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] ${isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
-              />
-            </div>
-
-            <div>
               <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                {isAr ? 'جهة العمل (اختياري)' : 'Company name (optional)'}
+                {isAr ? 'اسم شركتك (اختياري)' : 'Your company name (optional)'}
               </label>
               <input
                 type="text"

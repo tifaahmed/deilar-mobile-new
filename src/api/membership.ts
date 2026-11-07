@@ -11,6 +11,8 @@ export interface Plan {
   key: 'year' | 'half' | string;
   price: number;
   months: number;
+  /** The price after the member's referral discount (same as `price` when there is none). */
+  discounted_price?: number;
 }
 
 export interface CardStatus {
@@ -26,6 +28,8 @@ export interface CardStatus {
   months: number;
   /** Every plan on sale; absent on an older backend (then `price`/`months` is the only plan). */
   plans?: Plan[];
+  /** Pounds a referral takes off the FIRST subscription (0 = none). Draw `plans[].discounted_price`; never subtract here. */
+  referral_discount?: number;
   can_pay_online: boolean;
   /** The ways of paying the admin shows (/admin/setting), in order. Draw exactly these. */
   payment_methods: PayMethod[];
