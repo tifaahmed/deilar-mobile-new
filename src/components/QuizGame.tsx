@@ -8,7 +8,7 @@ import type { BadgeInfo } from '../utils/quizStore';
 import { PointsGallery, PointsMood, sceneFor } from './PointsMood';
 import { blockPullToRefresh } from './PullToRefresh';
 import { QuizLaunch } from './QuizLaunch';
-import { WalletPanel, formatEgp } from './WalletPanel';
+import { formatEgp } from './WalletPanel';
 import { TransfersPanel } from './TransfersPanel';
 import { resultShareText } from '../utils/shareResult';
 import { PLAY_SIZE, pickQuestions, recordProgress, useProgress } from '../utils/quizProgress';
@@ -610,7 +610,6 @@ const QuizGameInner: React.FC = () => {
         {!started && step === 'types' && (
           <motion.div key="types" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
             <PointsBalance total={loyalty.total} pending={loyalty.pending} signedIn={!!session.token} egp={loyalty.egp} />
-            <WalletPanel signedIn={!!session.token} />
             {!!session.token && <TransfersPanel />}
             <h1 className="text-xl font-black text-slate-900">{isAr ? '🎮 اختر نوع اللعبة' : '🎮 Choose the game'}</h1>
             <motion.button whileTap={{ scale: 0.96 }} onClick={() => go('mcq')} className="w-full flex items-center gap-3 p-4 rounded-3xl bg-gradient-to-l from-violet-500 to-purple-600 text-white shadow-[0_5px_0_rgba(0,0,0,0.2)] cursor-pointer">

@@ -30,15 +30,17 @@ export function stageLabel(r: Pick<ReferralRow, 'stage' | 'plan'>, isAr: boolean
 export function rewardLabel(w: ReferralReward, isAr: boolean): string {
   if (w.kind === 'trial') return isAr ? 'مكافأة بدء التجربة' : 'Trial reward';
   const plan = w.plan ? (isAr ? PLAN_AR : PLAN_EN)[w.plan] : '';
+  if (!w.rate) return isAr ? `عمولة ثابتة على ${plan} (${w.base_amount})` : `Fixed commission on ${plan} (${w.base_amount})`;
   return isAr ? `عمولة ${w.rate}% على ${plan} (${w.base_amount})` : `${w.rate}% commission on ${plan} (${w.base_amount})`;
 }
 
 /** The message that goes with the link: what the friend gets, in the backend's own numbers. */
 export function inviteText(info: ReferralInfo, isAr: boolean): string {
-  const { discount } = info.amounts;
+  /* Each plan has its own discount: the message promises the best one ("up to"). */
+  const discount = Math.max(info.amounts.discount, ...Object.values(info.amounts.plans ?? {}).map((p) => p?.discount ?? 0));
   return isAr
-    ? `انضم لديلر كارت الخصومات 💳\nحمّل التطبيق من اللينك ده وهتاخد خصم ${formatNumber(discount, true)} ج.م على اشتراكك.\nرقم عضوية اللي دعاك: ${info.code}\n${info.link}`
-    : `Join Deilar, the discount card 💳\nDownload the app from this link and get ${discount} EGP off your subscription.\nMy card number: ${info.code}\n${info.link}`;
+    ? `انضم لديلر كارت الخصومات 💳\nحمّل التطبيق من اللينك ده وهتاخد خصم لحد ${formatNumber(discount, true)} ج.م على اشتراكك.\nرقم عضوية اللي دعاك: ${info.code}\n${info.link}`
+    : `Join Deilar, the discount card 💳\nDownload the app from this link and get up to ${discount} EGP off your subscription.\nMy card number: ${info.code}\n${info.link}`;
 }
 
 /** «ادعُ أصدقاءك»: my code, the share link, a QR, and who I brought (did they subscribe, what did it pay me). */
@@ -72,7 +74,7 @@ export const ReferralScreen: React.FC = () => {
   if (!info) return <p className="text-xs font-semibold text-slate-400">{isAr ? 'جارٍ التحميل…' : 'Loading…'}</p>;
   if (!info.enabled) return <p className="p-3 rounded-xl text-xs font-bold bg-slate-50 text-slate-600">{isAr ? 'الدعوات متوقفة حالياً.' : 'Invitations are not available right now.'}</p>;
 
-  const { trial_bonus: trial, commission_percent: percent, discount } = info.amounts;
+  const { trial_bonus: trial, plans } = info.amounts;
   const n = (v: number) => formatNumber(v, isAr);
   const cur = isAr ? 'ج.م' : 'EGP';
 
@@ -103,9 +105,26 @@ export const ReferralScreen: React.FC = () => {
         <p className="flex items-center gap-2 text-base font-black"><Gift className="w-5 h-5" /> {isAr ? 'ادعُ أصدقاءك واكسب' : 'Invite friends and earn'}</p>
         <p className="text-xs leading-6 text-white/90">
           {isAr
-            ? `لما صاحبك ينزّل التطبيق بلينكك ويبدأ التجربة تاخد ${n(trial)} ${cur} في محفظتك، وبعدها ${n(percent)}٪ من كل اشتراك يدفعه (وكل تجديد). وهو ياخد خصم ${n(discount)} ${cur} على أول اشتراك.`
-            : `When your friend installs with your link and starts the trial you get ${trial} ${cur} in your wallet, then ${percent}% of every subscription they pay (renewals too). They get ${discount} ${cur} off their first one.`}
+            ? `لما صاحبك ينزّل التطبيق بلينكك ويبدأ التجربة تاخد ${n(trial)} ${cur} في محفظتك، وبعدها عمولة على كل اشتراك يدفعه (وكل تجديد). الخصم والعمولة بيختلفوا حسب الباقة:`
+            : `When your friend installs with your link and starts the trial you get ${trial} ${cur} in your wallet, then a commission on every subscription they pay (renewals too). The discount and the commission depend on the plan:`}
         </p>
+        {plans && (
+          <ul className="space-y-1 text-[11px] font-bold" data-testid="referral-plans">
+            {(['month', 'half', 'year'] as const).filter((key) => plans[key]).map((key) => {
+              const rule = plans[key]!;
+              const earn = rule.commission_type === 'fixed'
+                ? `${n(rule.commission_fixed)} ${cur}`
+                : `${n(rule.commission_percent)}%`;
+              return (
+                <li key={key} data-testid={`referral-plan-${key}`} className="rounded-xl bg-white/15 px-3 py-1.5">
+                  {isAr
+                    ? `${PLAN_AR[key]}: صاحبك ياخد خصم ${n(rule.discount)} ${cur} · انت تاخد ${earn}`
+                    : `${PLAN_EN[key]}: your friend gets ${n(rule.discount)} ${cur} off · you earn ${earn}`}
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
 
       {info.code && info.link ? (

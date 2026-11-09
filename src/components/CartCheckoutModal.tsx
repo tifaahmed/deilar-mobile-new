@@ -37,6 +37,8 @@ import { rememberOrder } from '../utils/orders';
 import { getArea } from '../utils/area';
 import { downloadInvoicePdf } from '../utils/invoicePdf';
 import { navigate, routeHref } from '../router';
+import { PointsBadge } from './PointsBadge';
+import { pointsEligibleEgp } from '../utils/pointsCaps';
 import { useLanguage } from '../context/LanguageContext';
 
 interface CartCheckoutModalProps {
@@ -77,7 +79,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   
   // Payment Method: 'wallet' (محفظة إلكترونية / فودافون كاش) or 'cod' (الدفع عند الاستلام)
   // Spend loyalty points on the products that accept them (on by default; the buyer may switch it off).
-  const [usePoints, setUsePoints] = useState(true);
+  // Neither points nor the wallet are spent unless the buyer presses for it: someone may want to keep them.
+  const [usePoints, setUsePoints] = useState(false);
+  const [useWallet, setUseWallet] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'cod' | 'online'>('online');
   // With `online`: Paymob's bank-card form or its mobile-wallet page.
   const [onlineChannel, setOnlineChannel] = useState<OnlineChannel>('card');
@@ -184,13 +188,15 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const pointsRate = loyalty.money?.points_per_egp ?? 0;
   // Only what the backend holds counts: points still waiting on this phone are not the server's yet.
   const pointsHeld = session.token ? Math.max(0, loyalty.total - loyalty.pending) : 0;
-  const pointsEligible = cart.reduce((sum, item) => sum + (item.product.pointsPayable ? item.product.price * item.quantity : 0), 0);
+  const pointsEligible = pointsEligibleEgp(cart, pointsRate, loyalty.money?.points_max_per_order);
+  const orderPointsCap = loyalty.money?.points_max_per_order ?? null;
   const pointsEgpAvailable = pointsRate > 0 ? Math.floor(Math.min(pointsHeld / pointsRate, pointsEligible)) : 0;
   const canUsePoints = pointsEgpAvailable > 0;
   const pointsEgp = placed ? placed.points_amount ?? 0 : usePoints ? pointsEgpAvailable : 0;
   const pointsSpent = placed ? placed.points_used ?? 0 : pointsEgp * pointsRate;
   const walletBalance = session.token ? loyalty.money?.wallet_balance ?? 0 : 0;
-  const walletShown = placed ? placed.wallet_amount ?? 0 : Math.min(walletBalance, Math.max(0, totalCartPrice - pointsEgp));
+  const walletUsable = Math.min(walletBalance, Math.max(0, totalCartPrice - pointsEgp));
+  const walletShown = placed ? placed.wallet_amount ?? 0 : useWallet ? walletUsable : 0;
   // An estimate while shopping; once the order is placed the server's figures replace it.
   const finalTotal = placed ? placed.amount_due ?? placed.total_amount : Math.max(0, totalCartPrice + shippingFee + codFee - pointsEgp - walletShown);
 
@@ -311,6 +317,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
           paymobChannel: paymentMethod === 'online' ? onlineChannel : undefined,
           membershipNumber: session.cardNumber,
           usePoints: usePoints && canUsePoints,
+          useWallet: useWallet && walletUsable > 0,
           items: cart.map((item) => ({ slug: item.product.slug, quantity: item.quantity })),
         },
         session.token,
@@ -454,6 +461,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                                 </span>
                               )}
                             </div>
+                            <div className="mt-1"><PointsBadge product={item.product} compact /></div>
                             <div className="text-xs font-black text-[#941946] font-mono mt-1">
                               {item.product.price * item.quantity} {isAr ? 'ج.م' : 'EGP'}
                               <span className="text-[10px] text-slate-400 font-sans mr-1">
@@ -518,6 +526,15 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                         <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} className="h-4 w-4 accent-amber-600" />
                       </label>
                     )}
+                    {orderPointsCap != null && orderPointsCap > 0 && !placed && (
+                      <p data-testid="points-order-cap" className="text-[10px] font-bold text-amber-700">{isAr ? `⭐ الحد الأقصى لنقاط الولاء في الطلب الواحد: ${orderPointsCap} نقطة` : `⭐ Most loyalty points one order may use: ${orderPointsCap} points`}</p>
+                    )}
+                    {walletUsable > 0 && !placed && (
+                      <label data-testid="wallet-toggle" className="flex items-center justify-between gap-2 rounded-xl border border-violet-300 bg-violet-50 px-2.5 py-2 text-[11px] font-bold text-violet-900">
+                        <span>{isAr ? `👛 ادفع من محفظتي (${walletUsable} ج.م من رصيد ${walletBalance} ج.م)` : `👛 Pay from my wallet (${walletUsable} EGP of ${walletBalance} EGP)`}</span>
+                        <input type="checkbox" checked={useWallet} onChange={(e) => setUseWallet(e.target.checked)} className="h-4 w-4 accent-violet-600" />
+                      </label>
+                    )}
                     {pointsEgp > 0 && (
                       <div data-testid="points-line-cart" className="flex justify-between text-amber-800 font-bold">
                         <span>{isAr ? `⭐ خصم نقاط الولاء (${pointsSpent} نقطة):` : `⭐ Loyalty points discount (${pointsSpent} points):`}</span>
@@ -526,7 +543,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     )}
                     {walletShown > 0 && (
                       <div data-testid="wallet-line-cart" className="flex justify-between text-violet-800 font-bold">
-                        <span>{isAr ? '👛 هيتخصم تلقائياً من محفظتك:' : '👛 Taken automatically from your wallet:'}</span>
+                        <span>{isAr ? '👛 مدفوع من محفظتك:' : '👛 Paid from your wallet:'}</span>
                         <span>-{walletShown} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                     )}

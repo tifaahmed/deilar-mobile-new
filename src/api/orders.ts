@@ -51,6 +51,8 @@ export interface NewOrder {
   membershipNumber?: string;
   /** Spend loyalty points on the products that accept them (default true; the server decides the figures). */
   usePoints?: boolean;
+  /** Pay part of the bill from the wallet — only when the buyer pressed for it. */
+  useWallet?: boolean;
   items: { slug: string; quantity: number }[];
 }
 
@@ -84,7 +86,8 @@ export async function placeOrder(order: NewOrder, token?: string): Promise<Place
       payment_type: order.payment,
       paymob_channel: order.payment === 'paymob' ? order.paymobChannel ?? null : null,
       membership_number: order.membershipNumber || null,
-      use_points: order.usePoints ?? true,
+      use_points: order.usePoints ?? false,
+      use_wallet: order.useWallet ?? false,
       items: order.items,
     },
     undefined,

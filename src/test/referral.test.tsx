@@ -117,6 +117,25 @@ describe('the invite screen', () => {
     expect(latin(screen.getByTestId('referral-dashboard').textContent)).toContain('9'); // clicks/opens totals line is drawn
   });
 
+  it('draws each plan\'s own discount and commission (a percent for one plan, a fixed sum for another) from the backend', async () => {
+    const plans = {
+      month: { discount: 25, commission_type: 'fixed', commission_percent: 10, commission_fixed: 15 },
+      half: { discount: 50, commission_type: 'percent', commission_percent: 5, commission_fixed: 0 },
+      year: { discount: 100, commission_type: 'percent', commission_percent: 10, commission_fixed: 0 },
+    };
+    http.apiGetAuth.mockResolvedValue({ data: { ...info, amounts: { ...info.amounts, plans } } });
+    render(<ReferralScreen />);
+    await screen.findByTestId('referral-plans');
+
+    const line = (k: string) => latin(screen.getByTestId(`referral-plan-${k}`).textContent);
+    expect(line('month')).toContain('25');
+    expect(line('month')).toContain('15');
+    expect(line('half')).toContain('50');
+    expect(line('half')).toContain('5%');
+    expect(line('year')).toContain('100');
+    expect(line('year')).toContain('10%');
+  });
+
   it('shows each invited member with their stage and earnings, and opens the details of every payout (a refunded one struck out)', async () => {
     http.apiGetAuth.mockResolvedValue({ data: info });
     render(<ReferralScreen />);

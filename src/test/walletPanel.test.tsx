@@ -33,46 +33,19 @@ describe('points as pounds and the wallet', () => {
     expect(pointsToEgp(-50, 10)).toBe(0);
   });
 
-  it('shows what the points are worth and the wallet balance, and nothing until the backend has told the rate', () => {
+  it('draws nothing until the backend has told the rate', () => {
     seed(1234, undefined);
     const { container } = render(<WalletPanel signedIn />);
     expect(container.firstChild).toBeNull();
   });
 
-
-  it('shows the worth in pounds and the wallet balance once the backend has told the rate', () => {
-    seed(1234, money());
+  it('shows the wallet balance only: no top-up with money and no points → wallet conversion (both closed on 2026-11-09)', () => {
+    seed(1234, money({ wallet_enabled: true }));
     render(<WalletPanel signedIn />);
-    expect(screen.getByText(/123.4 جنيه/)).toBeTruthy();
     expect(screen.getByText(/رصيد المحفظة/).textContent).toContain('5 جنيه');
-  });
-
-  it('converts the pounds asked for, once per tap, and tells the result', async () => {
-    seed(1000, money());
-    http.apiPost.mockResolvedValueOnce({ data: { points: 500, money: undefined, points_per_egp: 10, wallet_balance: 55, wallet_enabled: true, wallet_min_egp: 10 } });
-    render(<WalletPanel signedIn />);
-
-    expect(screen.getAllByText(/100 جنيه/).length).toBeGreaterThan(0);
-    fireEvent.change(screen.getByLabelText(/كام جنيه/), { target: { value: '50' } });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /حوّل 50 جنيه/ })); });
-
-    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('تم تحويل 50 جنيه'));
-    const [path, body] = http.apiPost.mock.calls[0];
-    expect(path).toBe('/loyalty/convert');
-    expect(body.egp).toBe(50);
-    expect(typeof body.id).toBe('string');
-  });
-
-  it('does not offer the button while the admin has converting closed, or under the minimum', () => {
-    seed(1000, money({ wallet_enabled: false }));
-    render(<WalletPanel signedIn />);
+    expect(screen.queryByTestId('wallet-topup')).toBeNull();
     expect(screen.queryByRole('button', { name: /حوّل/ })).toBeNull();
-    expect(screen.getByText(/هيتفتح قريباً/)).toBeTruthy();
-  });
-
-  it('keeps the button off under the minimum', () => {
-    seed(30, money());
-    render(<WalletPanel signedIn />);
-    expect((screen.getByRole('button', { name: /حوّل/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.queryByLabelText(/كام جنيه/)).toBeNull();
+    expect(http.apiPost).not.toHaveBeenCalled();
   });
 });

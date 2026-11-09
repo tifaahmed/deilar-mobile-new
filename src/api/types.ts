@@ -129,6 +129,8 @@ export interface ProductCard {
   wallet_payable?: boolean;
   /** The admin allowed a loyalty-points discount on it. */
   points_payable?: boolean;
+  /** Most loyalty points it may take in one order; null = no limit. */
+  points_max?: number | null;
 }
 
 export interface ProductDetail extends ProductCard {

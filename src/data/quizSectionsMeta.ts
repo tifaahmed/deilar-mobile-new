@@ -7,7 +7,7 @@ export const SECTION_META = {
   fawazeer: { id: 'fawazeer', key: 'mcq:fawazeer', title: 'الفوازير', titleEn: 'Riddles', emoji: '🧩' },
   general: { id: 'general', key: 'mcq:general', title: 'معلومات عامة', titleEn: 'General knowledge', emoji: '🌍' },
   history: { id: 'history', key: 'mcq:history', title: 'التاريخ', titleEn: 'History', emoji: '🏛️' },
-  cinema: { id: 'cinema', key: 'mcq:cinema', title: 'سينما ومسلسلات', titleEn: 'Movies & series', emoji: '🎬' },
+  cinema: { id: 'cinema', key: 'mcq:cinema', title: 'سينما ومسلسلات مصرية', titleEn: 'Egyptian movies & series', emoji: '🎬' },
 } as const;
 
 export const SECTION_LIST = Object.values(SECTION_META);

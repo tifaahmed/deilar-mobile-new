@@ -128,6 +128,8 @@ export interface Money {
   /** The smallest top-up from the app, and whether the wallet may buy the yearly membership. */
   wallet_min_topup?: number;
   wallet_membership_enabled?: boolean;
+  /** Most points one order may spend (null = no limit); set by the admin. */
+  points_max_per_order?: number | null;
 }
 
 interface LoyaltyData {
@@ -141,10 +143,11 @@ interface LoyaltyData {
   wallet_min_egp?: number;
   wallet_min_topup?: number;
   wallet_membership_enabled?: boolean;
+  points_max_per_order?: number | null;
 }
 
 const moneyOf = (d: LoyaltyData): Money | undefined =>
-  d.points_per_egp == null ? undefined : { points_per_egp: d.points_per_egp, wallet_balance: d.wallet_balance ?? 0, wallet_enabled: !!d.wallet_enabled, wallet_min_egp: d.wallet_min_egp ?? 20, wallet_min_topup: d.wallet_min_topup ?? 20, wallet_membership_enabled: d.wallet_membership_enabled ?? true };
+  d.points_per_egp == null ? undefined : { points_per_egp: d.points_per_egp, wallet_balance: d.wallet_balance ?? 0, wallet_enabled: !!d.wallet_enabled, wallet_min_egp: d.wallet_min_egp ?? 20, wallet_min_topup: d.wallet_min_topup ?? 20, wallet_membership_enabled: d.wallet_membership_enabled ?? true, points_max_per_order: d.points_max_per_order ?? null };
 
 const SEEN_KEY = 'deilar_quiz_badges_seen';
 

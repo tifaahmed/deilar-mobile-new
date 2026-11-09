@@ -40,6 +40,9 @@ interface MapViewProps {
   isGpsLoading: boolean;
 }
 
+/** Past this range an automatic widening opens the filter popup (a range the visitor picks never does). */
+const AUTO_WIDEN_FILTER_KM = 10;
+
 /** Pins fetched per request, nearest first. The backend allows up to 3000 and only ~2000 branches have coordinates, so with a wide radius the map shows them all (the pins are tiny and the map clusters them). */
 const PIN_PAGE = 2500;
 /** What every deployed backend accepts. */
@@ -168,6 +171,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
     if (!autoWiden.current || pinsQuery.loading || !pinsQuery.data) return;
     if (next === null) { autoWiden.current = false; return; }
     if (selectedTypeId) setWidenedFrom((from) => from ?? maxRadiusKm);
+    // Automatic widening went past 10 km: keep widening, but open the filters so the visitor can narrow it down.
+    if ((next === 0 || next > AUTO_WIDEN_FILTER_KM) && maxRadiusKm !== 0 && maxRadiusKm <= AUTO_WIDEN_FILTER_KM) setDrawerOpen(true);
     onRadiusChange(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinsQuery.loading, pinsQuery.data, pins, viewMode]);
@@ -180,7 +185,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
   // ---- List mode: server-side search / filter / nearest-first, infinite scroll ---------------
   const byDiscount = sort === 'discount';
-  const listParams = { ...listPoint, q, radius_km: govId ? null : radius, governorate_id: govId, city_id: cityId, ...(hasGps ? {} : { home_governorate_id: myArea?.governorate.id, home_city_id: myArea?.city?.id }), type: selectedTypeId, per_page: 12, sort: byDiscount ? 'discount' : undefined };
+  const listParams = { ...listPoint, q, radius_km: null, governorate_id: govId, city_id: cityId, ...(hasGps ? {} : { home_governorate_id: myArea?.governorate.id, home_city_id: myArea?.city?.id }), type: selectedTypeId, per_page: 12, sort: byDiscount ? 'discount' : 'nearest' };
   const list = usePaged<FacilityCard>(PATHS.facilities, listParams, (page, signal) => api.facilities({ ...listParams, page }, signal), viewMode === 'list');
 
   // Initialize Leaflet Map (only while the map view is showing)
@@ -426,15 +431,22 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
             ))}
           </div>
           <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs font-bold text-slate-800">
-            <div className="flex items-center gap-1.5">
-              <Navigation className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <span>{isAr ? 'نطاق البحث:' : 'Search range:'}</span>
-              {radiusSelect('list-radius-select')}
-            </div>
-            {/* Biggest discount first; press again for nearest-first. */}
+            {/* Nearest first (the default; inside a chosen governorate / city, nearest within it); no km range in the list. */}
             <button
               type="button"
-              onClick={() => onSortChange(byDiscount ? null : 'discount')}
+              onClick={() => onSortChange(null)}
+              aria-pressed={!byDiscount}
+              className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                !byDiscount ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'
+              }`}
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>{isAr ? 'الأقرب' : 'Nearest'}</span>
+            </button>
+            {/* Biggest discount first. */}
+            <button
+              type="button"
+              onClick={() => onSortChange('discount')}
               aria-pressed={byDiscount}
               className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
                 byDiscount ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'

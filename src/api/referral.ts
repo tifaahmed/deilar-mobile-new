@@ -53,13 +53,20 @@ export interface ReferralTotals {
   count: number;
 }
 
+export interface ReferralPlanRule {
+  discount: number;
+  commission_type: 'percent' | 'fixed';
+  commission_percent: number;
+  commission_fixed: number;
+}
+
 export interface ReferralInfo {
   enabled: boolean;
   /** My card number — the code. null until I have a real card (nothing to share yet). */
   code: string | null;
   link: string | null;
-  /** trial_bonus: pounds when someone I brought starts a trial; commission_percent: of EVERY paid subscription; discount: off their first one. */
-  amounts: { trial_bonus: number; commission_percent: number; discount: number };
+  /** trial_bonus: pounds when someone I brought starts a trial; `plans`: for EACH plan, the discount off their first subscription and what I earn (a percent OR a fixed sum). */
+  amounts: { trial_bonus: number; commission_percent: number; discount: number; plans?: Partial<Record<'month' | 'half' | 'year', ReferralPlanRule>> };
   totals: ReferralTotals;
   referrals: ReferralRow[];
   /** Who brought me, when somebody did. */

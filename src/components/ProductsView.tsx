@@ -12,6 +12,7 @@
  * ==============================================================================
  */
 
+import { PointsBadge } from './PointsBadge';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Package, ShoppingCart, ShoppingBag, Check, Search, SlidersHorizontal, Store as StoreIcon, X, Eye, ExternalLink } from 'lucide-react';
@@ -223,6 +224,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
                     )}
 
                     <h3 className="text-xs font-bold text-slate-900 group-hover:text-[#941946] transition-colors line-clamp-2 leading-snug">{product.name}</h3>
+                    <PointsBadge product={{ pointsPayable: product.points_payable, pointsMax: product.points_max }} compact />
                   </div>
                 </div>
 

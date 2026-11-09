@@ -1,3 +1,4 @@
+import { PointsBadge } from './PointsBadge';
 import React, { useState } from 'react';
 import { ArrowRight, BadgeCheck, Check, Headphones, Minus, Plus, MessageCircle, Share2, ShoppingBag, ShoppingCart, Store as StoreIcon, Tag, Truck } from 'lucide-react';
 import type { ProductCard, ProductDetail } from '../api/types';
@@ -189,6 +190,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
                         </button>
                       )
                     )}
+                    <PointsBadge product={{ pointsPayable: product.points_payable, pointsMax: product.points_max }} />
                   </div>
                 );
               })()}

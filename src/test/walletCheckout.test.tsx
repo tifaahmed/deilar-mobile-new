@@ -40,6 +40,10 @@ describe('wallet and loyalty points cut the bill automatically at checkout', () 
   it('the wallet pays for ANY product (ticked or not), capped by the balance', async () => {
     seed(80);
     show([item('a', 100), item('b', 50)] as never[]);
+    // Nothing is taken until the buyer presses for it.
+    await screen.findByTestId('wallet-toggle');
+    expect(screen.queryByTestId('wallet-line-cart')).toBeNull();
+    (await screen.findByTestId('wallet-toggle')).querySelector('input')!.click();
     expect((await screen.findByTestId('wallet-line-cart')).textContent).toContain('-80');
   });
 
@@ -53,6 +57,10 @@ describe('wallet and loyalty points cut the bill automatically at checkout', () 
   it('points discount only products that accept them, in whole pounds, then the wallet pays the rest', async () => {
     seed(30, 1250); // 125 pounds of points at 10 per pound; only the 100 EGP product accepts them
     show([item('a', 100, true), item('b', 50)] as never[]);
+    await screen.findByTestId('points-toggle');
+    expect(screen.queryByTestId('points-line-cart')).toBeNull();
+    (await screen.findByTestId('points-toggle')).querySelector('input')!.click();
+    (await screen.findByTestId('wallet-toggle')).querySelector('input')!.click();
     expect((await screen.findByTestId('points-line-cart')).textContent).toContain('-100');
     expect((await screen.findByTestId('wallet-line-cart')).textContent).toContain('-30');
   });
@@ -66,6 +74,9 @@ describe('wallet and loyalty points cut the bill automatically at checkout', () 
     unmount();
 
     show([item('a', 100, true)] as never[]);
+    await screen.findByTestId('points-toggle');
+    expect(screen.queryByTestId('points-line-cart')).toBeNull(); // off until pressed
+    (await screen.findByTestId('points-toggle')).querySelector('input')!.click();
     expect(await screen.findByTestId('points-line-cart')).toBeTruthy();
     (await screen.findByTestId('points-toggle')).querySelector('input')!.click();
     await screen.findAllByText(/ج\.م/);

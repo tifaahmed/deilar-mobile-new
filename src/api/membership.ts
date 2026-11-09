@@ -8,11 +8,13 @@ import type { OnlineChannel } from './orders';
  */
 /** One way to subscribe: `year` and/or `half`, each with the price and months the backend set (/admin/setting). */
 export interface Plan {
-  key: 'year' | 'half' | string;
+  key: 'year' | 'half' | 'month' | string;
   price: number;
   months: number;
   /** The price after the member's referral discount (same as `price` when there is none). */
   discounted_price?: number;
+  /** Pounds the referral takes off THIS plan (each plan has its own); 0 = none. */
+  referral_discount?: number;
 }
 
 export interface CardStatus {

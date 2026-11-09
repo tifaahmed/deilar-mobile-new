@@ -15,6 +15,7 @@ export function toCartProduct(card: ProductCard): Product {
     storeName: card.store?.title,
     walletPayable: !!card.wallet_payable,
     pointsPayable: !!card.points_payable,
+    pointsMax: card.points_max ?? null,
   };
 }
 

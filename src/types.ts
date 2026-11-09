@@ -74,6 +74,8 @@ export interface Product {
   walletPayable?: boolean;
   /** The admin allowed a loyalty-points discount on it. */
   pointsPayable?: boolean;
+  /** Most loyalty points this product may take in one order (its own limit or the system's); null/absent = no limit. */
+  pointsMax?: number | null;
 }
 
 /**

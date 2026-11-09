@@ -146,7 +146,7 @@ const EN: Record<string, { topic: string; introTitle: string; questions: Questio
   fawazeer: { topic: 'riddles', introTitle: 'Riddles & Puzzles Challenge', questions: bankEn(fawazeerEn) },
   general: { topic: 'general knowledge', introTitle: 'General Knowledge Challenge', questions: bankEn(generalEn) },
   history: { topic: 'history', introTitle: 'History Challenge', questions: bankEn(historyEn) },
-  cinema: { topic: 'movies & series', introTitle: 'Movies & Series Challenge', questions: bankEn(cinemaEn) },
+  cinema: { topic: 'movies & series', introTitle: 'Egyptian Movies & Series Challenge', questions: bankEn(cinemaEn) },
 };
 
 /** A section in the language the player chose: the English one has its own title, topic and questions, and no pictures. */

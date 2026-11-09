@@ -153,6 +153,14 @@ html.dark, .dark {
   color: #F1F5F9 !important;
 }
 
+.dark .bg-white\/95,
+.dark .bg-white\/90 {
+  /* translucent white pills (map controls) must follow the dark theme too, or the light text on them is white on white */
+  background-color: rgba(24, 27, 38, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #F1F5F9 !important;
+}
+
 .dark .bg-slate-50,
 .dark .bg-slate-100 {
   background-color: #1E2330 !important;
