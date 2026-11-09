@@ -77,6 +77,7 @@ import { downloadDeilarCardImage } from '../utils/downloadCard';
 import { useLanguage } from '../context/LanguageContext';
 import { LegalSheet, type LegalKind } from './LegalPages';
 import { DeleteAccountModal } from './DeleteAccountModal';
+import { SHARE_URL } from '../utils/shareResult';
 
 export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay' | 'physical' | 'wallet' | 'invite';
 
@@ -301,7 +302,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const handleShareWhatsApp = () => {
     const cardTitle = isAr ? `بطاقة ${brandName} المعتمدة للخصم 🎫` : `${brandName} Certified Medical Discount Card 🎫`;
     const text = encodeURIComponent(
-      `${cardTitle}\n${isAr ? 'الاسم' : 'Name'}: ${currentBeneficiary.name}\n${isAr ? 'رقم العضوية' : 'Membership ID'}: ${memId}\n${isAr ? 'الصلاحية' : 'Validity'}: ${account.validTo ?? '-'}\n${isAr ? 'خصومات تصل حتى 70% في المستشفيات والمعامل.' : 'Discounts up to 70% at hospitals & labs.'}\nhttps://deilar.com`
+      `${cardTitle}\n${isAr ? 'الاسم' : 'Name'}: ${currentBeneficiary.name}\n${isAr ? 'رقم العضوية' : 'Membership ID'}: ${memId}\n${isAr ? 'الصلاحية' : 'Validity'}: ${account.validTo ?? '-'}\n${isAr ? 'خصومات تصل حتى 70% في المستشفيات والمعامل.' : 'Discounts up to 70% at hospitals & labs.'}\n${SHARE_URL}`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };

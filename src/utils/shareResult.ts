@@ -1,12 +1,11 @@
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
 import { Directory, Filesystem } from '@capacitor/filesystem';
-import { PLAY_STORE_URL } from './forceUpdate';
 import { blobToBase64, resultImage } from './shareImage';
 import type { Scene } from '../data/pointsScenes';
 
-/** Where the shared message sends people: the app's store page, so whoever gets it can download the app. */
-export const SHARE_URL = PLAY_STORE_URL;
+/** The one link every share carries: the website's /app page opens the app on a phone and the site on a laptop. */
+export const SHARE_URL = 'https://deilar.com/app';
 
 export type ShareOutcome = 'shared' | 'copied' | 'whatsapp' | 'cancelled';
 

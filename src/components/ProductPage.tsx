@@ -13,6 +13,7 @@ import { Product } from '../types';
 import { ErrorState, Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
 import { ImageViewer } from './ImageViewer';
+import { SHARE_URL } from '../utils/shareResult';
 
 interface ProductPageProps {
   slug: string;
@@ -74,7 +75,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
   };
 
   const handleShare = async () => {
-    const url = location.href;
+    const url = SHARE_URL;
     if (navigator.share) await navigator.share({ title: product?.name, url }).catch(() => undefined);
     else await navigator.clipboard?.writeText(url).catch(() => undefined);
   };
