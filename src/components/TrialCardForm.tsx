@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Phone, Sparkles, UserRound } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { ApiError } from '../api/http';
-import { startTrial } from '../api/membership';
+import { fetchMembership, startTrial } from '../api/membership';
+import { getTrialDays, trialPhrase } from '../utils/trialDays';
 import { claimReferral } from '../api/referral';
 import { clearReferralCode, pendingReferralCode, referralReasonText } from '../utils/referral';
 import { requestOtp, verifyOtp } from '../api/auth';
@@ -18,7 +19,7 @@ interface TrialCardFormProps {
 }
 
 /**
- * The free 1-month card: a name, nothing else — the phone is the one already
+ * The free trial card (its length comes from the backend): a name, nothing else — the phone is the one already
  * signed in. Whether this person may have one (a single trial per phone, ever) is the
  * backend's call; every refusal comes back with a `reason` and is worded here.
  */
@@ -28,6 +29,14 @@ const asDigits = (v: string) => v.replace(/[\u0660-\u0669]/g, (d) => String(d.ch
 
 export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInToken, defaultName = '', onCreated }) => {
   const { isAr } = useLanguage();
+  // The length of the trial is the backend's number (admin setting); ask for it, never assume it.
+  const [trialDays, setTrialDays] = useState<number | null>(getTrialDays());
+  useEffect(() => {
+    let live = true;
+    fetchMembership(signedInToken).then((m) => live && m.trial_days && setTrialDays(m.trial_days), () => undefined);
+    return () => { live = false; };
+  }, [signedInToken]);
+  const period = trialPhrase(trialDays, isAr);
   // One name on the card, typed as two boxes: the first name, then the rest (family name).
   const [firstName, setFirstName] = useState(() => defaultName.trim().split(/\s+/)[0] ?? '');
   const [lastName, setLastName] = useState(() => defaultName.trim().split(/\s+/).slice(1).join(' '));
@@ -185,9 +194,9 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
         <div className="w-14 h-14 rounded-2xl bg-[#941946]/10 text-[#941946] flex items-center justify-center mx-auto">
           <Sparkles className="w-7 h-7" />
         </div>
-        <h2 className="text-sm font-black text-slate-900">{isAr ? 'احصل على كارت ديلر مجاني لمدة شهر' : 'Get your free 1-month Deilar card'}</h2>
+        <h2 className="text-sm font-black text-slate-900">{isAr ? (trialDays ? `احصل على كارت ديلر مجاني لمدة ${period}` : 'احصل على كارت ديلر مجاني') : (trialDays ? `Get your free ${period} Deilar card` : 'Get your free Deilar card')}</h2>
         <p className="text-xs text-slate-500 leading-relaxed">
-          {isAr ? 'اسمك فقط. الكارت يعمل فوراً لمدة شهر.' : 'Only your name. The card works straight away for one month.'}
+          {isAr ? `اسمك فقط. الكارت يعمل فوراً${trialDays ? ` لمدة ${period}` : ''}.` : `Only your name. The card works straight away${trialDays ? ` for ${period}` : ''}.`}
         </p>
       </div>
 
@@ -217,7 +226,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
       </div>
 
       <label className="block space-y-1">
-        <span className="text-[11px] font-bold text-slate-600">{isAr ? 'رقم عضوية اللي جابك (اختياري)' : 'Card number of the member who brought you (optional)'}</span>
+        <span className="text-[11px] font-bold text-slate-600">{isAr ? 'رقم عضوية صاحب الدعوة (اختياري)' : 'Card number of the person who invited you (optional)'}</span>
         <input type="text" inputMode="numeric" dir="ltr" maxLength={32} placeholder="123456" value={referrer} onChange={(e) => { setReferrer(e.target.value.replace(/[^A-Za-z0-9-]/g, '')); setError(null); }} className={`${field} font-mono`} data-testid="referrer-input" />
         <span className="block text-[10px] text-slate-500">{isAr ? 'لو زميلك جابك لديلر، اكتب رقم عضويته وهتاخد خصم على الاشتراك.' : 'If a friend brought you to Deilar, enter their card number to get a subscription discount.'}</span>
       </label>

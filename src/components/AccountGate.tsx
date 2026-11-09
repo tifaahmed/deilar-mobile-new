@@ -106,7 +106,7 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
 
   const noCard = state === 'no-card';
 
-  // Signed in with no card: the free 1-month card is the first thing offered, the number lookup stays below it.
+  // Signed in with no card: the free trial card is the first thing offered, the number lookup stays below it.
   if (noCard && token && onTrialCreated) {
     return (
       <div className="space-y-2">

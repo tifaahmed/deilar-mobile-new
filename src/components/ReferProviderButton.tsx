@@ -68,7 +68,7 @@ export const ReferProviderButton: React.FC = () => {
         type="button"
         aria-label={isAr ? 'رشّح مقدم خدمة' : 'Recommend a provider'}
         onClick={() => setOpen(true)}
-        className={`fixed bottom-36 left-4 sm:left-6 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg ring-2 ring-white flex items-center justify-center active:scale-95 transition-transform ${nudge ? 'animate-bounce' : ''}`}
+        className={`fixed bottom-[calc(10rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg ring-2 ring-white flex items-center justify-center active:scale-95 transition-transform ${nudge ? 'animate-bounce' : ''}`}
       >
         <BadgePercent className="w-6 h-6" />
       </button>
@@ -78,7 +78,7 @@ export const ReferProviderButton: React.FC = () => {
           data-testid="referral-nudge"
           onClick={() => setOpen(true)}
           dir={isAr ? 'rtl' : 'ltr'}
-          className="fixed bottom-[9.4rem] left-[4.75rem] sm:left-[5.75rem] z-40 max-w-[11rem] rounded-2xl rounded-bl-sm bg-orange-500 px-3 py-2 text-[11px] font-black leading-snug text-white shadow-lg animate-in fade-in slide-in-from-left-2 duration-300 cursor-pointer"
+          className="fixed bottom-[calc(10.4rem+env(safe-area-inset-bottom))] left-[4.75rem] sm:left-[5.75rem] z-40 max-w-[11rem] rounded-2xl rounded-bl-sm bg-orange-500 px-3 py-2 text-[11px] font-black leading-snug text-white shadow-lg animate-in fade-in slide-in-from-left-2 duration-300 cursor-pointer"
         >
           {isAr ? 'رشّح مقدم خدمة عايز عليه خصم' : 'Recommend a provider you want a discount on'}
         </button>

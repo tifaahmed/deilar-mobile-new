@@ -2,6 +2,8 @@ import { saveImage } from '../utils/saveImage';
 import { apiDelete, apiGet, apiGetAuth, apiPost, apiPut, apiUrl, absoluteUrl } from './http';
 import type { CardStatus } from './membership';
 
+import { rememberTrialDays } from '../utils/trialDays';
+
 export interface OtpSent {
   phone_masked: string;
   registering: boolean;
@@ -27,7 +29,10 @@ export const verifyOtp = (phone: string, code: string) => apiPost<{ data: Verifi
  * A known phone is signed in with its code; only a stranger is offered the free card first.
  */
 export const phoneHasCard = (phone: string) =>
-  apiPost<{ data: { has_card: boolean; registered?: boolean } }>('/mobile/auth/phone-check', { phone }).then((r) => r.data.has_card || r.data.registered === true);
+  apiPost<{ data: { has_card: boolean; registered?: boolean; trial_days?: number } }>('/mobile/auth/phone-check', { phone }).then((r) => {
+    rememberTrialDays(r.data.trial_days);
+    return r.data.has_card || r.data.registered === true;
+  });
 
 /** What sending a code for a card number answers. `has_phone: false` means nothing was sent: the card has no phone yet. */
 export interface CardOtpSent {

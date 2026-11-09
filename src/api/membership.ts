@@ -1,3 +1,4 @@
+import { rememberTrialDays } from '../utils/trialDays';
 import { apiGetAuth, apiPost } from './http';
 import type { OnlineChannel } from './orders';
 
@@ -28,6 +29,8 @@ export interface CardStatus {
   days_left: number;
   price: number;
   months: number;
+  /** Length of a NEW free trial in days (backend setting); print it, never assume it. */
+  trial_days?: number;
   /** Every plan on sale; absent on an older backend (then `price`/`months` is the only plan). */
   plans?: Plan[];
   /** Pounds a referral takes off the FIRST subscription (0 = none). Draw `plans[].discounted_price`; never subtract here. */
@@ -58,7 +61,11 @@ export interface MemberStatus extends CardStatus {
 export type PayMethod = 'paymob' | 'cash_on_delivery' | 'vodafone_cash' | 'instapay' | 'wallet';
 
 /** The signed-in member's own card state. Never cached: it changes the moment a payment lands. */
-export const fetchMembership = (token: string) => apiGetAuth<{ data: MemberStatus }>('/membership', token).then((r) => r.data);
+export const fetchMembership = (token: string) =>
+  apiGetAuth<{ data: MemberStatus }>('/membership', token).then((r) => {
+    rememberTrialDays(r.data.trial_days);
+    return r.data;
+  });
 
 /**
  * Asks for the free trial card (a name; the phone is the one signed in with).

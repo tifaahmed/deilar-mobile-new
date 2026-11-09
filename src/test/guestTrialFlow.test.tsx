@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { rememberTrialDays } from '../utils/trialDays';
 
 const auth = vi.hoisted(() => ({
   phoneHasCard: vi.fn(),
@@ -54,6 +55,7 @@ describe('guest → free trial card', () => {
   it('walks a new number through offer, confirm and code, then sends them to the card page', async () => {
     const user = userEvent.setup();
     auth.phoneHasCard.mockResolvedValue(false);
+    rememberTrialDays(7);
     const onClose = open();
 
     await submitVisitor(user);
@@ -62,7 +64,8 @@ describe('guest → free trial card', () => {
     expect(contact.postContactMessage).toHaveBeenCalledWith(expect.objectContaining({ phone: PHONE, name: 'Mona Hassan' }));
     expect(auth.phoneHasCard).toHaveBeenCalledWith(PHONE);
     expect(await screen.findByText('Do you want to complete the process?')).toBeInTheDocument();
-    expect(screen.getByText(/free for one month/i)).toBeInTheDocument();
+    // The length is whatever the backend last said (here 7 days) — never a hard-coded month.
+    expect(screen.getByText(/free for 7 days/i)).toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
 
     // Yes → the form holds what was already typed; nothing is sent until it is confirmed.

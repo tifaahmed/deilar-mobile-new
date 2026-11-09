@@ -3,6 +3,7 @@ import { LegalConsent } from './LegalPages';
 import { ArrowLeft, CheckCircle2, CreditCard, Loader2, MessageCircle, Phone, PhoneCall, ShieldCheck, Sparkles, UserPlus, UserRound, X } from 'lucide-react';
 import { ApiError, postContactMessage } from '../api/http';
 import { previewSignIn } from '../utils/quizStore';
+import { getTrialDays, trialPhrase } from '../utils/trialDays';
 import { cardPhoneHint, fetchCard, phoneHasCard, requestCardOtp, requestCardPhone, requestOtp, verifyCardOtp, verifyCardPhone, verifyOtp } from '../api/auth';
 import { navigate, routeHref } from '../router';
 import { claimOrders } from '../api/orders';
@@ -523,7 +524,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   </div>
                   <h4 className="text-base font-black">{isAr ? 'هل تريد إكمال الخطوات؟' : 'Do you want to complete the process?'}</h4>
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    {isAr ? 'رقمك غير مسجل لدينا. أكمل الآن واحصل على كارت ديلر مجاناً لمدة شهر.' : 'Your number is not registered with us. Complete now and get your Deilar card free for one month.'}
+                    {(() => { const d = getTrialDays(); return isAr ? `رقمك غير مسجل لدينا. أكمل الآن واحصل على كارت ديلر مجاناً${d ? ` لمدة ${trialPhrase(d, true)}` : ''}.` : `Your number is not registered with us. Complete now and get your Deilar card free${d ? ` for ${trialPhrase(d, false)}` : ''}.`; })()}
                   </p>
                   <button onClick={() => { setTrialFlow(true); setStep('confirm'); }} className={primary}>
                     <Sparkles className="w-5 h-5" />

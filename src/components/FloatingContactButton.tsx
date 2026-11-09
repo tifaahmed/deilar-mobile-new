@@ -10,7 +10,7 @@ export const FloatingContactButton: React.FC = () => {
   const contactNumber = contact.phone ?? '';
 
   return (
-    <div className="fixed bottom-20 left-4 sm:left-6 z-40 flex flex-col items-start gap-2.5 select-none">
+    <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 flex flex-col items-start gap-2.5 select-none">
       {/* 2 Quick Action Buttons Popover (اتصال هاتفي + محادثة واتس بس كده) */}
       {isOpen && (
         <div className="bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-2xl border border-slate-200/90 text-right space-y-2 animate-in slide-in-from-bottom-2 duration-150 w-48">
