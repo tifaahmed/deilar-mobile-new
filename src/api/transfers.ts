@@ -40,14 +40,16 @@ export async function lookupRecipient(who: { phone?: string; card?: string }): P
 }
 
 /** The member's requests, both ways, newest first, and whether the admin has transfers open. */
-export async function listTransfers(): Promise<{ enabled: boolean; transfers: Transfer[] }> {
+export async function listTransfers(): Promise<{ enabled: boolean; kinds: Record<TransferKind, boolean>; transfers: Transfer[] }> {
   const t = token();
-  if (!t) return { enabled: false, transfers: [] };
+  const off = { enabled: false, kinds: { points: false, wallet: false }, transfers: [] as Transfer[] };
+  if (!t) return off;
   try {
-    const { data } = await apiGetAuth<{ data: { enabled: boolean; transfers: Transfer[] } }>('/transfers', t);
-    return data;
+    const { data } = await apiGetAuth<{ data: { enabled: boolean; kinds?: Record<TransferKind, boolean>; transfers: Transfer[] } }>('/transfers', t);
+    // An older backend sends no `kinds`: both are open whenever transfers are.
+    return { ...data, kinds: data.kinds ?? { points: data.enabled, wallet: data.enabled } };
   } catch {
-    return { enabled: false, transfers: [] };
+    return off;
   }
 }
 

@@ -11,12 +11,14 @@ const REASONS_EN: Record<string, string> = {
   bad_amount: 'Enter a valid amount.',
   not_open: 'This request is no longer open.',
   offline: 'You need an internet connection.',
+  kind_disabled: 'This kind of transfer is closed right now.',
   signed_out: 'Sign in first.',
   failed: 'The request failed, please try again.',
 };
 
 const REASONS_AR: Record<string, string> = {
   disabled: 'التحويل بين الأعضاء مقفول دلوقتي.',
+  kind_disabled: 'النوع ده من التحويل مقفول دلوقتي.',
   not_found: 'مفيش عضو بالرقم ده.',
   not_enough: 'الرصيد مش كفاية.',
   too_many_open: 'عندك طلبات كتير مستنية، استنى ردها أو الغيها.',
@@ -39,6 +41,7 @@ export const TransfersPanel: React.FC = () => {
   const unit = (k: TransferKind) => unitOf(k, isAr);
   const [enabled, setEnabled] = useState(false);
   const [list, setList] = useState<Transfer[]>([]);
+  const [kinds, setKinds] = useState<Record<TransferKind, boolean>>({ points: true, wallet: true });
   const [kind, setKind] = useState<TransferKind>('points');
   const [who, setWho] = useState('');
   const [amount, setAmount] = useState('');
@@ -49,6 +52,8 @@ export const TransfersPanel: React.FC = () => {
   const load = useCallback(async () => {
     const r = await listTransfers();
     setEnabled(r.enabled);
+    setKinds(r.kinds);
+    setKind((k) => (r.kinds[k] ? k : r.kinds.points ? 'points' : 'wallet'));
     setList(r.transfers);
   }, []);
 
@@ -108,7 +113,7 @@ export const TransfersPanel: React.FC = () => {
 
       <div className="mt-3 space-y-2">
         <div className="flex gap-2">
-          {(['points', 'wallet'] as const).map((k) => (
+          {(['points', 'wallet'] as const).filter((k) => kinds[k]).map((k) => (
             <button key={k} type="button" onClick={() => setKind(k)} className={`flex-1 rounded-xl py-2 text-sm font-black cursor-pointer ${kind === k ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
               {k === 'points' ? (isAr ? 'نقاط' : 'Points') : isAr ? 'رصيد المحفظة' : 'Wallet balance'}
             </button>

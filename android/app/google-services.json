@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "893831598870",
+    "project_id": "deilar",
+    "storage_bucket": "deilar.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893831598870:android:eaccda9265157e19a5f637",
+        "android_client_info": {
+          "package_name": "com.deilar.card"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZIg73px9uFfmlkYm_phdEuck1RYhszxA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
