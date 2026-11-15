@@ -49,9 +49,9 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
     return (
       <div role="alert" className="rounded-3xl bg-red-600 border-2 border-red-700 text-white p-5 text-center shadow-lg space-y-3">
         <XCircle className="w-10 h-10 mx-auto" />
-        <p className="text-3xl font-black tracking-wide">{isAr ? 'الكارت منتهي' : 'CARD EXPIRED'}</p>
+        <p className="text-3xl font-black tracking-wide">{isAr ? 'الكارت خلص' : 'CARD EXPIRED'}</p>
         <p className="text-sm">
-          {status.is_trial ? (isAr ? 'انتهت الفترة التجريبية' : 'The free trial has ended') : isAr ? 'انتهى اشتراك هذا الكارت' : "This card's subscription has ended"}
+          {status.is_trial ? (isAr ? 'الفترة التجريبية خلصت' : 'The free trial has ended') : isAr ? 'اشتراك الكارت ده خلص' : "This card's subscription has ended"}
           {status.expires_on && <span dir="ltr"> · {status.expires_on}</span>}
         </p>
 
@@ -59,14 +59,14 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
           {status.can_pay_online && <PlanPicker plans={plans} value={plan?.key} onChange={setPlanKey} tone="onRed" />}
           {status.can_pay_online && (status.online_channels?.length ? status.online_channels : (['card'] as OnlineChannel[])).map((channel) => (
             <button key={channel} onClick={() => buy(channel)} disabled={busy} className="w-full py-3 bg-white text-red-700 rounded-2xl text-sm font-extrabold disabled:opacity-60 cursor-pointer">
-              {busy ? '…' : channel === 'wallet' ? (isAr ? 'اشترك الآن — الدفع بالمحفظة' : 'Subscribe now — pay by wallet') : isAr ? 'اشترك الآن — الدفع بالبطاقة' : 'Subscribe now — pay by card'}
+              {busy ? '…' : channel === 'wallet' ? (isAr ? 'اشترك دلوقتي — الدفع بالمحفظة' : 'Subscribe now — pay by wallet') : isAr ? 'اشترك دلوقتي — الدفع بالكارت' : 'Subscribe now — pay by card'}
               {plan && <span> — {formatNumber(plan.price, isAr)} {isAr ? 'ج.م' : 'EGP'}{plans.length > 1 ? ` · ${planName(plan, isAr)}` : ''}</span>}
             </button>
           ))}
           {phone && (
             <a href={`tel:${phone}`} className="w-full py-3 border-2 border-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2">
               <Phone className="w-4 h-4" />
-              <span>{isAr ? 'اتصل بخدمة العملاء' : 'Call customer service'} <span dir="ltr">{status.contact.phone ?? phone}</span></span>
+              <span>{isAr ? 'كلّم خدمة العملاء' : 'Call customer service'} <span dir="ltr">{status.contact.phone ?? phone}</span></span>
             </a>
           )}
           {whatsapp && (
@@ -77,12 +77,12 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
               className="w-full py-3 border-2 border-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
             >
               <MessageCircle className="w-4 h-4" />
-              <span>{isAr ? 'راسل خدمة العملاء' : 'Message customer service'}</span>
+              <span>{isAr ? 'ابعت لخدمة العملاء' : 'Message customer service'}</span>
             </a>
           )}
         </div>
         {pixel && <PayModal session={pixel} onClose={() => setPixel(null)} onComplete={() => setPixel(null)} />}
-        {failed && <p className="text-xs bg-white/15 rounded-xl px-3 py-2">{isAr ? 'تعذر فتح صفحة الدفع. حاول مرة أخرى.' : 'The payment page could not be opened. Please try again.'}</p>}
+        {failed && <p className="text-xs bg-white/15 rounded-xl px-3 py-2">{isAr ? 'صفحة الدفع مافتحتش. جرّب تاني.' : 'The payment page could not be opened. Please try again.'}</p>}
       </div>
     );
   }
@@ -92,7 +92,7 @@ export const CardStatusBanner: React.FC<CardStatusBannerProps> = ({ status, numb
       <div className="rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs font-bold flex items-center gap-1.5">
           <Clock className="w-4 h-4" />
-          {isAr ? `كارت تجريبي — متبقي ${status.days_left} يوم` : `Trial card — ${status.days_left} days left`}
+          {isAr ? `كارت تجريبي — فاضل ${status.days_left} يوم` : `Trial card — ${status.days_left} days left`}
           {status.expires_on && <span dir="ltr"> ({status.expires_on})</span>}
         </span>
         {phone && (

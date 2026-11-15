@@ -90,8 +90,8 @@ export const MembershipReminder: React.FC = () => {
       onClose={() => setStatus(null)}
     >
       {expired
-        ? isAr ? 'انتهى كارتك، لا خصم — اضغط للتجديد' : 'Your card has expired, no discount — tap to renew'
-        : isAr ? `الفترة التجريبية — متبقي ${status.days_left} يوماً · اضغط للدفع` : `Free trial — ${status.days_left} days left · tap to pay`}
+        ? isAr ? 'كارتك خلص، مفيش خصم — دوس عشان تجدّد' : 'Your card has expired, no discount — tap to renew'
+        : isAr ? `الفترة التجريبية — فاضل ${status.days_left} يوم · دوس عشان تدفع` : `Free trial — ${status.days_left} days left · tap to pay`}
     </Notice>
   );
 };

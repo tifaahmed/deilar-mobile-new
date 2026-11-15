@@ -3,12 +3,12 @@ import { useEffect, useState, useSyncExternalStore } from 'react';
 /**
  * How many times a player may start each quiz section in a day.
  *
- * Every section has its own allowance (`PLAYS_PER_DAY`), so three sections allow fifteen plays, five each. A play is
+ * Every section has its own allowance (`PLAYS_PER_DAY`), so five sections allow five plays in all, one each. A play is
  * counted when it STARTS, so leaving half-way does not give it back. The day ends at midnight on the phone: once a
  * section's allowance is used, it opens again then, and `useQuizLimit` gives the time left for a countdown.
  * The backend keeps the same rule for points (`plays_per_day` in config/loyalty.php) — change both together.
  */
-export const PLAYS_PER_DAY = 5;
+export const PLAYS_PER_DAY = 1;
 
 const USAGE_KEY = 'deilar_quiz_daily';
 const NOTIFIED_KEY = 'deilar_quiz_notified';

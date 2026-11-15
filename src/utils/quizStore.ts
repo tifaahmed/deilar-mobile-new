@@ -83,7 +83,7 @@ export interface QuizAnswer {
 export interface BadgeInfo {
   quiz: string;
   key: string;
-  kind: 'solved' | 'streak' | 'stage' | string;
+  kind: 'solved' | 'streak' | 'stage' | 'plays' | 'perfect' | 'fast' | 'days' | string;
   threshold: number;
   /** Set by the admin (/admin/loyalty); null = the app words it itself. */
   title: string | null;
@@ -153,6 +153,8 @@ const SEEN_KEY = 'deilar_quiz_badges_seen';
 
 const QUEUE_KEY = 'deilar_quiz_queue';
 const SERVER_KEY = 'deilar_loyalty_server';
+/** Answers of an account that is not the one signed in now. Set aside, NEVER deleted: they go back to the queue when that account signs in again. */
+const PARKED_KEY = 'deilar_quiz_parked';
 const BATCH = 100;
 const FLUSH_DELAY_MS = 3000;
 const REQUEST_TIMEOUT_MS = 15000;
@@ -234,7 +236,7 @@ export function previewSignIn(who: { card?: string; phone?: string }): { move: {
 
 /**
  * Settles whose points are on this phone when a member is signed in: answers played as a guest are kept (they will be
- * booked to this member), answers played under ANOTHER account are deleted, and the saved balance / log / badges of
+ * booked to this member), answers played under ANOTHER account are set aside (never deleted), and the saved balance / log / badges of
  * another account are dropped. Does nothing when the session cannot say who the member is (never deletes by guessing).
  */
 export function settleLocalPoints(): void {
@@ -243,8 +245,14 @@ export function settleLocalPoints(): void {
   if (!me || !token) return;
 
   const queue = getQueue();
-  const mine = queue.filter((q) => isMine(q.owner, me));
-  if (mine.length !== queue.length) write(QUEUE_KEY, JSON.stringify(mine));
+  const parked = parse<QuizAnswer[]>(read(PARKED_KEY), []);
+  const everything = [...queue, ...parked.filter((p) => !queue.some((q) => q.id === p.id))];
+  const mine = everything.filter((q) => isMine(q.owner, me));
+  const others = everything.filter((q) => !isMine(q.owner, me));
+
+  // Points are never deleted from the phone: another account's answers wait here until that account signs in again.
+  if (others.length !== parked.length || others.some((o, i) => o.id !== parked[i]?.id)) write(PARKED_KEY, JSON.stringify(others));
+  if (mine.length !== queue.length || mine.some((m, i) => m.id !== queue[i]?.id)) write(QUEUE_KEY, JSON.stringify(mine));
 
   if (getServer() && getServer()?.token !== token) write(SERVER_KEY, null);
   if (parse<HistoryCache | null>(read(HISTORY_KEY), null)?.token !== undefined && parse<HistoryCache | null>(read(HISTORY_KEY), null)?.token !== token) write(HISTORY_KEY, null);
@@ -253,7 +261,8 @@ export function settleLocalPoints(): void {
 /** Files one answer on the phone and schedules the upload. Never throws, never waits. */
 export function recordQuizAnswer(a: Omit<QuizAnswer, 'id' | 'answered_at' | 'owner'>): void {
   write(QUEUE_KEY, JSON.stringify([...getQueue(), { ...a, owner: currentOwner(), id: newId(), answered_at: new Date().toISOString() }]));
-  scheduleFlush();
+  // Soon: a badge earned by this answer is announced during the play as soon as the backend says so.
+  scheduleFlush(500);
 }
 
 export function scheduleFlush(delay = FLUSH_DELAY_MS): void {

@@ -106,14 +106,13 @@ describe('the invite screen', () => {
     expect(screen.getByTestId('referral-whatsapp').getAttribute('href')).toContain(encodeURIComponent('https://deilar.com/r/111111'));
 
     const stat = (k: string) => latin(screen.getByTestId(`referral-stat-${k}`).textContent);
-    expect(stat('registered')).toContain('3');
+    expect(stat('registered')).toBe('3/1'); // signed up / paid
     expect(stat('trials')).toContain('2');
-    expect(stat('subscribed')).toContain('1');
     expect(stat('trial-earned')).toContain('20');
     expect(stat('commission')).toContain('60');
     expect(stat('earned')).toContain('80');
     expect(stat('wallet')).toContain('80');
-    expect(stat('pending')).toContain('15');
+    expect(screen.queryByTestId('referral-stat-pending')).toBeNull();
     expect(latin(screen.getByTestId('referral-dashboard').textContent)).toContain('9'); // clicks/opens totals line is drawn
   });
 
@@ -143,14 +142,14 @@ describe('the invite screen', () => {
 
     expect(screen.getByTestId('referral-stage-1').textContent).toBe('جدّد اشتراكه');
     expect(screen.getByTestId('referral-stage-2').textContent).toBe('بدأ التجربة');
-    expect(screen.getByTestId('referral-stage-3').textContent).toBe('أنشأ حساباً');
+    expect(screen.getByTestId('referral-stage-3').textContent).toBe('عمل حساب');
     expect(latin(screen.getByTestId('referral-row-1').textContent)).toContain('+70');
 
     fireEvent.click(screen.getByTestId('referral-row-1').querySelector('button')!);
     const details = latin(screen.getByTestId('referral-rewards-1').textContent);
     expect(details).toContain('مكافأة بدء التجربة');
     expect(details).toContain('عمولة 10% على سنوي (600)');
-    expect(details).toContain('تم الاسترداد');
+    expect(details).toContain('اتردّ');
   });
 
   it('asks for a card first when there is no code yet, and says so when the programme is off', async () => {

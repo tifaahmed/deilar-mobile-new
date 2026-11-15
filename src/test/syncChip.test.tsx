@@ -19,11 +19,11 @@ describe('SyncChip', () => {
     const { unmount } = render(<SyncChip synced={false} signedIn />);
     expect(screen.getByText('على الجهاز')).toBeTruthy();
     fireEvent.click(screen.getByRole('button'));
-    expect(screen.getByRole('status').textContent).toContain('أول ما يتوفر اتصال');
+    expect(screen.getByRole('status').textContent).toContain('أول ما النت يرجع');
     unmount();
 
     render(<SyncChip synced={false} signedIn={false} />);
     fireEvent.click(screen.getByRole('button'));
-    expect(screen.getByRole('status').textContent).toContain('لم تسجّل الدخول');
+    expect(screen.getByRole('status').textContent).toContain('مسجلتش دخول');
   });
 });

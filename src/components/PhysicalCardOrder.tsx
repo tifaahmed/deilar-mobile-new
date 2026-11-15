@@ -76,29 +76,29 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
   const toCard = () => navigate(routeHref({ tab: 'mycard' }));
   const input = (bad: boolean) => `w-full px-3 py-2.5 rounded-xl border text-xs focus:outline-none focus:border-[#941946] ${bad ? 'border-red-500 bg-red-50 text-red-900' : 'border-slate-300 bg-white text-slate-900'}`;
 
-  if (failed) return <p role="alert" className="p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">{isAr ? 'تعذر تحميل الصفحة. حاول مرة أخرى.' : 'Could not load the page. Please try again.'}</p>;
+  if (failed) return <p role="alert" className="p-3 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">{isAr ? 'الصفحة مافتحتش. جرّب تاني.' : 'Could not load the page. Please try again.'}</p>;
   if (!info) return <div className="py-10 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-slate-400" /></div>;
 
   const header = (
     <button type="button" onClick={toCard} className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-[#941946] cursor-pointer">
-      <Back className="w-4 h-4" />{isAr ? 'رجوع إلى كارتي' : 'Back to my card'}
+      <Back className="w-4 h-4" />{isAr ? 'رجوع لكارتي' : 'Back to my card'}
     </button>
   );
 
   if (!info.eligible) {
     const text = info.reason === 'relative'
-      ? isAr ? 'أنت عضو قريب على كارت عائلتك. اشترك في كارتك الخاص لتصبح عضواً أساسياً ثم اطلب كارتاً فيزيكال.' : 'You are a relative on your family\'s card. Subscribe to your own card to become a primary member, then order a physical card.'
+      ? isAr ? 'إنت فرد على كارت عيلتك. اشترك في كارتك الخاص عشان تبقى عضو أساسي وبعدها اطلب كارت فيزيكال.' : 'You are a relative on your family\'s card. Subscribe to your own card to become a primary member, then order a physical card.'
       : info.reason === 'not_current'
-        ? isAr ? 'الكارت الفيزيكال متاح للكارت المدفوع الساري فقط. اشترك أو جدّد كارتك أولاً.' : 'Physical cards are for a paid, current card only. Subscribe or renew your card first.'
-        : isAr ? 'لا يوجد كارت على حسابك بعد.' : 'There is no card on your account yet.';
+        ? isAr ? 'الكارت الفيزيكال متاح للكارت المدفوع والساري بس. اشترك أو جدّد كارتك الأول.' : 'Physical cards are for a paid, current card only. Subscribe or renew your card first.'
+        : isAr ? 'لسه مفيش كارت على حسابك.' : 'There is no card on your account yet.';
 
     return (
       <section className="rounded-2xl p-4 border bg-white border-slate-200/90 space-y-3">
         {header}
-        <h2 className="text-base font-black text-slate-900">{isAr ? 'اطلب كارتاً فيزيكال' : 'Order a physical card'}</h2>
+        <h2 className="text-base font-black text-slate-900">{isAr ? 'اطلب كارت فيزيكال' : 'Order a physical card'}</h2>
         <p role="alert" className="text-xs font-bold text-amber-900 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">{text}</p>
         {info.reason !== 'no_card' && (
-          <button type="button" onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="w-full py-3 rounded-2xl bg-[#941946] text-white text-sm font-bold cursor-pointer">{isAr ? 'اشترك الآن' : 'Subscribe now'}</button>
+          <button type="button" onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="w-full py-3 rounded-2xl bg-[#941946] text-white text-sm font-bold cursor-pointer">{isAr ? 'اشترك دلوقتي' : 'Subscribe now'}</button>
         )}
       </section>
     );
@@ -130,9 +130,9 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
     if (busy) return;
     setTried(true);
     setError(null);
-    if (count === 0) { setError(isAr ? 'اختر كارتاً واحداً على الأقل.' : 'Choose at least one card.'); return; }
-    if (Object.values(bad).some(Boolean)) { setError(isAr ? 'أكمل بيانات التوصيل (الاسم، رقم هاتف من 11 رقم، المحافظة، المدينة، العنوان).' : 'Complete the delivery details (name, an 11-digit phone, governorate, city, address).'); return; }
-    if (!choice) { setError(isAr ? 'اختر طريقة الدفع.' : 'Choose how to pay.'); return; }
+    if (count === 0) { setError(isAr ? 'اختار كارت واحد على الأقل.' : 'Choose at least one card.'); return; }
+    if (Object.values(bad).some(Boolean)) { setError(isAr ? 'كمّل بيانات التوصيل (الاسم، رقم موبايل من 11 رقم، المحافظة، المدينة، العنوان).' : 'Complete the delivery details (name, an 11-digit phone, governorate, city, address).'); return; }
+    if (!choice) { setError(isAr ? 'اختار طريقة الدفع.' : 'Choose how to pay.'); return; }
 
     setBusy(true);
     try {
@@ -149,10 +149,10 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
         const link = await payOrder(order.order_code, channel);
         if (channel !== 'wallet' && link.client_secret && link.public_key) setPixel({ clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url });
         else if (link.checkout_url) setPixel({ clientSecret: link.client_secret ?? '', publicKey: link.public_key ?? '', checkoutUrl: link.checkout_url, mode: 'frame' });
-        else setError(isAr ? 'تم تسجيل الطلب لكن تعذر فتح صفحة الدفع. افتح الطلب لإعادة المحاولة.' : 'The order was placed but the payment page could not be opened. Open the order to try again.');
+        else setError(isAr ? 'الطلب اتسجّل لكن صفحة الدفع مافتحتش. افتح الطلب وجرّب تاني.' : 'The order was placed but the payment page could not be opened. Open the order to try again.');
       }
     } catch (err) {
-      setError(err instanceof ApiError && err.message && err.status !== 0 && err.status < 500 ? err.message : isAr ? 'تعذر إرسال الطلب، حاول مرة أخرى.' : 'Could not send the order, please try again.');
+      setError(err instanceof ApiError && err.message && err.status !== 0 && err.status < 500 ? err.message : isAr ? 'مقدرناش نبعت الطلب، جرّب تاني.' : 'Could not send the order, please try again.');
       if (!(err instanceof ApiError) || err.status >= 500) reportClientError('Physical card order failed', err);
     } finally {
       setBusy(false);
@@ -167,7 +167,7 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
         {header}
         <div className="text-center space-y-1">
           <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-          <h2 className="text-base font-black">{isAr ? 'تم تسجيل طلب الكروت' : 'Your card order is placed'}</h2>
+          <h2 className="text-base font-black">{isAr ? 'طلب الكروت اتسجّل' : 'Your card order is placed'}</h2>
           <p dir="ltr" className="font-mono text-sm font-bold text-[#941946]">{placed.order_code}</p>
           <p className="text-sm font-bold">{isAr ? 'الإجمالي:' : 'Total:'} {money(placed.total_amount)}</p>
         </div>
@@ -184,22 +184,22 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
 
         {choice === 'transfer-wallet' && (
           <div className="p-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-900 text-xs space-y-2">
-            <p className="font-bold">{isAr ? `حوّل ${money(placed.total_amount)} إلى المحفظة:` : `Transfer ${money(placed.total_amount)} to the wallet:`}</p>
+            <p className="font-bold">{isAr ? `حوّل ${money(placed.total_amount)} على المحفظة:` : `Transfer ${money(placed.total_amount)} to the wallet:`}</p>
             <p dir="ltr" className="font-mono text-base font-black">{walletNumber}</p>
-            <p>{isAr ? 'ثم ارفع صورة إيصال التحويل. يؤكد فريقنا الدفع ثم نجهز الكروت.' : 'Then upload the transfer receipt. Our team confirms the payment and prepares your cards.'}</p>
+            <p>{isAr ? 'وبعدها ارفع صورة إيصال التحويل. فريقنا بيأكد الدفع وبعدين بنجهز الكروت.' : 'Then upload the transfer receipt. Our team confirms the payment and prepares your cards.'}</p>
             {receiptSent ? (
-              <p className="font-black text-emerald-700">{isAr ? 'تم رفع الإيصال ✓' : 'Receipt uploaded ✓'}</p>
+              <p className="font-black text-emerald-700">{isAr ? 'الإيصال اترفع ✓' : 'Receipt uploaded ✓'}</p>
             ) : (
               <input type="file" accept="image/*" onChange={async (ev) => {
                 const file = ev.target.files?.[0];
                 if (!file) return;
-                try { await uploadReceipt(placed.order_code, file); setReceiptSent(true); } catch (err) { reportClientError('Receipt upload failed', err); setError(isAr ? 'تعذر رفع الإيصال.' : 'Could not upload the receipt.'); }
+                try { await uploadReceipt(placed.order_code, file); setReceiptSent(true); } catch (err) { reportClientError('Receipt upload failed', err); setError(isAr ? 'الإيصال ماترفعش.' : 'Could not upload the receipt.'); }
               }} />
             )}
           </div>
         )}
 
-        {choice === 'cod' && <p className="text-xs font-bold text-slate-700 text-center">{isAr ? 'ستدفع عند استلام الكروت.' : 'You will pay when the cards arrive.'}</p>}
+        {choice === 'cod' && <p className="text-xs font-bold text-slate-700 text-center">{isAr ? 'هتدفع وقت ما تستلم الكروت.' : 'You will pay when the cards arrive.'}</p>}
         {error && <p role="alert" className="text-[11px] font-bold rounded-xl px-3 py-2 border text-rose-600 bg-rose-50 border-rose-200">{error}</p>}
         <button type="button" onClick={toOrder} className="w-full py-3 rounded-2xl bg-[#941946] text-white text-sm font-bold cursor-pointer">{isAr ? 'عرض الطلب' : 'View the order'}</button>
       </section>
@@ -217,19 +217,19 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
               <span className="flex-1 min-w-0 truncate font-bold">{c.is_me ? (isAr ? 'أنت' : 'You') : c.holder_name}</span>
               <span dir="ltr" className="tabular-nums">{c.number}</span>
               <span className="rounded-md bg-slate-100 px-2 py-0.5">{c.kind === 'physical' ? (isAr ? 'فيزيكال' : 'Physical') : (isAr ? 'سوفت' : 'Soft')}</span>
-              {c.status === 'requested' && <span className="rounded-md bg-amber-100 px-2 py-0.5 text-amber-800">{isAr ? 'في انتظار الموافقة' : 'Waiting for approval'}</span>}
+              {c.status === 'requested' && <span className="rounded-md bg-amber-100 px-2 py-0.5 text-amber-800">{isAr ? 'مستني الموافقة' : 'Waiting for approval'}</span>}
             </div>
           ))}
         </div>
       )}
       <div className="space-y-1">
-        <h2 className="text-base font-black">{isAr ? 'اطلب كارتاً فيزيكال' : 'Order a physical card'}</h2>
-        <p className="text-xs text-slate-500">{isAr ? 'يصلك كارت حقيقي أنت وأفراد أسرتك، ويمكنك طلب أكثر من كارت لنفس الرقم.' : 'A real card is delivered to you and your family; you can order several copies of the same number.'}</p>
+        <h2 className="text-base font-black">{isAr ? 'اطلب كارت فيزيكال' : 'Order a physical card'}</h2>
+        <p className="text-xs text-slate-500">{isAr ? 'هيوصلك كارت حقيقي إنت وأفراد أسرتك، وتقدر تطلب أكتر من كارت لنفس الرقم.' : 'A real card is delivered to you and your family; you can order several copies of the same number.'}</p>
         <p className="text-sm font-bold text-[#941946]">{money(info.price)} {isAr ? 'للكارت' : 'per card'} · {isAr ? 'الشحن' : 'Shipping'} {money(info.shipping_price)}</p>
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-xs font-black">{isAr ? 'لمن الكروت؟' : 'Who are the cards for?'}</h3>
+        <h3 className="text-xs font-black">{isAr ? 'الكروت لمين؟' : 'Who are the cards for?'}</h3>
         {info.cards.map((c) => {
           const q = copies[c.membership_number] ?? 0;
           const set = (n: number) => setCopies((m) => ({ ...m, [c.membership_number]: Math.max(0, Math.min(info.max_per_card, n)) }));
@@ -263,7 +263,7 @@ export const PhysicalCardOrder: React.FC<{ token: string }> = ({ token }) => {
 
       <div className="space-y-2">
         <h3 className="text-xs font-black">{isAr ? 'طريقة الدفع' : 'How to pay'}</h3>
-        {choices.length === 0 && <p role="alert" className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">{isAr ? 'لا توجد طريقة دفع متاحة الآن. تواصل مع خدمة العملاء.' : 'No way of paying is available right now. Contact customer service.'}</p>}
+        {choices.length === 0 && <p role="alert" className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">{isAr ? 'مفيش طريقة دفع متاحة دلوقتي. كلّم خدمة العملاء.' : 'No way of paying is available right now. Contact customer service.'}</p>}
         {choices.map(({ id, icon: Icon, ar, en }) => (
           <button key={id} type="button" role="radio" aria-checked={choice === id} onClick={() => setChoice(id)}
             className={`w-full p-3 rounded-2xl border flex items-center gap-3 text-start cursor-pointer ${choice === id ? 'border-[#941946] bg-rose-50' : 'border-slate-200 bg-white'}`}>

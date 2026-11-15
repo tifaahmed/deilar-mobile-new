@@ -4,12 +4,16 @@ import { ApiError, postContactMessage } from '../api/http';
 import { useLanguage } from '../context/LanguageContext';
 import { useSession } from '../utils/session';
 import { reportClientError } from '../utils/reportError';
-import { REFERRAL_KINDS, REFERRAL_SUBJECT, type ReferralKind, isValidProviderPhone, referralKindLabel, referralMessage } from '../utils/providerReferral';
+import { REFERRAL_SUBJECT, isValidProviderPhone, referralMessage } from '../utils/providerReferral';
 
 /** How often the label beside the icon shows itself (3.5 minutes), when the first one comes, and how long it stays. */
 export const NUDGE_EVERY_MS = 210_000;
 export const NUDGE_FIRST_MS = 60_000;
 export const NUDGE_SHOWN_MS = 9_000;
+
+/** Opens the «recommend a provider» popup from anywhere (e.g. a kind of place the map cannot find nearby). */
+export const OPEN_REFER_PROVIDER_EVENT = 'deilar:open-refer-provider';
+export const openReferProvider = (): void => { if (typeof window !== 'undefined') window.dispatchEvent(new Event(OPEN_REFER_PROVIDER_EVENT)); };
 
 /** A fixed icon: tap it, type the name and phone of a place you deal with and its kind; the team rings them and you get the discount. */
 export const ReferProviderButton: React.FC = () => {
@@ -18,7 +22,6 @@ export const ReferProviderButton: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [kind, setKind] = useState<ReferralKind | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -34,29 +37,33 @@ export const ReferProviderButton: React.FC = () => {
     return () => { clearTimeout(first); clearInterval(every); clearTimeout(hide); };
   }, [open]);
 
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener(OPEN_REFER_PROVIDER_EVENT, show);
+    return () => window.removeEventListener(OPEN_REFER_PROVIDER_EVENT, show);
+  }, []);
+
   const close = () => { setOpen(false); setSent(false); setError(null); };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
-    if (!name.trim()) { setError(isAr ? 'اكتب اسم مقدم الخدمة' : 'Enter the provider\'s name'); return; }
     if (!isValidProviderPhone(phone)) { setError(isAr ? 'اكتب رقم تليفون صحيح لمقدم الخدمة' : 'Enter a valid phone number for the provider'); return; }
-    if (!kind) { setError(isAr ? 'اختر نوع المكان' : 'Pick the kind of place'); return; }
     setBusy(true);
     setError(null);
     try {
       await postContactMessage({
         phone: phone.replace(/[\s-]/g, ''),
-        name: name.trim(),
+        ...(name.trim() ? { name: name.trim() } : {}),
         subject: REFERRAL_SUBJECT,
-        message: referralMessage({ providerName: name.trim(), providerPhone: phone.trim(), kind, from: { name: session.name, phone: session.phone, card: session.cardNumber }, isAr }),
+        message: referralMessage({ providerName: name.trim(), providerPhone: phone.trim(), from: { name: session.name, phone: session.phone, card: session.cardNumber }, isAr }),
         source: 'provider_referral',
       });
       setSent(true);
-      setName(''); setPhone(''); setKind(null);
+      setName(''); setPhone('');
     } catch (err) {
       reportClientError('Provider referral failed', { message: String(err) });
-      setError(err instanceof ApiError && err.status === 429 ? (isAr ? 'محاولات كثيرة، حاول لاحقاً' : 'Too many attempts, try later') : isAr ? 'تعذر الإرسال، حاول مرة أخرى' : 'Could not send, please try again');
+      setError(err instanceof ApiError && err.status === 429 ? (isAr ? 'حاولت كتير، جرّب بعدين' : 'Too many attempts, try later') : isAr ? 'مقدرناش نبعت، جرّب تاني' : 'Could not send, please try again');
     } finally {
       setBusy(false);
     }
@@ -68,7 +75,7 @@ export const ReferProviderButton: React.FC = () => {
         type="button"
         aria-label={isAr ? 'رشّح مقدم خدمة' : 'Recommend a provider'}
         onClick={() => setOpen(true)}
-        className={`fixed bottom-[calc(10rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg ring-2 ring-white flex items-center justify-center active:scale-95 transition-transform ${nudge ? 'animate-bounce' : ''}`}
+        className={`fixed bottom-[calc(12rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg ring-2 ring-white flex items-center justify-center active:scale-95 transition-transform ${nudge ? 'animate-bounce' : ''}`}
       >
         <BadgePercent className="w-6 h-6" />
       </button>
@@ -78,7 +85,7 @@ export const ReferProviderButton: React.FC = () => {
           data-testid="referral-nudge"
           onClick={() => setOpen(true)}
           dir={isAr ? 'rtl' : 'ltr'}
-          className="fixed bottom-[calc(10.4rem+env(safe-area-inset-bottom))] left-[4.75rem] sm:left-[5.75rem] z-40 max-w-[11rem] rounded-2xl rounded-bl-sm bg-orange-500 px-3 py-2 text-[11px] font-black leading-snug text-white shadow-lg animate-in fade-in slide-in-from-left-2 duration-300 cursor-pointer"
+          className="fixed bottom-[calc(12.4rem+env(safe-area-inset-bottom))] left-[4.75rem] sm:left-[5.75rem] z-40 max-w-[11rem] rounded-2xl rounded-bl-sm bg-orange-500 px-3 py-2 text-[11px] font-black leading-snug text-white shadow-lg animate-in fade-in slide-in-from-left-2 duration-300 cursor-pointer"
         >
           {isAr ? 'رشّح مقدم خدمة عايز عليه خصم' : 'Recommend a provider you want a discount on'}
         </button>
@@ -100,15 +107,8 @@ export const ReferProviderButton: React.FC = () => {
               </div>
             ) : (
               <form onSubmit={submit} className="space-y-3">
-                <p className="text-[11px] text-slate-500">{isAr ? 'اكتب بيانات مقدم الخدمة اللي بتتعامل معاه، ولما ينضم معانا هتستفيد بنسبة خصم.' : 'Enter the provider you deal with; when they join us you get a discount.'}</p>
-                <div className="flex gap-1.5" role="group" aria-label={isAr ? 'نوع المكان' : 'Kind of place'}>
-                  {REFERRAL_KINDS.map((k) => (
-                    <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className={`flex-1 py-2 rounded-xl text-xs font-bold ${kind === k ? 'bg-[#941946] text-white' : 'bg-slate-100 text-slate-600'}`}>
-                      {referralKindLabel(k, isAr)}
-                    </button>
-                  ))}
-                </div>
-                <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder={isAr ? 'اسم مقدم الخدمة' : 'Provider name'} aria-label={isAr ? 'اسم مقدم الخدمة' : 'Provider name'} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
+                <p className="text-[11px] text-slate-500">{isAr ? 'اكتب تليفون مقدم الخدمة اللي بتتعامل معاه (والاسم لو حابب)، ولما ينضم معانا هتستفيد بنسبة خصم.' : 'Enter the phone of a provider you deal with (name optional); when they join us you get a discount.'}</p>
+                <input value={name} onChange={(e) => setName(e.target.value)} maxLength={120} placeholder={isAr ? 'اسم مقدم الخدمة (اختياري)' : 'Provider name (optional)'} aria-label={isAr ? 'اسم مقدم الخدمة' : 'Provider name'} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" dir="ltr" maxLength={20} placeholder={isAr ? 'رقم تليفون مقدم الخدمة' : 'Provider phone'} aria-label={isAr ? 'رقم تليفون مقدم الخدمة' : 'Provider phone'} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm" />
                 {error && <p role="alert" className="text-xs font-bold text-red-600">{error}</p>}
                 <button type="submit" disabled={busy} className="w-full py-2.5 rounded-xl bg-[#941946] text-white text-sm font-black disabled:opacity-60">{busy ? '…' : isAr ? 'إرسال الترشيح' : 'Send'}</button>

@@ -40,16 +40,16 @@ export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void; onSkip: 
         <div className="w-20 h-20 mx-auto rounded-full bg-amber-400/15 border border-amber-400/50 flex items-center justify-center">
           <MapPin className="w-10 h-10 text-amber-400 animate-bounce" />
         </div>
-        <h2 className="text-lg font-black">{isAr ? 'نحتاج لموقعك' : 'We need your location'}</h2>
+        <h2 className="text-lg font-black">{isAr ? 'محتاجين موقعك' : 'We need your location'}</h2>
         <p className="text-xs text-slate-300 leading-relaxed">
           {isAr
-            ? 'لإظهار أقرب مقدمي الخدمة إليك، يُفضَّل السماح للتطبيق بتحديد موقعك (GPS). يمكنك التخطي واختيار منطقتك يدوياً.'
+            ? 'عشان نوريك أقرب مقدمي الخدمة ليك، الأحسن تسمح للتطبيق يحدد موقعك (GPS). تقدر تتخطى وتختار منطقتك بإيدك.'
             : 'To show the service providers nearest to you, it is best to allow the app to read your GPS location. You can skip and pick your area by hand.'}
         </p>
         {failed && (
           <p className="text-[11px] text-rose-300 font-bold leading-relaxed">
             {isAr
-              ? 'تعذّر تحديد موقعك. فعّل GPS واسمح للتطبيق بالوصول للموقع من الإعدادات ثم حاول مرة أخرى.'
+              ? 'مقدرناش نحدد موقعك. شغّل الـ GPS وسمح للتطبيق يوصل للموقع من الإعدادات وجرّب تاني.'
               : 'Could not get your location. Turn on GPS and allow location access in Settings, then try again.'}
           </p>
         )}
@@ -59,7 +59,7 @@ export const LocationGate: React.FC<{ onGranted: (p: GpsPoint) => void; onSkip: 
           className="w-full py-3 bg-amber-400 hover:bg-amber-300 disabled:opacity-70 text-slate-950 font-black rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer"
         >
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
-          <span>{failed ? (isAr ? 'حاول مرة أخرى' : 'Try again') : isAr ? 'السماح بتحديد الموقع' : 'Allow location'}</span>
+          <span>{failed ? (isAr ? 'جرّب تاني' : 'Try again') : isAr ? 'اسمح بتحديد الموقع' : 'Allow location'}</span>
         </button>
         <button
           onClick={onSkip}
@@ -84,13 +84,13 @@ export const NearestPrompt: React.FC<{ onGo: () => void }> = ({ onGo }) => {
         <div className="w-14 h-14 mx-auto rounded-full bg-amber-400/15 border border-amber-400/50 flex items-center justify-center">
           <MapPin className="w-7 h-7 text-amber-400" />
         </div>
-        <p className="text-sm font-black">{isAr ? 'تم تحديد موقعك بنجاح' : 'Your location is set'}</p>
+        <p className="text-sm font-black">{isAr ? 'موقعك اتحدد' : 'Your location is set'}</p>
         <button
           onClick={onGo}
           className="w-full py-3.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer"
         >
           <Navigation className="w-4 h-4" />
-          <span>{isAr ? 'اعثر على أقرب مقدم خدمة' : 'Find the nearest service provider'}</span>
+          <span>{isAr ? 'دوّر على أقرب مقدم خدمة' : 'Find the nearest service provider'}</span>
         </button>
       </div>
     </div>,

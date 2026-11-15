@@ -73,7 +73,7 @@ describe('cash out to Vodafone Cash', () => {
     type('withdraw-msisdn', '01012345678');
     type('withdraw-nid', '29005270102927');
     fireEvent.click(screen.getByTestId('withdraw-submit'));
-    expect((await screen.findByRole('status')).textContent).toContain('رصيد محفظتك لا يكفي');
+    expect((await screen.findByRole('status')).textContent).toContain('رصيد محفظتك مش كفاية');
   });
 
   it('lists the requests with their state, lets a waiting one be cancelled, and blocks a second while one is open', async () => {
@@ -82,7 +82,7 @@ describe('cash out to Vodafone Cash', () => {
     render(<WithdrawPanel />);
 
     const list = await screen.findByTestId('withdraw-list');
-    expect(list.textContent).toContain('في انتظار الموافقة');
+    expect(list.textContent).toContain('مستني الموافقة');
     expect(list.textContent).toContain('رجعت الفلوس');
     expect(screen.getByText(/عندك طلب شغال/)).toBeTruthy();
     type('withdraw-amount', '100');

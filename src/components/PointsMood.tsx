@@ -1,8 +1,10 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Share2 } from 'lucide-react';
 import { useIsAr } from '../context/LanguageContext';
-import { shareResult, type ShareOutcome } from '../utils/shareResult';
+import { shareResult, whatsappShare, type ShareOutcome } from '../utils/shareResult';
+import { useSession } from '../utils/session';
+import { fetchReferral } from '../api/referral';
 import { SCENES, sceneFor, type Move, type Scene } from '../data/pointsScenes';
 
 export { SCENES, sceneFor };
@@ -43,6 +45,18 @@ export const PointsMood: React.FC<PointsMoodProps> = ({ score, shareText }) => {
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [shared, setShared] = useState<ShareOutcome | null>(null);
   const nextId = useRef(0);
+  const session = useSession();
+  // The member's own referral code and link ride along with the result so a friend who plays can sign up through them.
+  const [invite, setInvite] = useState<{ code: string; link: string } | null>(null);
+  useEffect(() => {
+    if (!session.token || !shareText) return;
+    let live = true;
+    fetchReferral(session.token).then((r) => { if (live && r.enabled && r.code && r.link) setInvite({ code: r.code, link: r.link }); }).catch(() => {});
+    return () => { live = false; };
+  }, [session.token, shareText]);
+  const fullText = shareText && invite
+    ? `${shareText}\n\n${isAr ? `🎁 سجّل بكود دعوتي ${invite.code} واحصل على خصم:` : `🎁 Join with my invite code ${invite.code} and get a discount:`}\n${invite.link}`
+    : shareText;
   const move = MOVES[scene.move];
 
   // The things drifting in the background: up when winning points, down when losing them.
@@ -61,9 +75,27 @@ export const PointsMood: React.FC<PointsMoodProps> = ({ score, shareText }) => {
     window.setTimeout(() => setBursts((current) => current.filter((b) => !made.includes(b))), 1100);
   };
 
+  const [copied, setCopied] = useState(false);
+  /** Copies the whole message (emojis, bold marks, invite code and link) so it can be pasted into any chat. */
+  const copy = async () => {
+    if (!fullText) return;
+    try {
+      await navigator.clipboard.writeText(fullText);
+    } catch {
+      const area = document.createElement('textarea');
+      area.value = fullText;
+      document.body.appendChild(area);
+      area.select();
+      try { document.execCommand('copy'); } catch { /* nothing more to try */ }
+      area.remove();
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2500);
+  };
+
   const share = async () => {
-    if (!shareText) return;
-    setShared(await shareResult(shareText, scene, score));
+    if (!fullText) return;
+    setShared(await shareResult(fullText, scene, score));
   };
 
   const points = `+${Math.max(0, Math.round(score))}`;
@@ -93,7 +125,7 @@ export const PointsMood: React.FC<PointsMoodProps> = ({ score, shareText }) => {
         <div className="relative mx-auto my-3 flex h-40 w-40 items-center justify-center">
           <motion.button
             type="button"
-            aria-label={isAr ? 'اضغط عليّ' : 'Tap me'}
+            aria-label={isAr ? 'دوس عليا' : 'Tap me'}
             onClick={tap}
             whileTap={{ scale: 0.8, rotate: winning ? 12 : -12 }}
             animate={move.animate}
@@ -124,9 +156,16 @@ export const PointsMood: React.FC<PointsMoodProps> = ({ score, shareText }) => {
             <motion.button whileTap={{ scale: 0.93 }} type="button" onClick={share} className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-base font-black text-slate-900 shadow-[0_4px_0_rgba(0,0,0,0.25)]">
               <Share2 className="h-5 w-5" /> {isAr ? 'شارك نتيجتك' : 'Share your result'}
             </motion.button>
+            <motion.button whileTap={{ scale: 0.93 }} type="button" onClick={() => whatsappShare(fullText ?? '')} className="ms-2 inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#25D366] px-5 py-3 text-base font-black text-white shadow-[0_4px_0_rgba(0,0,0,0.25)]">
+              <span aria-hidden>💬</span> {isAr ? 'واتساب' : 'WhatsApp'}
+            </motion.button>
+            <motion.button whileTap={{ scale: 0.93 }} type="button" onClick={() => void copy()} className="mt-2 inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white/90 px-5 py-2.5 text-sm font-black text-slate-900 shadow-[0_3px_0_rgba(0,0,0,0.2)]">
+              <span aria-hidden>{copied ? '✔' : '📋'}</span> {copied ? (isAr ? 'اتنسخت — الصقها في أي محادثة' : 'Copied — paste it in any chat') : (isAr ? 'انسخ الرسالة' : 'Copy the message')}
+            </motion.button>
+            {invite && <p className="mt-1.5 text-xs font-bold">{isAr ? `🎁 كود دعوتك ${invite.code} مرفق مع الرسالة` : `🎁 Your invite code ${invite.code} is added to the message`}</p>}
             {shared === 'copied' && <p className="mt-1.5 text-xs font-bold">{isAr ? '✔ اتنسخت النتيجة — الصقها في أي محادثة' : '✔ Result copied — paste it in any chat'}</p>}
-            {shared === 'shared' && <p className="mt-1.5 text-xs font-bold">{isAr ? '✔ تمت المشاركة' : '✔ Shared'}</p>}
-            {shared === 'whatsapp' && <p className="mt-1.5 text-xs font-bold">{isAr ? 'فتحنا واتساب لمشاركة نتيجتك' : 'We opened WhatsApp to share your result'}</p>}
+            {shared === 'shared' && <p className="mt-1.5 text-xs font-bold">{isAr ? '✔ اتشاركت' : '✔ Shared'}</p>}
+            {shared === 'whatsapp' && <p className="mt-1.5 text-xs font-bold">{isAr ? 'فتحنا واتساب عشان تشارك نتيجتك' : 'We opened WhatsApp to share your result'}</p>}
           </div>
         )}
       </div>
@@ -184,10 +223,10 @@ export const PointsGallery: React.FC<{ selected: number | null; onSelect: (score
         {isAr ? <>فتحت <span className="font-black text-slate-800">{unlocked}</span> من {SCENES.length} شاشة. كل نتيجة تحققها في لعبة بتفتح شاشتها هنا، والباقي مظلم لحد ما توصله.</> : <>You unlocked <span className="font-black text-slate-800">{unlocked}</span> of {SCENES.length} screens. Each result you reach in a game unlocks its screen here; the rest stay dark until you get there.</>}
       </p>
       {hint !== null && <p className="rounded-2xl bg-slate-900 px-3 py-2 text-center text-xs font-bold text-amber-300">{isAr ? '🔒 العب وحقق النتيجة دي عشان تفتح الشاشة دي' : '🔒 Play and reach this result to unlock this screen'}</p>}
-      {group(isAr ? '🌱 من 0 إلى 250 نقطة' : '🌱 From 0 to 250 points', SCENES.filter((x) => x.score <= 250))}
-      {group(isAr ? '🎉 من 275 إلى 550 نقطة' : '🎉 From 275 to 550 points', SCENES.filter((x) => x.score > 250 && x.score <= 550))}
-      {group(isAr ? '🔥 من 575 إلى 800 نقطة' : '🔥 From 575 to 800 points', SCENES.filter((x) => x.score > 550 && x.score <= 800))}
-      {group(isAr ? '👑 من 825 إلى 1000 نقطة' : '👑 From 825 to 1000 points', SCENES.filter((x) => x.score > 800))}
+      {group(isAr ? '🌱 من 0 لـ 250 نقطة' : '🌱 From 0 to 250 points', SCENES.filter((x) => x.score <= 250))}
+      {group(isAr ? '🎉 من 275 لـ 550 نقطة' : '🎉 From 275 to 550 points', SCENES.filter((x) => x.score > 250 && x.score <= 550))}
+      {group(isAr ? '🔥 من 575 لـ 800 نقطة' : '🔥 From 575 to 800 points', SCENES.filter((x) => x.score > 550 && x.score <= 800))}
+      {group(isAr ? '👑 من 825 لـ 1000 نقطة' : '👑 From 825 to 1000 points', SCENES.filter((x) => x.score > 800))}
     </div>
   );
 };

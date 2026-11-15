@@ -230,7 +230,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
         member: totalCartSavings > 0 ? session.cardNumber : null,
       });
     } catch {
-      setSubmitError((isAr ? 'تعذر إنشاء ملف PDF، حاول مرة أخرى' : 'Could not create the PDF, please try again'));
+      setSubmitError((isAr ? 'معرفناش نعمل ملف الـ PDF، جرّب تاني' : 'Could not create the PDF, please try again'));
     } finally {
       setPdfBusy(false);
     }
@@ -253,12 +253,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
       } else if (fresh?.payment_status.value === 'rejected') {
         // A declined attempt needs a fresh form, not the old one.
         setPixel(null);
-        setPayMessage((isAr ? 'لم تتم عملية الدفع. يمكنك المحاولة مرة أخرى.' : 'The payment did not go through. You can try again.'));
+        setPayMessage((isAr ? 'الدفع ماتمش. تقدر تجرّب تاني.' : 'The payment did not go through. You can try again.'));
       } else {
-        setPayMessage((isAr ? 'لم يصل تأكيد الدفع بعد. انتظر لحظات ثم اضغط «تحديث حالة الدفع».' : 'Payment confirmation has not arrived yet. Wait a moment, then press “Refresh payment status”.'));
+        setPayMessage((isAr ? 'تأكيد الدفع لسه ماوصلش. استنى لحظات وبعدها دوس «تحديث حالة الدفع».' : 'Payment confirmation has not arrived yet. Wait a moment, then press “Refresh payment status”.'));
       }
     } catch (err) {
-      setPayMessage((isAr ? 'تعذر التحقق من حالة الدفع الآن.' : 'Could not check the payment status now.'));
+      setPayMessage((isAr ? 'مقدرناش نتأكد من حالة الدفع دلوقتي.' : 'Could not check the payment status now.'));
       reportClientError('Payment status check failed', err, { order: placed.order_code });
     } finally {
       setPayBusy(false);
@@ -277,10 +277,10 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
           : { clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url });
         setPayMessage(null);
       } else {
-        setPayMessage((isAr ? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.' : 'Could not open the payment form. Please try again.'));
+        setPayMessage((isAr ? 'مقدرناش نفتح صفحة الدفع. جرّب تاني.' : 'Could not open the payment form. Please try again.'));
       }
     } catch (err) {
-      setPayMessage((isAr ? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.' : 'Could not open the payment form. Please try again.'));
+      setPayMessage((isAr ? 'مقدرناش نفتح صفحة الدفع. جرّب تاني.' : 'Could not open the payment form. Please try again.'));
       reportClientError('Payment form could not be reopened', err, { order: placed.order_code });
     } finally {
       setPayBusy(false);
@@ -349,8 +349,8 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
         err instanceof ApiError && err.status === 422
           ? errors ? Object.values(errors).flat()[0] ?? err.message : err.message
           : err instanceof ApiError && err.status === 429
-            ? (isAr ? 'محاولات كثيرة، انتظر قليلاً ثم حاول مرة أخرى' : 'Too many attempts, wait a little then try again')
-            : (isAr ? 'تعذر تسجيل الطلب، تأكد من اتصالك بالإنترنت وحاول مرة أخرى' : 'Could not place the order, check your connection and try again'),
+            ? (isAr ? 'حاولت كتير، استنى شوية وجرّب تاني' : 'Too many attempts, wait a little then try again')
+            : (isAr ? 'مقدرناش نسجّل الطلب، اتأكد من النت وجرّب تاني' : 'Could not place the order, check your connection and try again'),
       );
     } finally {
       setIsPlacing(false);
@@ -381,7 +381,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
     message += `• إجمالي التوفير: ${totalCartSavings} ج.م\n\n`;
 
     message += `💳 *طريقة الدفع المحددة:*\n${paymentLabel}\n\n`;
-    message += `يرجى تأكيد استلام الحوالة والبدء في تجهيز وشحن الطلب. شكراً لكم!`;
+    message += `من فضلكم أكّدوا استلام الحوالة وابدأوا تجهزوا الطلب وتشحنوه. شكراً!`;
 
     if (whatsappTo) window.open(`https://wa.me/${whatsappTo}?text=${encodeURIComponent(message)}`, '_blank');
   };
@@ -398,13 +398,13 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
             <div>
               <h2 className="text-sm font-extrabold text-slate-900 leading-tight">
                 {step === 'cart' && (isAr ? `عربة المشتريات (${totalCartCount} منتجات)` : `Shopping cart (${totalCartCount} items)`)}
-                {step === 'checkout' && (isAr ? 'إتمام الشراء والدفع بالتحويل' : 'Checkout and payment by transfer')}
-                {step === 'success' && (isAr ? 'تم استلام وتأكيد طلبك بنجاح!' : 'Your order was received and confirmed!')}
+                {step === 'checkout' && (isAr ? 'كمّل الشراء وادفع بالتحويل' : 'Checkout and payment by transfer')}
+                {step === 'success' && (isAr ? 'طلبك اتسجّل واتأكد!' : 'Your order was received and confirmed!')}
               </h2>
               <p className="text-[10px] text-slate-400">
-                {step === 'cart' && (isAr ? 'المنتجات التي قمت بتجميعها من المتاجر' : 'The products you collected from the stores')}
-                {step === 'checkout' && (isAr ? 'اختر التحويل البنكي أو المحفظة الإلكترونية' : 'Choose bank transfer or e-wallet')}
-                {step === 'success' && (isAr ? `رقم مرجع الفاتورة: #${orderId}` : `Invoice reference: #${orderId}`)}
+                {step === 'cart' && (isAr ? 'المنتجات اللي جمعتها من المتاجر' : 'The products you collected from the stores')}
+                {step === 'checkout' && (isAr ? 'اختار تحويل بنكي أو محفظة إلكترونية' : 'Choose bank transfer or e-wallet')}
+                {step === 'success' && (isAr ? `رقم الفاتورة: #${orderId}` : `Invoice reference: #${orderId}`)}
               </p>
             </div>
           </div>
@@ -427,15 +427,15 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <div className="w-16 h-16 rounded-full bg-rose-50 text-[#941946] flex items-center justify-center mx-auto">
                     <ShoppingBag className="w-8 h-8" />
                   </div>
-                  <h3 className="text-sm font-bold text-slate-800">{isAr ? 'عربة المشتريات فارغة حالياً' : 'Your shopping cart is empty'}</h3>
+                  <h3 className="text-sm font-bold text-slate-800">{isAr ? 'السلة فاضية دلوقتي' : 'Your shopping cart is empty'}</h3>
                   <p className="text-xs text-slate-500 max-w-xs mx-auto">
-                    {isAr ? 'تصفح منتجات البن الفاخر، عسل النحل الطبيعي، وزيت الزيتون البكر وأضف ما تحتاجه للسلة.' : 'Browse the products and add what you need to your cart.'}
+                    {isAr ? 'شوف البن الفاخر وعسل النحل وزيت الزيتون البكر وضيف اللي محتاجه للسلة.' : 'Browse the products and add what you need to your cart.'}
                   </p>
                   <button
                     onClick={onClose}
                     className="mt-2 px-5 py-2 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
                   >
-                    {isAr ? 'تصفح المنتجات الآن' : 'Browse products now'}
+                    {isAr ? 'شوف المنتجات' : 'Browse products now'}
                   </button>
                 </div>
               ) : (
@@ -501,7 +501,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   {/* Order Summary Box */}
                   <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
                     <div className="flex justify-between text-slate-600">
-                      <span>{isAr ? 'إجمالي قيمة المنتجات:' : 'Products total:'}</span>
+                      <span>{isAr ? 'إجمالي المنتجات:' : 'Products total:'}</span>
                       <span>{totalCartPrice + totalCartSavings} {isAr ? 'ج.م' : 'EGP'}</span>
                     </div>
                     {totalCartSavings > 0 && (
@@ -511,7 +511,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       </div>
                     )}
                     <div className="flex justify-between text-slate-600">
-                      <span>{isAr ? 'تكلفة الشحن والتوصيل:' : 'Shipping & delivery:'}</span>
+                      <span>{isAr ? 'مصاريف الشحن والتوصيل:' : 'Shipping & delivery:'}</span>
                       <span>{shippingFee === 0 ? (isAr ? `مجاناً (لطلبات ${freeFrom} ج.م فأكثر)` : `Free (orders of ${freeFrom} EGP or more)`) : `${shippingFee} ${isAr ? 'ج.م' : 'EGP'}`}</span>
                     </div>
                     {codFee > 0 && (
@@ -547,9 +547,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                         <span>-{walletShown} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                     )}
-                    {remainingForFree > 0 && <p className="text-[10px] text-amber-700 font-bold">{isAr ? `أضف منتجات بـ ${remainingForFree} ج.م لتحصل على توصيل مجاني` : `Add ${remainingForFree} EGP more to get free delivery`}</p>}
+                    {remainingForFree > 0 && <p className="text-[10px] text-amber-700 font-bold">{isAr ? `ضيف منتجات بـ ${remainingForFree} ج.م وخد توصيل ببلاش` : `Add ${remainingForFree} EGP more to get free delivery`}</p>}
                     <div className="flex justify-between text-slate-900 font-black border-t border-slate-200 pt-2 text-sm">
-                      <span>{isAr ? 'المبلغ الإجمالي للدفع:' : 'Total to pay:'}</span>
+                      <span>{isAr ? 'الإجمالي المطلوب دفعه:' : 'Total to pay:'}</span>
                       <span className="text-[#941946] font-mono">{finalTotal} {isAr ? 'ج.م' : 'EGP'}</span>
                     </div>
                   </div>
@@ -559,7 +559,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     onClick={() => setStep('checkout')}
                     className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all"
                   >
-                    <span>{isAr ? 'متابعة الشراء واختيار طريقة التحويل (بنك / محفظة)' : 'Continue and choose the transfer method (bank / wallet)'}</span>
+                    <span>{isAr ? 'كمّل الشراء واختار طريقة التحويل (بنك / محفظة)' : 'Continue and choose the transfer method (bank / wallet)'}</span>
                     <ArrowRight className="w-4 h-4 rotate-180" />
                   </button>
                 </div>
@@ -576,7 +576,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 onClick={() => setStep('cart')}
                 className="text-xs font-bold text-[#941946] hover:underline flex items-center gap-1"
               >
-                <span>{isAr ? '← العودة لتعديل المنتجات' : '← Back to edit products'}</span>
+                <span>{isAr ? '← رجوع لتعديل المنتجات' : '← Back to edit products'}</span>
               </button>
 
               {/* Amount to transfer banner */}
@@ -600,7 +600,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
               */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-900 block">
-                  {isAr ? 'اختر طريقة التحويل وسداد قيمة المنتجات:' : 'Choose how to pay for the products:'}
+                  {isAr ? 'اختار طريقة التحويل وادفع تمن المنتجات:' : 'Choose how to pay for the products:'}
                 </label>
 
                 <div className="grid grid-cols-1 gap-2">
@@ -669,7 +669,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${o.tone}`}>{o.icon}</div>
                       <div>
                         <h4 className="text-xs font-bold text-slate-900">{o.title}</h4>
-                        <p className="text-[9.5px] text-slate-500">{o.on ? o.note : (isAr ? 'غير متاحة حالياً' : 'Not available now')}</p>
+                        <p className="text-[9.5px] text-slate-500">{o.on ? o.note : (isAr ? 'مش متاحة دلوقتي' : 'Not available now')}</p>
                       </div>
                     </div>
                   );
@@ -689,7 +689,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
                   <div className="bg-white p-2.5 rounded-xl border border-rose-200/80 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] text-slate-400 block">{isAr ? 'رقم المحفظة لتحويل المبلغ:' : 'Wallet number to transfer to:'}</span>
+                      <span className="text-[10px] text-slate-400 block">{isAr ? 'رقم المحفظة اللي هتحوّل عليها:' : 'Wallet number to transfer to:'}</span>
                       <span dir="ltr" className="text-sm font-black text-slate-900 font-mono tracking-wider">
                         {walletNumber ?? '—'}
                       </span>
@@ -703,7 +703,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                       {copiedWallet ? (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-                          <span>{isAr ? 'تم النسخ!' : 'Copied!'}</span>
+                          <span>{isAr ? 'اتنسخ!' : 'Copied!'}</span>
                         </>
                       ) : (
                         <>
@@ -716,7 +716,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
                   <div>
                     <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                      {isAr ? 'رقم المحفظة التي قمت بالتحويل منها (لتأكيد استلام الحوالة):' : 'The wallet number you transferred from (to confirm we received it):'}
+                      {isAr ? 'رقم المحفظة اللي حوّلت منها (عشان نأكد وصول الحوالة):' : 'The wallet number you transferred from (to confirm we received it):'}
                     </label>
                     <input
                       type="text"
@@ -732,18 +732,18 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 /* PAYING ONLINE WITH PAYMOB */
                 <div className="p-3 bg-indigo-50 rounded-2xl border border-indigo-200 text-[11px] text-indigo-900 leading-relaxed">
                   {onlineChannel === 'wallet'
-                    ? (isAr ? 'ستدفع بالمحفظة الإلكترونية (فودافون كاش وغيرها) عبر Paymob بعد تأكيد الطلب. لا حاجة لأي تحويل يدوي ولا لرفع إيصال.' : 'You will pay by e-wallet (Vodafone Cash and others) through Paymob after confirming the order. No manual transfer or receipt upload is needed.')
-                    : (isAr ? 'ستدفع بالبطاقة (فيزا / ماستركارد / ميزة) عبر Paymob بعد تأكيد الطلب. بيانات بطاقتك تُدخل لدى Paymob ولا تصل إلى خوادمنا، ولا حاجة لرفع إيصال.' : 'You will pay by card (Visa / Mastercard / Meeza) through Paymob after confirming the order. Your card details are entered at Paymob and never reach our servers; no receipt upload is needed.')}
+                    ? (isAr ? 'هتدفع بالمحفظة الإلكترونية (فودافون كاش وغيرها) عن طريق Paymob بعد ما تأكد الطلب. مش محتاج تحويل يدوي ولا ترفع إيصال.' : 'You will pay by e-wallet (Vodafone Cash and others) through Paymob after confirming the order. No manual transfer or receipt upload is needed.')
+                    : (isAr ? 'هتدفع بالكارت (فيزا / ماستركارد / ميزة) عن طريق Paymob بعد ما تأكد الطلب. بيانات كارتك بتتكتب عند Paymob ومبتوصلش لسيرفراتنا، ومحتاجش ترفع إيصال.' : 'You will pay by card (Visa / Mastercard / Meeza) through Paymob after confirming the order. Your card details are entered at Paymob and never reach our servers; no receipt upload is needed.')}
                 </div>
               ) : (
                 <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200 text-[11px] text-emerald-900 leading-relaxed">
-                  {isAr ? 'ستدفع قيمة الطلب للمندوب عند الاستلام. لا حاجة لأي تحويل الآن.' : 'You will pay the courier on delivery. No transfer is needed now.'}
+                  {isAr ? 'هتدفع تمن الطلب للمندوب وقت الاستلام. مش محتاج تحوّل حاجة دلوقتي.' : 'You will pay the courier on delivery. No transfer is needed now.'}
                 </div>
               )}
 
               {paymentMethod === 'wallet' && (
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-1">{isAr ? 'صورة إيصال التحويل (اختياري - يمكن إرسالها لاحقاً):' : 'Transfer receipt photo (optional — can be sent later):'}</label>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">{isAr ? 'صورة إيصال التحويل (لو حابب — تقدر تبعتها بعدين):' : 'Transfer receipt photo (optional — can be sent later):'}</label>
                   <input
                     type="file"
                     accept="image/*,application/pdf"
@@ -757,7 +757,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
               <div className="space-y-2 pt-1 border-t border-slate-100">
                 <span className="text-xs font-bold text-slate-900 block flex items-center gap-1">
                   <Truck className="w-3.5 h-3.5 text-[#941946]" />
-                  <span>{isAr ? 'عنوان التوصيل واستلام المنتجات:' : 'Delivery address:'}</span>
+                  <span>{isAr ? 'عنوان توصيل المنتجات:' : 'Delivery address:'}</span>
                 </span>
 
                 {(() => {
@@ -769,7 +769,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     <div className="space-y-2.5">
                       <div>
                         <label className={label}>{isAr ? 'الاسم بالكامل' : 'Full name'} {star}</label>
-                        <input type="text" required minLength={3} autoComplete="name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder={isAr ? 'الاسم الذي نسأل عنه عند التوصيل' : 'The name we ask for on delivery'} className={input} />
+                        <input type="text" required minLength={3} autoComplete="name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder={isAr ? 'الاسم اللي هنسأل عنه وقت التوصيل' : 'The name we ask for on delivery'} className={input} />
                       </div>
 
                       <div>
@@ -863,7 +863,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                 className="disabled:opacity-60 w-full py-3 bg-[#941946] hover:bg-[#7b1439] active:scale-[0.99] text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-2 shadow-sm transition-all"
               >
                 {isPlacing ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : <Check className="w-4 h-4" />}
-                <span>{isPlacing ? (isAr ? 'جاري تسجيل الطلب...' : 'Placing the order...') : paymentMethod === 'cod' ? (isAr ? 'تأكيد الطلب' : 'Confirm order') : paymentMethod === 'online' ? (isAr ? 'تأكيد الطلب والدفع الآن' : 'Confirm order and pay now') : (isAr ? 'تأكيد تسجيل الطلب وإرسال إشعار التحويل' : 'Confirm the order and send the transfer notice')}</span>
+                <span>{isPlacing ? (isAr ? 'بنسجّل الطلب...' : 'Placing the order...') : paymentMethod === 'cod' ? (isAr ? 'تأكيد الطلب' : 'Confirm order') : paymentMethod === 'online' ? (isAr ? 'أكّد الطلب وادفع دلوقتي' : 'Confirm order and pay now') : (isAr ? 'تأكيد تسجيل الطلب وإرسال إشعار التحويل' : 'Confirm the order and send the transfer notice')}</span>
               </button>
             </form>
           )}
@@ -877,10 +877,10 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
               <div className="space-y-1">
                 <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  {isAr ? 'تم تسجيل طلبك بنجاح' : 'Your order was placed successfully'}
+                  {isAr ? 'طلبك اتسجّل' : 'Your order was placed successfully'}
                 </span>
                 <h3 className="text-base font-extrabold text-slate-900 mt-1">
-                  {isAr ? 'شكراً لتسوقك من متاجر ديلر الطبيعية' : 'Thank you for shopping at Deilar stores'}
+                  {isAr ? 'شكراً إنك اشتريت من متاجر ديلر الطبيعية' : 'Thank you for shopping at Deilar stores'}
                 </h3>
                 <p className="text-xs text-slate-500">
                   {isAr ? 'رقم الطلب:' : 'Order number:'} <span className="font-mono font-bold text-slate-800">#{orderId}</span>
@@ -898,7 +898,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <span className="font-bold text-slate-800">{customerAddress}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{isAr ? 'طريقة السداد:' : 'Payment method:'}</span>
+                  <span className="text-slate-500">{isAr ? 'طريقة الدفع:' : 'Payment method:'}</span>
                   <span className="font-bold text-[#941946]">
                     {paymentMethod === 'wallet' ? (isAr ? 'تحويل محفظة إلكترونية' : 'E-wallet transfer') : paymentMethod === 'online' ? (isAr ? 'دفع إلكتروني' : 'Online payment') : (isAr ? 'الدفع عند الاستلام' : 'Cash on delivery')}
                   </span>
@@ -928,7 +928,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   </div>
                 )}
                 <div className="flex justify-between border-t border-slate-200 pt-1 font-bold">
-                  <span>{paymentMethod === 'cod' ? (isAr ? 'المبلغ المطلوب عند الاستلام:' : 'Amount due on delivery:') : paymentMethod === 'online' ? (isAr ? 'المبلغ المطلوب دفعه:' : 'Amount to pay:') : (isAr ? 'المبلغ المطلوب تحويله:' : 'Amount to transfer:')}</span>
+                  <span>{paymentMethod === 'cod' ? (isAr ? 'المطلوب دفعه عند الاستلام:' : 'Amount due on delivery:') : paymentMethod === 'online' ? (isAr ? 'المبلغ المطلوب دفعه:' : 'Amount to pay:') : (isAr ? 'المبلغ المطلوب تحويله:' : 'Amount to transfer:')}</span>
                   <span className="text-emerald-700 font-mono">{finalTotal} {isAr ? 'ج.م' : 'EGP'}</span>
                 </div>
               </div>
@@ -936,7 +936,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
               {paymentMethod === 'online' && (
                 <div className="p-3 rounded-2xl border border-indigo-200 bg-indigo-50 text-right space-y-3">
                   {paidOnline ? (
-                    <p className="text-xs font-bold text-emerald-700">{isAr ? 'تم استلام الدفع بنجاح ✓' : 'Payment received ✓'}</p>
+                    <p className="text-xs font-bold text-emerald-700">{isAr ? 'الدفع وصل ✓' : 'Payment received ✓'}</p>
                   ) : (
                     <>
                       {pixel ? (
@@ -951,7 +951,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                           <PaymobPixel publicKey={pixel.publicKey} clientSecret={pixel.clientSecret} fallbackUrl={pixel.checkoutUrl} onComplete={checkPayment} />
                         )
                       ) : (
-                        <p className="text-xs font-bold text-indigo-900">{payMessage ?? (isAr ? 'تعذر فتح نموذج الدفع. حاول مرة أخرى.' : 'Could not open the payment form. Please try again.')}</p>
+                        <p className="text-xs font-bold text-indigo-900">{payMessage ?? (isAr ? 'مقدرناش نفتح صفحة الدفع. جرّب تاني.' : 'Could not open the payment form. Please try again.')}</p>
                       )}
                       {payMessage && pixel && <p className="text-[11px] font-bold text-indigo-900">{payMessage}</p>}
                       <div className="flex gap-2">
@@ -963,7 +963,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                             className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5"
                           >
                             <CreditCard className="w-4 h-4" />
-                            <span>{isAr ? 'حاول الدفع مرة أخرى' : 'Try paying again'}</span>
+                            <span>{isAr ? 'جرّب الدفع تاني' : 'Try paying again'}</span>
                           </button>
                         )}
                         <button
@@ -983,7 +983,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
 
               {receiptFailed && (
                 <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                  {isAr ? 'تم تسجيل طلبك لكن تعذر رفع صورة الإيصال. أرسلها لنا عبر واتساب برقم الطلب.' : 'Your order was placed but the receipt photo could not be uploaded. Send it to us on WhatsApp with the order number.'}
+                  {isAr ? 'طلبك اتسجّل لكن الإيصال ماترفعش. ابعتهولنا على واتساب ومعاه رقم الطلب.' : 'Your order was placed but the receipt photo could not be uploaded. Send it to us on WhatsApp with the order number.'}
                 </p>
               )}
 
@@ -994,7 +994,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  <span>{paymentMethod === 'cod' ? (isAr ? 'إرسال تفاصيل الطلب عبر واتساب' : 'Send order details on WhatsApp') : (isAr ? 'إرسال تفاصيل الطلب وإشعار التحويل عبر واتساب فوراً' : 'Send order details and transfer notice on WhatsApp now')}</span>
+                  <span>{paymentMethod === 'cod' ? (isAr ? 'ابعت تفاصيل الطلب على واتساب' : 'Send order details on WhatsApp') : (isAr ? 'ابعت تفاصيل الطلب وإشعار التحويل على واتساب دلوقتي' : 'Send order details and transfer notice on WhatsApp now')}</span>
                 </button>
 
                 <button
@@ -1019,7 +1019,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   }}
                   className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold transition-colors"
                 >
-                  {isAr ? 'تتبع طلبي' : 'Track my order'}
+                  {isAr ? 'تابع طلبي' : 'Track my order'}
                 </button>
 
                 <button
@@ -1032,7 +1032,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   }}
                   className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors"
                 >
-                  {isAr ? 'العودة للمتجر' : 'Back to the store'}
+                  {isAr ? 'رجوع للمتجر' : 'Back to the store'}
                 </button>
               </div>
             </div>

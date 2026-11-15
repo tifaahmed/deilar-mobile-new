@@ -53,7 +53,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, userL
             <input
               type="text"
               autoFocus
-              placeholder={isAr ? 'ابحث باسم المستشفى، المعمل، الدواء، أو التخصص...' : 'Search hospital, lab, pharmacy or specialty...'}
+              placeholder={isAr ? 'دوّر باسم المستشفى أو المعمل أو الدوا أو التخصص...' : 'Search hospital, lab, pharmacy or specialty...'}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full pl-8 pr-10 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-600"
@@ -73,7 +73,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, userL
         {/* Governorates filter */}
         <div className="px-4 py-2 border-b border-slate-100 flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
           <span className="text-slate-400 shrink-0 font-medium">{isAr ? 'المحافظة:' : 'Governorate:'}</span>
-          {[{ id: null, name: isAr ? 'جميع المحافظات' : 'All governorates' }, ...(governorates.data ?? [])].map((g) => (
+          {[{ id: null, name: isAr ? 'كل المحافظات' : 'All governorates' }, ...(governorates.data ?? [])].map((g) => (
             <button
               key={g.id ?? 'all'}
               onClick={() => setGovernorateId(g.id)}
@@ -134,9 +134,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, userL
           {!list.loading && !list.error && list.items.length === 0 && (
             <div className="p-8 text-center">
               <Building2 className="w-8 h-8 text-slate-300 mx-auto mb-1.5" />
-              <p className="text-xs font-bold text-slate-700">{isAr ? 'لا توجد نتائج مطابقة لبحثك' : 'No results match your search'}</p>
+              <p className="text-xs font-bold text-slate-700">{isAr ? 'مفيش نتايج مطابقة لبحثك' : 'No results match your search'}</p>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                {isAr ? 'جرب البحث بكلمة عامة مثل "معمل" أو "أشعة" أو "صيدلية"' : 'Try a general word such as "lab", "radiology" or "pharmacy"'}
+                {isAr ? 'جرّب كلمة عامة زي "معمل" أو "أشعة" أو "صيدلية"' : 'Try a general word such as "lab", "radiology" or "pharmacy"'}
               </p>
             </div>
           )}

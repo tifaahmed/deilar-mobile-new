@@ -42,8 +42,8 @@ export const NationalIdChange: React.FC<NationalIdChangeProps> = ({ current, req
     setTried(true);
     if (badId) {
       setError(nationalId.length === 14
-        ? isAr ? 'الرقم القومي يجب أن يبدأ بـ 2 أو 3' : 'The national ID must start with 2 or 3'
-        : isAr ? 'الرقم القومي الصحيح مطلوب (١٤ رقماً)' : 'The correct national ID is required (14 digits)');
+        ? isAr ? 'الرقم القومي لازم يبدأ بـ 2 أو 3' : 'The national ID must start with 2 or 3'
+        : isAr ? 'لازم تكتب الرقم القومي الصح (14 رقم)' : 'The correct national ID is required (14 digits)');
       return;
     }
     setBusy(true);
@@ -56,10 +56,10 @@ export const NationalIdChange: React.FC<NationalIdChangeProps> = ({ current, req
     } catch (err) {
       const reason = err instanceof ApiError ? err.reason : undefined;
       setError(
-        reason === 'national_id_taken' ? (isAr ? 'هذا الرقم القومي مسجل على كارت آخر. تواصل مع خدمة العملاء.' : 'This national ID belongs to another card. Please contact customer service.')
-        : reason === 'already_open' ? (isAr ? 'لديك طلب قيد المراجعة بالفعل.' : 'You already have a request waiting for review.')
-        : reason === 'same_national_id' ? (isAr ? 'هذا هو رقمك القومي الحالي.' : 'This is already your national ID.')
-        : isAr ? 'تعذر إرسال الطلب. حاول مرة أخرى.' : 'The request could not be sent. Please try again.',
+        reason === 'national_id_taken' ? (isAr ? 'الرقم القومي ده مسجّل على كارت تاني. كلّم خدمة العملاء.' : 'This national ID belongs to another card. Please contact customer service.')
+        : reason === 'already_open' ? (isAr ? 'عندك طلب بيتراجع بالفعل.' : 'You already have a request waiting for review.')
+        : reason === 'same_national_id' ? (isAr ? 'ده رقمك القومي الحالي.' : 'This is already your national ID.')
+        : isAr ? 'مقدرناش نبعت الطلب. جرّب تاني.' : 'The request could not be sent. Please try again.',
       );
       if (!(err instanceof ApiError) || err.status >= 500) reportClientError('National ID change request failed', err);
     } finally {
@@ -81,17 +81,17 @@ export const NationalIdChange: React.FC<NationalIdChangeProps> = ({ current, req
 
       {pending ? (
         <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-          {isAr ? 'طلب تغيير الرقم القومي قيد المراجعة من خدمة العملاء.' : 'Your national ID change request is waiting for customer service to review it.'}
+          {isAr ? 'طلب تغيير الرقم القومي بتراجعه خدمة العملاء.' : 'Your national ID change request is waiting for customer service to review it.'}
         </p>
       ) : (
         <>
           {request?.status === 'rejected' && (
             <p className="text-[11px] font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">
-              {isAr ? 'تم رفض آخر طلب لتغيير الرقم القومي.' : 'Your last national ID change request was declined.'}{request.review_note ? ` ${request.review_note}` : ''}
+              {isAr ? 'آخر طلب لتغيير الرقم القومي اترفض.' : 'Your last national ID change request was declined.'}{request.review_note ? ` ${request.review_note}` : ''}
             </p>
           )}
           <p className="text-[11px] text-slate-500 leading-relaxed">
-            {isAr ? 'لا يمكن تعديل الرقم القومي مباشرة. لتغييره أرسل طلباً مع صورة البطاقة (وجه وظهر) وسنراجعه ونعتمده.' : 'The national ID cannot be edited directly. To change it, send a request with photos of your ID card (front and back) and we will review and approve it.'}
+            {isAr ? 'الرقم القومي مبيتعدّلش على طول. عشان تغيّره ابعت طلب ومعاه صورة البطاقة (وش وضهر) وإحنا هنراجعه ونعتمده.' : 'The national ID cannot be edited directly. To change it, send a request with photos of your ID card (front and back) and we will review and approve it.'}
           </p>
           <button type="button" onClick={() => setOpen(true)} className="w-full py-2.5 rounded-xl border border-[#941946] text-[#941946] text-xs font-bold hover:bg-[#941946]/5 cursor-pointer">
             {isAr ? 'طلب تغيير الرقم القومي' : 'Request a national ID change'}
@@ -120,7 +120,7 @@ export const NationalIdChange: React.FC<NationalIdChangeProps> = ({ current, req
             </label>
 
             <div className="grid grid-cols-2 gap-2">
-              {([['front', front, setFront, isAr ? 'وجه البطاقة' : 'ID card front'], ['back', back, setBack, isAr ? 'ظهر البطاقة' : 'ID card back']] as const).map(([key, file, setFile, text]) => (
+              {([['front', front, setFront, isAr ? 'وش البطاقة' : 'ID card front'], ['back', back, setBack, isAr ? 'ضهر البطاقة' : 'ID card back']] as const).map(([key, file, setFile, text]) => (
                 <label key={key} className="block space-y-1">
                   <span className="text-[11px] font-bold">{text} <span className="text-slate-400 font-normal">({isAr ? 'اختياري' : 'optional'})</span></span>
                   <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="w-full text-[11px] file:mr-2 file:rounded-lg file:border-0 file:bg-slate-100 file:px-2.5 file:py-1.5 file:text-[11px] file:font-bold" />
@@ -134,7 +134,7 @@ export const NationalIdChange: React.FC<NationalIdChangeProps> = ({ current, req
             {error && <p role="alert" className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">{error}</p>}
 
             <button type="submit" disabled={busy} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold cursor-pointer">
-              {busy ? '…' : isAr ? 'إرسال الطلب' : 'Send request'}
+              {busy ? '…' : isAr ? 'ابعت الطلب' : 'Send request'}
             </button>
           </form>
         </div>,

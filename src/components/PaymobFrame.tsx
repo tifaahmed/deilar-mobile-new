@@ -70,7 +70,7 @@ export const PaymobFrame: React.FC<PaymobFrameProps> = ({ url, check, onComplete
       {!loaded && (
         <div className="absolute inset-0 flex items-center justify-center gap-2 text-xs text-slate-500">
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span>{isAr ? 'جاري تحميل صفحة الدفع…' : 'Loading the payment page…'}</span>
+          <span>{isAr ? 'بنحمّل صفحة الدفع…' : 'Loading the payment page…'}</span>
         </div>
       )}
       <iframe
@@ -99,9 +99,9 @@ export const PaymobFrame: React.FC<PaymobFrameProps> = ({ url, check, onComplete
         <div className="p-3 border-t border-slate-200 space-y-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <button type="button" onClick={() => void openInAppBrowser(url)} className="w-full py-2.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 flex items-center justify-center gap-1.5 cursor-pointer">
             <ExternalLink className="w-3.5 h-3.5" />
-            <span>{isAr ? 'لا تعمل؟ افتح في المتصفح الداخلي' : 'Not working? Open in the in-app browser'}</span>
+            <span>{isAr ? 'مش شغالة؟ افتحها في المتصفح الداخلي' : 'Not working? Open in the in-app browser'}</span>
           </button>
-          <button type="button" onClick={onComplete} className="w-full text-[11px] font-bold text-slate-500 cursor-pointer">{isAr ? 'أنهيت الدفع' : 'I have finished paying'}</button>
+          <button type="button" onClick={onComplete} className="w-full text-[11px] font-bold text-slate-500 cursor-pointer">{isAr ? 'خلّصت الدفع' : 'I have finished paying'}</button>
         </div>
       </div>,
       document.body,
@@ -117,7 +117,7 @@ export const PaymobFrame: React.FC<PaymobFrameProps> = ({ url, check, onComplete
         </span>
         <button type="button" onClick={() => setFull(true)} className="flex items-center gap-1 text-[11px] font-bold text-[#941946] cursor-pointer">
           <Maximize2 className="w-3.5 h-3.5" />
-          <span>{isAr ? 'تكبير الشاشة' : 'Full screen'}</span>
+          <span>{isAr ? 'كبّر الشاشة' : 'Full screen'}</span>
         </button>
       </div>
 
@@ -125,7 +125,7 @@ export const PaymobFrame: React.FC<PaymobFrameProps> = ({ url, check, onComplete
 
       {slow && !loaded && (
         <p role="alert" className="text-[11px] font-bold rounded-xl px-3 py-2 border text-amber-900 bg-amber-50 border-amber-200">
-          {isAr ? 'صفحة الدفع لا تظهر هنا. افتحها في المتصفح الداخلي.' : 'The payment page is not showing here. Open it in the in-app browser.'}
+          {isAr ? 'صفحة الدفع مش ظاهرة هنا. افتحها في المتصفح الداخلي.' : 'The payment page is not showing here. Open it in the in-app browser.'}
         </p>
       )}
 
@@ -135,11 +135,11 @@ export const PaymobFrame: React.FC<PaymobFrameProps> = ({ url, check, onComplete
         className={`w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${slow && !loaded ? 'bg-[#941946] text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
       >
         <ExternalLink className="w-3.5 h-3.5" />
-        <span>{isAr ? 'لا تعمل؟ افتح في المتصفح الداخلي' : 'Not working? Open in the in-app browser'}</span>
+        <span>{isAr ? 'مش شغالة؟ افتحها في المتصفح الداخلي' : 'Not working? Open in the in-app browser'}</span>
       </button>
 
       <button type="button" onClick={onComplete} className="w-full text-[11px] font-bold text-slate-500 hover:text-[#941946] cursor-pointer">
-        {isAr ? 'أنهيت الدفع' : 'I have finished paying'}
+        {isAr ? 'خلّصت الدفع' : 'I have finished paying'}
       </button>
     </div>
   );

@@ -100,8 +100,8 @@ export const AreaModal: React.FC<AreaModalProps> = ({ lat, lng, lockedGovernorat
     o.distance === undefined ? '' : o.distance === 0 ? (isAr ? 'موقعك الحالي' : 'You are here') : isAr ? `${o.distance} كم` : `${o.distance} km`;
 
   const currentCityId = getArea()?.city?.id;
-  const title = gov ? (isAr ? 'اختر مدينتك' : 'Choose your city') : isAr ? 'اختر محافظتك' : 'Choose your governorate';
-  const subtitle = gov ? (lockedGovernorateId ? (isAr ? `المدن داخل ${gov.name} - الأقرب أولاً` : `Cities in ${gov.name} - closest first`) : gov.name) : isAr ? 'الأقرب إلى موقعك الحالي' : 'Closest to your current location';
+  const title = gov ? (isAr ? 'اختار مدينتك' : 'Choose your city') : isAr ? 'اختار محافظتك' : 'Choose your governorate';
+  const subtitle = gov ? (lockedGovernorateId ? (isAr ? `المدن داخل ${gov.name} - الأقرب أولاً` : `Cities in ${gov.name} - closest first`) : gov.name) : isAr ? 'الأقرب لموقعك دلوقتي' : 'Closest to your current location';
 
   const row = (active: boolean) =>
     `w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl border text-xs font-bold cursor-pointer transition-all active:scale-[0.99] ${

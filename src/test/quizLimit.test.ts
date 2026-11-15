@@ -12,23 +12,23 @@ describe('daily plays per section', () => {
   });
   afterEach(() => vi.useRealTimers());
 
-  it('allows 5 plays a day', () => {
-    expect(PLAYS_PER_DAY).toBe(5);
+  it('allows 1 play a day per section', () => {
+    expect(PLAYS_PER_DAY).toBe(1);
   });
 
-  it('counts each section on its own, so three sections allow fifteen plays', () => {
-    for (let i = 0; i < 5; i++) registerPlay(FOOTBALL);
+  it('counts each section on its own, so each section has its own single play', () => {
+    for (let i = 0; i < 1; i++) registerPlay(FOOTBALL);
 
-    expect(playsUsed(FOOTBALL)).toBe(5);
+    expect(playsUsed(FOOTBALL)).toBe(1);
     expect(playsUsed(FAWAZEER)).toBe(0);
     expect(lockedSections([FOOTBALL, FAWAZEER])).toEqual([FOOTBALL]);
 
-    for (let i = 0; i < 5; i++) registerPlay(FAWAZEER);
+    for (let i = 0; i < 1; i++) registerPlay(FAWAZEER);
     expect(lockedSections([FOOTBALL, FAWAZEER])).toEqual([FOOTBALL, FAWAZEER]);
   });
 
   it('opens again at midnight, and counts down to it', () => {
-    for (let i = 0; i < 5; i++) registerPlay(FOOTBALL);
+    for (let i = 0; i < 1; i++) registerPlay(FOOTBALL);
 
     // It is 15:30: eight and a half hours to midnight.
     expect(nextOpenAt() - Date.now()).toBe(8.5 * 3600 * 1000);
@@ -41,22 +41,22 @@ describe('daily plays per section', () => {
   });
 
   it('shows the countdown ticking, and unlocks by itself when it reaches zero', () => {
-    for (let i = 0; i < 5; i++) registerPlay(FOOTBALL);
+    for (let i = 0; i < 1; i++) registerPlay(FOOTBALL);
     vi.setSystemTime(new Date(2026, 9, 27, 23, 59, 58));
 
     const { result } = renderHook(() => useQuizLimit(FOOTBALL));
-    expect(result.current).toMatchObject({ used: 5, left: 0, locked: true });
+    expect(result.current).toMatchObject({ used: 1, left: 0, locked: true });
     expect(formatCountdown(result.current.msLeft)).toBe('00:00:02');
 
     act(() => {
       vi.advanceTimersByTime(3000);
     });
-    expect(result.current).toMatchObject({ used: 0, left: 5, locked: false, msLeft: 0 });
+    expect(result.current).toMatchObject({ used: 0, left: 1, locked: false, msLeft: 0 });
   });
 
   it('remembers a locked day that ended while the app was closed, and tells once', () => {
-    for (let i = 0; i < 5; i++) registerPlay(FOOTBALL);
-    registerPlay(FAWAZEER); // not locked: nothing to announce for it
+    for (let i = 0; i < 1; i++) registerPlay(FOOTBALL);
+    // FAWAZEER was never played: nothing to announce for it
 
     expect(unseenReopened([FOOTBALL, FAWAZEER])).toEqual([]); // still the same day
 

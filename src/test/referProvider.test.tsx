@@ -17,10 +17,9 @@ const open = () => fireEvent.click(screen.getByRole('button', { name: /رشّح 
 describe('recommending a service provider', () => {
   beforeEach(() => { vi.clearAllMocks(); localStorage.clear(); clearSession(); post.mockResolvedValue(undefined); });
 
-  it('sends name, phone and kind to the inbox under the referral subject', async () => {
+  it('sends phone and optional name to the inbox under the referral subject', async () => {
     updateSession({ token: 't', name: 'Mona', phone: '01011112222', cardNumber: '123456' });
     show(); open();
-    fireEvent.click(screen.getByRole('button', { name: 'مطاعم' }));
     fireEvent.change(screen.getByLabelText('اسم مقدم الخدمة'), { target: { value: 'مطعم الأمل' } });
     fireEvent.change(screen.getByLabelText('رقم تليفون مقدم الخدمة'), { target: { value: '01099998888' } });
     fireEvent.click(screen.getByRole('button', { name: 'إرسال الترشيح' }));
@@ -28,39 +27,38 @@ describe('recommending a service provider', () => {
     await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
     const body = post.mock.calls[0][0];
     expect(body).toMatchObject({ phone: '01099998888', name: 'مطعم الأمل', subject: 'ترشيح عميل لمقدم خدمة', source: 'provider_referral' });
-    expect(body.message).toContain('نوع المكان: مطاعم');
+    expect(body.message).not.toContain('نوع المكان');
     expect(body.message).toContain('كارت 123456');
     expect(await screen.findByTestId('referral-sent')).toBeTruthy();
   });
 
-  it('refuses a missing kind, name or bad phone and sends nothing', async () => {
+  it('refuses a bad phone and sends nothing, and the name is optional', async () => {
     show(); open();
+    expect(screen.queryByRole('button', { name: 'طبي' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'إرسال الترشيح' }));
-    expect((await screen.findByRole('alert')).textContent).toContain('اسم');
-    fireEvent.change(screen.getByLabelText('اسم مقدم الخدمة'), { target: { value: 'عيادة' } });
+    expect((await screen.findByRole('alert')).textContent).toContain('تليفون');
     fireEvent.change(screen.getByLabelText('رقم تليفون مقدم الخدمة'), { target: { value: '12' } });
     fireEvent.click(screen.getByRole('button', { name: 'إرسال الترشيح' }));
     expect((await screen.findByRole('alert')).textContent).toContain('تليفون');
     fireEvent.change(screen.getByLabelText('رقم تليفون مقدم الخدمة'), { target: { value: '01012345678' } });
     fireEvent.click(screen.getByRole('button', { name: 'إرسال الترشيح' }));
-    expect((await screen.findByRole('alert')).textContent).toContain('نوع');
-    expect(post).not.toHaveBeenCalled();
+    await waitFor(() => expect(post).toHaveBeenCalledTimes(1));
+    expect(post.mock.calls[0][0].name).toBeUndefined();
   });
 
   it('shows an error and keeps the form when the send fails', async () => {
     post.mockRejectedValue(new Error('down'));
     show(); open();
-    fireEvent.click(screen.getByRole('button', { name: 'طبي' }));
     fireEvent.change(screen.getByLabelText('اسم مقدم الخدمة'), { target: { value: 'عيادة النور' } });
     fireEvent.change(screen.getByLabelText('رقم تليفون مقدم الخدمة'), { target: { value: '0223334444' } });
     fireEvent.click(screen.getByRole('button', { name: 'إرسال الترشيح' }));
-    expect((await screen.findByRole('alert')).textContent).toContain('تعذر');
+    expect((await screen.findByRole('alert')).textContent).toContain('مقدرناش نبعت');
     expect(screen.queryByTestId('referral-sent')).toBeNull();
   });
 
   it('builds the message and checks the phone', () => {
     expect(isValidProviderPhone('+20 101 234 5678')).toBe(true);
     expect(isValidProviderPhone('abc')).toBe(false);
-    expect(referralMessage({ providerName: 'X', providerPhone: '01', kind: 'entertainment', from: {} })).toContain('ترفيهي');
+    expect(referralMessage({ providerPhone: '01', from: {} })).toContain('تليفون مقدم الخدمة: 01');
   });
 });

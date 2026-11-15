@@ -52,7 +52,7 @@ const CameraField: React.FC<{
         <>
           <img src={preview} alt={label} className="w-full h-full object-cover" />
           <span className="absolute bottom-1 inset-x-1 text-center text-[10px] font-bold bg-black/60 text-white rounded-md py-0.5">
-            {isAr ? 'اضغط لإعادة التصوير' : 'Tap to retake'}
+            {isAr ? 'دوس عشان تصوّر تاني' : 'Tap to retake'}
           </span>
         </>
       ) : (
@@ -106,7 +106,7 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
         err instanceof ApiError && err.status === 422
           ? Object.values((err.body?.errors ?? {}) as Record<string, string[]>)[0]?.[0]
           : undefined;
-      setError(first ?? (isAr ? 'تعذّر إرسال الطلب، حاول مرة أخرى.' : 'Could not send the request, please try again.'));
+      setError(first ?? (isAr ? 'مقدرناش نبعت الطلب، جرّب تاني.' : 'Could not send the request, please try again.'));
     } finally {
       setBusy(false);
     }
@@ -121,9 +121,9 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
     return (
       <div className={`p-5 rounded-2xl border text-center space-y-2 mt-3 ${isDark ? 'bg-[#1E2330] border-white/[0.08]' : 'bg-emerald-50 border-emerald-200'}`}>
         <CheckCircle2 className="w-9 h-9 text-emerald-500 mx-auto" />
-        <p className="text-xs font-black">{isAr ? 'تم إرسال الطلب' : 'Request sent'}</p>
+        <p className="text-xs font-black">{isAr ? 'الطلب اتبعت' : 'Request sent'}</p>
         <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-600'}`}>
-          {isAr ? 'سيظهر الفرد على كارتك بعد موافقة الإدارة.' : 'The member will appear on your card once the admin approves.'}
+          {isAr ? 'الفرد هيظهر على كارتك بعد ما الإدارة توافق.' : 'The member will appear on your card once the admin approves.'}
         </p>
       </div>
     );
@@ -144,7 +144,7 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
 
       <p className={`text-[10.5px] leading-relaxed ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
         {isAr
-          ? 'كل البيانات والصور مطلوبة، ويتم تفعيل الفرد بعد مراجعة الإدارة.'
+          ? 'كل البيانات والصور مطلوبة، والفرد بيتفعّل بعد ما الإدارة تراجع.'
           : 'Every field and picture is required. The member is activated after the admin reviews the request.'}
       </p>
 
@@ -181,19 +181,19 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
         </div>
 
         <div>
-          <label className={label}>{isAr ? 'رقم الهاتف (اختياري)' : 'Phone (optional)'}</label>
+          <label className={label}>{isAr ? 'رقم الموبايل (لو حابب)' : 'Phone (optional)'}</label>
           <input type="tel" inputMode="tel" dir="ltr" maxLength={16} value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ''))} className={`${field} font-mono`} aria-label={isAr ? 'رقم الهاتف' : 'Phone'} />
-          <p className={`text-[10px] mt-0.5 ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{isAr ? 'يظهر «غير موثّق» حتى يؤكده صاحبه.' : 'Shown as "not verified" until its owner confirms it.'}</p>
+          <p className={`text-[10px] mt-0.5 ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{isAr ? 'هيفضل «مش متأكد منه» لحد ما صاحبه يأكده.' : 'Shown as "not verified" until its owner confirms it.'}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className={label}>{isAr ? 'وجه البطاقة' : 'ID front'}</span>
-            <CameraField label={isAr ? 'صوّر الوجه' : 'Photo of front'} file={front} onChange={setFront} facing="environment" isAr={isAr} isDark={isDark} />
+            <span className={label}>{isAr ? 'وش البطاقة' : 'ID front'}</span>
+            <CameraField label={isAr ? 'صوّر الوش' : 'Photo of front'} file={front} onChange={setFront} facing="environment" isAr={isAr} isDark={isDark} />
           </div>
           <div>
-            <span className={label}>{isAr ? 'ظهر البطاقة' : 'ID back'}</span>
-            <CameraField label={isAr ? 'صوّر الظهر' : 'Photo of back'} file={back} onChange={setBack} facing="environment" isAr={isAr} isDark={isDark} />
+            <span className={label}>{isAr ? 'ضهر البطاقة' : 'ID back'}</span>
+            <CameraField label={isAr ? 'صوّر الضهر' : 'Photo of back'} file={back} onChange={setBack} facing="environment" isAr={isAr} isDark={isDark} />
           </div>
         </div>
 
@@ -212,7 +212,7 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
           className="w-full py-2.5 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors shadow-2xs cursor-pointer flex items-center justify-center gap-1.5"
         >
           {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-          <span>{isAr ? 'إرسال للموافقة' : 'Send for approval'}</span>
+          <span>{isAr ? 'ابعت للموافقة' : 'Send for approval'}</span>
         </button>
       </form>
     </div>

@@ -11,6 +11,6 @@ export const getTrialDays = (): number | null => known;
 /** "7 days" / "7 أيام"; with no figure yet, a neutral word so nothing wrong is promised. */
 export const trialPhrase = (days: number | null, isAr: boolean): string => {
   if (!days) return isAr ? 'مجاناً' : 'free';
-  if (isAr) return days === 1 ? 'يوم' : days === 2 ? 'يومين' : days <= 10 ? `${days} أيام` : `${days} يوماً`;
+  if (isAr) return days === 1 ? 'يوم' : days === 2 ? 'يومين' : days <= 10 ? `${days} أيام` : `${days} يوم`;
   return days === 1 ? '1 day' : `${days} days`;
 };

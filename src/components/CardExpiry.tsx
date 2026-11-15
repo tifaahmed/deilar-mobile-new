@@ -16,8 +16,8 @@ export const CardExpiry: React.FC<{ status: MemberStatus; dark?: boolean }> = ({
   const left = expired
     ? isAr ? 'منتهي' : 'Expired'
     : status.days_left === 0
-      ? isAr ? 'ينتهي اليوم' : 'Ends today'
-      : isAr ? `متبقي ${status.days_left} يوم` : `${status.days_left} day${status.days_left === 1 ? '' : 's'} left`;
+      ? isAr ? 'بينتهي النهارده' : 'Ends today'
+      : isAr ? `فاضل ${status.days_left} يوم` : `${status.days_left} day${status.days_left === 1 ? '' : 's'} left`;
 
   // One colour per state; the text colour is chosen for the light and the dark page alike.
   const tone = expired
@@ -31,7 +31,7 @@ export const CardExpiry: React.FC<{ status: MemberStatus; dark?: boolean }> = ({
       <p className="flex items-center gap-2 text-sm font-black leading-snug">
         <tone.Icon className="w-5 h-5 shrink-0" />
         <span>
-          {expired ? (isAr ? 'انتهى الكارت في ' : 'Expired on ') : isAr ? 'صالح حتى ' : 'Valid until '}
+          {expired ? (isAr ? 'الكارت خلص في ' : 'Expired on ') : isAr ? 'صالح حتى ' : 'Valid until '}
           {date}
         </span>
       </p>

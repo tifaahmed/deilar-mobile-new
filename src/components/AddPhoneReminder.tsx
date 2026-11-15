@@ -73,7 +73,7 @@ export const AddPhoneReminder: React.FC = () => {
       onOpen={() => { setShow(false); requestAccess('addphone'); }}
       onClose={() => setShow(false)}
     >
-      {isAr ? `كارتك رقم ${cardNumber} بلا رقم هاتف — أضف رقمك لتأكيده والدخول` : `Card ${cardNumber} has no phone — add yours to sign in`}
+      {isAr ? `كارتك رقم ${cardNumber} من غير رقم موبايل — ضيف رقمك عشان تأكده وتدخل` : `Card ${cardNumber} has no phone — add yours to sign in`}
     </Notice>
   );
 };

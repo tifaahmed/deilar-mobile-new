@@ -55,10 +55,12 @@ import { fetchFamily } from '../api/family';
 import { AddChildForm } from './AddChildForm';
 import { WalletScreen } from './WalletScreen';
 import { ReferralScreen } from './ReferralScreen';
+import { ReferralCodeEntry } from './ReferralCodeEntry';
 import { CardStatusBanner } from './CardStatusBanner';
 import { CardExpiry } from './CardExpiry';
 import { SubscribePanel } from './SubscribePanel';
 import { FamilyCircle } from './FamilyCircle';
+import { RelativeFeePanel } from './RelativeFeePanel';
 import { PhysicalCardOrder } from './PhysicalCardOrder';
 import { fetchMembership, requestRelatives, type CardStatus } from '../api/membership';
 import { AreaPicker } from './AreaPicker';
@@ -320,7 +322,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     if (personalInfo.fullName.trim().length < 3) {
       setNameTried(true);
       setPersonalSaveSuccess(false);
-      setPersonalError(isAr ? 'الاسم مطلوب (٣ أحرف على الأقل). أكمل البيانات الناقصة ثم احفظ.' : 'Your name is required (at least 3 characters). Fill in what is missing, then save.');
+      setPersonalError(isAr ? 'لازم تكتب اسمك (٣ حروف على الأقل). كمّل البيانات الناقصة وبعدها احفظ.' : 'Your name is required (at least 3 characters). Fill in what is missing, then save.');
       return;
     }
 
@@ -342,7 +344,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       // The address belongs to a governorate (the backend requires it); the photo is its own upload.
       if (personalInfo.address.trim()) {
         if (!personalInfo.governorateId) {
-          setPersonalError(isAr ? 'اختر المحافظة أولاً ليُحفظ العنوان' : 'Choose your governorate first so the address can be saved');
+          setPersonalError(isAr ? 'اختار المحافظة الأول عشان العنوان يتحفظ' : 'Choose your governorate first so the address can be saved');
           return;
         }
         await saveHomeAddress(token, {
@@ -361,7 +363,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         setSessionExpired(true);
       } else {
         const first = err instanceof ApiError && err.status === 422 ? Object.values((err.body?.errors ?? {}) as Record<string, string[]>)[0]?.[0] : undefined;
-        setPersonalError(first ?? (isAr ? 'تعذر حفظ بياناتك، حاول مرة أخرى' : 'Could not save your details, please try again'));
+        setPersonalError(first ?? (isAr ? 'مقدرناش نحفظ بياناتك، جرّب تاني' : 'Could not save your details, please try again'));
       }
     } finally {
       setPersonalBusy(false);
@@ -376,7 +378,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     if (!message || ticketBusy) return;
 
     if (!/^\+?\d{8,15}$/.test(phone)) {
-      setTicketError(isAr ? 'أدخل رقم هاتف صحيح للتواصل معك' : 'Enter a valid phone number so we can reach you');
+      setTicketError(isAr ? 'اكتب رقم موبايل صح عشان نتواصل معاك' : 'Enter a valid phone number so we can reach you');
       return;
     }
 
@@ -394,7 +396,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       setTicketMessage('');
       setTimeout(() => setTicketSent(false), 4000);
     } catch (err) {
-      setTicketError(err instanceof ApiError && err.status === 429 ? (isAr ? 'محاولات كثيرة، حاول لاحقاً' : 'Too many attempts, try later') : isAr ? 'تعذر إرسال رسالتك، حاول مرة أخرى' : 'Could not send your message, please try again');
+      setTicketError(err instanceof ApiError && err.status === 429 ? (isAr ? 'حاولت كتير، جرّب بعدين' : 'Too many attempts, try later') : isAr ? 'مقدرناش نبعت رسالتك، جرّب تاني' : 'Could not send your message, please try again');
     } finally {
       setTicketBusy(false);
     }
@@ -427,7 +429,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     return (
       <div className={`pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
         {token ? <PhysicalCardOrder token={token} /> : (
-          <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل الدخول برقم هاتفك أولاً لطلب كارت فيزيكال.' : 'Sign in with your phone first to order a physical card.'}</p>
+          <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل دخول برقم موبايلك الأول عشان تطلب كارت فيزيكال.' : 'Sign in with your phone first to order a physical card.'}</p>
         )}
       </div>
     );
@@ -456,10 +458,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div role="alert" className="rounded-2xl border border-red-300 bg-red-50 p-3.5 flex items-start gap-3 text-red-800">
           <TriangleAlert className="w-5 h-5 shrink-0 mt-0.5" />
           <div className="flex-1 space-y-2">
-            <p className="text-sm font-black">{isAr ? 'بيانات ناقصة: الاسم مطلوب' : 'Missing details: your name is required'}</p>
-            <p className="text-xs leading-relaxed">{isAr ? 'أضف اسمك بالكامل ليظهر على كارتك.' : 'Add your full name so it appears on your card.'}</p>
+            <p className="text-sm font-black">{isAr ? 'فيه بيانات ناقصة: لازم الاسم' : 'Missing details: your name is required'}</p>
+            <p className="text-xs leading-relaxed">{isAr ? 'ضيف اسمك بالكامل عشان يظهر على كارتك.' : 'Add your full name so it appears on your card.'}</p>
             <button type="button" onClick={() => setActiveSection('personal')} className="px-3.5 py-2 rounded-xl bg-red-700 text-white text-xs font-bold cursor-pointer">
-              {isAr ? 'إضافة الاسم الآن' : 'Add my name now'}
+              {isAr ? 'ضيف الاسم دلوقتي' : 'Add my name now'}
             </button>
           </div>
         </div>
@@ -470,8 +472,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="space-y-2">
           {membership.data.is_relative && (
             <div className="rounded-2xl border border-[#c89e43] bg-[#c89e43]/10 p-3.5 text-xs leading-6 text-slate-800">
-              <p className="font-black">{isAr ? 'أنت عضو قريب على كارت عائلتك' : 'You are a relative member on your family\'s card'}</p>
-              <p>{isAr ? 'اشترك في كارتك الخاص لتصبح عضواً أساسياً وتضيف أسرتك أنت. تبقى ترى عائلتك الحالية ونقاطهم وإنجازاتهم بعد الاشتراك.' : 'Subscribe to your own card to become a primary member and add your own family. You keep seeing your current family, their points and achievements after subscribing.'}</p>
+              <p className="font-black">{isAr ? 'إنت فرد على كارت عيلتك' : 'You are a relative member on your family\'s card'}</p>
+              <p>{isAr ? 'اشترك في كارتك الخاص عشان تبقى عضو أساسي وتضيف أسرتك إنت. هتفضل شايف عيلتك الحالية ونقاطهم وإنجازاتهم بعد الاشتراك.' : 'Subscribe to your own card to become a primary member and add your own family. You keep seeing your current family, their points and achievements after subscribing.'}</p>
             </div>
           )}
           <SubscribePanel token={token} status={membership.data} onDone={membership.reload} />
@@ -521,7 +523,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   {t('activeMember')}
                 </span>
                 {membership.data?.is_relative ? (
-                  <span className="text-[10px] font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">{isAr ? 'عضو قريب' : 'Relative member'}</span>
+                  <span className="text-[10px] font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full">{isAr ? 'فرد على كارت العيلة' : 'Relative member'}</span>
                 ) : membership.data?.member_type === 'primary' && (
                   <span className="text-[10px] font-black text-[#7a5a14] bg-gradient-to-r from-[#f3d98b] to-[#c89e43] px-2 py-0.5 rounded-full shadow-sm">{isAr ? '★ عضو أساسي' : '★ Primary member'}</span>
                 )}
@@ -550,7 +552,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             onClick={onLogout}
             className={`mt-3 text-[11px] font-bold hover:underline cursor-pointer ${isDark ? 'text-rose-300' : 'text-[#941946]'}`}
           >
-            {isAr ? 'إزالة الكارت من هذا الجهاز' : 'Remove card from this device'}
+            {isAr ? 'شيل الكارت من الموبايل ده' : 'Remove card from this device'}
           </button>
         ))}
       </section>
@@ -599,7 +601,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             { key: 'addresses', icon: MapPin, label: isAr ? 'عناويني' : 'Addresses', go: () => setActiveSection('addresses') },
             { key: 'orders', icon: PackageSearch, label: isAr ? 'طلباتي' : 'My orders', go: () => navigate(routeHref({ orders: { code: null } })) },
             ...(account.signedIn ? [{ key: 'wallet', icon: Wallet, label: isAr ? 'محفظتي' : 'My wallet', go: () => setActiveSection('wallet') }] : []),
-            ...(account.signedIn ? [{ key: 'invite', icon: Gift, label: isAr ? 'ادعُ أصدقاءك واكسب' : 'Invite friends & earn', go: () => setActiveSection('invite') }] : []),
+            ...(account.signedIn ? [{ key: 'invite', icon: Gift, label: isAr ? 'ادعي صحابك واكسب' : 'Invite friends & earn', go: () => setActiveSection('invite') }] : []),
             ...(account.signedIn ? [{ key: 'physical', icon: CreditCard, label: isAr ? 'طلب كارت فيزيكال' : 'Order a physical card', go: () => navigate(routeHref({ tab: 'mycard', section: 'physical' })) }] : []),
             { key: 'support', icon: Headphones, label: t('tabSupport'), go: () => setActiveSection('support') },
             { key: 'theme', icon: Palette, label: t('tabTheme'), go: () => setActiveSection('theme') },
@@ -731,7 +733,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#c89e43] to-[#e6c068] text-slate-900 text-xs font-black flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
               >
                 <CreditCard className="w-4 h-4" />
-                <span>{isAr ? 'اطلب كارتاً فيزيكال يصلك أنت وأسرتك' : 'Order a physical card for you and your family'}</span>
+                <span>{isAr ? 'اطلب كارت فيزيكال يوصلك إنت وأسرتك' : 'Order a physical card for you and your family'}</span>
               </button>
             )}
           </div>
@@ -740,7 +742,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {/* 4. Section 2: مكان تانى اشوف الاعضاء (Family Members / Beneficiaries) */}
       {activeSection === 'addresses' && (token ? <AddressesTab token={token} dark={isDark} /> : (
-        <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل الدخول برقم هاتفك أولاً لإضافة عناوينك.' : 'Sign in with your phone first to add your addresses.'}</p>
+        <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل دخول برقم موبايلك الأول عشان تضيف عناوينك.' : 'Sign in with your phone first to add your addresses.'}</p>
       ))}
 
       {activeSection === 'members' && (
@@ -759,7 +761,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <button
                 onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))}
                 className="px-2.5 py-1 bg-slate-200 text-slate-600 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
-                title={isAr ? 'يلزم الدفع لإضافة أفراد' : 'Payment is required to add members'}
+                title={isAr ? 'لازم تدفع عشان تضيف أفراد' : 'Payment is required to add members'}
               >
                 <Lock className="w-3.5 h-3.5" />
                 <span>{t('addNewMember')}</span>
@@ -777,12 +779,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           {token && <FamilyCircle token={token} dark={isDark} />}
+          {token && !membership.data?.is_relative && <RelativeFeePanel token={token} />}
 
           {membership.data?.is_relative && (
             <div className="p-3 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900 text-[11px] space-y-2">
-              <p className="font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'العضو القريب لا يضيف أقارب' : 'A relative member cannot add relatives'}</p>
-              <p>{isAr ? 'اشترك في كارتك الخاص لتصبح عضواً أساسياً، ثم أضف أسرتك.' : 'Subscribe to your own card to become a primary member, then add your family.'}</p>
-              <button onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white font-bold cursor-pointer">{isAr ? 'اشترك الآن' : 'Subscribe now'}</button>
+              <p className="font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'الفرد على كارت العيلة مبيضيفش أقارب' : 'A relative member cannot add relatives'}</p>
+              <p>{isAr ? 'اشترك في كارتك الخاص عشان تبقى عضو أساسي، وبعدها ضيف أسرتك.' : 'Subscribe to your own card to become a primary member, then add your family.'}</p>
+              <button onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white font-bold cursor-pointer">{isAr ? 'اشترك دلوقتي' : 'Subscribe now'}</button>
             </div>
           )}
 
@@ -791,43 +794,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <p className="font-bold">
                 {isAr ? `${relatives.count} من ${relatives.max} مستخدم` : `${relatives.count} of ${relatives.max} used`}
                 {' · '}
-                {isAr ? 'أقارب الدرجة الأولى (الوالدان والزوج/الزوجة والأبناء)' : 'first-degree relatives (parents, spouse, children)'}
+                {isAr ? 'أقارب الدرجة الأولى (الأب والأم والزوج/الزوجة والأولاد)' : 'first-degree relatives (parents, spouse, children)'}
               </p>
               {relatives.must_contact_support ? (
                 <>
                   <div role="alert" className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 space-y-2">
-                    <p className="font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'يلزم الدفع لإضافة أفراد العائلة' : 'You need to pay to add family members'}</p>
-                    <p>{isAr ? 'الكارت التجريبي يشملك وحدك. اشترك في الكارت الكامل لتتمكن من إضافة أبنائك وأقاربك من الدرجة الأولى.' : 'The trial card covers only you. Subscribe to the full card to add your children and first-degree relatives.'}</p>
+                    <p className="font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'لازم تدفع عشان تضيف أفراد العيلة' : 'You need to pay to add family members'}</p>
+                    <p>{isAr ? 'الكارت التجريبي ليك إنت بس. اشترك في الكارت الكامل عشان تقدر تضيف أفراد العيلة.' : 'The trial card covers only you. Subscribe to the full card to add your children and first-degree relatives.'}</p>
                     <button onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white text-[11px] font-bold cursor-pointer">
-                      {isAr ? 'ادفع الآن لإضافة الأفراد' : 'Pay now to add members'}
+                      {isAr ? 'ادفع دلوقتي عشان تضيف الأفراد' : 'Pay now to add members'}
                     </button>
                   </div>
-                  <p>{isAr ? 'خلال التجربة يشملك الكارت وحدك. اضغط الزر وستتصل بك خدمة العملاء لإضافة أقاربك.' : 'During the trial your card holds you only. Press the button and customer service will call you to add your relatives.'}</p>
+                  <p>{isAr ? 'أثناء التجربة الكارت ليك إنت بس. دوس على الزرار وخدمة العملاء هتتصل بيك عشان تضيف أقاربك.' : 'During the trial your card holds you only. Press the button and customer service will call you to add your relatives.'}</p>
                   <button
                     onClick={askRelatives}
                     disabled={relativesAsked}
                     className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[11px] font-bold disabled:opacity-60 cursor-pointer"
                   >
-                    {relativesAsked ? (isAr ? 'تم الإرسال — ستتصل بك خدمة العملاء' : 'Sent — customer service will call you') : isAr ? 'اتصلوا بي لإضافة أقاربي' : 'Call me to add my relatives'}
+                    {relativesAsked ? (isAr ? 'اتبعت — خدمة العملاء هتتصل بيك' : 'Sent — customer service will call you') : isAr ? 'كلموني عشان أضيف أقاربي' : 'Call me to add my relatives'}
                   </button>
-                  {relativesError && <p className="text-rose-600 font-bold">{isAr ? 'تعذر إرسال الطلب. حاول مرة أخرى.' : 'The request could not be sent. Please try again.'}</p>}
+                  {relativesError && <p className="text-rose-600 font-bold">{isAr ? 'مقدرناش نبعت الطلب. جرّب تاني.' : 'The request could not be sent. Please try again.'}</p>}
                 </>
               ) : !canAddChildren && relatives.can_add ? (
                 <>
-                  <p>{isAr ? 'لإضافة أقاربك تواصل مع خدمة العملاء. اضغط الزر وسنتصل بك.' : 'To add your relatives, contact customer service. Press the button and we will call you.'}</p>
+                  <p>{isAr ? 'عشان تضيف أقاربك كلّم خدمة العملاء. دوس على الزرار وهنتصل بيك.' : 'To add your relatives, contact customer service. Press the button and we will call you.'}</p>
                   <button
                     onClick={askRelatives}
                     disabled={relativesAsked}
                     className="px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[11px] font-bold disabled:opacity-60 cursor-pointer"
                   >
-                    {relativesAsked ? (isAr ? 'تم الإرسال — ستتصل بك خدمة العملاء' : 'Sent — customer service will call you') : isAr ? 'اتصلوا بي لإضافة أقاربي' : 'Call me to add my relatives'}
+                    {relativesAsked ? (isAr ? 'اتبعت — خدمة العملاء هتتصل بيك' : 'Sent — customer service will call you') : isAr ? 'كلموني عشان أضيف أقاربي' : 'Call me to add my relatives'}
                   </button>
-                  {relativesError && <p className="text-rose-600 font-bold">{isAr ? 'تعذر إرسال الطلب. حاول مرة أخرى.' : 'The request could not be sent. Please try again.'}</p>}
+                  {relativesError && <p className="text-rose-600 font-bold">{isAr ? 'مقدرناش نبعت الطلب. جرّب تاني.' : 'The request could not be sent. Please try again.'}</p>}
                 </>
               ) : !relatives.can_add ? (
-                <p>{relatives.count >= relatives.max ? (isAr ? 'وصلت للحد الأقصى. تواصل مع خدمة العملاء.' : 'You have reached the limit. Contact customer service.') : isAr ? 'جدّد الكارت لإضافة أقارب.' : 'Renew your card to add relatives.'}</p>
+                <p>{relatives.count >= relatives.max ? (isAr ? 'وصلت للحد الأقصى. كلّم خدمة العملاء.' : 'You have reached the limit. Contact customer service.') : isAr ? 'جدّد الكارت عشان تضيف أقارب.' : 'Renew your card to add relatives.'}</p>
               ) : (
-                <p>{isAr ? 'أضف أبناءك بالاسم الأول فقط — يُضاف اسمك تلقائياً، وينتظر الابن موافقة فريقنا.' : 'Add your children by first name only — your name is added automatically, and each child waits for our team to approve.'}</p>
+                <p>{isAr ? 'ضيف أولادك بالاسم الأول بس — اسمك بيتضاف لوحده، والفرد بيستنى موافقة الإدارة.' : 'Add your children by first name only — your name is added automatically, and each child waits for our team to approve.'}</p>
               )}
             </div>
           )}
@@ -856,7 +859,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 [isAr ? 'رقم الكارت' : 'Card number', b.cardNumber],
                 [isAr ? 'الرقم القومي' : 'National ID', b.nationalId],
                 [isAr ? 'تاريخ الميلاد' : 'Date of birth', b.dob],
-                [isAr ? 'الحالة' : 'Status', fam ? (fam.is_active ? (isAr ? 'مفعل' : 'Active') : isAr ? 'غير مفعل' : 'Inactive') : b.status === 'active' ? t('activeStatus') : isAr ? 'بانتظار الموافقة' : 'Awaiting approval'],
+                [isAr ? 'الحالة' : 'Status', fam ? (fam.is_active ? (isAr ? 'مفعل' : 'Active') : isAr ? 'مش مفعّل' : 'Inactive') : b.status === 'active' ? t('activeStatus') : isAr ? 'مستني الموافقة' : 'Awaiting approval'],
               ];
               return (
                 <div
@@ -940,7 +943,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               />
             ) : (
               <p className={`p-3 rounded-xl text-[11px] font-bold ${isDark ? 'bg-[#1E2330] text-amber-300' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
-                {isAr ? 'سجّل الدخول برقم هاتفك أولاً لإضافة فرد جديد.' : 'Sign in with your phone number first to add a family member.'}
+                {isAr ? 'سجّل دخول برقم موبايلك الأول عشان تضيف فرد جديد.' : 'Sign in with your phone number first to add a family member.'}
               </p>
             )
           )}
@@ -1059,7 +1062,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 required
                 dir="ltr"
                 inputMode="tel"
-                placeholder={isAr ? 'رقم هاتفك للتواصل' : 'Your phone number'}
+                placeholder={isAr ? 'رقم موبايلك للتواصل' : 'Your phone number'}
                 value={ticketPhone}
                 onChange={(e) => { setTicketPhone(e.target.value); setTicketError(null); }}
                 className={`w-full px-3 py-2 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
@@ -1117,17 +1120,19 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <span className={`text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-400'}`}>{t('instantUpdate')}</span>
           </div>
 
+          {account.signedIn && !sessionExpired && <ReferralCodeEntry />}
+
           {!account.signedIn || sessionExpired ? (
             <div className="py-6 text-center space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-[#941946]/10 text-[#941946] flex items-center justify-center mx-auto">
                 <Lock className="w-6 h-6" />
               </div>
               <p className={`text-xs leading-relaxed ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
-                {sessionExpired ? (isAr ? 'انتهت جلستك، سجّل الدخول مرة أخرى بكود التحقق.' : 'Your session expired, sign in again with a verification code.') : isAr ? 'سجّل الدخول برقم هاتفك وكود التحقق لتعديل بياناتك الشخصية.' : 'Sign in with your phone number and the verification code to edit your personal data.'}
+                {sessionExpired ? (isAr ? 'الجلسة خلصت، سجّل دخول تاني بكود التحقق.' : 'Your session expired, sign in again with a verification code.') : isAr ? 'سجّل دخول برقم موبايلك وكود التحقق عشان تعدّل بياناتك.' : 'Sign in with your phone number and the verification code to edit your personal data.'}
               </p>
               <button type="button" onClick={onSignIn} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
                 <Phone className="w-4 h-4" />
-                <span>{isAr ? 'تسجيل الدخول برقم الهاتف' : 'Sign in with phone number'}</span>
+                <span>{isAr ? 'الدخول برقم الموبايل' : 'Sign in with phone number'}</span>
               </button>
             </div>
           ) : (
@@ -1135,7 +1140,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             {progress && progress.percent < 100 && (
               <div className={`p-3 rounded-2xl border space-y-2 ${isDark ? 'bg-[#1E2330] border-white/[0.08]' : 'bg-amber-50 border-amber-200'}`}>
                 <div className="flex items-center justify-between text-[11px] font-bold">
-                  <span>{isAr ? 'اكتمال بياناتك' : 'Your profile'}</span>
+                  <span>{isAr ? 'بياناتك اكتملت قد إيه' : 'Your profile'}</span>
                   <span dir="ltr">{progress.percent}%</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-200 overflow-hidden"><div className="h-full bg-[#941946] transition-all" style={{ width: `${progress.percent}%` }} /></div>
@@ -1165,7 +1170,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   }`}
                 />
               </div>
-              {nameBad && <p className="mt-1 text-[11px] font-bold text-red-600">{isAr ? 'الاسم مطلوب' : 'Name is required'}</p>}
+              {nameBad && <p className="mt-1 text-[11px] font-bold text-red-600">{isAr ? 'لازم تكتب الاسم' : 'Name is required'}</p>}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1179,7 +1184,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     type="tel"
                     readOnly
                     dir="ltr"
-                    title={isAr ? 'رقم الهاتف هو وسيلة تسجيل دخولك ولا يمكن تغييره من هنا' : 'Your phone is your sign-in and cannot be changed here'}
+                    title={isAr ? 'رقم الموبايل هو اللي بتدخل بيه ومبيتغيرش من هنا' : 'Your phone is your sign-in and cannot be changed here'}
                     value={personalInfo.phone}
                     className={`w-full ${isAr ? 'pr-9 pl-3 text-right' : 'pl-9 pr-3 text-left'} py-2.5 text-xs rounded-xl border focus:outline-none focus:border-[#941946] font-mono ${
                       isDark ? 'bg-[#1E2330] border-white/[0.08] text-[#F1F5F9]' : 'bg-slate-50 border-slate-200 text-slate-900'
@@ -1252,7 +1257,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
             <div>
               <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>
-                {isAr ? 'اسم شركتك (اختياري)' : 'Your company name (optional)'}
+                {isAr ? 'اسم شركتك (لو حابب)' : 'Your company name (optional)'}
               </label>
               <input
                 type="text"
@@ -1275,7 +1280,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 />
               </div>
               <div>
-                <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'رقم العقار' : 'Building no.'}</label>
+                <label className={`text-[11px] font-bold block mb-1 ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'رقم العمارة' : 'Building no.'}</label>
                 <input
                   type="text"
                   value={personalInfo.building}
@@ -1294,7 +1299,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </div>
                 <div className="flex-1 space-y-1">
                   <label className="inline-block px-3.5 py-2 rounded-xl bg-[#941946] hover:bg-[#7b1439] text-white text-[11px] font-bold cursor-pointer">
-                    {avatarUrl ? (isAr ? 'تغيير الصورة' : 'Change photo') : isAr ? 'اختيار صورة' : 'Choose a photo'}
+                    {avatarUrl ? (isAr ? 'تغيير الصورة' : 'Change photo') : isAr ? 'اختار صورة' : 'Choose a photo'}
                     <input
                       type="file"
                       accept="image/*"
@@ -1303,7 +1308,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         const file = e.target.files?.[0];
                         e.target.value = '';
                         if (!file) return;
-                        if (file.size > 15 * 1024 * 1024) { setAvatarError(isAr ? 'الصورة كبيرة جداً' : 'That photo is too large'); return; }
+                        if (file.size > 15 * 1024 * 1024) { setAvatarError(isAr ? 'الصورة كبيرة أوي' : 'That photo is too large'); return; }
                         setAvatarError(null);
                         setCropFile(file);
                       }}

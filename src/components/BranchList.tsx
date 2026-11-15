@@ -102,7 +102,7 @@ export const BranchList: React.FC<BranchListProps> = ({ first, hasMore, loading,
                   </p>
                 )}
                 {branch.distance_km != null && (
-                  <p className="text-[11px] font-bold text-rose-700">{isAr ? `يبعد ${formatKm(branch.distance_km, isAr)}` : `${formatKm(branch.distance_km, isAr)} away`}</p>
+                  <p className="text-[11px] font-bold text-rose-700">{isAr ? `بعيد ${formatKm(branch.distance_km, isAr)}` : `${formatKm(branch.distance_km, isAr)} away`}</p>
                 )}
               </div>
 
@@ -135,7 +135,7 @@ export const BranchList: React.FC<BranchListProps> = ({ first, hasMore, loading,
           className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
         >
           {busy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-          <span>{failed ? (isAr ? 'تعذر التحميل - أعد المحاولة' : 'Failed - retry') : isAr ? 'عرض المزيد من الفروع' : 'Show more branches'}</span>
+          <span>{failed ? (isAr ? 'التحميل فشل — جرّب تاني' : 'Failed - retry') : isAr ? 'اعرض فروع أكتر' : 'Show more branches'}</span>
         </button>
       )}
     </div>

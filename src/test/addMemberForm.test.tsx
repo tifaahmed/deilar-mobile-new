@@ -27,7 +27,7 @@ describe('adding a relative other than a child', () => {
 
   it('stays disabled until the name, ID and the three pictures are given', () => {
     const c = setup();
-    const send = screen.getByRole('button', { name: /إرسال للموافقة/ }) as HTMLButtonElement;
+    const send = screen.getByRole('button', { name: /ابعت للموافقة/ }) as HTMLButtonElement;
     expect(send.disabled).toBe(true);
     fireEvent.change(c.name, { target: { value: 'Mona' } });
     expect(send.disabled).toBe(true);
@@ -38,7 +38,7 @@ describe('adding a relative other than a child', () => {
   it('refuses a phone that is too short, and letters never get into the field', () => {
     const c = setup();
     fill(c, '123');
-    const send = screen.getByRole('button', { name: /إرسال للموافقة/ }) as HTMLButtonElement;
+    const send = screen.getByRole('button', { name: /ابعت للموافقة/ }) as HTMLButtonElement;
     expect(send.disabled).toBe(true);
     fireEvent.change(screen.getByLabelText('رقم الهاتف'), { target: { value: 'abc' } });
     expect((screen.getByLabelText('رقم الهاتف') as HTMLInputElement).value).toBe('');
@@ -48,7 +48,7 @@ describe('adding a relative other than a child', () => {
   it('posts the phone with the picture fields', async () => {
     const c = setup();
     fill(c, '01012345678');
-    fireEvent.click(screen.getByRole('button', { name: /إرسال للموافقة/ }));
+    fireEvent.click(screen.getByRole('button', { name: /ابعت للموافقة/ }));
     await waitFor(() => expect(fam.addFamilyMember).toHaveBeenCalledTimes(1));
     const body = fam.addFamilyMember.mock.calls[0][1] as FormData;
     expect(body.get('phone')).toBe('01012345678');
@@ -60,7 +60,7 @@ describe('adding a relative other than a child', () => {
   it('leaves the phone out when it is empty', async () => {
     const c = setup();
     fill(c);
-    fireEvent.click(screen.getByRole('button', { name: /إرسال للموافقة/ }));
+    fireEvent.click(screen.getByRole('button', { name: /ابعت للموافقة/ }));
     await waitFor(() => expect(fam.addFamilyMember).toHaveBeenCalled());
     expect((fam.addFamilyMember.mock.calls[0][1] as FormData).has('phone')).toBe(false);
   });

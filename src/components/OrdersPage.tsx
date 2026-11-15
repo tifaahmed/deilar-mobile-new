@@ -59,7 +59,7 @@ const OrdersList: React.FC = () => {
           </div>
           <div>
             <h1 className="text-base font-extrabold text-slate-900 leading-tight">{isAr ? 'طلباتي' : 'My orders'}</h1>
-            <p className="text-[11px] text-slate-500">{isAr ? 'تابع طلباتك برقم الطلب، أو سجّل الدخول لتجد كل طلباتك.' : 'Track an order by its code, or sign in to see all your orders.'}</p>
+            <p className="text-[11px] text-slate-500">{isAr ? 'تابع طلباتك برقم الطلب، أو سجّل دخول عشان تلاقي كل طلباتك.' : 'Track an order by its code, or sign in to see all your orders.'}</p>
           </div>
         </div>
 
@@ -84,8 +84,8 @@ const OrdersList: React.FC = () => {
       {rows.length === 0 && !mine.loading ? (
         <div className="bg-white rounded-2xl p-8 text-center border border-slate-200">
           <PackageSearch className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-          <h3 className="text-sm font-bold text-slate-800">{isAr ? 'لا توجد طلبات على هذا الجهاز' : 'No orders on this device yet'}</h3>
-          <p className="text-xs text-slate-500 mt-1">{isAr ? 'عندما تطلب ستجد طلبك هنا لتتابعه.' : 'When you order, it will appear here so you can follow it.'}</p>
+          <h3 className="text-sm font-bold text-slate-800">{isAr ? 'مفيش طلبات على الموبايل ده' : 'No orders on this device yet'}</h3>
+          <p className="text-xs text-slate-500 mt-1">{isAr ? 'أول ما تطلب هتلاقي طلبك هنا تتابعه.' : 'When you order, it will appear here so you can follow it.'}</p>
         </div>
       ) : (
         <div className="space-y-2.5">
@@ -148,7 +148,7 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
 
   const askRefund = async () => {
     if (!session.token) return;
-    if (!window.confirm(isAr ? 'إرسال طلب استرداد المبلغ لخدمة العملاء؟' : 'Send a refund request to customer service?')) return;
+    if (!window.confirm(isAr ? 'تبعت طلب استرداد الفلوس لخدمة العملاء؟' : 'Send a refund request to customer service?')) return;
     setRefundBusy(true);
     setRefundMsg(null);
     try {
@@ -236,10 +236,10 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
       {!detail.loading && !detail.error && order === null && (
         <div className="bg-white rounded-2xl p-8 text-center border border-slate-200 space-y-2">
           <PackageSearch className="w-12 h-12 text-slate-300 mx-auto" />
-          <h3 className="text-sm font-bold text-slate-800">{isAr ? 'لا يوجد طلب بهذا الرقم' : 'No order with that code'}</h3>
-          <p className="text-xs text-slate-500">{isAr ? 'تأكد من كتابة الرقم بشكل صحيح.' : 'Check the code and try again.'}</p>
+          <h3 className="text-sm font-bold text-slate-800">{isAr ? 'مفيش طلب بالرقم ده' : 'No order with that code'}</h3>
+          <p className="text-xs text-slate-500">{isAr ? 'اتأكد إنك كتبت الرقم صح.' : 'Check the code and try again.'}</p>
           <button onClick={() => navigate(routeHref({ orders: { code: null } }))} className="text-xs font-bold text-[#941946] cursor-pointer">
-            {isAr ? 'العودة للقائمة' : 'Back to the list'}
+            {isAr ? 'رجوع للقائمة' : 'Back to the list'}
           </button>
         </div>
       )}
@@ -289,13 +289,13 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
                   {(order.points_amount ?? 0) > 0 && <div data-testid="order-points" className="flex justify-between text-amber-800"><span>{isAr ? `⭐ خصم نقاط الولاء (${order.points_used ?? 0} نقطة)` : `⭐ Loyalty points discount (${order.points_used ?? 0} points)`}</span><span className="font-mono">-{order.points_amount} {currency}</span></div>}
                   {(order.wallet_amount ?? 0) > 0 && <div className="flex justify-between"><span>{isAr ? '👛 دفعت من المحفظة' : '👛 Paid from wallet'}</span><span className="font-mono">{order.wallet_amount} {currency}</span></div>}
                   <div className="flex justify-between"><span>{isAr ? '💵 دفعت من الفلوس الحقيقية' : '💵 Paid in real money'}</span><span className="font-mono">{order.amount_due ?? Math.max(0, order.total_amount - (order.wallet_amount ?? 0) - (order.points_amount ?? 0))} {currency}</span></div>
-                  {order.wallet_refunded && <p className="text-emerald-700">{isAr ? 'تم رد المبلغ إلى محفظتك (والنقاط إلى رصيدك).' : 'The money was returned to your wallet (and the points to your balance).'}</p>}
+                  {order.wallet_refunded && <p className="text-emerald-700">{isAr ? 'الفلوس رجعت لمحفظتك (والنقاط لرصيدك).' : 'The money was returned to your wallet (and the points to your balance).'}</p>}
                 </div>
               )}
               {order.membership_number ? (
                 <p className="text-[10px] text-emerald-700 font-bold pt-1">{isAr ? `سعر العضو — كارت ${order.membership_number}` : `Member price — card ${order.membership_number}`}</p>
               ) : (
-                <p className="text-[10px] text-slate-400 pt-1">{isAr ? 'طُلب بالسعر الكامل (بدون كارت).' : 'Ordered at full price (no card).'}</p>
+                <p className="text-[10px] text-slate-400 pt-1">{isAr ? 'اتطلب بالسعر الكامل (من غير كارت).' : 'Ordered at full price (no card).'}</p>
               )}
             </div>
           </div>
@@ -323,24 +323,24 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
             {pdfBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             <span>{isAr ? 'تحميل الفاتورة PDF' : 'Download invoice (PDF)'}</span>
           </button>
-          {pdfFailed && <p className="text-[11px] text-rose-500 font-bold text-center">{isAr ? 'تعذر إنشاء ملف PDF، حاول مرة أخرى' : 'Could not create the PDF, try again'}</p>}
+          {pdfFailed && <p className="text-[11px] text-rose-500 font-bold text-center">{isAr ? 'معرفناش نعمل ملف الـ PDF، جرّب تاني' : 'Could not create the PDF, try again'}</p>}
 
           {(order.can_request_refund || order.refund_requested) && (
             <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-2.5">
-              <h2 className="text-xs font-black text-slate-900">{isAr ? 'استرداد المبلغ' : 'Refund'}</h2>
+              <h2 className="text-xs font-black text-slate-900">{isAr ? 'رجّع فلوسي' : 'Refund'}</h2>
               {order.refund_requested || refundMsg === 'ok' ? (
-                <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />{isAr ? 'تم إرسال طلب الاسترداد، سيتواصل معك فريقنا.' : 'Refund requested — customer service will contact you.'}</p>
+                <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />{isAr ? 'طلب الاسترداد اتبعت، فريقنا هيتواصل معاك.' : 'Refund requested — customer service will contact you.'}</p>
               ) : session.token ? (
                 <>
-                  <p className="text-[11px] text-slate-500">{isAr ? 'طلبك مدفوع ولم يُشحن بعد، يمكنك طلب استرداد المبلغ.' : 'Your order is paid and has not shipped yet, so you can ask for your money back.'}</p>
+                  <p className="text-[11px] text-slate-500">{isAr ? 'طلبك مدفوع ولسه ماتشحنش، تقدر تطلب فلوسك ترجع.' : 'Your order is paid and has not shipped yet, so you can ask for your money back.'}</p>
                   <button onClick={askRefund} disabled={refundBusy} className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
                     {refundBusy && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                    <span>{isAr ? 'طلب استرداد المبلغ' : 'Request a refund'}</span>
+                    <span>{isAr ? 'طلب استرجاع الفلوس' : 'Request a refund'}</span>
                   </button>
-                  {refundMsg === 'fail' && <p className="text-[11px] text-rose-500 font-bold">{isAr ? 'تعذر إرسال الطلب، حاول مرة أخرى' : 'Could not send the request, try again'}</p>}
+                  {refundMsg === 'fail' && <p className="text-[11px] text-rose-500 font-bold">{isAr ? 'مقدرناش نبعت الطلب، جرّب تاني' : 'Could not send the request, try again'}</p>}
                 </>
               ) : (
-                <p className="text-[11px] text-slate-500">{isAr ? 'سجّل الدخول لطلب استرداد المبلغ.' : 'Sign in to request a refund.'}</p>
+                <p className="text-[11px] text-slate-500">{isAr ? 'سجّل دخول عشان تطلب استرجاع الفلوس.' : 'Sign in to request a refund.'}</p>
               )}
             </div>
           )}
@@ -350,18 +350,18 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
               <h2 className="text-xs font-black text-slate-900">{isAr ? 'إيصال التحويل' : 'Transfer receipt'}</h2>
               <p className="text-[11px] text-slate-500">
                 {order.awaiting_receipt
-                  ? isAr ? 'أرسل صورة إيصال التحويل ليتم تأكيد طلبك.' : 'Send a photo of your transfer receipt so we can confirm the order.'
-                  : isAr ? `تم استلام ${order.receipts.length} إيصال. يمكنك إرسال المزيد.` : `${order.receipts.length} receipt(s) received. You can send more.`}
+                  ? isAr ? 'ابعت صورة إيصال التحويل عشان نأكد طلبك.' : 'Send a photo of your transfer receipt so we can confirm the order.'
+                  : isAr ? `وصلنا ${order.receipts.length} إيصال. تقدر تبعت أكتر.` : `${order.receipts.length} receipt(s) received. You can send more.`}
               </p>
               <input ref={fileInput} type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => { void sendReceipt(e.target.files?.[0]); e.target.value = ''; }} />
               <button onClick={() => fileInput.current?.click()} disabled={uploading} className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
                 {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                <span>{isAr ? 'رفع إيصال' : 'Upload a receipt'}</span>
+                <span>{isAr ? 'ارفع إيصال' : 'Upload a receipt'}</span>
               </button>
               {uploadMsg === 'ok' && (
-                <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />{isAr ? 'تم إرسال الإيصال' : 'Receipt sent'}</p>
+                <p className="text-[11px] text-emerald-600 font-bold flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />{isAr ? 'الإيصال اتبعت' : 'Receipt sent'}</p>
               )}
-              {uploadMsg === 'fail' && <p className="text-[11px] text-rose-500 font-bold">{isAr ? 'تعذر رفع الإيصال، حاول مرة أخرى' : 'Could not send the receipt, try again'}</p>}
+              {uploadMsg === 'fail' && <p className="text-[11px] text-rose-500 font-bold">{isAr ? 'الإيصال ماترفعش، جرّب تاني' : 'Could not send the receipt, try again'}</p>}
             </div>
           )}
         </>

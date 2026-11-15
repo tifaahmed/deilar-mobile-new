@@ -89,7 +89,7 @@ export const ProfileReminder: React.FC = () => {
       onOpen={() => { setStatus(null); navigate(routeHref({ tab: 'profile', section: 'personal' })); }}
       onClose={() => setStatus(null)}
     >
-      {isAr ? `ملفك مكتمل ${percent}% — الناقص: ${fields} · أكمل الآن` : `Profile ${percent}% complete — missing: ${fields} · complete now`}
+      {isAr ? `ملفك مكتمل ${percent}% — الناقص: ${fields} · كمّل دلوقتي` : `Profile ${percent}% complete — missing: ${fields} · complete now`}
     </Notice>
   );
 };

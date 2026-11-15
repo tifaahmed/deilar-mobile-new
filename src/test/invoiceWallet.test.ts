@@ -13,7 +13,7 @@ describe('the invoice shows how an order was paid', () => {
     expect(t).toContain('- 80 ج.م');
     expect(t).toContain('المتبقي (فلوس حقيقية)');
     expect(t).toContain('55 ج.م');
-    expect(t).toContain('إجمالي المدفوع');
+    expect(t).toContain('اللي اتدفع');
   });
 
   it('keeps the full bill as the total, in English too', () => {
@@ -28,7 +28,7 @@ describe('the invoice shows how an order was paid', () => {
       const t = text(inv);
       expect(t).not.toContain('مدفوع من المحفظة');
       expect(t).not.toContain('المتبقي (فلوس حقيقية)');
-      expect(t).not.toContain('إجمالي المدفوع');
+      expect(t).not.toContain('اللي اتدفع');
     }
   });
 });

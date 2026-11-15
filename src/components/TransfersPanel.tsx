@@ -16,19 +16,19 @@ const REASONS_EN: Record<string, string> = {
 };
 
 const REASONS_AR: Record<string, string> = {
-  disabled: 'التحويل بين الأعضاء مقفول حالياً.',
+  disabled: 'التحويل بين الأعضاء مقفول دلوقتي.',
   not_found: 'مفيش عضو بالرقم ده.',
-  not_enough: 'الرصيد لا يكفي.',
-  too_many_open: 'عندك طلبات كتير منتظرة، انتظر ردها أو الغِها.',
-  bad_amount: 'اكتب مبلغاً صحيحاً.',
-  not_open: 'الطلب ده لم يعد مفتوحاً.',
+  not_enough: 'الرصيد مش كفاية.',
+  too_many_open: 'عندك طلبات كتير مستنية، استنى ردها أو الغيها.',
+  bad_amount: 'اكتب مبلغ صح.',
+  not_open: 'الطلب ده اتقفل.',
   offline: 'محتاج اتصال بالإنترنت.',
   signed_out: 'سجّل الدخول الأول.',
-  failed: 'تعذر تنفيذ الطلب، حاول مرة أخرى.',
+  failed: 'مقدرناش ننفّذ الطلب، جرّب تاني.',
 };
 
 const STATUS_EN: Record<Transfer['status'], string> = { pending: 'Waiting', accepted: 'Done', declined: 'Declined', cancelled: 'Cancelled', expired: 'Expired' };
-const STATUS_AR: Record<Transfer['status'], string> = { pending: 'في الانتظار', accepted: 'تم', declined: 'مرفوض', cancelled: 'ملغي', expired: 'انتهت مهلته' };
+const STATUS_AR: Record<Transfer['status'], string> = { pending: 'مستني', accepted: 'تم', declined: 'مرفوض', cancelled: 'ملغي', expired: 'وقته خلص' };
 const unitOf = (k: TransferKind, isAr: boolean) => (k === 'points' ? (isAr ? 'نقطة' : 'points') : isAr ? 'جنيه' : 'EGP');
 
 /** Sending points or wallet money to another member by phone or card number, and answering the requests others send. */
@@ -94,10 +94,10 @@ export const TransfersPanel: React.FC = () => {
 
   return (
     <div className="rounded-3xl bg-white border-2 border-sky-200 p-4 text-right shadow-sm" data-testid="transfers-panel">
-      <p className="text-sm font-black text-sky-900">{isAr ? '🔁 تحويل لعضو آخر' : '🔁 Send to another member'}</p>
+      <p className="text-sm font-black text-sky-900">{isAr ? '🔁 تحويل لعضو تاني' : '🔁 Send to another member'}</p>
 
       {waiting.filter((t) => t.direction === 'in').map((t) => (
-        <div key={t.id} className="mt-2 rounded-2xl bg-amber-50 border-2 border-amber-300 p-3" role="group" aria-label={isAr ? 'طلب تحويل وارد' : 'Incoming transfer request'}>
+        <div key={t.id} className="mt-2 rounded-2xl bg-amber-50 border-2 border-amber-300 p-3" role="group" aria-label={isAr ? 'طلب تحويل جاي ليك' : 'Incoming transfer request'}>
           <p className="text-sm font-black text-amber-900">{isAr ? `${t.other} عايز يحوّلك` : `${t.other} wants to send you`} <span dir="ltr">{t.amount}</span> {unit(t.kind)}</p>
           <div className="mt-2 flex gap-2">
             <button type="button" disabled={busy} onClick={() => answer(acceptTransfer, t.id)} className="flex-1 rounded-xl bg-emerald-600 py-2 text-sm font-black text-white cursor-pointer disabled:opacity-40">{isAr ? 'موافق' : 'Accept'}</button>
@@ -122,7 +122,7 @@ export const TransfersPanel: React.FC = () => {
             <button type="button" disabled={busy || !(Number(amount) > 0)} onClick={send} className="w-full rounded-2xl bg-sky-600 py-3 text-sm font-black text-white cursor-pointer disabled:opacity-40">{isAr ? 'ابعت طلب التحويل' : 'Send the transfer request'}</button>
           </>
         ) : (
-          <button type="button" disabled={busy || who.trim().length < 6} onClick={check} className="w-full rounded-2xl bg-sky-600 py-3 text-sm font-black text-white cursor-pointer disabled:opacity-40">{isAr ? 'تحقق من العضو' : 'Check the member'}</button>
+          <button type="button" disabled={busy || who.trim().length < 6} onClick={check} className="w-full rounded-2xl bg-sky-600 py-3 text-sm font-black text-white cursor-pointer disabled:opacity-40">{isAr ? 'اتأكد من العضو' : 'Check the member'}</button>
         )}
       </div>
 
@@ -130,7 +130,7 @@ export const TransfersPanel: React.FC = () => {
 
       {list.filter((t) => t.direction === 'out' && t.status === 'pending').map((t) => (
         <div key={t.id} className="mt-2 flex items-center gap-2 rounded-xl bg-slate-50 p-2 text-xs font-bold text-slate-700">
-          <span className="flex-1">{isAr ? 'إلى' : 'To'} {t.other}: <span dir="ltr">{t.amount}</span> {unit(t.kind)} · {STATUS[t.status]}</span>
+          <span className="flex-1">{isAr ? 'لـ' : 'To'} {t.other}: <span dir="ltr">{t.amount}</span> {unit(t.kind)} · {STATUS[t.status]}</span>
           <button type="button" disabled={busy} onClick={() => answer(cancelTransfer, t.id)} className="rounded-lg bg-slate-200 px-2 py-1 cursor-pointer">{isAr ? 'إلغاء' : 'Cancel'}</button>
         </div>
       ))}

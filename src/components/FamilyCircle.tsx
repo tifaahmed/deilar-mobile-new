@@ -51,7 +51,7 @@ const RelativeTools: React.FC<{ token: string; p: FamilyCirclePerson; onChanged:
     if (form.date_of_birth !== (p.date_of_birth ?? '')) body.date_of_birth = form.date_of_birth || null;
     if (form.national_id.trim() !== (p.national_id ?? '')) body.national_id = form.national_id.trim() || null;
     if (Object.keys(body).length === 0) { setMode('idle'); return; }
-    void run(() => updateRelative(token, p.id, body), isAr ? 'تعذّر الحفظ، حاول مرة أخرى.' : 'Could not save, please try again.', () => setMode('idle'));
+    void run(() => updateRelative(token, p.id, body), isAr ? 'مقدرناش نحفظ، جرّب تاني.' : 'Could not save, please try again.', () => setMode('idle'));
   };
 
   const filled = (v: string | null | undefined) => approved && !!v;
@@ -66,7 +66,7 @@ const RelativeTools: React.FC<{ token: string; p: FamilyCirclePerson; onChanged:
             onChange={(e) => {
               const file = e.target.files?.[0];
               e.target.value = '';
-              if (file) void run(() => uploadRelativeAvatar(token, p.id, file), isAr ? 'تعذّر رفع الصورة (صورة حتى 2 ميجا).' : 'Could not upload the photo (an image up to 2 MB).', () => undefined);
+              if (file) void run(() => uploadRelativeAvatar(token, p.id, file), isAr ? 'الصورة ماترفعتش (لحد 2 ميجا).' : 'Could not upload the photo (an image up to 2 MB).', () => undefined);
             }} />
         </label>
         <button type="button" onClick={() => { setError(null); setMode(mode === 'edit' ? 'idle' : 'edit'); }} className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[#941946] text-white text-[11px] font-bold cursor-pointer">
@@ -87,16 +87,16 @@ const RelativeTools: React.FC<{ token: string; p: FamilyCirclePerson; onChanged:
             <input className={input} type="date" max={new Date().toISOString().slice(0, 10)} value={form.date_of_birth} disabled={filled(p.date_of_birth)} onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })} /></label>
           <label className="block space-y-1"><span className="text-[11px] font-bold">{isAr ? 'الرقم القومي' : 'National ID'}</span>
             <input className={input} dir="ltr" inputMode="numeric" maxLength={14} value={form.national_id} disabled={filled(p.national_id)} onChange={(e) => setForm({ ...form, national_id: e.target.value.replace(/\D/g, '') })} /></label>
-          {approved && <p className="text-[10px] text-slate-500">{isAr ? 'البيانات المعتمدة لا تتغير من هنا؛ تواصل مع خدمة العملاء لتعديلها. يمكنك فقط إضافة الناقص.' : 'Approved data cannot be changed here; contact customer service. You can only add what is missing.'}</p>}
+          {approved && <p className="text-[10px] text-slate-500">{isAr ? 'البيانات المعتمدة مبتتغيرش من هنا؛ كلّم خدمة العملاء لو عايز تعدّلها. تقدر بس تضيف الناقص.' : 'Approved data cannot be changed here; contact customer service. You can only add what is missing.'}</p>}
           <button type="submit" disabled={busy} className="w-full py-2 rounded-xl bg-[#941946] text-white text-xs font-bold disabled:opacity-60 cursor-pointer">{busy ? '…' : isAr ? 'حفظ' : 'Save'}</button>
         </form>
       )}
 
       {mode === 'delete' && (
         <div className="p-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-900 space-y-2 text-[11px]">
-          <p className="font-bold">{isAr ? `حذف ${p.name ?? 'هذا الفرد'} من الكارت؟ لا يمكن التراجع.` : `Remove ${p.name ?? 'this person'} from the card? This cannot be undone.`}</p>
+          <p className="font-bold">{isAr ? `تمسح ${p.name ?? 'الفرد ده'} من الكارت؟ مفيش رجوع بعد كده.` : `Remove ${p.name ?? 'this person'} from the card? This cannot be undone.`}</p>
           <div className="flex gap-2">
-            <button type="button" disabled={busy} onClick={() => void run(() => deleteRelative(token, p.id), isAr ? 'تعذّر الحذف، حاول مرة أخرى.' : 'Could not remove, please try again.', () => setMode('idle'))} className="px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold disabled:opacity-60 cursor-pointer">{isAr ? 'نعم، احذف' : 'Yes, remove'}</button>
+            <button type="button" disabled={busy} onClick={() => void run(() => deleteRelative(token, p.id), isAr ? 'مقدرناش نمسح، جرّب تاني.' : 'Could not remove, please try again.', () => setMode('idle'))} className="px-3 py-1.5 rounded-xl bg-rose-600 text-white font-bold disabled:opacity-60 cursor-pointer">{isAr ? 'أيوه، امسح' : 'Yes, remove'}</button>
             <button type="button" onClick={() => setMode('idle')} className="px-3 py-1.5 rounded-xl bg-white border border-slate-300 font-bold cursor-pointer">{isAr ? 'إلغاء' : 'Cancel'}</button>
           </div>
         </div>
@@ -133,7 +133,7 @@ const Person: React.FC<{ p: FamilyCirclePerson; dark: boolean; token: string; on
           </span>
           {p.approval_status && p.approval_status !== 'approved' && (
             <span className={`inline-block mt-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${p.approval_status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800'}`}>
-              {p.approval_status === 'rejected' ? (isAr ? 'مرفوض' : 'Rejected') : isAr ? 'بانتظار الموافقة' : 'Awaiting approval'}
+              {p.approval_status === 'rejected' ? (isAr ? 'مرفوض' : 'Rejected') : isAr ? 'مستني الموافقة' : 'Awaiting approval'}
             </span>
           )}
         </span>
@@ -151,9 +151,9 @@ const Person: React.FC<{ p: FamilyCirclePerson; dark: boolean; token: string; on
                 <Phone className="w-3 h-3" />{p.phone}
               </a>
             )}
-            {p.phone && p.phone_verified === false && <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold">{isAr ? 'رقم غير موثق' : 'Phone not verified'}</span>}
+            {p.phone && p.phone_verified === false && <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-bold">{isAr ? 'رقم مش متأكد منه' : 'Phone not verified'}</span>}
             <span dir="ltr" className="font-mono text-slate-500">#{p.membership_number}</span>
-            {p.approval_status === 'pending' && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">{isAr ? 'بانتظار الموافقة' : 'Awaiting approval'}</span>}
+            {p.approval_status === 'pending' && <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">{isAr ? 'مستني الموافقة' : 'Awaiting approval'}</span>}
             {p.approval_status === 'rejected' && <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-bold">{isAr ? 'مرفوض' : 'Rejected'}{p.rejection_reason ? ` • ${p.rejection_reason}` : ''}</span>}
           </div>
 
@@ -163,7 +163,7 @@ const Person: React.FC<{ p: FamilyCirclePerson; dark: boolean; token: string; on
               [isAr ? 'رقم الكارت' : 'Card number', p.membership_number, true],
               [isAr ? 'الرقم القومي' : 'National ID', p.national_id, true],
               [isAr ? 'تاريخ الميلاد' : 'Date of birth', p.date_of_birth, true],
-              [isAr ? 'الحالة' : 'Status', p.is_active ? (isAr ? 'مفعل' : 'Active') : isAr ? 'غير مفعل' : 'Inactive', false],
+              [isAr ? 'الحالة' : 'Status', p.is_active ? (isAr ? 'مفعل' : 'Active') : isAr ? 'مش مفعّل' : 'Inactive', false],
             ] as [string, string | null | undefined, boolean][]).filter(([, v]) => v).map(([k, v, ltr]) => (
               <div key={k} className="min-w-0">
                 <dt className="text-slate-500">{k}</dt>
@@ -232,7 +232,7 @@ export const FamilyCircle: React.FC<{ token: string; dark: boolean }> = ({ token
 
       {data.former.length > 0 && (
         <>
-          <h3 className="text-xs font-black pt-2">{isAr ? 'عائلتي السابقة (الكارت الذي كنت عليه)' : 'My former family (the card you were on)'}</h3>
+          <h3 className="text-xs font-black pt-2">{isAr ? 'عيلتي القديمة (الكارت اللي كنت عليه)' : 'My former family (the card you were on)'}</h3>
           {data.former.map((p) => <Person key={`old-${p.id}`} p={p} dark={dark} token={token} onCard={setZoom} onChanged={reload} />)}
         </>
       )}

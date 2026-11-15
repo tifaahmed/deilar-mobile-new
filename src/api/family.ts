@@ -28,8 +28,14 @@ export const addFamilyChild = (token: string, body: { first_name: string; relati
  * Sends a relative for staff approval. `body` carries name, relationship, national_id and the
  * three images (id_front, id_back, photo) — all required. Throws `ApiError` (422 carries `errors`).
  */
+export const RELATIVE_ADDED_EVENT = 'deilar:relative-added';
+
 export const addFamilyMember = (token: string, body: FormData) =>
-  apiPost<{ data: { family_member: FamilyPerson } }>('/family/members', body, undefined, token);
+  apiPost<{ data: { family_member: FamilyPerson } }>('/family/members', body, undefined, token).then((r) => {
+    // The relative-fee panel listens, so the new (waiting) relative shows up with its price at once.
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(RELATIVE_ADDED_EVENT));
+    return r;
+  });
 
 /** One person of a family circle, with what the whole family may see of each other. */
 export interface FamilyCirclePerson {

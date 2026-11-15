@@ -195,7 +195,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
             <div>
               <h2 className="text-sm font-bold text-slate-900">
-                {isAr ? 'أقرب مقدمي الخدمة إليك' : 'Nearest Medical Providers'}
+                {isAr ? 'أقرب مقدمي الخدمة ليك' : 'Nearest Medical Providers'}
               </h2>
             </div>
           </div>
@@ -204,7 +204,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             to={{ tab: 'map' }}
             className="text-xs font-bold text-[#931A47] hover:underline flex items-center gap-1 cursor-pointer"
           >
-            <span>{isAr ? 'فتح الخريطة' : 'Open Map'}</span>
+            <span>{isAr ? 'افتح الخريطة' : 'Open Map'}</span>
             <ChevronLeft className={`w-3.5 h-3.5 ${isAr ? '' : 'rotate-180'}`} />
           </Link>
         </div>
@@ -265,18 +265,18 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <section className="grid grid-cols-3 gap-2 text-center pt-1">
         <div className="p-2.5 bg-white rounded-xl border border-slate-200/80">
           <Shield className="w-4 h-4 text-[#931A47] mx-auto mb-1" />
-          <p className="text-xs font-bold text-slate-800">{isAr ? 'بدون موافقات' : 'No Pre-approvals'}</p>
-          <p className="text-[10px] text-slate-500">{isAr ? 'خصم فوري مباشر' : 'Instant Direct Discount'}</p>
+          <p className="text-xs font-bold text-slate-800">{isAr ? 'من غير موافقات' : 'No Pre-approvals'}</p>
+          <p className="text-[10px] text-slate-500">{isAr ? 'خصم فوري على طول' : 'Instant Direct Discount'}</p>
         </div>
         <div className="p-2.5 bg-white rounded-xl border border-slate-200/80">
           <Clock className="w-4 h-4 text-[#931A47] mx-auto mb-1" />
-          <p className="text-xs font-bold text-slate-800">{isAr ? 'استخدام غير محدود' : 'Unlimited Visits'}</p>
-          <p className="text-[10px] text-slate-500">{isAr ? 'طوال مدة الاشتراك' : 'Throughout Subscription'}</p>
+          <p className="text-xs font-bold text-slate-800">{isAr ? 'استخدام من غير حدود' : 'Unlimited Visits'}</p>
+          <p className="text-[10px] text-slate-500">{isAr ? 'طول مدة الاشتراك' : 'Throughout Subscription'}</p>
         </div>
         <div className="p-2.5 bg-white rounded-xl border border-slate-200/80">
           <Award className="w-4 h-4 text-[#931A47] mx-auto mb-1" />
-          <p className="text-xs font-bold text-slate-800">{isAr ? 'أكثر من 3000 فرع' : '3000+ Branches'}</p>
-          <p className="text-[10px] text-slate-500">{isAr ? 'في جميع المحافظات' : 'Across All Governorates'}</p>
+          <p className="text-xs font-bold text-slate-800">{isAr ? 'أكتر من 3000 فرع' : '3000+ Branches'}</p>
+          <p className="text-[10px] text-slate-500">{isAr ? 'في كل المحافظات' : 'Across All Governorates'}</p>
         </div>
       </section>
     </div>

@@ -70,7 +70,7 @@ export interface ReferralInfo {
   totals: ReferralTotals;
   referrals: ReferralRow[];
   /** Who brought me, when somebody did. */
-  brought_by: { number: string; discount: number; discount_used: boolean } | null;
+  brought_by: { number: string; discount: number; discounts?: Partial<Record<'month' | 'half' | 'year', number>>; discount_used: boolean } | null;
 }
 
 export const fetchReferral = (token: string) => apiGetAuth<{ data: ReferralInfo }>('/referral', token).then((r) => r.data);
@@ -78,3 +78,15 @@ export const fetchReferral = (token: string) => apiGetAuth<{ data: ReferralInfo 
 /** "This card number brought me." Throws `ApiError` (422) whose `reason` says why not (see ReferralController). */
 export const claimReferral = (token: string, number: string, source: 'link' | 'card') =>
   apiPost<{ data: { discount: number } }>('/referral/claim', { number, source }, undefined, token).then((r) => r.data);
+
+export interface ReferralPreview {
+  number: string;
+  /** The referrer's name, masked by the backend (first name only). */
+  name: string | null;
+  discounts: Partial<Record<'month' | 'half' | 'year', number>>;
+  discount: number;
+}
+
+/** Looks the code up and writes NOTHING. Throws `ApiError` (422) whose `reason` says why not (disabled|not_found|self|mutual|already_referred|company|already_paid). */
+export const previewReferral = (token: string, number: string) =>
+  apiPost<{ data: ReferralPreview }>('/referral/preview', { number }, undefined, token).then((r) => r.data);

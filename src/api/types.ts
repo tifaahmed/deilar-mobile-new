@@ -88,6 +88,19 @@ export interface StoreCard {
   branch: Place | null;
 }
 
+/** The popup of one pin on the stores map. */
+export interface StorePin {
+  id: number;
+  slug: string;
+  title: string;
+  logo: string;
+  offer_from: number | null;
+  offer_to: number | null;
+  categories: Named[];
+  products_count: number;
+  branch: { id?: number; name?: string | null; address: string | null; area: string | null; governorate: string | null; city: string | null; lat: number | null; lng: number | null; phone: string | null; whatsapp: string | null; distance_km?: number | null };
+}
+
 export interface StoreDetail extends BranchPage {
   id: number;
   slug: string;

@@ -100,11 +100,11 @@ export function build(inv: InvoiceData, isAr: boolean): HTMLElement {
     totals.append(row(t('مدفوع من المحفظة', 'Paid from wallet'), `- ${money(inv.wallet)}`));
     if (inv.due != null) totals.append(row(t('المتبقي (فلوس حقيقية)', 'Remaining (real money)'), money(inv.due), true));
   }
-  if (inv.paid && inv.paid > 0) totals.append(row(t('إجمالي المدفوع', 'Total paid'), money(inv.paid)));
+  if (inv.paid && inv.paid > 0) totals.append(row(t('اللي اتدفع', 'Total paid'), money(inv.paid)));
   page.append(totals);
 
   if (inv.payment) page.append(el('div', 'margin-top:14px;font-size:12px;color:#475569;', `${t('طريقة الدفع', 'Payment')}: ${inv.payment}`));
-  page.append(el('div', 'margin-top:28px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;', t('شكراً لتسوقك من ديلر', 'Thank you for shopping with Deilar')));
+  page.append(el('div', 'margin-top:28px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:11px;color:#94a3b8;text-align:center;', t('شكراً إنك اشتريت من ديلر', 'Thank you for shopping with Deilar')));
 
   return page;
 }

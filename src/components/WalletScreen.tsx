@@ -10,7 +10,7 @@ import { useIsAr } from '../context/LanguageContext';
 import { useSession } from '../utils/session';
 
 const STATUS_EN: Record<Transfer['status'], string> = { pending: 'Waiting', accepted: 'Done', declined: 'Declined', cancelled: 'Cancelled', expired: 'Expired' };
-const STATUS_AR: Record<Transfer['status'], string> = { pending: 'في الانتظار', accepted: 'تم', declined: 'مرفوض', cancelled: 'ملغي', expired: 'انتهت مهلته' };
+const STATUS_AR: Record<Transfer['status'], string> = { pending: 'مستني', accepted: 'تم', declined: 'مرفوض', cancelled: 'ملغي', expired: 'وقته خلص' };
 const when = (iso: string | null, isAr = true) => (iso ? new Date(iso).toLocaleString(isAr ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }) : '');
 
 /** «محفظتي»: the balance, adding money, turning points into money, sending to a member, and every line that moved the wallet. */
@@ -35,7 +35,7 @@ export const WalletScreen: React.FC = () => {
   }, [session.token, balance]);
 
   if (!session.token) {
-    return <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل الدخول برقم هاتفك أولاً لترى محفظتك.' : 'Sign in with your phone number first to see your wallet.'}</p>;
+    return <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل دخول برقم موبايلك الأول عشان تشوف محفظتك.' : 'Sign in with your phone number first to see your wallet.'}</p>;
   }
 
   return (
@@ -53,8 +53,8 @@ export const WalletScreen: React.FC = () => {
 
       <section className="rounded-3xl bg-white border-2 border-slate-200 p-3 space-y-2" data-testid="wallet-entries">
         <h2 className="text-sm font-black text-slate-900 flex items-center gap-1.5"><History className="w-4 h-4" /> {isAr ? 'سجل المحفظة' : 'Wallet history'}</h2>
-        {entries === null && <p className="text-xs font-semibold text-slate-400">{isAr ? 'جارٍ التحميل…' : 'Loading…'}</p>}
-        {entries !== null && entries.length === 0 && <p className="text-xs font-semibold text-slate-500">{isAr ? 'لا توجد حركات على محفظتك بعد.' : 'There are no movements on your wallet yet.'}</p>}
+        {entries === null && <p className="text-xs font-semibold text-slate-400">{isAr ? 'بنحمّل…' : 'Loading…'}</p>}
+        {entries !== null && entries.length === 0 && <p className="text-xs font-semibold text-slate-500">{isAr ? 'لسه مفيش حركات على محفظتك.' : 'There are no movements on your wallet yet.'}</p>}
         {(entries ?? []).map((e) => (
           <div key={e.id} className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2">
             <span className={`font-black tabular-nums ${e.amount < 0 ? 'text-red-600' : 'text-emerald-700'}`} dir="ltr">{e.amount > 0 ? '+' : ''}{formatEgp(e.amount)}</span>
@@ -73,7 +73,7 @@ export const WalletScreen: React.FC = () => {
           {transfers.map((t) => (
             <div key={t.id} className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2 text-xs">
               <span className={`font-black tabular-nums ${t.direction === 'out' ? 'text-red-600' : 'text-emerald-700'}`} dir="ltr">{t.direction === 'out' ? '-' : '+'}{t.amount}</span>
-              <span className="flex-1 min-w-0 font-bold text-slate-800">{t.direction === 'out' ? (isAr ? 'إلى' : 'To') : isAr ? 'من' : 'From'} {t.other ?? '—'} · {t.kind === 'points' ? (isAr ? 'نقاط' : 'points') : isAr ? 'جنيه' : 'EGP'} · {STATUS[t.status]}</span>
+              <span className="flex-1 min-w-0 font-bold text-slate-800">{t.direction === 'out' ? (isAr ? 'لـ' : 'To') : isAr ? 'من' : 'From'} {t.other ?? '—'} · {t.kind === 'points' ? (isAr ? 'نقاط' : 'points') : isAr ? 'جنيه' : 'EGP'} · {STATUS[t.status]}</span>
               <span className="text-[10px] font-semibold text-slate-400">{when(t.at, isAr)}</span>
             </div>
           ))}

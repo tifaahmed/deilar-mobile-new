@@ -40,10 +40,10 @@ export const ErrorState: React.FC<{ onRetry: () => void }> = ({ onRetry }) => {
   return (
     <div className="bg-white rounded-2xl p-6 text-center border border-slate-200">
       <AlertCircle className="w-10 h-10 text-rose-400 mx-auto mb-2" />
-      <p className="text-sm font-bold text-slate-800">{isAr ? 'تعذر تحميل البيانات' : 'Could not load data'}</p>
-      <p className="text-xs text-slate-500 mt-1">{isAr ? 'تأكد من اتصالك بالإنترنت ثم حاول مرة أخرى' : 'Check your connection and try again'}</p>
+      <p className="text-sm font-bold text-slate-800">{isAr ? 'مقدرناش نحمّل البيانات' : 'Could not load data'}</p>
+      <p className="text-xs text-slate-500 mt-1">{isAr ? 'اتأكد من النت وجرّب تاني' : 'Check your connection and try again'}</p>
       <button onClick={onRetry} className="mt-3 px-4 py-2 bg-[#941946] text-white rounded-xl text-xs font-bold cursor-pointer">
-        {isAr ? 'إعادة المحاولة' : 'Retry'}
+        {isAr ? 'جرّب تاني' : 'Retry'}
       </button>
     </div>
   );

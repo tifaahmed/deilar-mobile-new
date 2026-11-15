@@ -24,7 +24,7 @@ import type { NavTab } from './components/BottomNav';
  *   /orders  /orders/:code my orders / one order
  *   /facilities/:slug      one facility
  *   /stores/:slug          one store
- *   /quiz                  the quiz game: /quiz (game types), /quiz/mcq (sections), /quiz/mcq/<section> (a section: start screen and play),
+ *   /quiz                  the quiz game: /quiz (game types and the sections), /quiz/mcq/<section> (a section: start screen and play),
  *                          /quiz/history, /quiz/badges, /quiz/moods and /quiz/moods/<score> (the points screens)
  */
 export interface Route {
@@ -37,6 +37,8 @@ export interface Route {
   product: string | null;
   /** Slug of the open store page (/stores/:slug); null/undefined on the stores list. */
   store?: string | null;
+  /** The stores map (/store/map), a third page of the stores tab. */
+  storeMap?: boolean;
   /** Set on the orders screens: `code` is null on the list. */
   orders: { code: string | null } | null;
   /** Set on the basket and the payment page. */
@@ -76,6 +78,8 @@ export function parseRoute(pathname: string, search: string): Route {
   const facility = path.match(/^\/facilities\/([^/]+)$/);
 
   if (facility) return { tab: 'map', typeId: null, facility: decodeURIComponent(facility[1]), product: null, orders: null, checkout: null, view: 'map', section: null };
+
+  if (path === '/store/map') return { tab: 'store', typeId: null, facility: null, product: null, orders: null, checkout: null, view: 'map', section: null, storeMap: true };
 
   const store = path.match(/^\/stores\/([^/]+)$/);
 
@@ -121,6 +125,7 @@ export function routeHref(route: Partial<Route> & { tab?: NavTab }): string {
   if (route.facility) return `/facilities/${encodeURIComponent(route.facility)}`;
   if (route.product) return `/products/${encodeURIComponent(route.product)}`;
   if (route.store) return `/stores/${encodeURIComponent(route.store)}`;
+  if (route.storeMap) return '/store/map';
   if (route.checkout) return route.checkout === 'cart' ? '/cart' : '/checkout';
   if (route.orders) return route.orders.code ? `/orders/${encodeURIComponent(route.orders.code)}` : '/orders';
 

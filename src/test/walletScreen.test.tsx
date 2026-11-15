@@ -51,7 +51,7 @@ describe('«محفظتي»', () => {
     const list = await screen.findByTestId('wallet-entries');
     await waitFor(() => expect(within(list).getByText('شحن المحفظة')).toBeTruthy());
     expect(within(list).getByText('دفع جزء من طلب')).toBeTruthy();
-    expect(within(list).getByText('تحويل إلى عضو')).toBeTruthy();
+    expect(within(list).getByText('تحويل لعضو')).toBeTruthy();
     expect(within(list).getByText('إضافة من الإدارة')).toBeTruthy();
     // The admin's reason is shown, without the internal "admin:" prefix; a transfer's "#9" never reaches the member.
     expect(within(list).getByText('Goodwill after a late order')).toBeTruthy();
@@ -73,7 +73,7 @@ describe('«محفظتي»', () => {
 
   it('asks a signed-out visitor to sign in instead of showing a wallet', () => {
     render(<WalletScreen />);
-    expect(screen.getByText(/سجّل الدخول/)).toBeTruthy();
+    expect(screen.getByText(/سجّل دخول/)).toBeTruthy();
     expect(screen.queryByTestId('wallet-balance')).toBeNull();
     expect(http.apiGetAuth).not.toHaveBeenCalled();
   });
@@ -83,7 +83,7 @@ describe('«محفظتي»', () => {
     seed(0);
     http.apiGetAuth.mockImplementation(async (path: string) => ({ data: path === '/wallet' ? { balance: 0, entries: [] } : { enabled: false, transfers: [] } }));
     render(<WalletScreen />);
-    expect(await screen.findByText('لا توجد حركات على محفظتك بعد.')).toBeTruthy();
+    expect(await screen.findByText('لسه مفيش حركات على محفظتك.')).toBeTruthy();
   });
 });
 
@@ -97,7 +97,7 @@ describe('the wallet page and its labels', () => {
 
   it('labels each kind of line and tells in from out for transfers and admin changes', () => {
     expect(walletSourceLabel('points', 5)).toBe('تحويل من النقاط');
-    expect(walletSourceLabel('refund', 12)).toBe('استرداد إلى المحفظة');
+    expect(walletSourceLabel('refund', 12)).toBe('رجوع فلوس للمحفظة');
     expect(walletSourceLabel('membership', -600)).toBe('دفع اشتراك الكارت');
     expect(walletSourceLabel('transfer', 5)).toBe('تحويل من عضو');
     expect(walletSourceLabel('admin', -5)).toBe('خصم من الإدارة');

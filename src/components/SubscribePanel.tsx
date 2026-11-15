@@ -17,7 +17,7 @@ interface SubscribePanelProps {
 }
 
 const MANUAL: { value: Exclude<PayMethod, 'paymob'>; ar: string; en: string; receipt: boolean }[] = [
-  { value: 'cash_on_delivery', ar: 'الدفع عند الاستلام — ستتصل بك خدمة العملاء', en: 'Cash on delivery — customer service will call you', receipt: false },
+  { value: 'cash_on_delivery', ar: 'الدفع عند الاستلام — خدمة العملاء هتتصل بيك', en: 'Cash on delivery — customer service will call you', receipt: false },
   { value: 'vodafone_cash', ar: 'فودافون كاش — ارفع الإيصال', en: 'Vodafone Cash — upload the receipt', receipt: true },
   { value: 'instapay', ar: 'إنستاباي — ارفع الإيصال', en: 'Instapay — upload the receipt', receipt: true },
 ];
@@ -53,7 +53,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     try {
       await subscribe(token, { method: 'wallet', plan: 'year' });
       void refreshLoyalty();
-      setMessage({ ok: true, text: isAr ? 'تم تجديد عضويتك من المحفظة ✅' : 'Your membership was paid from the wallet ✅' });
+      setMessage({ ok: true, text: isAr ? 'عضويتك اتجددت من المحفظة ✅' : 'Your membership was paid from the wallet ✅' });
       onDone();
     } catch (err) {
       fail(err);
@@ -65,7 +65,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
   const fail = (err: unknown) => {
     setMessage({
       ok: false,
-      text: err instanceof ApiError && err.status === 422 ? err.message : isAr ? 'تعذر إتمام الطلب. حاول مرة أخرى.' : 'The request could not be completed. Please try again.',
+      text: err instanceof ApiError && err.status === 422 ? err.message : isAr ? 'مقدرناش نكمّل الطلب. جرّب تاني.' : 'The request could not be completed. Please try again.',
     });
     if (!(err instanceof ApiError) || err.status >= 500) reportClientError('Subscription request failed', err, { method });
   };
@@ -76,7 +76,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     setMessage(null);
     try {
       await subscribe(token, { method: chosen.value, plan: plan?.key, reference, receipt });
-      setMessage({ ok: true, text: isAr ? 'شكراً — ستراجع خدمة العملاء الدفع وتفعّل كارتك.' : 'Thanks — customer service will check and activate your card.' });
+      setMessage({ ok: true, text: isAr ? 'شكراً — خدمة العملاء هتراجع الدفع وتفعّل كارتك.' : 'Thanks — customer service will check and activate your card.' });
       setReceipt(null);
       onDone();
     } catch (err) {
@@ -98,7 +98,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
     if (busy !== null) return;
     if (status.can_pay_online) toPayPage();
     else if (formRef.current) formRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    else setMessage({ ok: false, text: isAr ? 'الدفع الإلكتروني غير متاح حالياً. تواصل مع خدمة العملاء لتفعيل اشتراكك.' : 'Online payment is not available right now. Contact customer service to activate your subscription.' });
+    else setMessage({ ok: false, text: isAr ? 'الدفع الإلكتروني مش متاح دلوقتي. كلّم خدمة العملاء عشان يفعّلوا اشتراكك.' : 'Online payment is not available right now. Contact customer service to activate your subscription.' });
   };
   const phone = status.contact?.phone_international ?? status.contact?.phone ?? null;
   const whatsapp = (status.contact?.whatsapp ?? '').replace(/\D/g, '');
@@ -117,19 +117,19 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
 
       {status.open_subscription && (
         <p className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-          {isAr ? 'دفعة في انتظار المراجعة.' : 'A payment is waiting for review.'}
+          {isAr ? 'فيه دفعة مستنية المراجعة.' : 'A payment is waiting for review.'}
         </p>
       )}
 
       {nothingToPayWith && (
         <div className="space-y-2">
           <p role="alert" className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-            {message?.text ?? (isAr ? 'الدفع الإلكتروني غير متاح حالياً. تواصل مع خدمة العملاء لتفعيل اشتراكك.' : 'Online payment is not available right now. Contact customer service to activate your subscription.')}
+            {message?.text ?? (isAr ? 'الدفع الإلكتروني مش متاح دلوقتي. كلّم خدمة العملاء عشان يفعّلوا اشتراكك.' : 'Online payment is not available right now. Contact customer service to activate your subscription.')}
           </p>
           <div className="grid grid-cols-2 gap-2">
             {phone && (
               <a href={`tel:${phone}`} className="py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold flex items-center justify-center gap-1.5">
-                <PhoneCall className="w-4 h-4 text-amber-400" />{isAr ? 'اتصل بنا' : 'Call us'}
+                <PhoneCall className="w-4 h-4 text-amber-400" />{isAr ? 'كلّمنا' : 'Call us'}
               </a>
             )}
             {whatsapp && (
@@ -154,7 +154,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
 
       {status.can_pay_online && (
         <button type="button" onClick={toPayPage} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] text-white rounded-2xl text-xs font-extrabold cursor-pointer">
-          {isAr ? 'ادفع الآن — بطاقة أو محفظة إلكترونية' : 'Pay now — card or mobile wallet'}
+          {isAr ? 'ادفع دلوقتي — بكارت أو محفظة إلكترونية' : 'Pay now — card or mobile wallet'}
         </button>
       )}
 
@@ -182,7 +182,7 @@ export const SubscribePanel: React.FC<SubscribePanelProps> = ({ token, status, o
         )}
 
         <button type="submit" disabled={busy !== null} className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white rounded-2xl text-xs font-bold cursor-pointer">
-          {busy === 'manual' ? '…' : isAr ? 'إرسال الطلب' : 'Send request'}
+          {busy === 'manual' ? '…' : isAr ? 'ابعت الطلب' : 'Send request'}
         </button>
       </form>
       )}

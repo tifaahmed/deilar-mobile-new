@@ -101,21 +101,24 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
 
   /** Said BEFORE a code is sent when signing in would move or delete the quiz points on this phone. */
   const [notice, setNotice] = useState<{ move: { answers: number; points: number }; remove: { answers: number; points: number }; go: () => void } | null>(null);
-  const [acked, setAcked] = useState('');
+  /** The typed card number does not exist: say so and offer to open a new account instead of leaving a dead end. */
+  const [cardMissing, setCardMissing] = useState(false);
+  /* A ref, not state: `go` re-calls a function captured by an older render, which would still see the old value and ask again forever. */
+  const acked = useRef('');
 
   /** Runs `go` now, or asks first when it would add guest points to the account or delete another account's points. */
   const confirmPoints = (who: { card?: string; phone?: string }, go: () => void): boolean => {
     const key = JSON.stringify(who);
     const preview = previewSignIn(who);
-    if (acked === key || (preview.move.answers === 0 && preview.remove.answers === 0)) return true;
+    if (acked.current === key || (preview.move.answers === 0 && preview.remove.answers === 0)) return true;
 
-    setNotice({ ...preview, go: () => { setAcked(key); setNotice(null); go(); } });
+    setNotice({ ...preview, go: () => { acked.current = key; setNotice(null); go(); } });
     return false;
   };
 
   const sendCode = async (target: string = cleanPhone) => {
     if (!PHONE_RE.test(target)) {
-      setError(isAr ? 'أدخل رقم هاتف صحيح من 11 رقم يبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
+      setError(isAr ? 'اكتب رقم موبايل صح من 11 رقم بيبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
       return;
     }
 
@@ -148,7 +151,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         setResendIn(Number(e.body?.retry_after ?? 60));
         setStep('code');
       } else {
-        setError(messageOf(e, 'تعذر إرسال الكود، حاول مرة أخرى', 'Could not send the code, please try again'));
+        setError(messageOf(e, 'مقدرناش نبعت الكود، جرّب تاني', 'Could not send the code, please try again'));
       }
     } finally {
       setBusy(false);
@@ -158,7 +161,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   /** Sends the code for a card number: to the phone on the card, or to the new phone being added to it. */
   const sendCardCode = async (mode: 'card' | 'addphone') => {
     if (mode === 'addphone' && !PHONE_RE.test(cleanPhone)) {
-      setError(isAr ? 'أدخل رقم هاتف صحيح من 11 رقم يبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
+      setError(isAr ? 'اكتب رقم موبايل صح من 11 رقم بيبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
       return;
     }
 
@@ -190,9 +193,12 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         setResendIn(Number(e.body?.retry_after ?? 60));
         setStep('code');
       } else if (e instanceof ApiError && e.status === 404) {
-        setError(isAr ? 'رقم العضوية غير موجود' : 'Membership number not found');
+        // A remembered card that no longer exists must not keep the "add your phone" reminder alive.
+        if (getSession().pendingCard) updateSession({ pendingCard: undefined });
+        setCardMissing(true);
+        setError(isAr ? 'رقم العضوية ده مش موجود' : 'Membership number not found');
       } else {
-        setError(messageOf(e, 'تعذر إرسال الكود، حاول مرة أخرى', 'Could not send the code, please try again'));
+        setError(messageOf(e, 'مقدرناش نبعت الكود، جرّب تاني', 'Could not send the code, please try again'));
       }
     } finally {
       setBusy(false);
@@ -236,7 +242,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
       }
     } catch (e) {
       setCode('');
-      setError(messageOf(e, 'الكود غير صحيح', 'That code is not right'));
+      setError(messageOf(e, 'الكود غلط', 'That code is not right'));
       codeInput.current?.focus();
     } finally {
       setBusy(false);
@@ -246,11 +252,11 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   const submitVisitor = async () => {
     const name = visitorName.trim();
     if (!name) {
-      setError(isAr ? 'أدخل اسمك' : 'Enter your name');
+      setError(isAr ? 'اكتب اسمك' : 'Enter your name');
       return;
     }
     if (!PHONE_RE.test(cleanPhone)) {
-      setError(isAr ? 'أدخل رقم هاتف صحيح من 11 رقم يبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
+      setError(isAr ? 'اكتب رقم موبايل صح من 11 رقم بيبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
       return;
     }
 
@@ -270,7 +276,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
       // its code. A failed lookup says so — the popup never closes without an answer.
       const hasCard = await phoneHasCard(cleanPhone).then((v) => v, () => null);
       if (hasCard === null) {
-        setError(isAr ? 'تعذر التحقق من الرقم الآن، حاول مرة أخرى' : 'Could not check the number right now, please try again');
+        setError(isAr ? 'مقدرناش نتأكد من الرقم دلوقتي، جرّب تاني' : 'Could not check the number right now, please try again');
       } else if (hasCard) {
         setBusy(false);
         await sendCode();
@@ -279,7 +285,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         setStep('offer');
       }
     } catch (e) {
-      setError(messageOf(e, 'تعذر إرسال بياناتك، حاول مرة أخرى', 'Could not send your details, please try again'));
+      setError(messageOf(e, 'مقدرناش نبعت بياناتك، جرّب تاني', 'Could not send your details, please try again'));
     } finally {
       setBusy(false);
     }
@@ -312,12 +318,16 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         }
       }
     } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
+        if (getSession().pendingCard) updateSession({ pendingCard: undefined });
+        setCardMissing(true);
+      }
       setError(
         e instanceof ApiError && e.status === 404
-          ? isAr ? 'رقم العضوية غير موجود' : 'Membership number not found'
+          ? isAr ? 'رقم العضوية ده مش موجود' : 'Membership number not found'
           : e instanceof ApiError && e.status === 429
-            ? isAr ? 'محاولات كثيرة، انتظر قليلاً ثم حاول مرة أخرى' : 'Too many attempts, wait a moment and try again'
-            : isAr ? 'تعذر التحقق من الرقم، حاول مرة أخرى' : 'Could not check the number, please try again',
+            ? isAr ? 'حاولت كتير، استنى شوية وجرّب تاني' : 'Too many attempts, wait a moment and try again'
+            : isAr ? 'مقدرناش نتأكد من الرقم، جرّب تاني' : 'Could not check the number, please try again',
       );
     } finally {
       setBusy(false);
@@ -341,7 +351,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   const secondary =
     'w-full py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-1.5 transition-colors cursor-pointer';
   const back = (to: AccessStep) => (
-    <button onClick={() => { setStep(to); setError(null); }} className="text-base text-slate-400 hover:text-white font-bold cursor-pointer">
+    <button onClick={() => { setStep(to); setError(null); setCardMissing(false); }} className="text-base text-slate-400 hover:text-white font-bold cursor-pointer">
       {isAr ? '← رجوع' : '← Back'}
     </button>
   );
@@ -366,25 +376,25 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
       {notice && (
         <div role="alertdialog" aria-modal="true" dir={isAr ? 'rtl' : 'ltr'} className="absolute inset-0 z-10 bg-black/70 flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-white text-slate-900 rounded-3xl p-5 space-y-3">
-            <h3 className="text-base font-black">{isAr ? 'نقاط على هذا الهاتف' : 'Points on this phone'}</h3>
+            <h3 className="text-base font-black">{isAr ? 'نقاط على الموبايل ده' : 'Points on this phone'}</h3>
             {notice.move.answers > 0 && (
               <p className="text-[13px] leading-6">
                 {isAr
-                  ? `النقاط التي لُعبت على هذا الهاتف دون حساب (${notice.move.points} نقطة من ${notice.move.answers} إجابة) ستُضاف إلى الحساب الذي تدخل به.`
+                  ? `النقاط اللي لعبتها على الموبايل ده من غير حساب (${notice.move.points} نقطة من ${notice.move.answers} إجابة) هتتضاف على الحساب اللي هتدخل بيه.`
                   : `The points played on this phone without an account (${notice.move.points} points from ${notice.move.answers} answers) will be added to the account you sign in to.`}
               </p>
             )}
             {notice.remove.answers > 0 && (
               <p className="text-[13px] leading-6 font-bold text-rose-700">
                 {isAr
-                  ? `على الهاتف نقاط تخص حساباً آخر (${notice.remove.points} نقطة من ${notice.remove.answers} إجابة). إن لم يكن هذا حسابها فستُحذف من الهاتف.`
-                  : `This phone holds points of another account (${notice.remove.points} points from ${notice.remove.answers} answers). If this is not that account, they will be deleted from the phone.`}
+                  ? `على الموبايل نقاط تبع حساب تاني (${notice.remove.points} نقطة من ${notice.remove.answers} إجابة). مش هتتمسح، هتفضل محفوظة على الموبايل لحد ما صاحب الحساب ده يدخل تاني.`
+                  : `This phone holds points of another account (${notice.remove.points} points from ${notice.remove.answers} answers). They are not deleted: they stay saved on this phone until that account signs in again.`}
               </p>
             )}
-            <p className="text-[12px] text-slate-500">{isAr ? 'عند الموافقة نرسل كود التحقق.' : 'If you agree, we send the verification code.'}</p>
+            <p className="text-[12px] text-slate-500">{isAr ? 'أول ما توافق هنبعتلك كود التحقق.' : 'If you agree, we send the verification code.'}</p>
             <div className="grid grid-cols-2 gap-2">
               <button onClick={() => setNotice(null)} className="py-3 rounded-2xl bg-slate-100 text-slate-800 text-sm font-bold cursor-pointer">{isAr ? 'إلغاء' : 'Cancel'}</button>
-              <button onClick={notice.go} className="py-3 rounded-2xl bg-[#941946] text-white text-sm font-bold cursor-pointer">{isAr ? 'موافق، أرسل الكود' : 'Agree, send code'}</button>
+              <button onClick={notice.go} className="py-3 rounded-2xl bg-[#941946] text-white text-sm font-bold cursor-pointer">{isAr ? 'موافق، ابعت الكود' : 'Agree, send code'}</button>
             </div>
           </div>
         </div>
@@ -410,7 +420,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
               <p className="text-base text-amber-300 font-bold">
                 {getSession().cardNumber
                   ? isAr ? `كارتك رقم ${getSession().cardNumber} جاهز` : `Your card ${getSession().cardNumber} is ready`
-                  : isAr ? 'لا يوجد كارت مرتبط برقمك بعد' : 'No card is linked to your number yet'}
+                  : isAr ? 'لسه مفيش كارت على رقمك' : 'No card is linked to your number yet'}
               </p>
               <button onClick={onClose} className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl text-base flex items-center justify-center gap-1 cursor-pointer">
                 <span>{isAr ? 'الدخول للتطبيق' : 'Enter app'}</span>
@@ -422,15 +432,15 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
               {step === 'choose' && (
                 <div className="space-y-3.5">
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    {isAr ? 'سجّل الدخول برقم هاتفك لتصل إلى كارتك تلقائياً، أو اعرض بيانات كارتك برقم العضوية.' : 'Sign in with your phone to get your card automatically, or view your card with its membership number.'}
+                    {isAr ? 'سجّل دخول برقم موبايلك وكارتك هيظهرلك لوحده، أو شوف كارتك برقم العضوية.' : 'Sign in with your phone to get your card automatically, or view your card with its membership number.'}
                   </p>
                   <button onClick={() => setStep('phone')} className={primary}>
                     <Phone className="w-5 h-5" />
-                    <span>{isAr ? 'تسجيل الدخول برقم الهاتف' : 'Sign in with phone number'}</span>
+                    <span>{isAr ? 'الدخول برقم الموبايل' : 'Sign in with phone number'}</span>
                   </button>
                   <button onClick={() => { setCardHint(null); setStep('card'); }} className={secondary}>
                     <CreditCard className="w-7 h-7 text-amber-400" />
-                    <span>{isAr ? 'عرض بيانات الكارت برقم العضوية' : 'View card with membership number'}</span>
+                    <span>{isAr ? 'شوف الكارت برقم العضوية' : 'View card with membership number'}</span>
                   </button>
                   <button onClick={() => setStep('visitor')} className={secondary}>
                     <UserPlus className="w-7 h-7 text-amber-400" />
@@ -442,7 +452,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
               {step === 'phone' && (
                 <form onSubmit={(e) => { e.preventDefault(); sendCode(); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-200">{isAr ? 'أدخل رقم هاتفك' : 'Enter your phone number'}</span>
+                    <span className="text-sm font-bold text-slate-200">{isAr ? 'اكتب رقم موبايلك' : 'Enter your phone number'}</span>
                     {back('choose')}
                   </div>
                   <div className="relative">
@@ -452,7 +462,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   </div>
                   <button type="submit" disabled={busy || !phoneValid} className={primary}>
                     {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-                    <span>{isAr ? 'إرسال كود التحقق' : 'Send verification code'}</span>
+                    <span>{isAr ? 'ابعت كود التحقق' : 'Send verification code'}</span>
                   </button>
                   <LegalConsent className="text-slate-400 text-center" />
                 </form>
@@ -462,7 +472,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                 <form onSubmit={(e) => { e.preventDefault(); if (code.length === codeLength) verify(code); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-slate-200">
-                      {isAr ? 'أدخل الكود المرسل إلى ' : 'Enter the code sent to '}
+                      {isAr ? 'اكتب الكود اللي اتبعت على ' : 'Enter the code sent to '}
                       {/* Digits keep their left-to-right order inside the Arabic sentence (••••1460, not 1460••••). */}
                       {maskedPhone ? <bdi dir="ltr" className="font-mono">{maskedPhone}</bdi> : isAr ? 'هاتفك' : 'your phone'}
                     </span>
@@ -487,10 +497,10 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   />
                   <button type="submit" disabled={busy || code.length !== codeLength} className={primary}>
                     {busy && <Loader2 className="w-5 h-5 animate-spin" />}
-                    <span>{isAr ? 'تأكيد ودخول' : 'Verify & sign in'}</span>
+                    <span>{isAr ? 'أكّد وادخل' : 'Verify & sign in'}</span>
                   </button>
                   <button type="button" disabled={resendIn > 0 || busy} onClick={() => (codeFor === 'phone' ? sendCode() : sendCardCode(codeFor))} className="w-full text-base font-bold text-slate-400 hover:text-white disabled:opacity-50 cursor-pointer">
-                    {resendIn > 0 ? (isAr ? `إعادة الإرسال بعد ${resendIn} ث` : `Resend in ${resendIn}s`) : isAr ? 'إعادة إرسال الكود' : 'Resend code'}
+                    {resendIn > 0 ? (isAr ? `ابعت تاني بعد ${resendIn} ث` : `Resend in ${resendIn}s`) : isAr ? 'ابعت الكود تاني' : 'Resend code'}
                   </button>
                 </form>
               )}
@@ -512,7 +522,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   </div>
                   <button type="submit" disabled={busy || !visitorName.trim() || !phoneValid} className={primary}>
                     {busy && <Loader2 className="w-5 h-5 animate-spin" />}
-                    <span>{isAr ? 'إرسال' : 'Submit'}</span>
+                    <span>{isAr ? 'ابعت' : 'Submit'}</span>
                   </button>
                 </form>
               )}
@@ -522,16 +532,16 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   <div className="w-14 h-14 rounded-full bg-amber-400/20 border border-amber-400 text-amber-400 mx-auto flex items-center justify-center">
                     <Sparkles className="w-5 h-5" />
                   </div>
-                  <h4 className="text-base font-black">{isAr ? 'هل تريد إكمال الخطوات؟' : 'Do you want to complete the process?'}</h4>
+                  <h4 className="text-base font-black">{isAr ? 'عايز تكمّل الخطوات؟' : 'Do you want to complete the process?'}</h4>
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    {(() => { const d = getTrialDays(); return isAr ? `رقمك غير مسجل لدينا. أكمل الآن واحصل على كارت ديلر مجاناً${d ? ` لمدة ${trialPhrase(d, true)}` : ''}.` : `Your number is not registered with us. Complete now and get your Deilar card free${d ? ` for ${trialPhrase(d, false)}` : ''}.`; })()}
+                    {(() => { const d = getTrialDays(); return isAr ? `رقمك مش مسجّل عندنا. كمّل دلوقتي وخد كارت ديلر ببلاش${d ? ` لمدة ${trialPhrase(d, true)}` : ''}.` : `Your number is not registered with us. Complete now and get your Deilar card free${d ? ` for ${trialPhrase(d, false)}` : ''}.`; })()}
                   </p>
                   <button onClick={() => { setTrialFlow(true); setStep('confirm'); }} className={primary}>
                     <Sparkles className="w-5 h-5" />
-                    <span>{isAr ? 'نعم، أريد الكارت المجاني' : 'Yes, get my free card'}</span>
+                    <span>{isAr ? 'أيوه، عايز الكارت المجاني' : 'Yes, get my free card'}</span>
                   </button>
                   <button onClick={onClose} className="w-full text-base font-bold text-slate-400 hover:text-white cursor-pointer">
-                    {isAr ? 'ليس الآن' : 'Not now'}
+                    {isAr ? 'مش دلوقتي' : 'Not now'}
                   </button>
                 </div>
               )}
@@ -539,7 +549,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
               {step === 'confirm' && (
                 <form onSubmit={(e) => { e.preventDefault(); sendCode(); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-200">{isAr ? 'تأكيد بياناتك' : 'Confirm your details'}</span>
+                    <span className="text-sm font-bold text-slate-200">{isAr ? 'أكّد بياناتك' : 'Confirm your details'}</span>
                     {back('offer')}
                   </div>
                   <div className="relative">
@@ -553,7 +563,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   </div>
                   <button type="submit" disabled={busy || visitorName.trim().length < 3 || !phoneValid} className={primary}>
                     {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-                    <span>{isAr ? 'تأكيد وإرسال كود التحقق' : 'Confirm & send verification code'}</span>
+                    <span>{isAr ? 'أكّد وابعت كود التحقق' : 'Confirm & send verification code'}</span>
                   </button>
                 </form>
               )}
@@ -561,26 +571,26 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
               {step === 'card' && (
                 <form onSubmit={(e) => { e.preventDefault(); if (cardHint !== null) void sendCardCode('card'); else void showCard(); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-200">{isAr ? 'أدخل رقم العضوية' : 'Enter the membership number'}</span>
+                    <span className="text-sm font-bold text-slate-200">{isAr ? 'اكتب رقم العضوية' : 'Enter the membership number'}</span>
                     {back('choose')}
                   </div>
                   {cardHint !== null && (
                     <div role="status" className="p-3 rounded-2xl border border-amber-400/40 bg-amber-400/10 space-y-1 text-center">
-                      <p className="text-sm text-slate-300">{isAr ? 'سنرسل الكود إلى الهاتف المنتهي بـ' : 'We will text the code to the phone ending in'}</p>
+                      <p className="text-sm text-slate-300">{isAr ? 'هنبعت الكود على الموبايل اللي بينتهي بـ' : 'We will text the code to the phone ending in'}</p>
                       <p dir="ltr" className="text-2xl font-black tracking-widest text-amber-300" data-testid="card-phone-hint">{cardHint}</p>
-                      <p className="text-xs text-slate-400">{isAr ? 'تأكد أنه رقمك قبل الإرسال. إن لم يكن، راجع رقم العضوية.' : 'Check it is your number before sending. If not, re-check the membership number.'}</p>
+                      <p className="text-xs text-slate-400">{isAr ? 'اتأكد إنه رقمك قبل ما نبعت. لو مش رقمك راجع رقم العضوية.' : 'Check it is your number before sending. If not, re-check the membership number.'}</p>
                     </div>
                   )}
                   <div className="relative">
                     <CreditCard className={`w-7 h-7 text-amber-400 absolute ${isAr ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
-                    <input type="text" required autoFocus dir="ltr" placeholder="1234" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setCardHint(null); setError(null); }} className={field} />
+                    <input type="text" required autoFocus dir="ltr" placeholder="1234" value={cardNumber} onChange={(e) => { setCardNumber(e.target.value); setCardHint(null); setCardMissing(false); setError(null); }} className={field} />
                   </div>
                   <button type="submit" disabled={busy || !cardNumber.trim()} className={primary}>
                     {busy && <Loader2 className="w-5 h-5 animate-spin" />}
-                    <span>{cardHint !== null ? (isAr ? 'إرسال كود التحقق' : 'Send verification code') : isAr ? 'متابعة' : 'Continue'}</span>
+                    <span>{cardHint !== null ? (isAr ? 'ابعت كود التحقق' : 'Send verification code') : isAr ? 'كمّل' : 'Continue'}</span>
                   </button>
                   <p className="text-base text-slate-500 text-center">
-                    {isAr ? 'سنرسل كوداً إلى الهاتف المرتبط بالكارت لتأكيد دخولك' : 'We text a code to the phone linked to the card to confirm it is you'}
+                    {isAr ? 'هنبعت كود على الموبايل المربوط بالكارت عشان نتأكد إنه إنت' : 'We text a code to the phone linked to the card to confirm it is you'}
                   </p>
                 </form>
               )}
@@ -588,12 +598,12 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
               {step === 'addphone' && (
                 <form onSubmit={(e) => { e.preventDefault(); sendCardCode('addphone'); }} className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-200">{isAr ? 'أضف رقم هاتف لكارتك' : 'Add a phone to your card'}</span>
+                    <span className="text-sm font-bold text-slate-200">{isAr ? 'ضيف رقم موبايل لكارتك' : 'Add a phone to your card'}</span>
                     {back('card')}
                   </div>
                   <p className="text-sm text-slate-300 leading-relaxed">
                     {isAr
-                      ? `كارت رقم ${cardNumber} غير مرتبط برقم هاتف. أضف رقمك وسنرسل إليه كود تأكيد لتسجيل الدخول. الرقم لا يمكن تغييره بعد إضافته.`
+                      ? `كارت رقم ${cardNumber} مش مربوط برقم موبايل. ضيف رقمك وهنبعتله كود تأكيد تدخل بيه. الرقم مبيتغيرش بعد ما تضيفه.`
                       : `Card ${cardNumber} has no phone number yet. Add yours and we will text it a code to sign in. The number cannot be changed once added.`}
                   </p>
                   <div className="relative">
@@ -603,7 +613,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                   </div>
                   <button type="submit" disabled={busy || !phoneValid} className={primary}>
                     {busy ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-                    <span>{isAr ? 'إرسال كود التحقق' : 'Send verification code'}</span>
+                    <span>{isAr ? 'ابعت كود التحقق' : 'Send verification code'}</span>
                   </button>
                 </form>
               )}
@@ -614,10 +624,22 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
                 </p>
               )}
 
+              {cardMissing && (step === 'card' || step === 'addphone') && (
+                <button
+                  type="button"
+                  onClick={() => { setCardMissing(false); setCardHint(null); setError(null); setStep('phone'); }}
+                  className={primary}
+                  data-testid="create-new-account"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  <span>{isAr ? 'إنشاء حساب جديد' : 'Create a new account'}</span>
+                </button>
+              )}
+
               {/* Whatever went wrong, the member can reach customer service from here (numbers come from the admin settings). */}
               {error && (contact.phone || contact.whatsapp) && (
                 <div className="space-y-2 pt-1">
-                  <p className="text-sm text-slate-400 font-bold">{isAr ? 'تواصل مع خدمة العملاء:' : 'Contact customer service:'}</p>
+                  <p className="text-sm text-slate-400 font-bold">{isAr ? 'كلّم خدمة العملاء:' : 'Contact customer service:'}</p>
                   <div className="grid grid-cols-2 gap-2">
                     {contact.phone && (
                       <a href={`tel:${contact.dial ?? contact.phone}`} className="py-3 rounded-2xl bg-slate-800 border border-slate-700 text-white text-sm font-bold flex items-center justify-center gap-1.5">

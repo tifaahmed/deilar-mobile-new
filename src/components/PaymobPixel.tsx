@@ -135,13 +135,13 @@ export const PaymobPixel: React.FC<PaymobPixelProps> = ({ publicKey, clientSecre
     <div className="space-y-2">
       <div className={`flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 ${isAr ? 'flex-row-reverse justify-end' : ''}`}>
         <ShieldCheck className="w-4 h-4" />
-        <span>{isAr ? 'دفع آمن — بيانات البطاقة تُدخل لدى Paymob ولا تصل إلى خوادمنا' : 'Secure payment — card details go to Paymob, never to our servers'}</span>
+        <span>{isAr ? 'دفع آمن — بيانات الكارت بتتكتب عند Paymob ومبتوصلش لسيرفراتنا' : 'Secure payment — card details go to Paymob, never to our servers'}</span>
       </div>
 
       {state === 'loading' && (
         <div className="flex items-center justify-center gap-2 py-6 text-xs text-slate-500">
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span>{isAr ? 'جاري تحميل نموذج الدفع…' : 'Loading the payment form…'}</span>
+          <span>{isAr ? 'بنحمّل صفحة الدفع…' : 'Loading the payment form…'}</span>
         </div>
       )}
 
@@ -149,7 +149,7 @@ export const PaymobPixel: React.FC<PaymobPixelProps> = ({ publicKey, clientSecre
 
       {state === 'failed' && (
         <div className="rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold p-3 space-y-2">
-          <p>{isAr ? 'تعذر تحميل نموذج الدفع هنا.' : 'The payment form could not load here.'}</p>
+          <p>{isAr ? 'صفحة الدفع مافتحتش هنا.' : 'The payment form could not load here.'}</p>
           {fallbackUrl && (
             <a href={fallbackUrl} target="_blank" rel="noopener noreferrer" className="inline-block underline">
               {isAr ? 'افتح صفحة الدفع من Paymob' : "Open Paymob's payment page"}

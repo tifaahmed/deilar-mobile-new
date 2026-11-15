@@ -15,7 +15,7 @@
 import { PointsBadge } from './PointsBadge';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Package, ShoppingCart, ShoppingBag, Check, Search, SlidersHorizontal, Store as StoreIcon, X, Eye, ExternalLink } from 'lucide-react';
+import { Package, ShoppingBag, Check, Search, SlidersHorizontal, Store as StoreIcon, X, Eye, ExternalLink } from 'lucide-react';
 import type { ProductCard } from '../api/types';
 import { api, PATHS } from '../api/endpoints';
 import { toCartProduct } from '../api/adapters';
@@ -49,6 +49,8 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
   const { isAr } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+  // «Accepts loyalty points» filter; the points page opens /products?points=1 with it already on.
+  const [pointsOnly, setPointsOnly] = useState(() => new URLSearchParams(location.search).get('points') === '1');
   const [openStore, setOpenStore] = useState<{ slug: string; id: number } | null>(null);
   const [previewProduct, setPreviewProduct] = useState<ProductCard | null>(null);
   const openCart = () => navigate(routeHref({ checkout: 'cart' }));
@@ -80,10 +82,9 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
     setDrawerOpen(false);
   };
 
-  const params = { q, type: selectedTypeId, store_id: storeId, sort: sort === 'newest' ? undefined : sort, per_page: 12 };
+  const params = { q, type: selectedTypeId, store_id: storeId, sort: sort === 'newest' ? undefined : sort, points_payable: pointsOnly ? 1 : undefined, per_page: 12 };
   const list = usePaged<ProductCard>(PATHS.products, params, (page, signal) => api.products({ ...params, page }, signal));
 
-  const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const currency = isAr ? 'ج.م' : 'EGP';
 
   const handleAdd = (product: ProductCard) => {
@@ -107,32 +108,6 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
 
   return (
     <div className={`space-y-4 pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
-      {/* Top Header Bar */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-[#941946]/10 text-[#941946] flex items-center justify-center font-bold">
-            <Package className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-base font-extrabold text-slate-900 leading-tight">{isAr ? 'منتجاتنا' : 'Our Products'}</h1>
-            <p className="text-[11px] text-slate-500">{isAr ? 'منتجات طبيعية بأسعار خاصة لحاملي كارت ديلر' : 'Natural products at special prices for Deilar cardholders'}</p>
-          </div>
-        </div>
-
-        <button
-          onClick={openCart}
-          className="relative p-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-xs transition-colors flex items-center gap-1.5 shrink-0"
-        >
-          <ShoppingCart className="w-4 h-4" />
-          <span className="text-xs font-bold hidden xs:inline">{isAr ? 'السلة' : 'Cart'}</span>
-          {totalCartCount > 0 && (
-            <span className="absolute -top-1.5 -left-1.5 bg-[#941946] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">
-              {totalCartCount}
-            </span>
-          )}
-        </button>
-      </div>
-
       {/* Search Input */}
       <div className="relative">
         <input
@@ -152,7 +127,16 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
 
       {/* Category Pills */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-        {[{ id: null as number | null, name: isAr ? 'كافة المنتجات' : 'All products' }, ...(types.data ?? [])].map((type) => (
+        <button
+          type="button"
+          data-testid="points-filter"
+          aria-pressed={pointsOnly}
+          onClick={() => setPointsOnly((v) => !v)}
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${pointsOnly ? 'bg-amber-500 text-white border-amber-500' : 'bg-amber-50 text-amber-800 border-amber-200'}`}
+        >
+          {isAr ? '⭐ بتقبل نقاط الولاء' : '⭐ Accepts points'}
+        </button>
+        {[{ id: null as number | null, name: isAr ? 'كل المنتجات' : 'All products' }, ...(types.data ?? [])].map((type) => (
           <button
             key={type.id ?? 'all'}
             onClick={() => setSelectedTypeId(type.id)}
@@ -171,18 +155,19 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
       {!list.loading && !list.error && list.items.length === 0 ? (
         <div className="bg-white rounded-2xl p-8 text-center border border-slate-200">
           <Package className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-          <h3 className="text-sm font-bold text-slate-800">{isAr ? 'لا توجد منتجات مطابقة للبحث' : 'No products match your search'}</h3>
-          <p className="text-xs text-slate-500 mt-1">{isAr ? 'جرّب البحث باسم منتج آخر أو اختر فئة مختلفة' : 'Try another name or pick a different category'}</p>
+          <h3 className="text-sm font-bold text-slate-800">{isAr ? 'مفيش منتجات مطابقة للبحث' : 'No products match your search'}</h3>
+          <p className="text-xs text-slate-500 mt-1">{isAr ? 'دوّر باسم منتج تاني أو اختار قسم تاني' : 'Try another name or pick a different category'}</p>
           <button
             onClick={() => {
               setSearchQuery('');
               setSelectedTypeId(null);
               setStoreId(null);
               setSort('newest');
+              setPointsOnly(false);
             }}
             className="mt-3 px-4 py-1.5 bg-[#941946] text-white rounded-xl text-xs font-bold"
           >
-            {isAr ? 'عرض كافة المنتجات' : 'Show all products'}
+            {isAr ? 'اعرض كل المنتجات' : 'Show all products'}
           </button>
         </div>
       ) : (
@@ -261,7 +246,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
                       className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center transition-all shadow-xs ${
                         isAdded ? 'bg-emerald-600 text-white' : 'bg-[#941946] hover:bg-[#7b1439] text-white active:scale-95'
                       }`}
-                      title={isAr ? 'أضف للسلة' : 'Add to cart'}
+                      title={isAr ? 'ضيف للسلة' : 'Add to cart'}
                     >
                       {isAdded ? <Check className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
                     </button>
@@ -311,8 +296,8 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
           onClick={openDrawer}
           className="fixed z-40 bottom-40 end-4 w-12 h-12 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
           style={{ insetInlineEnd: 'max(1rem, calc(50% - 384px + 1rem))' }}
-          title={isAr ? 'تصفية المنتجات' : 'Filter products'}
-          aria-label={isAr ? 'تصفية المنتجات' : 'Filter products'}
+          title={isAr ? 'فلتر المنتجات' : 'Filter products'}
+          aria-label={isAr ? 'فلتر المنتجات' : 'Filter products'}
         >
           <SlidersHorizontal className="w-5 h-5" />
           {activeFilters > 0 && (
@@ -332,7 +317,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
               <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-slate-100">
                 <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
                   <SlidersHorizontal className="w-4 h-4 text-[#941946]" />
-                  {isAr ? 'تصفية المنتجات' : 'Filter products'}
+                  {isAr ? 'فلتر المنتجات' : 'Filter products'}
                 </h3>
                 <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer" aria-label={isAr ? 'إغلاق' : 'Close'}>
                   <X className="w-4 h-4" />
@@ -344,7 +329,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
                   {(
                     [
                       ['newest', isAr ? 'الأحدث' : 'Newest'],
-                      ['discount', isAr ? 'الأعلى خصماً' : 'Biggest discount'],
+                      ['discount', isAr ? 'الأعلى خصم' : 'Biggest discount'],
                       ['price_asc', isAr ? 'السعر: الأقل أولاً' : 'Price: low to high'],
                       ['price_desc', isAr ? 'السعر: الأعلى أولاً' : 'Price: high to low'],
                     ] as [Sort, string][]
@@ -374,7 +359,7 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
 
               <div className="p-4 pt-3 border-t border-slate-100 grid grid-cols-3 gap-2">
                 <button onClick={() => setDraft({ type: null, store: null, sort: 'newest' })} className="py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold cursor-pointer">
-                  {isAr ? 'إعادة ضبط' : 'Reset'}
+                  {isAr ? 'رجّع الافتراضي' : 'Reset'}
                 </button>
                 <button onClick={applyDrawer} className="col-span-2 py-3 rounded-xl bg-[#941946] hover:bg-[#7b1439] text-white text-xs font-bold cursor-pointer">
                   {isAr ? 'تطبيق' : 'Apply'}

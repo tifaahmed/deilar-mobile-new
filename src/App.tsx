@@ -70,6 +70,7 @@ import { QuizReadyNotifier } from './components/QuizReadyNotifier';
 import { PullToRefresh, reloadedByPull } from './components/PullToRefresh';
 import { SaveAreaPrompt } from './components/SaveAreaPrompt';
 import { NoticeStack } from './components/Notice';
+import { useQuizPlaying } from './utils/quizPlaying';
 import type { AccessStep } from './components/AccessModal';
 import type { FacilityCard } from './api/types';
 import { PRESET_LOCATIONS } from './utils/geo';
@@ -78,6 +79,7 @@ import { trackVisit } from './utils/trackVisit';
 import { LocationGate, NearestPrompt } from './components/LocationGate';
 import { useLanguage } from './context/LanguageContext';
 import { navigate, routeHref, useRoute } from './router';
+import { startPush } from './utils/push';
 import { ListSkeleton } from './components/ui/Feedback';
 import { useForceUpdate } from './utils/forceUpdate';
 import { ForceUpdateScreen } from './components/ForceUpdateScreen';
@@ -123,6 +125,10 @@ export default function App() {
     trackVisit(route, session.token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeKey, session.token]);
+  // Push notifications: ask once, register this phone with the backend; again after sign-in so it is linked to the member.
+  useEffect(() => {
+    void startPush(session.token);
+  }, [session.token]);
   // Quiz answers played offline (or before signing in) go up whenever there is a member and a connection.
   useEffect(() => startQuizSync(), []);
   // A code left by an invitation link is sent once there is a signed-in member (the backend decides if it counts).
@@ -256,6 +262,8 @@ export default function App() {
   const reminderSwipe = useSwipeDismiss(dismissReminder);
   // In the quiz game nothing interrupts the player: no banner, no popup, no notice.
   const inGame = !!route.quiz;
+  // While a play is running nothing else is drawn over the game: no fixed icons, no bar, no notices.
+  const quizPlaying = useQuizPlaying();
 
   // Shopping Cart state for Store & Products
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -463,8 +471,8 @@ export default function App() {
 
               {(activeTab === 'store' || activeTab === 'products') && (
                 <StoreView
-                  subTab={activeTab === 'products' ? 'products' : 'stores'}
-                  onSubTabChange={(sub) => navigate(routeHref({ tab: sub === 'products' ? 'products' : 'store' }))}
+                  subTab={activeTab === 'products' ? 'products' : route.storeMap ? 'map' : 'stores'}
+                  onSubTabChange={(sub) => navigate(routeHref(sub === 'products' ? { tab: 'products' } : sub === 'map' ? { tab: 'store', storeMap: true } : { tab: 'store' }))}
                   storeSlug={route.store ?? null}
                   onOpenStore={(slug) => navigate(routeHref({ store: slug }))}
                   onCloseStore={() => navigate(routeHref({ tab: 'store' }))}
@@ -539,20 +547,20 @@ export default function App() {
         </main>
 
         {/* Floating Side Contact Icon with Number */}
-        {route.section !== 'pay' && <FloatingContactButton />}
-        {route.section !== 'pay' && <ReferProviderButton />}
+        {route.section !== 'pay' && !quizPlaying && <FloatingContactButton />}
+        {route.section !== 'pay' && !quizPlaying && <ReferProviderButton />}
 
         {/* 
           CRITICAL USER REQUIREMENT:
           "وعايز الناف بار الى تحت يكون ظاهر فى كل الصفحات وعايز بنفس الشكل الى بعته"
           Always visible across all tabs (Home, Card, Map, Profile) with the exact signature curve from screenshot
         */}
-        <BottomNav
+        {!quizPlaying && <BottomNav
           activeTab={activeTab}
           onTabChange={(tab) => {
             navigate(routeHref({ tab }));
           }}
-        />
+        />}
       </div>
 
       {/* Global Quick Search Modal */}
@@ -561,13 +569,13 @@ export default function App() {
           <div {...reminderSwipe.handlers} style={reminderSwipe.style} className="w-full max-w-md bg-slate-950 text-white border border-amber-400/50 rounded-2xl shadow-2xl p-3 flex items-center gap-2.5 animate-in slide-in-from-top duration-300">
             <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
             <p className="flex-1 text-[11px] font-bold leading-snug">
-              {isAr ? 'سجّل اسمك ورقمك معنا لتحصل على كارت ديلر وخصومات الخدمات.' : 'Register your name and number with us to get your Deilar card and service discounts.'}
+              {isAr ? 'سجّل اسمك ورقمك معانا وخد كارت ديلر وخصومات الخدمات.' : 'Register your name and number with us to get your Deilar card and service discounts.'}
             </p>
             <button
               onClick={() => { setReminder(false); setAccessStep('visitor'); }}
               className="px-3 py-1.5 bg-amber-400 text-slate-950 text-[11px] font-black rounded-lg cursor-pointer shrink-0"
             >
-              {isAr ? 'سجّل الآن' : 'Register'}
+              {isAr ? 'سجّل دلوقتي' : 'Register'}
             </button>
             <button onClick={dismissReminder} className="text-slate-400 text-lg leading-none cursor-pointer shrink-0">×</button>
           </div>

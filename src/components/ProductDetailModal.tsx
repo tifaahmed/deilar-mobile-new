@@ -36,7 +36,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
 
   const handleWhatsApp = () => {
     const message = isAr
-      ? `مرحباً، أود طلب منتج (${product.name})${product.store ? ` من متجر (${product.store.title})` : ''} بسعر العرض (${shown.price} ${currency}).`
+      ? `أهلاً، عايز أطلب منتج (${product.name})${product.store ? ` من متجر (${product.store.title})` : ''} بسعر العرض (${shown.price} ${currency}).`
       : `Hello, I would like to order (${product.name})${product.store ? ` from (${product.store.title})` : ''} at the offer price (${shown.price} ${currency}).`;
     if (contact.whatsapp) window.open(`https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
   };
@@ -55,7 +55,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
                 className="inline-flex items-center gap-1 text-[10px] font-bold text-[#941946] bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100 mb-1 max-w-full"
               >
                 <StoreIcon className="w-3 h-3 shrink-0" />
-                <span className="truncate">{isAr ? `متجر: ${product.store.title} (انقر لعرض المتجر)` : `Store: ${product.store.title} (tap to view)`}</span>
+                <span className="truncate">{isAr ? `متجر: ${product.store.title} (دوس عشان تشوف المتجر)` : `Store: ${product.store.title} (tap to view)`}</span>
               </button>
             )}
             <h2 className="text-sm sm:text-base font-bold text-slate-900 leading-tight">{product.name}</h2>
@@ -132,7 +132,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product,
           ) : (
             <span className="text-xs font-bold text-slate-500 flex items-center gap-1">
               <Check className="w-3.5 h-3.5 opacity-0" />
-              {isAr ? 'غير متاح للطلب حالياً' : 'Not available to order'}
+              {isAr ? 'مش متاح للطلب دلوقتي' : 'Not available to order'}
             </span>
           )}
         </div>

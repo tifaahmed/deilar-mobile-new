@@ -20,6 +20,7 @@ import { fetchLocations, fetchNearestAreas, searchDirectory, type Locations, typ
 import { useLanguage } from '../context/LanguageContext';
 import { ErrorState, ListSkeleton, LoadMore } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
+import { openReferProvider } from './ReferProviderButton';
 
 interface MapViewProps {
   userLocation: { lat: number; lng: number; name: string };
@@ -88,6 +89,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   }, []);
   // Suggestions under the search box: facilities, branches, cities, governorates and types matching what is typed.
   const [suggestOpen, setSuggestOpen] = useState(false);
+  // An empty, unfocused search box shrinks so the map / list buttons beside it can be bigger.
+  const [searchFocused, setSearchFocused] = useState(false);
   const suggestions = useApi<SearchGroup[]>(
     suggestOpen && q.length >= 2 ? `suggest:${q}:${isAr}` : null,
     (signal) => searchDirectory(q, signal),
@@ -172,7 +175,11 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
     if (next === null) { autoWiden.current = false; return; }
     if (selectedTypeId) setWidenedFrom((from) => from ?? maxRadiusKm);
     // Automatic widening went past 10 km: keep widening, but open the filters so the visitor can narrow it down.
-    if ((next === 0 || next > AUTO_WIDEN_FILTER_KM) && maxRadiusKm !== 0 && maxRadiusKm <= AUTO_WIDEN_FILTER_KM) setDrawerOpen(true);
+    // A kind of place that is not within 10 km opens «recommend a provider» (so the team can add one); with no kind picked the filters open instead.
+    if ((next === 0 || next > AUTO_WIDEN_FILTER_KM) && maxRadiusKm !== 0 && maxRadiusKm <= AUTO_WIDEN_FILTER_KM) {
+      if (selectedTypeId) openReferProvider();
+      else setDrawerOpen(true);
+    }
     onRadiusChange(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pinsQuery.loading, pinsQuery.data, pins, viewMode]);
@@ -453,7 +460,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
               }`}
             >
               <Percent className="w-3.5 h-3.5" />
-              <span>{isAr ? 'الأعلى خصماً' : 'Top discount'}</span>
+              <span>{isAr ? 'الأعلى خصم' : 'Top discount'}</span>
             </button>
           </div>
 
@@ -478,15 +485,15 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
       {/* 1. Search & type filters */}
       <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-xs space-y-2.5">
         <div className="flex items-center gap-2">
-          <div className="relative flex-1">
+          <div className={`relative transition-all duration-200 ${searchFocused || searchQuery ? 'flex-1' : 'w-28 shrink-0'}`}>
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder={isAr ? 'اسم أو فرع أو عنوان أو رقم أو مدينة…' : 'Name, branch, address, phone or city…'}
+              placeholder={searchFocused || searchQuery ? (isAr ? 'اسم أو فرع أو عنوان أو رقم أو مدينة…' : 'Name, branch, address, phone or city…') : (isAr ? 'بحث…' : 'Search…')}
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setSuggestOpen(true); }}
-              onFocus={() => setSuggestOpen(true)}
-              onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
+              onFocus={() => { setSuggestOpen(true); setSearchFocused(true); }}
+              onBlur={() => { setSearchFocused(false); setTimeout(() => setSuggestOpen(false), 150); }}
               className="w-full pl-8 pr-9 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-600 transition-colors"
             />
             {searchQuery && (
@@ -525,20 +532,21 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
             )}
           </div>
 
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+          <div className={`flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 transition-all duration-200 ${searchFocused || searchQuery ? '' : 'flex-1'}`}>
             {(['map', 'list'] as const).map((mode) => {
               const Icon = mode === 'map' ? Compass : List;
               return (
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
-                  className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
+                  className={`${searchFocused || searchQuery ? 'p-1.5' : 'flex-1 justify-center py-2.5'} rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
                     viewMode === mode ? 'bg-white text-rose-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'
                   }`}
-                  title={mode === 'map' ? (isAr ? 'عرض الخريطة' : 'Map') : isAr ? 'عرض كقائمة' : 'List'}
+                  title={mode === 'map' ? (isAr ? 'اعرض الخريطة' : 'Map') : isAr ? 'اعرض كقائمة' : 'List'}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span className="hidden sm:inline">{mode === 'map' ? (isAr ? 'الخريطة' : 'Map') : isAr ? 'القائمة' : 'List'}</span>
+                  {/* The list icon hops up and down while the player is not on the list. */}
+                  <Icon className={`${searchFocused || searchQuery ? 'w-4 h-4' : 'w-5 h-5'} ${mode === 'list' && viewMode !== 'list' ? 'animate-bounce' : ''}`} />
+                  <span className={searchFocused || searchQuery ? 'hidden sm:inline' : ''}>{mode === 'map' ? (isAr ? 'الخريطة' : 'Map') : isAr ? 'القائمة' : 'List'}</span>
                 </button>
               );
             })}
@@ -636,7 +644,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                       )}
                     </div>
                     {popup.loading ? (
-                      <p className="text-[11px] text-slate-400 mt-0.5">{isAr ? 'جاري التحميل...' : 'Loading...'}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{isAr ? 'بنحمّل...' : 'Loading...'}</p>
                     ) : (
                       <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
                         {popupCard?.branch?.address ?? [popupCard?.branch?.city, popupCard?.branch?.governorate].filter(Boolean).join(' - ')}
@@ -676,7 +684,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                   disabled={!popupCard}
                   className="py-2 bg-rose-700 hover:bg-rose-800 disabled:opacity-50 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-colors shadow-xs"
                 >
-                  <span>{isAr ? 'كشف الخصومات' : 'View discounts'}</span>
+                  <span>{isAr ? 'شوف الخصومات' : 'View discounts'}</span>
                 </button>
               </div>
             </div>
@@ -752,10 +760,10 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
           {!list.loading && !list.error && list.items.length === 0 && (
             <div className="p-8 text-center bg-white rounded-2xl border border-slate-200">
               <MapPin className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-bold text-slate-700">{isAr ? 'لم يتم العثور على فروع مطابقة' : 'No matching branches found'}</p>
-              <p className="text-xs text-slate-500 mt-1">{isAr ? 'جرب زيادة نطاق البحث أو تغيير كلمة البحث' : 'Try a wider range or a different search'}</p>
+              <p className="text-sm font-bold text-slate-700">{isAr ? 'مفيش فروع مطابقة' : 'No matching branches found'}</p>
+              <p className="text-xs text-slate-500 mt-1">{isAr ? 'وسّع نطاق البحث أو غيّر كلمة البحث' : 'Try a wider range or a different search'}</p>
               <button onClick={resetFilters} className="mt-3 px-4 py-2 bg-rose-700 text-white rounded-xl text-xs font-bold">
-                {isAr ? 'إعادة ضبط الفلاتر' : 'Reset filters'}
+                {isAr ? 'رجّع الفلاتر' : 'Reset filters'}
               </button>
             </div>
           )}
@@ -808,7 +816,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
             </div>
             <div className="p-4 border-t border-slate-100">
               <button onClick={() => setDrawerOpen(false)} className="w-full py-3 rounded-2xl bg-[#941946] text-white font-black text-sm cursor-pointer">
-                {isAr ? 'عرض النتائج' : 'Show results'}
+                {isAr ? 'اعرض النتائج' : 'Show results'}
               </button>
             </div>
           </div>

@@ -24,24 +24,25 @@
  */
 
 import React, { useState } from 'react';
-import { Store as StoreIcon, ShoppingCart, Package, ChevronRight, Search, MapPin } from 'lucide-react';
+import { Store as StoreIcon, ShoppingCart, Package, ChevronRight, Search, MapPin, Map as MapIcon, Navigation, Percent } from 'lucide-react';
 import type { StoreCard } from '../api/types';
 import { api, PATHS } from '../api/endpoints';
 import { formatKm, roundCoord } from '../api/adapters';
 import { useDebounced } from '../hooks/useDebounced';
 import { usePaged } from '../hooks/usePaged';
-import { useProductTypes, useStoreCategories } from '../hooks/useCatalog';
+import { useStoreCategories } from '../hooks/useCatalog';
 import { useLanguage } from '../context/LanguageContext';
 import { Product, CartItem } from '../types';
 import { ProductsView } from './ProductsView';
+import { StoreMapView } from './StoreMapView';
 import { offerRange, StoreDetailView } from './StoreDetailView';
 import { ErrorState, ListSkeleton, LoadMore } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
 
 interface StoreViewProps {
   /** Which sub-tab is open — the URL decides (/store or /products). */
-  subTab: 'stores' | 'products';
-  onSubTabChange: (tab: 'stores' | 'products') => void;
+  subTab: 'stores' | 'products' | 'map';
+  onSubTabChange: (tab: 'stores' | 'products' | 'map') => void;
   userLocation?: { lat: number; lng: number };
   cart: CartItem[];
   onAddToCart: (product: Product) => void;
@@ -72,20 +73,21 @@ export const StoreView: React.FC<StoreViewProps> = ({
   const { isAr } = useLanguage();
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [storeSearchQuery, setStoreSearchQuery] = useState('');
+  // Order of the stores: nearest first (the default) or the biggest offer first.
+  const [sort, setSort] = useState<'nearest' | 'discount'>('nearest');
   // The card the user tapped, shown instantly while the store page (addressed by URL) loads.
   const [tapped, setTapped] = useState<StoreCard | null>(null);
   const selectedStore = storeSlug ? { slug: storeSlug, preview: tapped?.slug === storeSlug ? tapped : undefined } : null;
 
   const q = useDebounced(storeSearchQuery.trim(), 350);
   const categories = useStoreCategories();
-  const productTypes = useProductTypes();
-  const productsTotal = (productTypes.data ?? []).reduce((sum, t) => sum + t.count, 0);
 
   const params = {
     q,
     category_id: categoryId,
     lat: userLocation ? roundCoord(userLocation.lat) : null,
     lng: userLocation ? roundCoord(userLocation.lng) : null,
+    sort,
     per_page: 12,
   };
   const list = usePaged<StoreCard>(PATHS.stores, params, (page, signal) => api.stores({ ...params, page }, signal), activeSubTab === 'stores' && !selectedStore);
@@ -135,19 +137,31 @@ export const StoreView: React.FC<StoreViewProps> = ({
             }`}
           >
             <Package className="w-4 h-4" />
-            <span>{isAr ? 'منتجاتنا' : 'Products'}{productsTotal > 0 ? ` (${productsTotal})` : ''}</span>
+            <span>{isAr ? 'منتجاتنا' : 'Products'}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveSubTab('map')}
+            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              activeSubTab === 'map'
+                ? 'bg-[#941946] text-white shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <MapIcon className="w-4 h-4" />
+            <span>{isAr ? 'الخريطة' : 'Map'}</span>
           </button>
         </div>
 
         {/* Dedicated Cart Trigger Button with gathered items badge */}
-        {onOpenCart && (
+        {onOpenCart && activeSubTab !== 'map' && (
           <button
             onClick={onOpenCart}
             className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-xs"
-            title={isAr ? 'فتح عربة المشتريات والدفع' : 'Open cart & checkout'}
+            title={isAr ? 'افتح السلة وادفع' : 'Open cart & checkout'}
           >
             <ShoppingCart className="w-4 h-4 text-amber-400" />
-            <span className="hidden xs:inline">{isAr ? 'عربة المشتريات' : 'Cart'}</span>
+            <span className="hidden xs:inline">{isAr ? 'السلة' : 'Cart'}</span>
             {cart.length > 0 && (
               <span className="bg-[#941946] text-white text-[10px] font-black px-1.5 py-0.2 rounded-full border border-white/20">
                 {cart.reduce((a, b) => a + b.quantity, 0)}
@@ -158,7 +172,9 @@ export const StoreView: React.FC<StoreViewProps> = ({
       </div>
 
       {/* Render the full "منتجاتنا" page when that sub-tab is chosen */}
-      {activeSubTab === 'products' ? (
+      {activeSubTab === 'map' ? (
+        <StoreMapView userLocation={userLocation} onOpenStore={(slug) => onOpenStore(slug)} />
+      ) : activeSubTab === 'products' ? (
         <ProductsView
           userLocation={userLocation}
           onBackToStore={() => setActiveSubTab('stores')}
@@ -193,7 +209,7 @@ export const StoreView: React.FC<StoreViewProps> = ({
 
           {/* Category Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
-            {[{ id: null as number | null, name: isAr ? 'كافة المتاجر' : 'All stores' }, ...(categories.data ?? [])].map((cat) => {
+            {[{ id: null as number | null, name: isAr ? 'كل المتاجر' : 'All stores' }, ...(categories.data ?? [])].map((cat) => {
               const isSelected = categoryId === cat.id;
               return (
                 <button
@@ -209,6 +225,22 @@ export const StoreView: React.FC<StoreViewProps> = ({
                 </button>
               );
             })}
+          </div>
+
+          {/* Order: nearest first, or the biggest offer first. */}
+          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs font-bold text-slate-800">
+            {([['nearest', isAr ? 'الأقرب' : 'Nearest', Navigation], ['discount', isAr ? 'الأعلى خصم' : 'Top discount', Percent]] as const).map(([id, label, Icon]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setSort(id)}
+                aria-pressed={sort === id}
+                className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${sort === id ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'}`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{label}</span>
+              </button>
+            ))}
           </div>
 
           {/* 
@@ -273,9 +305,7 @@ export const StoreView: React.FC<StoreViewProps> = ({
 
                   <div className="p-2.5 pt-0 border-t border-slate-100 flex items-center justify-between gap-1 mt-1">
                     {store.products_count > 0 ? (
-                      <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
-                        {isAr ? `${store.products_count} منتجات معروضة` : `${store.products_count} products`}
-                      </span>
+                      <span />
                     ) : (
                       <span className="text-[9px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
                         {isAr ? 'خصم بالفروع' : 'In-branch discount'}
@@ -283,7 +313,7 @@ export const StoreView: React.FC<StoreViewProps> = ({
                     )}
 
                     <span className="text-[10px] font-extrabold text-[#941946] group-hover:underline flex items-center gap-0.5">
-                      <span>{isAr ? 'عرض المتجر' : 'View'}</span>
+                      <span>{isAr ? 'اعرض المتجر' : 'View'}</span>
                       <ChevronRight className={`w-3 h-3 ${isAr ? '' : 'rotate-180'}`} />
                     </span>
                   </div>
@@ -297,7 +327,7 @@ export const StoreView: React.FC<StoreViewProps> = ({
           {!list.loading && !list.error && list.items.length === 0 && (
             <div className="bg-white rounded-2xl p-8 text-center border border-slate-200">
               <StoreIcon className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-              <h3 className="text-sm font-bold text-slate-800">{isAr ? 'لا توجد متاجر مطابقة' : 'No stores found'}</h3>
+              <h3 className="text-sm font-bold text-slate-800">{isAr ? 'مفيش متاجر مطابقة' : 'No stores found'}</h3>
             </div>
           )}
         </div>

@@ -28,7 +28,7 @@ const ContactUs: React.FC = () => {
   const { isAr } = useLanguage();
   const contact = useContact();
   const rows = [
-    contact.phone && { href: `tel:${contact.dial ?? contact.phone}`, icon: PhoneCall, label: isAr ? 'اتصل بنا' : 'Call us', value: contact.phone, tone: 'bg-slate-900 text-white', ltr: true },
+    contact.phone && { href: `tel:${contact.dial ?? contact.phone}`, icon: PhoneCall, label: isAr ? 'كلّمنا' : 'Call us', value: contact.phone, tone: 'bg-slate-900 text-white', ltr: true },
     contact.whatsapp && { href: `https://wa.me/${contact.whatsapp}`, icon: MessageCircle, label: isAr ? 'واتساب' : 'WhatsApp', value: `+${contact.whatsapp}`, tone: 'bg-[#25D366] text-white', ltr: true },
     contact.email && { href: `mailto:${contact.email}`, icon: Mail, label: isAr ? 'البريد الإلكتروني' : 'Email', value: contact.email, tone: 'bg-slate-100 text-slate-800', ltr: true },
     contact.facebook && { href: contact.facebook, icon: Facebook, label: 'Facebook', value: isAr ? 'صفحتنا' : 'Our page', tone: 'bg-slate-100 text-slate-800', ltr: false },
@@ -38,7 +38,7 @@ const ContactUs: React.FC = () => {
 
   return (
     <div className={`bg-white rounded-3xl p-4 border border-slate-200/90 shadow-2xs space-y-2.5 mt-3 ${isAr ? 'text-right' : 'text-left'}`}>
-      <h3 className="text-sm font-black text-slate-900">{isAr ? 'تواصل معنا' : 'Contact us'}</h3>
+      <h3 className="text-sm font-black text-slate-900">{isAr ? 'كلّمنا' : 'Contact us'}</h3>
       <div className="grid gap-2">
         {rows.map((r) => (
           <a key={r.label} href={r.href} target={r.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer" className={`${r.tone} rounded-2xl px-4 py-3 flex items-center gap-3 active:scale-[0.99] transition-transform`}>
@@ -98,7 +98,7 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
       <div className="space-y-3 pt-2">
         <ErrorState onRetry={onRetry} />
         <button onClick={onLogout} className="w-full text-xs font-bold text-[#941946] cursor-pointer">
-          {isAr ? 'استخدام رقم آخر' : 'Use a different number'}
+          {isAr ? 'استخدم رقم تاني' : 'Use a different number'}
         </button>
       </div>
     );
@@ -114,7 +114,7 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
         <TrialCardForm token={token} defaultName={defaultName} onCreated={onTrialCreated} />
         <button onClick={onEnterCard} className="w-full py-2.5 text-xs font-bold text-slate-600 hover:text-[#941946] flex items-center justify-center gap-1.5 cursor-pointer">
           <CreditCard className="w-3.5 h-3.5" />
-          <span>{isAr ? 'لدي كارت — عرضه برقم العضوية' : 'I already have a card — view it by number'}</span>
+          <span>{isAr ? 'معايا كارت — شوفه برقم العضوية' : 'I already have a card — view it by number'}</span>
         </button>
         <ContactUs />
       </div>
@@ -131,12 +131,12 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
 
       <div className="text-center space-y-1">
         <h2 className="text-sm font-black text-slate-900">
-          {noCard ? (isAr ? 'لا يوجد كارت مرتبط برقمك' : 'No card is linked to your number') : isAr ? 'حسابي' : 'My account'}
+          {noCard ? (isAr ? 'مفيش كارت مربوط برقمك' : 'No card is linked to your number') : isAr ? 'حسابي' : 'My account'}
         </h2>
         <p className="text-xs text-slate-500 leading-relaxed">
           {noCard
-            ? isAr ? 'إذا كان لديك كارت، أدخل رقم العضوية لعرض بياناته.' : 'If you have a card, enter its membership number to see it.'
-            : isAr ? 'سجّل الدخول برقم هاتفك فيظهر كارتك تلقائياً، أو اعرض بيانات كارتك برقم العضوية.' : 'Sign in with your phone and your card appears automatically, or view it with its membership number.'}
+            ? isAr ? 'لو معاك كارت، اكتب رقم العضوية عشان تشوف بياناته.' : 'If you have a card, enter its membership number to see it.'
+            : isAr ? 'سجّل دخول برقم موبايلك وكارتك هيظهرلك لوحده، أو شوف كارتك برقم العضوية.' : 'Sign in with your phone and your card appears automatically, or view it with its membership number.'}
         </p>
       </div>
 
@@ -144,13 +144,13 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
         {!signedIn && (
           <button onClick={onSignIn} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
             <Phone className="w-4 h-4" />
-            <span>{isAr ? 'تسجيل الدخول برقم الهاتف' : 'Sign in with phone number'}</span>
+            <span>{isAr ? 'الدخول برقم الموبايل' : 'Sign in with phone number'}</span>
           </button>
         )}
 
         <button onClick={onEnterCard} className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
           <CreditCard className="w-4 h-4 text-amber-400" />
-          <span>{isAr ? 'عرض بيانات الكارت برقم العضوية' : 'View card with membership number'}</span>
+          <span>{isAr ? 'شوف الكارت برقم العضوية' : 'View card with membership number'}</span>
         </button>
 
         {signedIn && (

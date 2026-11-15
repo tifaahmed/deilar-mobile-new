@@ -54,7 +54,7 @@ describe('quiz answer queue', () => {
     expect(getQueue()).toHaveLength(0);
   });
 
-  it('deletes answers played under another account when someone else signs in, and keeps a guest\'s and its own', async () => {
+  it('sets aside answers played under another account (never deleting them) and gives them back when that account signs in again', async () => {
     updateSession({ token: 'a', cardNumber: '111111' });
     recordQuizAnswer(answer(true)); // played as account A
     clearSession();
@@ -66,9 +66,14 @@ describe('quiz answer queue', () => {
     await flushQuizAnswers();
 
     const sent = http.apiPost.mock.calls[0][1].answers;
-    expect(sent).toHaveLength(2); // the guest's + B's own; A's is gone from the phone
+    expect(sent).toHaveLength(2); // the guest's + B's own; A's wait on the phone
     expect(sent.every((a: { owner?: unknown }) => a.owner === undefined)).toBe(true);
     expect(getQueue()).toHaveLength(0);
+    expect(JSON.parse(localStorage.getItem('deilar_quiz_parked') ?? '[]')).toHaveLength(1);
+
+    updateSession({ token: 'a', cardNumber: '111111' });
+    await flushQuizAnswers();
+    expect(http.apiPost.mock.calls[1][1].answers).toHaveLength(1); // A's points were not lost
   });
 
   it('tells beforehand what signing in would add and what it would delete', () => {

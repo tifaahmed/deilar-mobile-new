@@ -89,14 +89,14 @@ export const SaveAreaPrompt: React.FC = () => {
       tone="bg-white border border-slate-200 text-slate-900"
       onOpen={save}
       onClose={dismiss}
-      closeLabel={isAr ? 'ليس الآن' : 'Not now'}
+      closeLabel={isAr ? 'مش دلوقتي' : 'Not now'}
     >
       {busy ? (
-        <span className="inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />{isAr ? 'جارٍ الحفظ...' : 'Saving...'}</span>
+        <span className="inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" />{isAr ? 'بنحفظ...' : 'Saving...'}</span>
       ) : failed ? (
-        <span role="alert" className="text-rose-600">{isAr ? 'تعذر الحفظ، اضغط للمحاولة مرة أخرى' : 'Could not save, tap to try again'}</span>
+        <span role="alert" className="text-rose-600">{isAr ? 'ماتحفظش، دوس عشان تجرّب تاني' : 'Could not save, tap to try again'}</span>
       ) : (
-        isAr ? `حفظ موقعك (${place}) في كارتك؟ اضغط للحفظ` : `Save your location (${place}) to your card? Tap to save`
+        isAr ? `نحفظ موقعك (${place}) على كارتك؟ دوس للحفظ` : `Save your location (${place}) to your card? Tap to save`
       )}
     </Notice>
   );

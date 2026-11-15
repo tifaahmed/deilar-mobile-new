@@ -58,12 +58,12 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
         // drawn in a frame inside the app; the frame offers the in-app browser if it will not show.
         setPixel({ clientSecret: result.client_secret ?? '', publicKey: result.public_key ?? '', checkoutUrl: result.checkout_url, mode: 'frame' });
       } else {
-        setError(isAr ? 'تعذر فتح صفحة الدفع. حاول مرة أخرى.' : 'The payment page could not be opened. Please try again.');
+        setError(isAr ? 'صفحة الدفع مافتحتش. جرّب تاني.' : 'The payment page could not be opened. Please try again.');
       }
       // The card status is re-read when the form FINISHES (onComplete below), not now: a refresh while the form is
       // opening must never tear it down.
     } catch (err) {
-      setError(err instanceof ApiError && err.message && err.status !== 0 && err.status < 500 ? err.message : isAr ? 'تعذر فتح صفحة الدفع. حاول مرة أخرى.' : 'The payment page could not be opened. Please try again.');
+      setError(err instanceof ApiError && err.message && err.status !== 0 && err.status < 500 ? err.message : isAr ? 'صفحة الدفع مافتحتش. جرّب تاني.' : 'The payment page could not be opened. Please try again.');
       if (!(err instanceof ApiError) || err.status >= 500) reportClientError('Paymob payment page failed', err, { channel });
     } finally {
       setBusy(null);
@@ -76,27 +76,27 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
     <section className={`rounded-2xl p-4 border bg-white border-slate-200/90 space-y-4 ${isAr ? 'text-right' : 'text-left'}`}>
       <button type="button" onClick={toCard} className="flex items-center gap-1 text-xs font-bold text-slate-500 hover:text-[#941946] cursor-pointer">
         <Back className="w-4 h-4" />
-        {isAr ? 'رجوع إلى كارتي' : 'Back to my card'}
+        {isAr ? 'رجوع لكارتي' : 'Back to my card'}
       </button>
 
       <div className="space-y-1">
-        <h2 className="text-base font-black text-slate-900">{isAr ? 'الدفع للاشتراك في الكارت الكامل' : 'Pay for the full card'}</h2>
+        <h2 className="text-base font-black text-slate-900">{isAr ? 'ادفع عشان تشترك في الكارت الكامل' : 'Pay for the full card'}</h2>
         {plan && (
           <p className="text-sm font-bold text-[#941946]">
             {formatNumber(plan.price, isAr)} {isAr ? 'ج.م' : 'EGP'}
             <span className="text-slate-500 font-medium"> · {planName(plan, isAr)} · {isAr ? `${formatNumber(plan.months, true)} شهراً` : `${plan.months} months`}</span>
           </p>
         )}
-        <p className="text-xs text-slate-500">{isAr ? 'اختر طريقة الدفع. تتم العملية بأمان عبر Paymob ويُفعَّل كارتك تلقائياً بعد نجاحها.' : 'Choose how to pay. The payment is handled securely by Paymob and your card is activated automatically once it succeeds.'}</p>
+        <p className="text-xs text-slate-500">{isAr ? 'اختار طريقة الدفع. العملية آمنة عن طريق Paymob وكارتك بيتفعّل لوحده أول ما الدفع ينجح.' : 'Choose how to pay. The payment is handled securely by Paymob and your card is activated automatically once it succeeds.'}</p>
       </div>
 
       {available.size === 0 && (
         <div className="space-y-2">
           <p role="alert" className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-            {isAr ? 'الدفع الإلكتروني غير متاح حالياً. تواصل مع خدمة العملاء لتفعيل اشتراكك.' : 'Online payment is not available right now. Contact customer service to activate your subscription.'}
+            {isAr ? 'الدفع الإلكتروني مش متاح دلوقتي. كلّم خدمة العملاء عشان يفعّلوا اشتراكك.' : 'Online payment is not available right now. Contact customer service to activate your subscription.'}
           </p>
           <div className="grid grid-cols-2 gap-2">
-            {phone && <a href={`tel:${phone}`} className="py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold flex items-center justify-center gap-1.5"><PhoneCall className="w-4 h-4 text-amber-400" />{isAr ? 'اتصل بنا' : 'Call us'}</a>}
+            {phone && <a href={`tel:${phone}`} className="py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold flex items-center justify-center gap-1.5"><PhoneCall className="w-4 h-4 text-amber-400" />{isAr ? 'كلّمنا' : 'Call us'}</a>}
             {whatsapp && <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="py-2.5 rounded-2xl bg-[#25D366] text-white text-xs font-bold flex items-center justify-center gap-1.5"><MessageCircle className="w-4 h-4" />{isAr ? 'واتساب' : 'WhatsApp'}</a>}
           </div>
         </div>
@@ -122,7 +122,7 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-black text-slate-900">{isAr ? ar : en}</span>
-                <span className="block text-[11px] text-slate-500">{on ? (isAr ? arHint : enHint) : isAr ? 'غير متاحة حالياً' : 'Not available right now'}</span>
+                <span className="block text-[11px] text-slate-500">{on ? (isAr ? arHint : enHint) : isAr ? 'مش متاحة دلوقتي' : 'Not available right now'}</span>
               </span>
             </button>
           );
@@ -132,7 +132,7 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
 
       {error && <p role="alert" className="text-[11px] font-bold rounded-xl px-3 py-2 border text-rose-600 bg-rose-50 border-rose-200">{error}</p>}
 
-      <p className="text-[11px] text-slate-400 flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" />{isAr ? 'لا نحتفظ ببيانات بطاقتك.' : 'We never store your card details.'}</p>
+      <p className="text-[11px] text-slate-400 flex items-center gap-1.5"><ShieldCheck className="w-4 h-4" />{isAr ? 'مبنحتفظش ببيانات كارتك البنكي.' : 'We never store your card details.'}</p>
 
       {/* The card form is Paymob's, drawn right here in the page (like checkout) — card details never reach our servers. */}
       {pixel && (
@@ -156,7 +156,7 @@ export const PayPage: React.FC<PayPageProps> = ({ token, status, onDone }) => {
             />
           )}
           <button type="button" onClick={() => setPixel(null)} className="w-full text-[11px] font-bold text-slate-500 hover:text-[#941946] cursor-pointer">
-            {isAr ? 'إلغاء والرجوع لاختيار طريقة الدفع' : 'Cancel and choose another way to pay'}
+            {isAr ? 'إلغاء ورجوع لاختيار طريقة الدفع' : 'Cancel and choose another way to pay'}
           </button>
         </div>
       )}

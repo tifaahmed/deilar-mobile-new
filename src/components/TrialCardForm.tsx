@@ -78,7 +78,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
       setCode('');
     } catch (err) {
       if (err instanceof ApiError && err.reason === 'cooldown') setCodeSentTo({ length: 4, masked: phone });
-      else setError(isAr ? 'تعذر إرسال الكود، حاول مرة أخرى.' : 'Could not send the code, please try again.');
+      else setError(isAr ? 'مقدرناش نبعت الكود، جرّب تاني.' : 'Could not send the code, please try again.');
     } finally {
       setBusy(false);
     }
@@ -101,7 +101,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
       }
     } catch {
       setCode('');
-      setError(isAr ? 'الكود غير صحيح' : 'That code is not right');
+      setError(isAr ? 'الكود غلط' : 'That code is not right');
     } finally {
       setBusy(false);
     }
@@ -119,7 +119,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
 
     if (changed) {
       if (!PHONE_RE.test(phone)) {
-        setError(isAr ? 'أدخل رقم هاتف صحيح من 11 رقم يبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
+        setError(isAr ? 'اكتب رقم موبايل صح من 11 رقم بيبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
         return;
       }
       await sendNewCode();
@@ -139,7 +139,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
         } catch (claimError) {
           const claimReason = claimError instanceof ApiError ? claimError.reason : undefined;
           if (claimReason !== 'already_referred') {
-            setError(claimError instanceof ApiError && claimError.status === 422 ? referralReasonText(claimReason, isAr) : isAr ? 'تعذر التحقق من الكود الآن. حاول مرة أخرى.' : 'The code could not be checked now. Please try again.');
+            setError(claimError instanceof ApiError && claimError.status === 422 ? referralReasonText(claimReason, isAr) : isAr ? 'مقدرناش نتأكد من الكود دلوقتي. جرّب تاني.' : 'The code could not be checked now. Please try again.');
             if (!(claimError instanceof ApiError) || claimError.status >= 500) reportClientError('Referral claim from the card form failed', claimError);
             setBusy(false);
             return;
@@ -153,12 +153,12 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
       const reason = err instanceof ApiError ? err.reason : undefined;
       setError(
         reason === 'phone_taken'
-            ? isAr ? 'رقم الهاتف هذا لديه كارت بالفعل. يرجى التواصل مع خدمة العملاء.' : 'This phone number already has a card. Please contact customer service.'
+            ? isAr ? 'الرقم ده معاه كارت بالفعل. كلّم خدمة العملاء.' : 'This phone number already has a card. Please contact customer service.'
             : reason === 'already_has_card'
-              ? isAr ? 'لديك كارت بالفعل.' : 'You already have a card.'
+              ? isAr ? 'معاك كارت بالفعل.' : 'You already have a card.'
               : err instanceof ApiError && err.status === 422
-                ? isAr ? 'تحقق من الاسم والبيانات المدخلة.' : 'Check your name and details.'
-                : isAr ? 'تعذر إنشاء الكارت الآن. حاول مرة أخرى.' : 'The card could not be created. Please try again.',
+                ? isAr ? 'راجع الاسم والبيانات اللي كتبتها.' : 'Check your name and details.'
+                : isAr ? 'مقدرناش نعمل الكارت دلوقتي. جرّب تاني.' : 'The card could not be created. Please try again.',
       );
       if (!(err instanceof ApiError) || err.status >= 500) reportClientError('Trial card request failed', err);
     } finally {
@@ -169,7 +169,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
   if (codeSentTo) {
     return (
       <form onSubmit={(e) => { e.preventDefault(); if (code.length === codeSentTo.length) verifyNewCode(code); }} className={`bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs space-y-4 mt-2 ${isAr ? 'text-right' : 'text-left'}`}>
-        <h2 className="text-sm font-black text-slate-900">{isAr ? `أدخل الكود المرسل إلى ${codeSentTo.masked}` : `Enter the code sent to ${codeSentTo.masked}`}</h2>
+        <h2 className="text-sm font-black text-slate-900">{isAr ? `اكتب الكود اللي اتبعت على ${codeSentTo.masked}` : `Enter the code sent to ${codeSentTo.masked}`}</h2>
         <input
           type="text" inputMode="numeric" autoComplete="one-time-code" dir="ltr" autoFocus maxLength={codeSentTo.length} value={code} placeholder={'•'.repeat(codeSentTo.length)}
           onChange={(e) => { const v = e.target.value.replace(/\D/g, ''); setCode(v); setError(null); if (v.length === codeSentTo.length && !busy) verifyNewCode(v); }}
@@ -177,7 +177,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
         />
         {error && <p role="alert" className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">{error}</p>}
         <button type="submit" disabled={busy || code.length !== codeSentTo.length} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold cursor-pointer">
-          {busy ? '…' : isAr ? 'تأكيد الرقم' : 'Verify number'}
+          {busy ? '…' : isAr ? 'أكّد الرقم' : 'Verify number'}
         </button>
         <button type="button" onClick={() => { setCodeSentTo(null); setError(null); }} className="w-full text-[11px] font-bold text-slate-500 cursor-pointer">{isAr ? 'رجوع' : 'Back'}</button>
       </form>
@@ -194,9 +194,9 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
         <div className="w-14 h-14 rounded-2xl bg-[#941946]/10 text-[#941946] flex items-center justify-center mx-auto">
           <Sparkles className="w-7 h-7" />
         </div>
-        <h2 className="text-sm font-black text-slate-900">{isAr ? (trialDays ? `احصل على كارت ديلر مجاني لمدة ${period}` : 'احصل على كارت ديلر مجاني') : (trialDays ? `Get your free ${period} Deilar card` : 'Get your free Deilar card')}</h2>
+        <h2 className="text-sm font-black text-slate-900">{isAr ? (trialDays ? `خد كارت ديلر ببلاش لمدة ${period}` : 'خد كارت ديلر ببلاش') : (trialDays ? `Get your free ${period} Deilar card` : 'Get your free Deilar card')}</h2>
         <p className="text-xs text-slate-500 leading-relaxed">
-          {isAr ? `اسمك فقط. الكارت يعمل فوراً${trialDays ? ` لمدة ${period}` : ''}.` : `Only your name. The card works straight away${trialDays ? ` for ${period}` : ''}.`}
+          {isAr ? `اسمك بس. الكارت بيشتغل على طول${trialDays ? ` لمدة ${period}` : ''}.` : `Only your name. The card works straight away${trialDays ? ` for ${period}` : ''}.`}
         </p>
       </div>
 
@@ -214,7 +214,7 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
       <label className="block space-y-1">
         <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1"><Phone className="w-3.5 h-3.5" />{isAr ? 'رقم الهاتف' : 'Phone number'} {star}</span>
         <input type="tel" required inputMode="numeric" dir="ltr" maxLength={11} placeholder="010xxxxxxxx" autoComplete="tel" value={phone} onChange={(e) => { setPhone(asDigits(e.target.value).slice(0, 11)); setError(null); }} aria-invalid={show('phone')} className={`${field} font-mono ${show('phone') ? red : ''}`} />
-        {changed && <span className="block text-[10px] text-amber-700">{isAr ? 'رقم جديد — سنرسل إليه كود تحقق جديد قبل إنشاء الكارت.' : 'A new number — we will send it a new verification code before the card is created.'}</span>}
+        {changed && <span className="block text-[10px] text-amber-700">{isAr ? 'رقم جديد — هنبعتله كود تحقق قبل ما نعمل الكارت.' : 'A new number — we will send it a new verification code before the card is created.'}</span>}
       </label>
 
       <div className={`flex gap-2 rounded-2xl ${show('gender') ? 'ring-1 ring-red-400 bg-red-50 p-1' : ''}`} role="radiogroup" aria-label={isAr ? 'النوع' : 'Gender'}>
@@ -226,21 +226,21 @@ export const TrialCardForm: React.FC<TrialCardFormProps> = ({ token: signedInTok
       </div>
 
       <label className="block space-y-1">
-        <span className="text-[11px] font-bold text-slate-600">{isAr ? 'رقم عضوية صاحب الدعوة (اختياري)' : 'Card number of the person who invited you (optional)'}</span>
+        <span className="text-[11px] font-bold text-slate-600">{isAr ? 'رقم عضوية اللي دعاك (لو فيه)' : 'Card number of the person who invited you (optional)'}</span>
         <input type="text" inputMode="numeric" dir="ltr" maxLength={32} placeholder="123456" value={referrer} onChange={(e) => { setReferrer(e.target.value.replace(/[^A-Za-z0-9-]/g, '')); setError(null); }} className={`${field} font-mono`} data-testid="referrer-input" />
         <span className="block text-[10px] text-slate-500">{isAr ? 'لو زميلك جابك لديلر، اكتب رقم عضويته وهتاخد خصم على الاشتراك.' : 'If a friend brought you to Deilar, enter their card number to get a subscription discount.'}</span>
       </label>
 
       <p className="text-[11px] text-slate-500 leading-relaxed">
         {isAr
-          ? 'الكارت التجريبي خاص بك وحدك. لإضافة أفراد العائلة اطلب من خدمة العملاء الاتصال بك — أو اشترك في الكارت الكامل.'
+          ? 'الكارت التجريبي ليك إنت بس. عشان تضيف أفراد العيلة اطلب من خدمة العملاء تتصل بيك — أو اشترك في الكارت الكامل.'
           : 'A trial card holds you only. To add family, ask customer service to call you — or subscribe to the full card.'}
       </p>
 
       {error && <p role="alert" className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl px-3 py-2">{error}</p>}
 
       <button type="submit" disabled={busy} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold cursor-pointer">
-        {busy ? '…' : changed ? (isAr ? 'تأكيد الرقم الجديد' : 'Verify the new number') : isAr ? 'إنشاء كارتي المجاني' : 'Create my free card'}
+        {busy ? '…' : changed ? (isAr ? 'أكّد الرقم الجديد' : 'Verify the new number') : isAr ? 'اعمل كارتي المجاني' : 'Create my free card'}
       </button>
     </form>
   );

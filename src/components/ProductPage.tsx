@@ -69,7 +69,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
     if (!product) return;
     const paid = shownPrice(product, member).price;
     const message = isAr
-      ? `مرحباً، أود طلب منتج (${product.name})${product.store ? ` من متجر (${product.store.title})` : ''} بسعر (${paid} ${currency}).`
+      ? `أهلاً، عايز أطلب منتج (${product.name})${product.store ? ` من متجر (${product.store.title})` : ''} بسعر (${paid} ${currency}).`
       : `Hello, I would like to order (${product.name})${product.store ? ` from (${product.store.title})` : ''} at (${paid} ${currency}).`;
     if (contact.whatsapp) window.open(`https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
   };
@@ -86,7 +86,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
       <div className="flex items-center justify-between gap-2 bg-white p-2.5 rounded-2xl border border-slate-200/90 shadow-2xs">
         <button onClick={back} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-[#941946] hover:bg-rose-50/50 rounded-xl transition-all cursor-pointer">
           <ArrowRight className={`w-4 h-4 text-[#941946] ${isAr ? '' : 'rotate-180'}`} />
-          <span>{isAr ? 'الرجوع إلى المنتجات' : 'Back to products'}</span>
+          <span>{isAr ? 'رجوع للمنتجات' : 'Back to products'}</span>
         </button>
 
         <div className="flex items-center gap-1.5">
@@ -223,21 +223,21 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
                   </div>
                 </div>
               ) : (
-                <p className="text-xs font-bold text-slate-500 text-center py-2">{isAr ? 'غير متاح للطلب حالياً' : 'Not available to order'}</p>
+                <p className="text-xs font-bold text-slate-500 text-center py-2">{isAr ? 'مش متاح للطلب دلوقتي' : 'Not available to order'}</p>
               )}
 
               <ul className="space-y-1.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
                 <li className="flex items-center gap-2">
                   <BadgeCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  {isAr ? 'يُطبَّق سعر العضو عند إتمام الطلب' : 'Member pricing applied at checkout'}
+                  {isAr ? 'سعر العضو بيتطبّق وإنت بتكمّل الطلب' : 'Member pricing applied at checkout'}
                 </li>
                 <li className="flex items-center gap-2">
                   <Truck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  {isAr ? 'توصيل لجميع أنحاء مصر' : 'Delivered anywhere in Egypt'}
+                  {isAr ? 'توصيل لكل أنحاء مصر' : 'Delivered anywhere in Egypt'}
                 </li>
                 <li className="flex items-center gap-2">
                   <Headphones className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  {isAr ? 'اتصل بنا وسنساعدك في الاختيار' : 'Call us and we will help you choose'}
+                  {isAr ? 'كلّمنا وهنساعدك تختار' : 'Call us and we will help you choose'}
                 </li>
               </ul>
             </>
@@ -269,7 +269,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
       {/* Description */}
       {(detail.loading || product?.description) && (
         <div className="bg-white rounded-3xl p-4 border border-slate-200/90 shadow-2xs space-y-2">
-          <h2 className="text-xs font-black text-slate-900">{isAr ? 'عن هذا المنتج' : 'About this product'}</h2>
+          <h2 className="text-xs font-black text-slate-900">{isAr ? 'عن المنتج ده' : 'About this product'}</h2>
           {detail.loading ? (
             <div className="space-y-2">
               <Skeleton className="h-3 w-full" />
@@ -284,7 +284,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
       {/* Related */}
       {(related.data?.length ?? 0) > 0 && (
         <div className="space-y-2.5">
-          <h2 className="text-sm font-black text-slate-900 px-1">{isAr ? 'منتجات مشابهة' : 'Related products'}</h2>
+          <h2 className="text-sm font-black text-slate-900 px-1">{isAr ? 'منتجات شبه دي' : 'Related products'}</h2>
           <div className="grid grid-cols-2 gap-2.5">
             {related.data!.map((p: ProductCard) => (
               <a
@@ -317,7 +317,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
                       className="w-full py-1.5 bg-[#941946] hover:bg-[#7b1439] text-white rounded-lg text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer"
                     >
                       <ShoppingBag className="w-3 h-3" />
-                      <span>{isAr ? 'أضف للسلة' : 'Add to basket'}</span>
+                      <span>{isAr ? 'ضيف للسلة' : 'Add to basket'}</span>
                     </button>
                   )}
                 </div>
@@ -330,9 +330,9 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
       {/* Member CTA */}
       <div className="text-center space-y-2.5 py-4">
         <h2 className="text-base font-black text-slate-900">{isAr ? 'أسعار الأعضاء على كل المنتجات' : 'Member prices, on everything here'}</h2>
-        <p className="text-xs text-slate-500 leading-relaxed">{isAr ? 'كارت ديلر هو ما يحوّل هذه الأسعار إلى أسعار الأعضاء — كارت واحد يغطي أسرتك كلها.' : 'The Deilar card is what turns these into member prices — one card covers everyone at home.'}</p>
+        <p className="text-xs text-slate-500 leading-relaxed">{isAr ? 'كارت ديلر هو اللي بيحوّل الأسعار دي لأسعار الأعضاء — كارت واحد يغطي أسرتك كلها.' : 'The Deilar card is what turns these into member prices — one card covers everyone at home.'}</p>
         <button onClick={() => navigate(routeHref({ tab: 'mycard' }))} className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold cursor-pointer">
-          {isAr ? 'اعرض كارتك' : 'Check your card'}
+          {isAr ? 'وري كارتك' : 'Check your card'}
         </button>
       </div>
     </div>

@@ -34,7 +34,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ token, h
       onDeleted();
     } catch (e) {
       reportClientError('deleteAccount failed', e);
-      setError(e instanceof ApiError && e.status !== 500 ? e.message : isAr ? 'تعذر حذف الحساب الآن. حاول لاحقاً أو تواصل مع خدمة العملاء.' : 'Could not delete the account now. Try again later or contact customer service.');
+      setError(e instanceof ApiError && e.status !== 500 ? e.message : isAr ? 'مقدرناش نمسح الحساب دلوقتي. جرّب بعدين أو كلّم خدمة العملاء.' : 'Could not delete the account now. Try again later or contact customer service.');
       setBusy(false);
     }
   };
@@ -45,7 +45,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ token, h
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2 text-rose-700">
             <AlertTriangle className="w-6 h-6 shrink-0" />
-            <h2 className="text-base font-black">{isAr ? 'حذف الحساب نهائياً' : 'Delete account permanently'}</h2>
+            <h2 className="text-base font-black">{isAr ? 'امسح الحساب نهائياً' : 'Delete account permanently'}</h2>
           </div>
           <button onClick={onClose} disabled={busy} aria-label={isAr ? 'إغلاق' : 'Close'} className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer disabled:opacity-40">
             <X className="w-4 h-4" />
@@ -53,10 +53,10 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ token, h
         </div>
 
         <ul className="text-[13px] leading-6 text-slate-700 list-disc ps-5 space-y-1">
-          <li>{isAr ? 'يُحذف كارتك وبياناتك الشخصية وعناوينك ونقاطك.' : 'Your card, personal data, addresses and points are deleted.'}</li>
-          {hasRelatives && <li className="font-bold text-rose-700">{isAr ? 'بصفتك صاحب الكارت الأساسي، سيُحذف معك كل الأقارب التابعين لكارتك.' : 'As the primary card holder, every relative on your card is deleted with you.'}</li>}
-          <li>{isAr ? 'تُحفظ نسخة مخفية؛ لو سجلت مجدداً بنفس الرقم تعود بياناتك. للمسح النهائي تواصل مع خدمة العملاء. ولا تُسترد مدة الاشتراك المتبقية.' : 'A hidden copy is kept: if you sign up again with the same number your data comes back. For permanent erasure contact customer service. Remaining subscription time is not refunded.'}</li>
-          <li>{isAr ? 'نحتفظ بسجلات الطلبات والمدفوعات فقط بالقدر الذي يفرضه القانون.' : 'Order and payment records are kept only as far as the law requires.'}</li>
+          <li>{isAr ? 'كارتك وبياناتك الشخصية وعناوينك ونقاطك هتتمسح.' : 'Your card, personal data, addresses and points are deleted.'}</li>
+          {hasRelatives && <li className="font-bold text-rose-700">{isAr ? 'بما إنك صاحب الكارت الأساسي، كل الأقارب على كارتك هيتمسحوا معاك.' : 'As the primary card holder, every relative on your card is deleted with you.'}</li>}
+          <li>{isAr ? 'بنحتفظ بنسخة مخفية؛ لو سجّلت تاني بنفس الرقم بياناتك بترجع. للمسح النهائي كلّم خدمة العملاء. ومدة الاشتراك الباقية مبترجعش.' : 'A hidden copy is kept: if you sign up again with the same number your data comes back. For permanent erasure contact customer service. Remaining subscription time is not refunded.'}</li>
+          <li>{isAr ? 'بنحتفظ بسجلات الطلبات والمدفوعات بس بالقدر اللي القانون بيفرضه.' : 'Order and payment records are kept only as far as the law requires.'}</li>
         </ul>
 
         <button type="button" onClick={() => setLegal('privacy')} className="text-xs font-bold underline text-[#941946] cursor-pointer">
@@ -74,7 +74,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ token, h
           <button onClick={onClose} disabled={busy} className="py-3 rounded-2xl bg-slate-100 text-slate-800 text-sm font-bold cursor-pointer disabled:opacity-40">{isAr ? 'إلغاء' : 'Cancel'}</button>
           <button onClick={run} disabled={busy || !confirmed} className="py-3 rounded-2xl bg-rose-600 text-white text-sm font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40">
             {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-            <span>{isAr ? 'احذف حسابي' : 'Delete my account'}</span>
+            <span>{isAr ? 'امسح حسابي' : 'Delete my account'}</span>
           </button>
         </div>
       </div>

@@ -95,7 +95,7 @@ export const AvatarCropper: React.FC<AvatarCropperProps> = ({ file, onConfirm, o
     <div className="fixed inset-0 z-[1000] bg-black/85 flex items-center justify-center p-4" dir={isAr ? 'rtl' : 'ltr'} role="dialog" aria-modal="true">
       <div className="w-full max-w-sm bg-white rounded-3xl p-5 space-y-4 text-center">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-slate-900">{isAr ? 'اضبط صورتك الشخصية' : 'Adjust your photo'}</h3>
+          <h3 className="text-sm font-black text-slate-900">{isAr ? 'ظبّط صورتك الشخصية' : 'Adjust your photo'}</h3>
           <button type="button" onClick={onCancel} aria-label={isAr ? 'إغلاق' : 'Close'} className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center cursor-pointer">
             <X className="w-4 h-4" />
           </button>
@@ -123,9 +123,9 @@ export const AvatarCropper: React.FC<AvatarCropperProps> = ({ file, onConfirm, o
         </div>
 
         <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} aria-label={isAr ? 'تكبير' : 'Zoom'} className="w-full accent-[#941946]" />
-        <p className="text-[11px] text-slate-500">{isAr ? 'حرّك الصورة وكبّرها لتظهر داخل الدائرة كما تريد' : 'Drag and zoom so your face sits inside the circle'}</p>
+        <p className="text-[11px] text-slate-500">{isAr ? 'حرّك الصورة وكبّرها لحد ما تظهر جوه الدايرة زي ما تحب' : 'Drag and zoom so your face sits inside the circle'}</p>
 
-        {failed && <p role="alert" className="text-[11px] font-bold text-rose-600">{isAr ? 'تعذر رفع الصورة، حاول مرة أخرى.' : 'The photo could not be uploaded, please try again.'}</p>}
+        {failed && <p role="alert" className="text-[11px] font-bold text-rose-600">{isAr ? 'الصورة ماترفعتش، جرّب تاني.' : 'The photo could not be uploaded, please try again.'}</p>}
 
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={onCancel} disabled={busy} className="py-3 rounded-2xl bg-slate-100 text-slate-700 text-sm font-bold cursor-pointer">

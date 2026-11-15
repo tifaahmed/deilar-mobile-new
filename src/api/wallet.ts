@@ -41,10 +41,10 @@ export function walletSourceLabel(source: string, amount: number, isAr = true): 
     case 'topup': return 'شحن المحفظة';
     case 'order': return amount < 0 ? 'دفع جزء من طلب' : 'مبلغ طلب';
     case 'membership': return 'دفع اشتراك الكارت';
-    case 'refund': return 'استرداد إلى المحفظة';
+    case 'refund': return 'رجوع فلوس للمحفظة';
     case 'referral': return 'مكافأة دعوة صديق';
-    case 'withdrawal': return 'سحب إلى فودافون كاش';
-    case 'transfer': return amount < 0 ? 'تحويل إلى عضو' : 'تحويل من عضو';
+    case 'withdrawal': return 'سحب على فودافون كاش';
+    case 'transfer': return amount < 0 ? 'تحويل لعضو' : 'تحويل من عضو';
     case 'admin': return amount < 0 ? 'خصم من الإدارة' : 'إضافة من الإدارة';
     default: return 'حركة على المحفظة';
   }

@@ -30,6 +30,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="deilar.com" android:pathPrefix="/r/" />
                 <data android:scheme="https" android:host="www.deilar.com" android:pathPrefix="/r/" />
+                <data android:scheme="https" android:host="deilar.com" android:path="/app" />
+                <data android:scheme="https" android:host="www.deilar.com" android:path="/app" />
             </intent-filter>
 
         </activity>

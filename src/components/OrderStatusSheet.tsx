@@ -12,17 +12,17 @@ export type StatusKind = 'payment' | 'delivery';
 /** What each status means for the buyer. The label itself is the backend's; this only explains it. */
 const MEANING: Record<StatusKind, Record<string, { ar: string; en: string }>> = {
   payment: {
-    pending: { ar: 'لم يصلنا الدفع بعد. إن اخترت الدفع عند الاستلام فستدفع للمندوب، وإن اخترت الدفع الإلكتروني أو التحويل فبانتظار إتمامه أو مراجعة الإيصال.', en: 'We have not received the payment yet. For cash on delivery you pay the courier; for online payment or a transfer it is waiting to be completed or for the receipt to be checked.' },
-    accepted: { ar: 'تم استلام الدفع وتأكيده. لا يلزمك دفع أي شيء آخر.', en: 'The payment was received and confirmed. You owe nothing more.' },
-    rejected: { ar: 'لم تتم عملية الدفع (رُفضت من البنك أو لم تكتمل). يمكنك المحاولة مرة أخرى.', en: 'The payment did not go through (declined or not completed). You can try again.' },
-    canceled: { ar: 'تم إلغاء الطلب فلن يتم تحصيل أي مبلغ.', en: 'The order was cancelled, so nothing will be charged.' },
-    refunded: { ar: 'تم رد المبلغ إليك. قد يستغرق ظهوره في حسابك عدة أيام حسب البنك أو المحفظة.', en: 'Your money was refunded. It may take a few days to show in your account or wallet.' },
+    pending: { ar: 'الدفع لسه ماوصلناش. لو اخترت الدفع عند الاستلام هتدفع للمندوب، ولو اخترت دفع إلكتروني أو تحويل فإحنا مستنيين يتم أو نراجع الإيصال.', en: 'We have not received the payment yet. For cash on delivery you pay the courier; for online payment or a transfer it is waiting to be completed or for the receipt to be checked.' },
+    accepted: { ar: 'الدفع وصل واتأكد. مش مطلوب منك تدفع حاجة تانية.', en: 'The payment was received and confirmed. You owe nothing more.' },
+    rejected: { ar: 'الدفع ماتمش (البنك رفضه أو ماكملش). تقدر تجرّب تاني.', en: 'The payment did not go through (declined or not completed). You can try again.' },
+    canceled: { ar: 'الطلب اتلغى ومش هنخصم أي فلوس.', en: 'The order was cancelled, so nothing will be charged.' },
+    refunded: { ar: 'الفلوس رجعتلك. ممكن تاخد كام يوم لحد ما تظهر في حسابك حسب البنك أو المحفظة.', en: 'Your money was refunded. It may take a few days to show in your account or wallet.' },
   },
   delivery: {
-    pending: { ar: 'استلمنا طلبك وهو في انتظار التجهيز.', en: 'We received your order and it is waiting to be prepared.' },
-    processing: { ar: 'طلبك قيد التجهيز والشحن.', en: 'Your order is being prepared and shipped.' },
-    'on-delivery': { ar: 'طلبك مع مندوب التوصيل في الطريق إليك.', en: 'Your order is with the courier, on its way to you.' },
-    completed: { ar: 'تم تسليم الطلب.', en: 'The order was delivered.' },
+    pending: { ar: 'وصلنا طلبك وبيستنى التجهيز.', en: 'We received your order and it is waiting to be prepared.' },
+    processing: { ar: 'طلبك بيتجهّز وبيتشحن.', en: 'Your order is being prepared and shipped.' },
+    'on-delivery': { ar: 'طلبك مع المندوب وجاي لحد عندك.', en: 'Your order is with the courier, on its way to you.' },
+    completed: { ar: 'الطلب اتسلّم.', en: 'The order was delivered.' },
   },
 };
 
@@ -75,7 +75,7 @@ export const OrderStatusSheet: React.FC<OrderStatusSheetProps> = ({ code, kind, 
             <ol className="space-y-3 border-s-2 border-slate-200 ps-3">
               {order?.placed_at && (
                 <li className="space-y-0.5">
-                  <p className="text-xs font-bold text-slate-800">{isAr ? 'تم تسجيل الطلب' : 'Order placed'}</p>
+                  <p className="text-xs font-bold text-slate-800">{isAr ? 'الطلب اتسجّل' : 'Order placed'}</p>
                   <p className="text-[11px] text-slate-400">{when(order.placed_at)}</p>
                 </li>
               )}
@@ -89,11 +89,11 @@ export const OrderStatusSheet: React.FC<OrderStatusSheetProps> = ({ code, kind, 
                 </li>
               ))}
               {!detail.loading && order && moves.length === 0 && (
-                <li className="text-[11px] text-slate-400">{isAr ? 'لم تتغير الحالة منذ تسجيل الطلب.' : 'The status has not changed since the order was placed.'}</li>
+                <li className="text-[11px] text-slate-400">{isAr ? 'الحالة ماتغيرتش من وقت تسجيل الطلب.' : 'The status has not changed since the order was placed.'}</li>
               )}
             </ol>
           )}
-          {!detail.loading && !order && <p className="text-[11px] text-slate-400">{isAr ? 'تعذر تحميل السجل.' : 'Could not load the history.'}</p>}
+          {!detail.loading && !order && <p className="text-[11px] text-slate-400">{isAr ? 'مقدرناش نحمّل السجل.' : 'Could not load the history.'}</p>}
         </div>
       </div>
     </div>,

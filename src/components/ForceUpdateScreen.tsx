@@ -13,10 +13,10 @@ export function ForceUpdateScreen({ storeUrl }: { storeUrl: string }) {
       <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#941946]/10 text-[#941946]">
         <Download size={36} />
       </div>
-      <h1 className="text-xl font-extrabold">{isAr ? 'يتوفر تحديث جديد' : 'A new update is available'}</h1>
+      <h1 className="text-xl font-extrabold">{isAr ? 'فيه تحديث جديد' : 'A new update is available'}</h1>
       <p className="max-w-xs text-sm leading-relaxed text-slate-500">
         {isAr
-          ? 'لمتابعة استخدام التطبيق، يرجى تحديثه إلى أحدث إصدار.'
+          ? 'عشان تكمّل استخدام التطبيق، حدّثه لآخر إصدار.'
           : 'To keep using the app, please update to the latest version.'}
       </p>
       <button
@@ -25,7 +25,7 @@ export function ForceUpdateScreen({ storeUrl }: { storeUrl: string }) {
         }}
         className="w-full max-w-xs rounded-2xl bg-[#941946] py-3.5 text-base font-bold text-white active:scale-95"
       >
-        {isAr ? 'حدّث الآن' : 'Update now'}
+        {isAr ? 'حدّث دلوقتي' : 'Update now'}
       </button>
     </div>
   );

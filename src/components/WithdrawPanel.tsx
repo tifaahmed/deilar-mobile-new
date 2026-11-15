@@ -7,14 +7,14 @@ import { reportClientError } from '../utils/reportError';
 import { formatNumber } from '../utils/formatNumber';
 
 const REASONS_AR: Record<string, string> = {
-  disabled: 'السحب مقفول حالياً.',
-  bad_amount: 'المبلغ خارج الحدود المسموحة.',
+  disabled: 'السحب مقفول دلوقتي.',
+  bad_amount: 'المبلغ برا الحدود المسموحة.',
   bad_number: 'اكتب رقم فودافون كاش (بيبدأ بـ 010).',
   bad_national_id: 'اكتب الرقم القومي (14 رقم).',
-  not_enough: 'رصيد محفظتك لا يكفي.',
-  daily_limit: 'المبلغ أكبر من المسموح سحبه في 24 ساعة.',
+  not_enough: 'رصيد محفظتك مش كفاية.',
+  daily_limit: 'المبلغ أكبر من المسموح تسحبه في 24 ساعة.',
   open_request: 'عندك طلب سحب شغال بالفعل.',
-  failed: 'تعذر إرسال الطلب، حاول مرة أخرى.',
+  failed: 'مقدرناش نبعت الطلب، جرّب تاني.',
 };
 const REASONS_EN: Record<string, string> = {
   disabled: 'Cash-out is closed right now.',
@@ -29,9 +29,9 @@ const REASONS_EN: Record<string, string> = {
 
 export function withdrawalStatusLabel(s: WithdrawalStatus, refunded: boolean, isAr: boolean): { text: string; tone: string } {
   const map: Record<WithdrawalStatus, { ar: string; en: string; tone: string }> = {
-    pending: { ar: 'في انتظار الموافقة', en: 'Waiting for approval', tone: 'bg-amber-100 text-amber-700' },
-    processing: { ar: 'جارٍ التحويل', en: 'Being sent', tone: 'bg-sky-100 text-sky-700' },
-    paid: { ar: 'تم التحويل', en: 'Sent to your Vodafone Cash', tone: 'bg-emerald-100 text-emerald-700' },
+    pending: { ar: 'مستني الموافقة', en: 'Waiting for approval', tone: 'bg-amber-100 text-amber-700' },
+    processing: { ar: 'بيتحوّل', en: 'Being sent', tone: 'bg-sky-100 text-sky-700' },
+    paid: { ar: 'اتحوّل', en: 'Sent to your Vodafone Cash', tone: 'bg-emerald-100 text-emerald-700' },
     failed: { ar: 'فشل (رجعت الفلوس لمحفظتك)', en: 'Failed (money returned to your wallet)', tone: 'bg-red-100 text-red-700' },
     rejected: { ar: 'مرفوض (رجعت الفلوس لمحفظتك)', en: 'Rejected (money returned to your wallet)', tone: 'bg-red-100 text-red-700' },
     canceled: { ar: 'ملغي (رجعت الفلوس لمحفظتك)', en: 'Cancelled (money returned to your wallet)', tone: 'bg-slate-100 text-slate-700' },
@@ -83,7 +83,7 @@ export const WithdrawPanel: React.FC = () => {
     if (res.ok) {
       setAmount('');
       setNid('');
-      setNote({ ok: true, text: rules.auto ? (isAr ? 'تم إرسال الطلب ✅' : 'Request sent ✅') : isAr ? 'تم تسجيل الطلب وخصم المبلغ من محفظتك. هيتحول بعد موافقة الإدارة ✅' : 'Request recorded and the amount taken from your wallet. It is sent once the team approves ✅' });
+      setNote({ ok: true, text: rules.auto ? (isAr ? 'الطلب اتبعت ✅' : 'Request sent ✅') : isAr ? 'تم تسجيل الطلب وخصم المبلغ من محفظتك. هيتحول بعد موافقة الإدارة ✅' : 'Request recorded and the amount taken from your wallet. It is sent once the team approves ✅' });
       void refreshLoyalty();
       void load();
     } else {
@@ -98,16 +98,16 @@ export const WithdrawPanel: React.FC = () => {
     setBusy(true);
     const ok = await cancelWithdrawal(token, id);
     setBusy(false);
-    setNote({ ok, text: ok ? (isAr ? 'تم إلغاء الطلب ورجعت الفلوس لمحفظتك.' : 'Cancelled; the money is back in your wallet.') : isAr ? 'مش ممكن إلغاء الطلب ده دلوقتي.' : 'This request can no longer be cancelled.' });
+    setNote({ ok, text: ok ? (isAr ? 'الطلب اتلغى والفلوس رجعت لمحفظتك.' : 'Cancelled; the money is back in your wallet.') : isAr ? 'مش ممكن إلغاء الطلب ده دلوقتي.' : 'This request can no longer be cancelled.' });
     void refreshLoyalty();
     void load();
   };
 
   return (
     <div className="mt-3 space-y-2 rounded-2xl border-2 border-red-100 bg-red-50/40 p-3" data-testid="withdraw-panel">
-      <p className="text-xs font-black text-red-900">{isAr ? '💸 اسحب رصيدك إلى فودافون كاش' : '💸 Cash out to Vodafone Cash'}</p>
+      <p className="text-xs font-black text-red-900">{isAr ? '💸 اسحب رصيدك على فودافون كاش' : '💸 Cash out to Vodafone Cash'}</p>
       <p className="text-[11px] font-semibold text-slate-500">
-        {isAr ? `من ${n(rules.min)} إلى ${n(rules.max)} ${cur} في المرة، وحتى ${n(rules.daily_max)} ${cur} كل 24 ساعة.` : `${rules.min}–${rules.max} ${cur} per request, up to ${rules.daily_max} ${cur} every 24 hours.`}
+        {isAr ? `من ${n(rules.min)} لـ ${n(rules.max)} ${cur} في المرة، وبحد أقصى ${n(rules.daily_max)} ${cur} كل 24 ساعة.` : `${rules.min}–${rules.max} ${cur} per request, up to ${rules.daily_max} ${cur} every 24 hours.`}
       </p>
       <input aria-label={isAr ? 'المبلغ' : 'Amount'} dir="ltr" inputMode="numeric" value={amount} placeholder={String(rules.min)} onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))} className="w-full rounded-xl border-2 border-slate-200 px-3 py-2 text-base font-black" data-testid="withdraw-amount" />
       <input aria-label={isAr ? 'رقم فودافون كاش' : 'Vodafone Cash number'} dir="ltr" inputMode="numeric" maxLength={11} value={msisdn} placeholder="010XXXXXXXX" onChange={(e) => setMsisdn(e.target.value.replace(/[^0-9]/g, ''))} className="w-full rounded-xl border-2 border-slate-200 px-3 py-2 text-base font-black" data-testid="withdraw-msisdn" />

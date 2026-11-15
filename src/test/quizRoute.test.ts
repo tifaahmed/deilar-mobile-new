@@ -28,7 +28,8 @@ describe('quiz addresses', () => {
 
   it('tells which screen, section and points scene an address means', () => {
     expect(parseQuizPath('')).toMatchObject({ step: 'types', sectionId: null });
-    expect(parseQuizPath('mcq')).toMatchObject({ step: 'sections' });
+    // /quiz/mcq no longer exists: it is the quiz home.
+    expect(parseQuizPath('mcq')).toMatchObject({ step: 'types' });
     expect(parseQuizPath('mcq/football')).toMatchObject({ step: 'intro', sectionId: 'football' });
     expect(parseQuizPath('mcq/history')).toMatchObject({ step: 'intro', sectionId: 'history' });
     expect(parseQuizPath('history')).toMatchObject({ step: 'history' });
@@ -38,8 +39,8 @@ describe('quiz addresses', () => {
     expect(parseQuizPath('moods/70')).toMatchObject({ step: 'moods', moodScore: 70 });
   });
 
-  it('falls back to the sections list for a section that does not exist, and to the start for nonsense', () => {
-    expect(parseQuizPath('mcq/nope')).toMatchObject({ step: 'sections' });
+  it('falls back to the quiz home for a section that does not exist, and to the start for nonsense', () => {
+    expect(parseQuizPath('mcq/nope')).toMatchObject({ step: 'types' });
     expect(parseQuizPath('whatever/else')).toMatchObject({ step: 'types' });
   });
 });

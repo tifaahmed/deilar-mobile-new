@@ -15,13 +15,17 @@ export type ShareOutcome = 'shared' | 'copied' | 'whatsapp' | 'cancelled';
  */
 export function resultShareText(score: number, right: number | null, total: number, emoji: string, topic = 'الأسئلة', isAr = true): string {
   const points = Math.max(0, Math.round(score));
+  const bar = '━━━━━━━━━━━━━━';
   if (!isAr) {
-    const detail = right === null ? '' : ` (${right} right answers out of ${total})`;
-    return `I played the ${topic} challenge in the Deilar app ${emoji}\nI earned ${points} loyalty points${detail}.\nDeilar is a discount card — download the app, play and collect points too 💪\n${SHARE_URL}`;
+    const detail = right === null ? '' : `\n✅ ${right} right answers out of ${total}`;
+    return `${emoji} *Deilar · ${topic} challenge* ${emoji}\n${bar}\n🏆 I earned *${points}* loyalty points${detail}\n${bar}\n💳 Deilar is a discount card — download the app, play and collect points too 💪\n👇\n${SHARE_URL}`;
   }
-  const detail = right === null ? '' : ` (${right} إجابة صح من ${total})`;
-  return `لعبت تحدي ${topic} في تطبيق ديلر ${emoji}\nجبت ${points} نقطة ولاء${detail}.\nديلر كارت خصومات — حمّل التطبيق والعب واجمع نقاطك إنت كمان 💪\n${SHARE_URL}`;
+  const detail = right === null ? '' : `\n✅ ${right} إجابة صح من ${total}`;
+  return `${emoji} *ديلر · تحدي ${topic}* ${emoji}\n${bar}\n🏆 جبت *${points}* نقطة ولاء${detail}\n${bar}\n💳 ديلر كارت خصومات — حمّل التطبيق والعب واجمع نقاطك إنت كمان 💪\n👇\n${SHARE_URL}`;
 }
+
+/** Opens WhatsApp straight with the message (no share sheet). */
+export const whatsappShare = (text: string) => { window.open(whatsappLink(text), '_blank', 'noopener'); };
 
 const whatsappLink = (text: string) => `https://wa.me/?text=${encodeURIComponent(text)}`;
 

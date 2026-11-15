@@ -53,7 +53,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'My Location (Cairo)',
   },
   selectLocationPrompt: {
-    ar: 'اختر موقعك لتحديد أقرب الفروع:',
+    ar: 'اختار موقعك عشان نوريك أقرب الفروع:',
     en: 'Select location for nearest branches:',
   },
   autoGps: {
@@ -61,7 +61,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Auto-detect GPS location',
   },
   gpsLoading: {
-    ar: 'جاري تحديد موقعك...',
+    ar: 'بنحدد موقعك...',
     en: 'Detecting GPS location...',
   },
   phoneFrame: {
@@ -105,7 +105,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
 
   // Card Tab
   userCardTitle: {
-    ar: 'كارت ديلر الخاص بحسابك',
+    ar: 'كارت ديلر بتاعك',
     en: 'Your deilar Medical Card',
   },
   officialCertified: {
@@ -141,7 +141,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Copy ID',
   },
   copied: {
-    ar: 'تم النسخ!',
+    ar: 'اتنسخ!',
     en: 'Copied!',
   },
   shareWhatsapp: {
@@ -149,11 +149,11 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Share WhatsApp',
   },
   tapToFlip: {
-    ar: 'اضغط على الكارت لقلب الوجهين (الأمامي / الخلفي)',
+    ar: 'دوس على الكارت عشان تقلبه (الوش / الضهر)',
     en: 'Tap card to flip between front & back',
   },
   cardDownloadSuccess: {
-    ar: 'تم حفظ كارت ديلر عالي الدقة على جهازك بنجاح!',
+    ar: 'كارت ديلر اتحفظ على موبايلك بجودة عالية!',
     en: 'High-res deilar card saved to your device successfully!',
   },
   activeMember: {
@@ -175,7 +175,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Add New Member',
   },
   familyMembersDesc: {
-    ar: 'جميع الأفراد أدناه مشمولين بنسب الخصم، اضغط على أي فرد لعرض بطاقته الشخصية.',
+    ar: 'كل الأفراد اللي تحت واخدين نفس نسب الخصم، دوس على أي واحد عشان تشوف كارته.',
     en: 'All members below are covered by medical discounts. Tap any member to view their card.',
   },
   activeStatus: {
@@ -191,7 +191,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Primary Account',
   },
   addMemberTitle: {
-    ar: 'إضافة فرد جديد إلى الكارت',
+    ar: 'ضيف فرد جديد على الكارت',
     en: 'Add New Family Member to Card',
   },
   memberNamePrompt: {
@@ -203,7 +203,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Relationship:',
   },
   nationalIdOptional: {
-    ar: 'الرقم القومي (اختياري):',
+    ar: 'الرقم القومي (لو حابب):',
     en: 'National ID (Optional):',
   },
   confirmAddMember: {
@@ -211,7 +211,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Confirm Add Member',
   },
   memberAddedSuccess: {
-    ar: 'تمت إضافة الفرد بنجاح! ✓',
+    ar: 'الفرد اتضاف! ✓',
     en: 'Member added successfully! ✓',
   },
   relWife: { ar: 'زوجة', en: 'Wife' },
@@ -231,7 +231,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Available 24/7',
   },
   supportDesc: {
-    ar: 'فريق رعاية عملاء كارت ديلر متواجد على مدار الساعة للرد على استفساراتكم وحجز المستشفيات.',
+    ar: 'فريق خدمة عملاء ديلر موجود 24 ساعة يرد على أسئلتكم ويحجزلكم في المستشفيات.',
     en: 'deilar customer care team is available 24/7 to assist with your medical inquiries and hospital bookings.',
   },
   directWhatsapp: {
@@ -239,7 +239,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'WhatsApp Support',
   },
   hotlineCall: {
-    ar: 'اتصال هاتفي بالخط الساخن',
+    ar: 'اتصل بالخط الساخن',
     en: 'Hotline Direct Call',
   },
   officialWebsite: {
@@ -251,41 +251,41 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Our Facebook Page',
   },
   ticketSectionTitle: {
-    ar: 'إرسال استفسار أو بلاغ لمشرف الخدمة:',
+    ar: 'ابعت سؤال أو شكوى لخدمة العملاء:',
     en: 'Submit Ticket / Inquiry to Support:',
   },
   ticketTopicGeneral: {
-    ar: 'استفسار عام عن نسب الخصم',
+    ar: 'سؤال عام عن نسب الخصم',
     en: 'General inquiry about discount rates',
   },
   ticketTopicComplaint: {
-    ar: 'إبلاغ عن عدم تطبيق الخصم بفرع معين',
+    ar: 'بلّغ إن الخصم مااتطبقش في فرع معين',
     en: 'Report discount issue at a branch',
   },
   ticketTopicBooking: {
-    ar: 'مساعدة في حجز عملية جراحية أو كشف استشاري',
+    ar: 'مساعدة في حجز عملية أو كشف استشاري',
     en: 'Assistance booking surgery or consultation',
   },
   ticketTopicSuggest: {
-    ar: 'اقتراح إضافة مستشفى أو معمل جديد للشبكة',
+    ar: 'اقترح مستشفى أو معمل جديد يتضاف للشبكة',
     en: 'Suggest adding new hospital or lab',
   },
   ticketPlaceholder: {
-    ar: 'اكتب تفاصيل استفسارك أو طلبك هنا...',
+    ar: 'اكتب سؤالك أو طلبك هنا...',
     en: 'Write your inquiry details here...',
   },
   sendTicketBtn: {
-    ar: 'إرسال الرسالة إلى خدمة العملاء',
+    ar: 'ابعت الرسالة لخدمة العملاء',
     en: 'Send Message to Customer Care',
   },
   ticketSuccess: {
-    ar: 'تم استلام استفسارك بنجاح! سيتواصل معك ممثل خدمة العملاء عبر الهاتف أو الواتساب فوراً.',
+    ar: 'وصلتنا رسالتك! حد من خدمة العملاء هيكلمك على التليفون أو الواتساب في أقرب وقت.',
     en: 'Inquiry received successfully! A representative will contact you shortly.',
   },
 
   // Personal Info Tab
   personalInfoTitle: {
-    ar: 'تعديل البيانات الشخصية للحساب',
+    ar: 'تعديل بيانات حسابك',
     en: 'Edit Account Personal Information',
   },
   instantUpdate: {
@@ -293,11 +293,11 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Instant Update',
   },
   fullNamePrompt: {
-    ar: 'الاسم بالكامل (كما يظهر على الكارت):',
+    ar: 'الاسم بالكامل (زي ما هو على الكارت):',
     en: 'Full Name (as shown on medical card):',
   },
   phonePrompt: {
-    ar: 'رقم الهاتف الأساسي:',
+    ar: 'رقم التليفون الأساسي:',
     en: 'Primary Phone Number:',
   },
   emailPrompt: {
@@ -313,11 +313,11 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'National ID (14 digits):',
   },
   saveChangesBtn: {
-    ar: 'حفظ التعديلات على الحساب',
+    ar: 'احفظ التعديلات',
     en: 'Save Account Changes',
   },
   saveChangesSuccess: {
-    ar: 'تم حفظ وتحديث بياناتك الشخصية بنجاح!',
+    ar: 'بياناتك اتحفظت!',
     en: 'Personal information saved and updated successfully!',
   },
 
@@ -331,7 +331,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'App Language / لغة التطبيق',
   },
   languageChoiceDesc: {
-    ar: 'اختر لغة واجهة التطبيق المفضلة:',
+    ar: 'اختار لغة التطبيق:',
     en: 'Select your preferred application language:',
   },
   arabicOption: {
@@ -347,7 +347,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Theme Mode (Color Scheme)',
   },
   themeChoiceDesc: {
-    ar: 'اختر المظهر المفضل لتجربة استخدام مريحة لعينك في كافة شاشات التطبيق:',
+    ar: 'اختار شكل التطبيق اللي يريّح عينك في كل الشاشات:',
     en: 'Choose your preferred visual theme for a comfortable experience across all screens:',
   },
   lightMode: {
@@ -355,7 +355,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Light Mode',
   },
   lightModeDesc: {
-    ar: 'ألوان نهارية ناصعة وواضحة',
+    ar: 'ألوان فاتحة وواضحة',
     en: 'Bright & clean daytime colors',
   },
   darkMode: {
@@ -367,33 +367,33 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Background #0A0E17 & Cards #181B26',
   },
   activeThemeLabel: {
-    ar: 'المظهر النشط حالياً:',
+    ar: 'الشكل الحالي:',
     en: 'Currently Active Theme:',
   },
   activeLangLabel: {
-    ar: 'اللغة النشطة حالياً:',
+    ar: 'اللغة الحالية:',
     en: 'Currently Active Language:',
   },
 
   // Free Card Modal
   freeCardModalTitle: {
-    ar: 'اطلب الكارت مجاناً',
+    ar: 'اطلب الكارت ببلاش',
     en: 'Get Your Free Card',
   },
   freeCardPhonePlaceholder: {
-    ar: 'رقم الهاتف (010xxxxxxxx)',
+    ar: 'رقم التليفون (010xxxxxxxx)',
     en: 'Phone Number (010xxxxxxxx)',
   },
   freeCardSubmit: {
-    ar: 'اطلب الكارت مجاناً',
+    ar: 'اطلب الكارت ببلاش',
     en: 'Request Free Card',
   },
   freeCardSubmitting: {
-    ar: 'جاري الإرسال...',
+    ar: 'بنبعت...',
     en: 'Sending...',
   },
   freeCardSuccessTitle: {
-    ar: 'تم استلام طلبك بنجاح!',
+    ar: 'وصلنا طلبك!',
     en: 'Request received!',
   },
   enterAppAction: {
@@ -403,11 +403,11 @@ export const TRANSLATIONS: TranslationsDictionary = {
 
   // Home Screen
   heroHeadline: {
-    ar: 'وفر حتى 50% من تكاليف علاجك مع كارت ديلر',
+    ar: 'وفّر لحد 50% من تكاليف علاجك مع كارت ديلر',
     en: 'Save up to 50% on medical expenses with deilar card',
   },
   heroSubtitle: {
-    ar: 'شبكة معتمدة تضم كبرى المستشفيات والمعامل والصيدليات في مصر',
+    ar: 'شبكة معتمدة فيها أكبر المستشفيات والمعامل والصيدليات في مصر',
     en: 'Accredited medical network covering top hospitals, labs and pharmacies across Egypt',
   },
   quickBtnStore: {
@@ -451,19 +451,19 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'Dental & Eye',
   },
   calculatorTitle: {
-    ar: 'حاسبة توفير ديلر الذكية',
+    ar: 'حاسبة توفير ديلر',
     en: 'deilar Smart Savings Calculator',
   },
   calcBillAmount: {
-    ar: 'قيمة الفاتورة المتوقعة:',
+    ar: 'الفاتورة المتوقعة:',
     en: 'Expected Bill Amount:',
   },
   calcDiscountAmount: {
-    ar: 'قيمة الخصم التقريبي:',
+    ar: 'الخصم تقريباً:',
     en: 'Estimated Discount Amount:',
   },
   calcFinalAmount: {
-    ar: 'المبلغ المطلوب بعد خصم ديلر:',
+    ar: 'هتدفع بعد خصم ديلر:',
     en: 'Amount Required After deilar Discount:',
   },
   calcEgp: {
@@ -479,7 +479,7 @@ export const TRANSLATIONS: TranslationsDictionary = {
     en: 'View All on Map',
   },
   kmAway: {
-    ar: 'كم من موقعك',
+    ar: 'بعد قد إيه عنك',
     en: 'km from your location',
   },
   discountBadge: {

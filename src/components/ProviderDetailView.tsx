@@ -84,7 +84,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-[#941946] hover:bg-rose-50/50 rounded-xl transition-all"
         >
           <ArrowRight className={`w-4 h-4 text-[#941946] ${isAr ? '' : 'rotate-180'}`} />
-          <span>{isAr ? 'الرجوع إلى المنشآت' : 'Back to facilities'}</span>
+          <span>{isAr ? 'رجوع للمنشآت' : 'Back to facilities'}</span>
         </button>
 
         {typeName && <span className="text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-100">{typeName}</span>}
@@ -124,7 +124,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
               <div>
                 <p className="text-sm font-black text-[#941946]">{isAr ? `خصم ${discount}%` : `${discount}% discount`}</p>
                 <p className="text-[11px] text-slate-600 font-medium">
-                  {isAr ? 'خصم فوري مباشر لحاملي كارت ديلر' : 'Instant discount for Deilar medical cardholders'}
+                  {isAr ? 'خصم فوري على طول لأصحاب كارت ديلر' : 'Instant discount for Deilar medical cardholders'}
                 </p>
               </div>
             </div>
@@ -135,11 +135,11 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
           <CreditCard className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
             <p className="text-[12px] font-black text-slate-800">
-              {isAr ? 'كيف تحصل على الخصم؟' : 'How to get the discount'}
+              {isAr ? 'إزاي تاخد الخصم؟' : 'How to get the discount'}
             </p>
             <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
               {isAr
-                ? 'للاستفادة من الخصم يجب أن يكون لديك كارت ديلر. اعرض الكارت مع رقم العضوية لمقدم الخدمة وستحصل على الخصم مباشرة.'
+                ? 'عشان تستفيد من الخصم لازم يكون معاك كارت ديلر. وري الكارت ورقم العضوية لمقدم الخدمة وهتاخد الخصم على طول.'
                 : 'To use the discount you must hold a Deilar card. Just show your card with its ID number to the service provider and you get the discount right away.'}
             </p>
           </div>
@@ -152,7 +152,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
             className={`py-2.5 px-2 bg-slate-900 text-white rounded-xl text-xs font-bold flex flex-col items-center justify-center gap-1 transition-colors shadow-2xs ${lead?.phone ? 'hover:bg-slate-800' : 'opacity-40 pointer-events-none'}`}
           >
             <Phone className="w-4 h-4 text-amber-400" />
-            <span>{isAr ? 'اتصال هاتفي' : 'Call'}</span>
+            <span>{isAr ? 'مكالمة تليفون' : 'Call'}</span>
             {lead?.phone && <span dir="ltr" className="text-[10px] font-mono font-semibold text-white/80">{lead.phone}</span>}
           </a>
 
@@ -215,7 +215,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
         <div className="space-y-2.5">
           <h3 className="text-sm font-black text-slate-900 flex items-center gap-1.5 px-1">
             <MapPin className="w-4 h-4 text-[#941946]" />
-            <span>{isAr ? 'أماكن مشابهة قريبة منك' : 'Similar places near you'}</span>
+            <span>{isAr ? 'أماكن شبه دي قريبة منك' : 'Similar places near you'}</span>
           </h3>
 
           {similar.loading && <Skeleton className="h-24 w-full rounded-2xl" />}
@@ -259,7 +259,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
           className="w-full py-3.5 bg-gradient-to-r from-[#941946] to-[#6d1132] text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-rose-950/20 active:scale-98 transition-all"
         >
           <CreditCard className="w-4 h-4 text-amber-300" />
-          <span>{isAr ? 'عرض كارتي للاستفادة من الخصم الآن' : 'Show my medical card to get the discount'}</span>
+          <span>{isAr ? 'وري كارتي وخد الخصم دلوقتي' : 'Show my medical card to get the discount'}</span>
         </button>
       </div>
     </div>

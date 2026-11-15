@@ -37,7 +37,7 @@ const AddressCard: React.FC<{ kind: (typeof KINDS)[number]; saved: MemberAddress
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (busy) return;
-    if (!gov) { setError(isAr ? 'اختر المحافظة' : 'Choose the governorate'); return; }
+    if (!gov) { setError(isAr ? 'اختار المحافظة' : 'Choose the governorate'); return; }
     if (street.trim().length < 3) { setError(isAr ? 'اكتب العنوان (الشارع والمنطقة)' : 'Write the address (street and area)'); return; }
     setBusy(true);
     setError(null);
@@ -53,7 +53,7 @@ const AddressCard: React.FC<{ kind: (typeof KINDS)[number]; saved: MemberAddress
       setTimeout(() => setDone(false), 3000);
     } catch (err) {
       const first = err instanceof ApiError && err.status === 422 ? Object.values((err.body?.errors ?? {}) as Record<string, string[]>)[0]?.[0] : undefined;
-      setError(first ?? (isAr ? 'تعذر حفظ العنوان. حاول مرة أخرى.' : 'The address could not be saved. Please try again.'));
+      setError(first ?? (isAr ? 'مقدرناش نحفظ العنوان. جرّب تاني.' : 'The address could not be saved. Please try again.'));
       if (!(err instanceof ApiError) || err.status >= 500) reportClientError('Saving an address failed', err, { type: kind.type });
     } finally {
       setBusy(false);
@@ -71,9 +71,9 @@ const AddressCard: React.FC<{ kind: (typeof KINDS)[number]; saved: MemberAddress
         <div className="min-w-0 flex-1">
           <p className="text-xs font-black">{isAr ? kind.ar : kind.en}</p>
           <p className={`text-[11px] leading-relaxed mt-0.5 ${dark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
-            {saved ? summary(saved) : isAr ? 'لم تُضف عنواناً بعد' : 'No address added yet'}
+            {saved ? summary(saved) : isAr ? 'لسه مضفتش عنوان' : 'No address added yet'}
           </p>
-          {done && <p className="mt-1 text-[11px] font-bold text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />{isAr ? 'تم الحفظ' : 'Saved'}</p>}
+          {done && <p className="mt-1 text-[11px] font-bold text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" />{isAr ? 'اتحفظ' : 'Saved'}</p>}
         </div>
         <button type="button" onClick={() => setOpen((v) => !v)} className="px-3 py-1.5 rounded-xl border border-[#941946] text-[#941946] text-[11px] font-bold flex items-center gap-1 cursor-pointer shrink-0">
           <Pencil className="w-3 h-3" />{saved ? (isAr ? 'تعديل' : 'Edit') : isAr ? 'إضافة' : 'Add'}
@@ -88,7 +88,7 @@ const AddressCard: React.FC<{ kind: (typeof KINDS)[number]; saved: MemberAddress
             <input value={street} maxLength={255} onChange={(e) => { setStreet(e.target.value); setError(null); }} className={input} />
           </div>
           <div className="grid grid-cols-3 gap-2">
-            <div><label className={lab}>{isAr ? 'رقم العقار' : 'Building'}</label><input value={building} maxLength={50} onChange={(e) => setBuilding(e.target.value)} className={input} /></div>
+            <div><label className={lab}>{isAr ? 'رقم العمارة' : 'Building'}</label><input value={building} maxLength={50} onChange={(e) => setBuilding(e.target.value)} className={input} /></div>
             <div><label className={lab}>{isAr ? 'الدور' : 'Floor'}</label><input value={floor} maxLength={50} onChange={(e) => setFloor(e.target.value)} className={input} /></div>
             <div><label className={lab}>{isAr ? 'الشقة' : 'Apartment'}</label><input value={apartment} maxLength={50} onChange={(e) => setApartment(e.target.value)} className={input} /></div>
           </div>
@@ -111,7 +111,7 @@ export const AddressesTab: React.FC<{ token: string; dark: boolean }> = ({ token
   return (
     <section className={`rounded-2xl p-4 border space-y-3 animate-in fade-in duration-150 ${dark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200/90 text-slate-900'}`}>
       <div className="flex items-center gap-2"><MapPin className="w-4 h-4 text-[#941946]" /><h3 className="text-xs font-bold">{isAr ? 'عناويني' : 'My addresses'}</h3></div>
-      <p className={`text-[11px] ${dark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{isAr ? 'احفظ عنوان المنزل والعمل وغيره. يظهر في ملفك لدى خدمة العملاء، ويمكنك اختياره عند إتمام الطلب.' : 'Save your home, work and other addresses. They appear in your file with customer service, and you can pick one at checkout.'}</p>
+      <p className={`text-[11px] ${dark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{isAr ? 'احفظ عنوان البيت والشغل وغيرهم. بيظهر في ملفك عند خدمة العملاء، وتقدر تختاره وإنت بتكمّل الطلب.' : 'Save your home, work and other addresses. They appear in your file with customer service, and you can pick one at checkout.'}</p>
       {list.loading && !list.data ? (
         <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
       ) : (

@@ -10,6 +10,7 @@ import type {
   ProductCard,
   ProductDetail,
   StoreCard,
+  StorePin,
   StoreDetail,
 } from './types';
 
@@ -25,6 +26,7 @@ export const PATHS = {
   products: '/mobile/products',
   productTypes: '/mobile/product-types',
   mapPins: '/mobile/map-pins',
+  storeMapPins: '/mobile/store-map-pins',
 } as const;
 
 export const api = {
@@ -62,6 +64,9 @@ export const api = {
     apiGet<ProductDetail>(`${PATHS.products}/${encodeURIComponent(slug)}`, {}, { signal }),
 
   mapPins: (params: Params, signal?: AbortSignal) => apiGet<Paged<MapPin>>(PATHS.mapPins, params, { signal }),
+  /** The stores map: light pins (one per store branch with a position), and the popup of one pin. */
+  storeMapPins: (params: Params, signal?: AbortSignal) => apiGet<Paged<MapPin>>(PATHS.storeMapPins, params, { signal }),
+  storePinCard: (id: number, signal?: AbortSignal) => apiGet<StorePin>(`${PATHS.storeMapPins}/${id}`, {}, { signal }),
 };
 
 /** One typed phrase answered across the whole directory, grouped by kind (the website's suggestion box). */

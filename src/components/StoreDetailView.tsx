@@ -60,7 +60,7 @@ export function offerRange(from: number | null | undefined, to: number | null | 
 export function offerLabel(from: number | null | undefined, to: number | null | undefined, isAr: boolean): string | null {
   const range = offerRange(from, to);
   if (!range) return null;
-  return isAr ? `خصم ${range} لحاملي كارت ديلر` : `${range} off for Deilar cardholders`;
+  return isAr ? `خصم ${range} لأصحاب كارت ديلر` : `${range} off for Deilar cardholders`;
 }
 
 export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview, userLocation, onBack, onAddToCart, cart, onOpenCart }) => {
@@ -93,7 +93,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
   const whatsappLink = whatsappTarget
     ? `https://wa.me/${whatsappTarget}?text=${encodeURIComponent(
         isAr
-          ? `مرحباً ${title}، أنا من مشتركي كارت ديلر وأرغب في الاستفسار عن منتجاتكم والعروض المتاحة.`
+          ? `أهلاً ${title}، أنا مشترك في كارت ديلر وعايز أسأل عن منتجاتكم`
           : `Hello ${title}, I am a Deilar medical cardholder and would like to ask about your products and offers.`,
       )}`
     : null;
@@ -113,7 +113,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-[#941946] hover:bg-rose-50/50 rounded-xl transition-all"
         >
           <ArrowRight className={`w-4 h-4 text-[#941946] ${isAr ? '' : 'rotate-180'}`} />
-          <span>{isAr ? 'الرجوع إلى المتاجر' : 'Back to stores'}</span>
+          <span>{isAr ? 'رجوع للمتاجر' : 'Back to stores'}</span>
         </button>
 
         {onOpenCart && (
@@ -132,7 +132,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
         <div className="fixed top-[calc(1rem+env(safe-area-inset-top))] inset-x-0 z-[999] flex justify-center pointer-events-none">
           <div {...noticeSwipe.handlers} style={noticeSwipe.style} className="pointer-events-auto bg-slate-900 text-white px-4 py-2 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2 text-xs font-bold animate-in slide-in-from-top-3">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>{isAr ? `تمت إضافة «${addedNotice}» إلى السلة!` : `“${addedNotice}” added to the cart!`}</span>
+            <span>{isAr ? `«${addedNotice}» اتضاف للسلة!` : `“${addedNotice}” added to the cart!`}</span>
           </div>
         </div>
       )}
@@ -178,7 +178,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
             <div className="w-9 h-9 rounded-xl bg-[#941946] text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">%</div>
             <div>
               <p className="text-xs font-black text-[#941946]">{offer}</p>
-              <p className="text-[10.5px] text-slate-600 font-medium">{isAr ? 'خصم معتمد وحصري لحاملي كارت ديلر' : 'Approved, exclusive discount for Deilar cardholders'}</p>
+              <p className="text-[10.5px] text-slate-600 font-medium">{isAr ? 'خصم معتمد وحصري لأصحاب كارت ديلر' : 'Approved, exclusive discount for Deilar cardholders'}</p>
             </div>
           </div>
         )}
@@ -207,7 +207,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
             className={`py-2.5 px-3 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs ${lead?.phone ? 'hover:bg-slate-800' : 'opacity-40 pointer-events-none'}`}
           >
             <Phone className="w-3.5 h-3.5 text-amber-400" />
-            <span>{lead?.phone ?? (isAr ? 'اتصال هاتفياً' : 'Call')}</span>
+            <span>{lead?.phone ?? (isAr ? 'كلّمهم تليفون' : 'Call')}</span>
           </a>
 
           {whatsappLink && (
@@ -264,7 +264,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
           {store.youtube_link && (
             <a href={store.youtube_link} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold">
               <Play className="w-3.5 h-3.5" />
-              <span>{isAr ? 'شاهد الفيديو' : 'Watch video'}</span>
+              <span>{isAr ? 'شوف الفيديو' : 'Watch video'}</span>
             </a>
           )}
           {store.app_store_url && (
@@ -393,7 +393,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
                       className="w-full py-2 bg-slate-900 hover:bg-[#941946] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-2xs"
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>{isAr ? 'أضف للسلة' : 'Add to cart'}</span>
+                      <span>{isAr ? 'ضيف للسلة' : 'Add to cart'}</span>
                     </button>
                   </div>
                 )}
@@ -432,7 +432,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
               <AlertCircle className="w-6 h-6" />
             </div>
             <h3 className="text-xs sm:text-sm font-bold text-amber-950">
-              {isAr ? 'لا توجد منتجات معروضة للشراء أونلاين حالياً لهذا المتجر' : 'No products are available to buy online from this store yet'}
+              {isAr ? 'مفيش منتجات للشراء أونلاين من المتجر ده دلوقتي' : 'No products are available to buy online from this store yet'}
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed max-w-sm mx-auto">
               {isAr

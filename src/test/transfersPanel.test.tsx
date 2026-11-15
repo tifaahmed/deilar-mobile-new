@@ -35,7 +35,7 @@ describe('transfers between members', () => {
     render(<TransfersPanel />);
 
     fireEvent.change(await screen.findByLabelText(/رقم التليفون/), { target: { value: '01012345678' } });
-    fireEvent.click(screen.getByRole('button', { name: 'تحقق من العضو' }));
+    fireEvent.click(screen.getByRole('button', { name: 'اتأكد من العضو' }));
     expect(await screen.findByText(/منى ••78/)).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText('المبلغ'), { target: { value: '250' } });

@@ -42,15 +42,15 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({ token, isAr, isDark,
     if (busy) return;
     setTried(true);
     if (bad) {
-      setError(isAr ? 'الاسم الأول مطلوب' : 'First name is required');
+      setError(isAr ? 'لازم تكتب الاسم الأول' : 'First name is required');
       return;
     }
     if (phoneBad) {
-      setError(isAr ? 'أدخل رقم هاتف صحيح من 11 رقم يبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
+      setError(isAr ? 'اكتب رقم موبايل صح من 11 رقم بيبدأ بـ 01' : 'Enter a valid 11-digit number starting with 01');
       return;
     }
     if (dobBad) {
-      setError(isAr ? 'أدخل تاريخ الميلاد أو رقم الهاتف' : 'Enter the date of birth or a phone number');
+      setError(isAr ? 'اكتب تاريخ الميلاد أو رقم الموبايل' : 'Enter the date of birth or a phone number');
       return;
     }
     setBusy(true);
@@ -61,11 +61,11 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({ token, isAr, isDark,
       setTimeout(onSent, 2000);
     } catch (err) {
       if (err instanceof ApiError && err.body?.reason === 'limit_reached') {
-        setError(isAr ? `وصلت للحد الأقصى (${max ?? 15} فرداً من الدرجة الأولى). تواصل مع خدمة العملاء.` : `You have reached the limit (${max ?? 15} first-degree relatives). Contact customer service.`);
+        setError(isAr ? `وصلت للحد الأقصى (${max ?? 15} فرد من الدرجة الأولى). كلّم خدمة العملاء.` : `You have reached the limit (${max ?? 15} first-degree relatives). Contact customer service.`);
         return;
       }
       const first = err instanceof ApiError && err.status === 422 ? Object.values((err.body?.errors ?? {}) as Record<string, string[]>)[0]?.[0] : undefined;
-      setError(first ?? (isAr ? 'تعذّر إرسال الطلب، حاول مرة أخرى.' : 'Could not send the request, please try again.'));
+      setError(first ?? (isAr ? 'مقدرناش نبعت الطلب، جرّب تاني.' : 'Could not send the request, please try again.'));
     } finally {
       setBusy(false);
     }
@@ -79,8 +79,8 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({ token, isAr, isDark,
     return (
       <div className={`p-5 rounded-2xl border text-center space-y-2 mt-3 ${isDark ? 'bg-[#1E2330] border-white/[0.08]' : 'bg-emerald-50 border-emerald-200'}`}>
         <CheckCircle2 className="w-9 h-9 text-emerald-500 mx-auto" />
-        <p className="text-xs font-black">{isAr ? 'تم إرسال الطلب' : 'Request sent'}</p>
-        <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-600'}`}>{isAr ? 'سيظهر الابن على كارتك بعد موافقة الإدارة.' : 'Your child will appear on your card once the admin approves.'}</p>
+        <p className="text-xs font-black">{isAr ? 'الطلب اتبعت' : 'Request sent'}</p>
+        <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-600'}`}>{isAr ? 'الابن هيظهر على كارتك بعد ما الإدارة توافق.' : 'Your child will appear on your card once the admin approves.'}</p>
       </div>
     );
   }
@@ -96,7 +96,7 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({ token, isAr, isDark,
 
       {remaining !== undefined && (
         <p className={`text-[11px] font-bold ${remaining === 0 ? 'text-rose-600' : isDark ? 'text-[#c89e43]' : 'text-[#7a5a14]'}`}>
-          {isAr ? `الحد الأقصى ${max ?? 15} فرداً من الدرجة الأولى — المتبقي ${remaining}` : `Maximum ${max ?? 15} first-degree relatives — ${remaining} left`}
+          {isAr ? `أقصى حد ${max ?? 15} فرد من الدرجة الأولى — فاضل ${remaining}` : `Maximum ${max ?? 15} first-degree relatives — ${remaining} left`}
         </p>
       )}
 
@@ -121,10 +121,10 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({ token, isAr, isDark,
       </label>
 
       <label className="block space-y-1">
-        <span className={`text-[11px] font-bold ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'رقم الهاتف (اختياري إن أدخلت تاريخ الميلاد)' : 'Phone number (optional if you gave the date of birth)'}</span>
+        <span className={`text-[11px] font-bold ${isDark ? 'text-[#F1F5F9]' : 'text-slate-700'}`}>{isAr ? 'رقم الموبايل (مش لازم لو كتبت تاريخ الميلاد)' : 'Phone number (optional if you gave the date of birth)'}</span>
         <input type="tel" inputMode="numeric" dir="ltr" maxLength={11} placeholder="010xxxxxxxx" value={phone} onChange={(e) => { setPhone(e.target.value.replace(/\D/g, '')); setError(null); }} aria-invalid={tried && phoneBad}
           className={`w-full px-3 py-2.5 text-sm rounded-xl border focus:outline-none focus:border-[#941946] ${tried && phoneBad ? 'border-red-500 bg-red-50 ring-1 ring-red-400 text-red-900' : isDark ? 'bg-[#181B26] border-white/[0.08] text-[#F1F5F9]' : 'bg-white border-slate-200 text-slate-900'}`} />
-        <span className={`block text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{isAr ? 'يُحفظ الرقم «غير موثق» ولا يُرسل له أي كود الآن؛ يتوثق عندما يدخل صاحبه بكود التأكيد.' : 'The number is saved as "not verified" and no code is sent now; it becomes verified when its owner signs in with the confirmation code.'}</span>
+        <span className={`block text-[10px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{isAr ? 'الرقم بيتحفظ «مش متأكد منه» ومش هنبعتله كود دلوقتي؛ بيتأكد لما صاحبه يدخل بكود التأكيد.' : 'The number is saved as "not verified" and no code is sent now; it becomes verified when its owner signs in with the confirmation code.'}</span>
       </label>
 
       <p className={`text-[11px] ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>
@@ -135,12 +135,12 @@ export const AddChildForm: React.FC<AddChildFormProps> = ({ token, isAr, isDark,
 
       <button type="submit" disabled={busy || remaining === 0} className="w-full py-3 bg-[#941946] hover:bg-[#7b1439] disabled:opacity-60 text-white rounded-2xl text-xs font-extrabold flex items-center justify-center gap-1.5 cursor-pointer">
         {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-        <span>{isAr ? 'إرسال للموافقة' : 'Send for approval'}</span>
+        <span>{isAr ? 'ابعت للموافقة' : 'Send for approval'}</span>
       </button>
 
       <p role="note" className={`p-2.5 rounded-xl border text-[11px] font-bold leading-5 ${isDark ? 'bg-amber-500/10 border-amber-400/30 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
         {isAr
-          ? 'لإضافة أي فرد آخر من الدرجة الأولى غير الابن والابنة (الزوج/الزوجة أو الأب أو الأم) تواصل مع الدعم الفني.'
+          ? 'عشان تضيف أي فرد تاني من الدرجة الأولى غير الابن والبنت (الزوج/الزوجة أو الأب أو الأم) كلّم الدعم الفني.'
           : 'To add any other first-degree relative besides a son or daughter (spouse, father or mother), contact technical support.'}
       </p>
     </form>

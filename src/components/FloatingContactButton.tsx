@@ -10,13 +10,13 @@ export const FloatingContactButton: React.FC = () => {
   const contactNumber = contact.phone ?? '';
 
   return (
-    <div className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 flex flex-col items-start gap-2.5 select-none">
+    <div className="fixed bottom-[calc(8rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 flex flex-col items-start gap-2.5 select-none">
       {/* 2 Quick Action Buttons Popover (اتصال هاتفي + محادثة واتس بس كده) */}
       {isOpen && (
         <div className="bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-2xl border border-slate-200/90 text-right space-y-2 animate-in slide-in-from-bottom-2 duration-150 w-48">
           {/* Header with close button */}
           <div className="flex items-center justify-between px-1 pb-1 border-b border-slate-100">
-            <span className="text-[11px] font-bold text-slate-700">{isAr ? 'تواصل مباشر' : 'Contact us'}</span>
+            <span className="text-[11px] font-bold text-slate-700">{isAr ? 'كلّمنا على طول' : 'Contact us'}</span>
             <button
               onClick={() => setIsOpen(false)}
               className="w-5 h-5 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
@@ -35,7 +35,7 @@ export const FloatingContactButton: React.FC = () => {
               <PhoneCall className="w-3.5 h-3.5" />
             </div>
             <div className="flex flex-col text-right">
-              <span className="text-xs font-bold leading-tight">{isAr ? 'اتصال هاتفي' : 'Phone call'}</span>
+              <span className="text-xs font-bold leading-tight">{isAr ? 'مكالمة تليفون' : 'Phone call'}</span>
               <span className="font-mono text-[10px] text-amber-300 font-semibold">{contactNumber}</span>
             </div>
           </a>
@@ -52,7 +52,7 @@ export const FloatingContactButton: React.FC = () => {
               <MessageCircle className="w-4 h-4 fill-white text-[#25D366]" />
             </div>
             <div className="flex flex-col text-right">
-              <span className="text-xs font-bold leading-tight">{isAr ? 'محادثة واتس' : 'WhatsApp chat'}</span>
+              <span className="text-xs font-bold leading-tight">{isAr ? 'شات واتساب' : 'WhatsApp chat'}</span>
               <span className="text-[10px] text-emerald-100 font-medium">{isAr ? 'شات مباشر 24/7' : 'Live chat 24/7'}</span>
             </div>
           </a>
@@ -63,8 +63,8 @@ export const FloatingContactButton: React.FC = () => {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-600 text-white shadow-xl shadow-emerald-950/30 border-2 border-white hover:scale-110 active:scale-95 transition-all flex items-center justify-center focus:outline-none"
-        title={isAr ? 'اتصال هاتفي أو واتساب' : 'Call or WhatsApp'}
-        aria-label={isAr ? 'اتصال هاتفي أو واتساب' : 'Call or WhatsApp'}
+        title={isAr ? 'مكالمة أو واتساب' : 'Call or WhatsApp'}
+        aria-label={isAr ? 'مكالمة أو واتساب' : 'Call or WhatsApp'}
       >
         {/* Subtle pulsing beacon */}
         <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
