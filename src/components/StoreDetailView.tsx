@@ -60,7 +60,7 @@ export function offerRange(from: number | null | undefined, to: number | null | 
 export function offerLabel(from: number | null | undefined, to: number | null | undefined, isAr: boolean): string | null {
   const range = offerRange(from, to);
   if (!range) return null;
-  return isAr ? `خصم ${range} لأصحاب كارت ديلر` : `${range} off for Deilar cardholders`;
+  return isAr ? `خصم ${range}` : `${range} off`;
 }
 
 export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview, userLocation, onBack, onAddToCart, cart, onOpenCart }) => {
@@ -144,6 +144,12 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
         </div>
 
+        {offer && (
+          <div className="absolute top-3 left-3">
+            <span className="px-2.5 py-1 bg-emerald-600 text-white text-[11px] font-black rounded-xl shadow-xs">{offer}</span>
+          </div>
+        )}
+
         {categoryName && (
           <div className="absolute top-3 right-3">
             <span className="px-2.5 py-1 bg-[#941946] text-white text-[11px] font-black rounded-xl shadow-xs">{categoryName}</span>
@@ -173,16 +179,12 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
 
       {/* 3. Discount Privilege & Quick Contact Card */}
       <div className="bg-white rounded-3xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
-        {offer && (
-          <div className="p-3 bg-gradient-to-r from-rose-50 to-amber-50/60 rounded-2xl border border-rose-200/80 flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#941946] text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">%</div>
-            <div>
-              <p className="text-xs font-black text-[#941946]">{offer}</p>
-              <p className="text-[10.5px] text-slate-600 font-medium">{isAr ? 'خصم معتمد وحصري لأصحاب كارت ديلر' : 'Approved, exclusive discount for Deilar cardholders'}</p>
-            </div>
-          </div>
+        {store?.visits != null && (
+          <p className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+            <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>{isAr ? `اتفتحت ${store?.visits.toLocaleString('ar-EG')} مرة` : `Opened ${store?.visits.toLocaleString()} times`}</span>
+          </p>
         )}
-
         {store && (store.ships || store.online_only) && (
           <div className="flex flex-wrap gap-1.5">
             {store.ships && (

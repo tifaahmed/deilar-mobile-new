@@ -16,6 +16,8 @@ import type {
 
 /** Lookups change rarely — hold them for ten minutes in memory. */
 const LOOKUP_TTL = 10 * 60_000;
+/** The home page's data is kept on the phone for a day, so opening the app does not call the server again and again. */
+export const HOME_TTL = 24 * 60 * 60_000;
 
 export const PATHS = {
   facilityTypes: '/mobile/facility-types',
@@ -23,6 +25,7 @@ export const PATHS = {
   facilities: '/mobile/facilities',
   stores: '/mobile/stores',
   storeCategories: '/mobile/store-categories',
+  storeAreas: '/mobile/store-areas',
   products: '/mobile/products',
   productTypes: '/mobile/product-types',
   mapPins: '/mobile/map-pins',
@@ -31,13 +34,13 @@ export const PATHS = {
 
 export const api = {
   facilityTypes: (signal?: AbortSignal) =>
-    apiGet<{ data: FacilityType[] }>(PATHS.facilityTypes, {}, { signal, ttl: LOOKUP_TTL, persist: true }).then((r) => r.data),
+    apiGet<{ data: FacilityType[] }>(PATHS.facilityTypes, {}, { signal, ttl: HOME_TTL, persist: true }).then((r) => r.data),
 
   governorates: (signal?: AbortSignal) =>
     apiGet<{ data: Named[] }>(PATHS.governorates, {}, { signal, ttl: LOOKUP_TTL, persist: true }).then((r) => r.data),
 
   storeCategories: (signal?: AbortSignal) =>
-    apiGet<{ data: (Named & { count: number })[] }>(PATHS.storeCategories, {}, { signal, ttl: LOOKUP_TTL }).then((r) => r.data),
+    apiGet<{ data: (Named & { count: number })[] }>(PATHS.storeCategories, {}, { signal, ttl: HOME_TTL, persist: true }).then((r) => r.data),
 
   productTypes: (signal?: AbortSignal) =>
     apiGet<{ data: (Named & { slug: string; count: number })[] }>(PATHS.productTypes, {}, { signal, ttl: LOOKUP_TTL }).then((r) => r.data),
@@ -52,6 +55,8 @@ export const api = {
   /** One map pin's popup card. */
   branchCard: (id: number, signal?: AbortSignal) => apiGet<FacilityCard>(`/mobile/branches/${id}`, {}, { signal }),
 
+  /** Governorates and cities that hold at least one store (ids only): the area buttons show nothing else. */
+  storeAreas: (signal?: AbortSignal) => apiGet<{ data: { id: number; cities: number[] }[] }>(PATHS.storeAreas, {}, { signal, ttl: LOOKUP_TTL }).then((r) => r.data),
   stores: (params: Params, signal?: AbortSignal) => apiGet<Paged<StoreCard>>(PATHS.stores, params, { signal }),
   store: (slug: string, params: Params, signal?: AbortSignal) =>
     apiGet<StoreDetail>(`${PATHS.stores}/${encodeURIComponent(slug)}`, params, { signal }),
@@ -105,6 +110,16 @@ export const fetchNearestAreas = (level: 'governorate' | 'city', lat: number, ln
   apiGet<{ borders: { id: number; distance_km: number }[] }>('/locations/nearest-borders', { level, lat, lng, limit, governorate_id: governorateId, geometry: 0 }, { signal, ttl: LOOKUP_TTL }).then((r) =>
     r.borders.map(({ id, distance_km }) => ({ id, distance_km })),
   );
+
+/** «Did you mean»: the stores whose names are closest to what was typed (no exact match needed). */
+export interface StoreSuggestion { id: number; slug: string; title: string; logo: string | null; category: string | null }
+export const suggestStores = (q: string, signal?: AbortSignal) => apiGet<{ data: StoreSuggestion[] }>('/mobile/store-suggest', { q }, { signal, ttl: 5 * 60_000 }).then((r) => r.data);
+
+/** The home page's six strips (twelve cards each) from the server's daily saved copy — one cheap request. */
+export interface HomeShelves {
+  shelves: Record<'store_visits' | 'store_discount' | 'store_newest' | 'medical_visits' | 'medical_discount' | 'medical_newest', (StoreCard | FacilityCard)[]>;
+}
+export const fetchHomeShelves = (signal?: AbortSignal) => apiGet<HomeShelves>('/mobile/home-shelves', {}, { signal, ttl: HOME_TTL, persist: true }).then((r) => r.shelves);
 
 export interface ShopSettings {
   /** What delivery costs the buyer — the website's own shop setting. */

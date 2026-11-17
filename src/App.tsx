@@ -30,7 +30,7 @@
 
 import { useSwipeBack } from './hooks/useSwipeBack';
 import { useSwipeDismiss } from './hooks/useSwipeDismiss';
-import React, { lazy, Suspense, useCallback, useState, useEffect } from 'react';
+import React, { lazy, Suspense, useCallback, useRef, useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BottomNav, NavTab } from './components/BottomNav';
 import { HomeView } from './components/HomeView';
@@ -79,11 +79,12 @@ import { trackVisit } from './utils/trackVisit';
 import { LocationGate, NearestPrompt } from './components/LocationGate';
 import { useLanguage } from './context/LanguageContext';
 import { navigate, routeHref, useRoute } from './router';
-import { startPush } from './utils/push';
+import { startPush, PUSH_OPEN_EVENT } from './utils/push';
 import { ListSkeleton } from './components/ui/Feedback';
 import { useForceUpdate } from './utils/forceUpdate';
 import { ForceUpdateScreen } from './components/ForceUpdateScreen';
 import { usePopupHash } from './utils/popupHash';
+import AmbientBackground from './components/AmbientBackground';
 
 export default function App() {
   useSwipeBack();
@@ -125,6 +126,19 @@ export default function App() {
     trackVisit(route, session.token);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeKey, session.token]);
+  // A tapped notification already took the visitor to its page: the start-up location screens and the area pop-up
+  // must not cover it or send the visitor on to the map afterwards.
+  const deepLinked = useRef(false);
+  useEffect(() => {
+    const onPushOpen = () => {
+      deepLinked.current = true;
+      setStage('done');
+      setAreaAsk(false);
+      setAccessStep(null);
+    };
+    window.addEventListener(PUSH_OPEN_EVENT, onPushOpen);
+    return () => window.removeEventListener(PUSH_OPEN_EVENT, onPushOpen);
+  }, []);
   // Push notifications: ask once, register this phone with the backend; again after sign-in so it is linked to the member.
   useEffect(() => {
     void startPush(session.token);
@@ -341,7 +355,7 @@ export default function App() {
     const waiting = stage === 'locating';
     // The same place (or no new fix at all): the visitor already has a location, so skip "Your location is set".
     const skipPrompt = () => {
-      if (!waiting) return;
+      if (!waiting || deepLinked.current) return;
       setStage('done');
       if (!getArea()) setAreaAsk(true);
     };
@@ -352,7 +366,7 @@ export default function App() {
         const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         saveGps(p);
         setUserLocation({ ...p, name: 'موقعي الحالي (GPS مباشر)' });
-        if (!waiting) return;
+        if (!waiting || deepLinked.current) return;
         if (isSameSpot(saved, p)) skipPrompt();
         else setStage('nearest');
       },
@@ -369,6 +383,7 @@ export default function App() {
 
   const handleFindNearest = () => {
     setStage('done');
+    if (deepLinked.current) return;
     navigate(routeHref({ tab: 'map' }));
     // Governorate/city are asked once; otherwise go straight to the three-button access popup.
     if (!getArea()) setAreaAsk(true);
@@ -406,10 +421,12 @@ export default function App() {
     <div className="relative min-h-dvh w-full text-slate-900 flex flex-col items-center justify-start overflow-x-clip">
       {/* One responsive column: phones use the full width, tablets and larger get a centred 768px page. */}
       <div
-        className={`w-full max-w-3xl relative pb-20 min-h-dvh ${
+        className={`w-full max-w-3xl relative isolate pb-20 min-h-dvh ${
           theme === 'dark' ? 'dark bg-[#0A0E17] text-[#F1F5F9]' : 'bg-white text-slate-900'
         }`}
       >
+        <AmbientBackground theme={theme} />
+
         {/* Global App Header */}
         <Header
           currentLocationName={userLocation.name}
@@ -476,6 +493,8 @@ export default function App() {
                   storeSlug={route.store ?? null}
                   onOpenStore={(slug) => navigate(routeHref({ store: slug }))}
                   onCloseStore={() => navigate(routeHref({ tab: 'store' }))}
+                  mapCategoryId={route.storeCategory ?? null}
+                  mapSort={route.storeSort ?? null}
                   userLocation={userLocation}
                   cart={pricedCart}
                   onAddToCart={handleAddToCart}
@@ -557,6 +576,7 @@ export default function App() {
         */}
         {!quizPlaying && <BottomNav
           activeTab={activeTab}
+          slim={!!route.storeMap || activeTab === 'map'}
           onTabChange={(tab) => {
             navigate(routeHref({ tab }));
           }}

@@ -43,6 +43,8 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
   const fitRef = useRef<HTMLDivElement>(null);
   const { isAr, brandName } = useLanguage();
   const [step, setStep] = useState<AccessStep>(initialStep);
+  /** Set when the backend says this member's code is a fixed one from the admin (no SMS is sent): its end date, or null for none. */
+  const [fixed, setFixed] = useState<{ until: string | null } | null>(null);
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [visitorName, setVisitorName] = useState('');
@@ -140,6 +142,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
 
     try {
       const sent = await requestOtp(target);
+      setFixed(sent.member_fixed ? { until: sent.fixed_until ?? null } : null);
       setCodeLength(sent.code_length);
       setMaskedPhone(sent.phone_masked);
       setResendIn(sent.resend_after);
@@ -181,6 +184,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
         return;
       }
 
+      setFixed(sent.member_fixed ? { until: sent.fixed_until ?? null } : null);
       setCodeFor(mode);
       setCodeLength(sent.code_length ?? 4);
       setMaskedPhone(sent.phone_masked ?? '');
@@ -470,9 +474,16 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
 
               {step === 'code' && (
                 <form onSubmit={(e) => { e.preventDefault(); if (code.length === codeLength) verify(code); }} className="space-y-3.5">
+                  {fixed && (
+                    <div role="status" className="rounded-2xl border border-amber-400/50 bg-amber-400/10 px-3.5 py-3 text-xs font-bold leading-relaxed text-amber-200">
+                      {isAr
+                        ? `الرقم ده ليه كود دخول ثابت من الإدارة${fixed.until ? ` لحد ${new Date(fixed.until).toLocaleDateString('ar-EG', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}، فمش هيتبعتلك رسالة. اكتب الكود اللي خدته من خدمة العملاء.`
+                        : `This number has a fixed sign-in code set by the admin${fixed.until ? ` until ${new Date(fixed.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}` : ''}, so no message will be sent. Enter the code customer service gave you.`}
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-slate-200">
-                      {isAr ? 'اكتب الكود اللي اتبعت على ' : 'Enter the code sent to '}
+                      {fixed ? (isAr ? 'اكتب الكود الثابت للرقم ' : 'Enter the fixed code for ') : isAr ? 'اكتب الكود اللي اتبعت على ' : 'Enter the code sent to '}
                       {/* Digits keep their left-to-right order inside the Arabic sentence (••••1460, not 1460••••). */}
                       {maskedPhone ? <bdi dir="ltr" className="font-mono">{maskedPhone}</bdi> : isAr ? 'هاتفك' : 'your phone'}
                     </span>

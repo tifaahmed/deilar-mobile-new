@@ -27,7 +27,7 @@ describe('the relatives fee', () => {
     expect(screen.queryByTestId('relative-fee-company')).toBeNull();
     fireEvent.click(screen.getByText('الدفع عند الاستلام'));
     fireEvent.click(screen.getByTestId('relative-fee-pay'));
-    await waitFor(() => expect(place).toHaveBeenCalledWith('t', [7], 'cod'));
+    await waitFor(() => expect(place).toHaveBeenCalledWith('t', [7], 'cod', { plan: 'year', usePoints: false }));
   });
 
   it('tells a company card the team will call, and still offers to pay the year', async () => {
@@ -36,6 +36,32 @@ describe('the relatives fee', () => {
 
     expect((await screen.findByTestId('relative-fee-company')).textContent).toContain('تواصل معنا');
     expect(screen.getByTestId('relative-fee-pay')).toBeTruthy();
+  });
+
+  it('pays a month for a renewal and spends points only when asked', async () => {
+    const plans = [{ key: 'month', price: 5, months: 1 }, { key: 'year', price: 60, months: 12 }];
+    fetchFees.mockResolvedValue({ fee: { ...fee, plans }, payment_methods: methods, can_pay: true, reason: null, waiting: [{ id: 9, name: 'منى', relationship: 'wife', state: 'expired', expiration_date: '2026-11-01' }] });
+    place.mockResolvedValue({ order_code: 'DL-2', total_amount: 5, payment_status: { value: 'pending' } });
+    show();
+
+    await screen.findByTestId('relative-fee-pay');
+    fireEvent.click(screen.getByText(/شهر —/));
+    fireEvent.click(screen.getByLabelText('ادفع بالنقاط'));
+    fireEvent.click(screen.getByText('الدفع عند الاستلام'));
+    fireEvent.click(screen.getByTestId('relative-fee-pay'));
+    await waitFor(() => expect(place).toHaveBeenCalledWith('t', [9], 'cod', { plan: 'month', usePoints: true }));
+  });
+
+  it('says a trial card lets the family try, and sends a relative on an unpaid card to a normal plan', async () => {
+    fetchFees.mockResolvedValue({ fee, payment_methods: methods, can_pay: false, reason: 'trial', waiting: [] });
+    const first = show();
+    expect(await screen.findByTestId('relative-fee-trial')).toBeTruthy();
+    expect(screen.queryByTestId('relative-fee-pay')).toBeNull();
+    first.unmount();
+
+    fetchFees.mockResolvedValue({ fee, payment_methods: methods, can_pay: false, reason: 'parent_not_paid', waiting: [] });
+    show();
+    expect(await screen.findByTestId('relative-fee-own-plan')).toBeTruthy();
   });
 
   it('shows nothing while the fee is free', async () => {

@@ -24,15 +24,17 @@
  */
 
 import React, { useState } from 'react';
-import { Store as StoreIcon, ShoppingCart, Package, ChevronRight, Search, MapPin, Map as MapIcon, Navigation, Percent } from 'lucide-react';
+import { Store as StoreIcon, Package, ChevronRight, Search, MapPin, Map as MapIcon, Navigation, Percent, Eye, Clock } from 'lucide-react';
 import type { StoreCard } from '../api/types';
 import { api, PATHS } from '../api/endpoints';
 import { formatKm, roundCoord } from '../api/adapters';
 import { useDebounced } from '../hooks/useDebounced';
 import { usePaged } from '../hooks/usePaged';
+import { StoreAreaFilter } from './StoreAreaFilter';
 import { useStoreCategories } from '../hooks/useCatalog';
 import { useLanguage } from '../context/LanguageContext';
 import { Product, CartItem } from '../types';
+import type { SortKey } from '../router';
 import { ProductsView } from './ProductsView';
 import { StoreMapView } from './StoreMapView';
 import { offerRange, StoreDetailView } from './StoreDetailView';
@@ -54,6 +56,10 @@ interface StoreViewProps {
   storeSlug: string | null;
   onOpenStore: (slug: string) => void;
   onCloseStore: () => void;
+  /** Store category from /store/map?category=… */
+  mapCategoryId?: number | null;
+  /** Order the stores map opens with (from the home sliders' «see more»). */
+  mapSort?: SortKey | null;
 }
 
 export const StoreView: React.FC<StoreViewProps> = ({
@@ -69,12 +75,17 @@ export const StoreView: React.FC<StoreViewProps> = ({
   storeSlug,
   onOpenStore,
   onCloseStore,
+  mapCategoryId = null,
+  mapSort = null,
 }) => {
   const { isAr } = useLanguage();
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [storeSearchQuery, setStoreSearchQuery] = useState('');
+  // Area filter: governorate, then city (only areas that hold a store are offered).
+  const [govId, setGovId] = useState<number | null>(null);
+  const [cityId, setCityId] = useState<number | null>(null);
   // Order of the stores: nearest first (the default) or the biggest offer first.
-  const [sort, setSort] = useState<'nearest' | 'discount'>('nearest');
+  const [sort, setSort] = useState<'nearest' | SortKey | 'none'>('nearest');
   // The card the user tapped, shown instantly while the store page (addressed by URL) loads.
   const [tapped, setTapped] = useState<StoreCard | null>(null);
   const selectedStore = storeSlug ? { slug: storeSlug, preview: tapped?.slug === storeSlug ? tapped : undefined } : null;
@@ -85,6 +96,8 @@ export const StoreView: React.FC<StoreViewProps> = ({
   const params = {
     q,
     category_id: categoryId,
+    governorate_id: govId,
+    city_id: cityId,
     lat: userLocation ? roundCoord(userLocation.lat) : null,
     lng: userLocation ? roundCoord(userLocation.lng) : null,
     sort,
@@ -115,67 +128,65 @@ export const StoreView: React.FC<StoreViewProps> = ({
         - منتجاتنا (منتجات البن والعسل والزيت)
       */}
       <div className="flex items-center gap-2">
-        <div className="bg-slate-100 p-1 rounded-2xl flex items-center gap-1 shadow-inner flex-1">
-          <button
-            onClick={() => setActiveSubTab('stores')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              activeSubTab === 'stores'
-                ? 'bg-white text-slate-900 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <StoreIcon className="w-4 h-4 text-[#941946]" />
-            <span>{isAr ? 'المتاجر' : 'Stores'}</span>
-          </button>
+        {/* Accordion tabs: the open one shows its name and takes the room; the others shrink to a small icon. Pressing any of them opens it and shrinks the rest. */}
+        <div className={`bg-slate-100 p-1 rounded-2xl flex items-center gap-1 shadow-inner shrink-0`}>
+          {([
+            ['stores', isAr ? 'المتاجر' : 'Stores', StoreIcon],
+            ['products', isAr ? 'منتجاتنا' : 'Products', Package],
+            ['map', isAr ? 'الخريطة' : 'Map', MapIcon],
+          ] as const).map(([id, label, Icon]) => {
+            const open = activeSubTab === id;
 
-          <button
-            onClick={() => setActiveSubTab('products')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              activeSubTab === 'products'
-                ? 'bg-[#941946] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Package className="w-4 h-4" />
-            <span>{isAr ? 'منتجاتنا' : 'Products'}</span>
-          </button>
-
-          <button
-            onClick={() => setActiveSubTab('map')}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              activeSubTab === 'map'
-                ? 'bg-[#941946] text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <MapIcon className="w-4 h-4" />
-            <span>{isAr ? 'الخريطة' : 'Map'}</span>
-          </button>
+            return (
+              <button
+                key={id}
+                onClick={() => setActiveSubTab(id)}
+                aria-label={label}
+                aria-pressed={open}
+                title={label}
+                className={`py-2 rounded-xl text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 overflow-hidden ${
+                  open ? 'flex-1 min-w-0 px-3 bg-[#941946] text-white shadow-sm' : 'w-9 shrink-0 px-0 text-slate-600 hover:text-slate-900 hover:bg-white/70'
+                }`}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                {open && <span className="truncate">{label}</span>}
+              </button>
+            );
+          })}
         </div>
-
-        {/* Dedicated Cart Trigger Button with gathered items badge */}
-        {onOpenCart && activeSubTab !== 'map' && (
-          <button
-            onClick={onOpenCart}
-            className="py-2.5 px-3 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 shadow-xs"
-            title={isAr ? 'افتح السلة وادفع' : 'Open cart & checkout'}
-          >
-            <ShoppingCart className="w-4 h-4 text-amber-400" />
-            <span className="hidden xs:inline">{isAr ? 'السلة' : 'Cart'}</span>
-            {cart.length > 0 && (
-              <span className="bg-[#941946] text-white text-[10px] font-black px-1.5 py-0.2 rounded-full border border-white/20">
-                {cart.reduce((a, b) => a + b.quantity, 0)}
-              </span>
+        {/* One search box beside the tabs, for the stores, the products and the map */}
+        {(
+          <div className="relative flex-1 min-w-0">
+            <input
+              type="text"
+              value={storeSearchQuery}
+              onChange={(e) => setStoreSearchQuery(e.target.value)}
+              placeholder={isAr ? 'اسم، عنوان، مدينة، محافظة، موضوع...' : 'Name, address, city, governorate, topic...'}
+              title={isAr ? 'ابحث بالاسم أو العنوان أو المدينة أو المحافظة أو الموضوع' : 'Search by name, address, city, governorate or topic'}
+              aria-label={activeSubTab === 'products' ? (isAr ? 'ابحث عن منتج' : 'Search for a product') : isAr ? 'ابحث عن متجر' : 'Search for a store'}
+              className="w-full h-11 bg-white border border-slate-200/90 rounded-2xl py-2 pr-9 pl-7 text-[11px] font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#941946]/20 focus:border-[#941946] transition-all shadow-xs"
+            />
+            <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" />
+            {storeSearchQuery && (
+              <button
+                onClick={() => setStoreSearchQuery('')}
+                aria-label={isAr ? 'امسح' : 'Clear'}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+              >
+                ✕
+              </button>
             )}
-          </button>
+          </div>
         )}
       </div>
 
       {/* Render the full "منتجاتنا" page when that sub-tab is chosen */}
       {activeSubTab === 'map' ? (
-        <StoreMapView userLocation={userLocation} onOpenStore={(slug) => onOpenStore(slug)} />
+        <StoreMapView query={storeSearchQuery} onQueryChange={setStoreSearchQuery} key={`${mapCategoryId ?? 'all'}-${mapSort ?? ''}`} initialCategoryId={mapCategoryId} initialSort={mapSort} userLocation={userLocation} onOpenStore={(slug) => onOpenStore(slug)} />
       ) : activeSubTab === 'products' ? (
         <ProductsView
+          query={storeSearchQuery}
+          onQueryChange={setStoreSearchQuery}
           userLocation={userLocation}
           onBackToStore={() => setActiveSubTab('stores')}
           cart={cart}
@@ -187,26 +198,6 @@ export const StoreView: React.FC<StoreViewProps> = ({
       ) : (
         /* ==================== THE STORES VIEW (2 PER ROW) ==================== */
         <div className="space-y-4">
-          {/* Search Input for Stores */}
-          <div className="relative">
-            <input
-              type="text"
-              value={storeSearchQuery}
-              onChange={(e) => setStoreSearchQuery(e.target.value)}
-              placeholder={isAr ? 'ابحث عن متجر...' : 'Search for a store...'}
-              className="w-full bg-white border border-slate-200/90 rounded-2xl py-2.5 pr-10 pl-4 text-xs font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#941946]/20 focus:border-[#941946] transition-all shadow-xs"
-            />
-            <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
-            {storeSearchQuery && (
-              <button
-                onClick={() => setStoreSearchQuery('')}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
           {/* Category Filter Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             {[{ id: null as number | null, name: isAr ? 'كل المتاجر' : 'All stores' }, ...(categories.data ?? [])].map((cat) => {
@@ -227,15 +218,17 @@ export const StoreView: React.FC<StoreViewProps> = ({
             })}
           </div>
 
+          <StoreAreaFilter govId={govId} cityId={cityId} onChange={(g, c) => { setGovId(g); setCityId(c); setSort('none'); }} />
+
           {/* Order: nearest first, or the biggest offer first. */}
-          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs font-bold text-slate-800">
-            {([['nearest', isAr ? 'الأقرب' : 'Nearest', Navigation], ['discount', isAr ? 'الأعلى خصم' : 'Top discount', Percent]] as const).map(([id, label, Icon]) => (
+          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-bold text-slate-800">
+            {([['nearest', isAr ? 'الأقرب' : 'Nearest', Navigation], ['discount', isAr ? 'الأعلى خصم' : 'Top discount', Percent], ['visits', isAr ? 'الأكتر زيارة' : 'Most visited', Eye], ['newest', isAr ? 'الأحدث' : 'Newest', Clock]] as const).map(([id, label, Icon]) => (
               <button
                 key={id}
                 type="button"
-                onClick={() => setSort(id)}
+                onClick={() => setSort(sort === id ? 'none' : id)}
                 aria-pressed={sort === id}
-                className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${sort === id ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'}`}
+                className={`shrink-0 whitespace-nowrap px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${sort === id ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'}`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{label}</span>

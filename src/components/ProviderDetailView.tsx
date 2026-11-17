@@ -7,6 +7,7 @@ import {
   Navigation,
   CreditCard,
   Building2,
+  Eye,
 } from 'lucide-react';
 import type { BranchRow, FacilityCard, FacilityDetail, Place } from '../api/types';
 import { api } from '../api/endpoints';
@@ -99,6 +100,12 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
         </div>
 
+        {discount != null && (
+          <div className="absolute top-3 left-3">
+            <span className="px-2.5 py-1 bg-emerald-600 text-white text-[11px] font-black rounded-xl shadow-xs">{isAr ? `خصم ${discount}%` : `${discount}% off`}</span>
+          </div>
+        )}
+
         <div className="absolute bottom-3 right-4 left-4 text-white pointer-events-none">
           <h1 className="text-lg sm:text-xl font-black text-white drop-shadow-md">{name}</h1>
           {facility?.tags && facility.tags.length > 0 && (
@@ -117,20 +124,12 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
 
       {/* 3. Discount Privilege Box + quick actions */}
       <div className="bg-white rounded-3xl p-4 border border-slate-200/90 shadow-2xs space-y-3">
-        {discount != null && (
-          <div className="p-3.5 bg-gradient-to-r from-rose-50 to-amber-50/60 rounded-2xl border border-rose-200/80 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#941946] text-white flex items-center justify-center font-black text-base shrink-0 shadow-xs">%</div>
-              <div>
-                <p className="text-sm font-black text-[#941946]">{isAr ? `خصم ${discount}%` : `${discount}% discount`}</p>
-                <p className="text-[11px] text-slate-600 font-medium">
-                  {isAr ? 'خصم فوري على طول لأصحاب كارت ديلر' : 'Instant discount for Deilar medical cardholders'}
-                </p>
-              </div>
-            </div>
-          </div>
+        {facility?.visits != null && (
+          <p className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+            <Eye className="w-3.5 h-3.5" aria-hidden="true" />
+            <span>{isAr ? `اتفتحت ${facility?.visits.toLocaleString('ar-EG')} مرة` : `Opened ${facility?.visits.toLocaleString()} times`}</span>
+          </p>
         )}
-
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2.5">
           <CreditCard className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div className="space-y-1">

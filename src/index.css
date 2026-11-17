@@ -292,3 +292,13 @@ html.dark, .dark {
 .dark .text-amber-950 { color: #fde68a !important; }
 .dark .border-amber-300 { border-color: rgb(245 158 11 / 0.45) !important; }
 .dark .bg-amber-100 { background-color: rgb(120 53 15 / 0.85); }
+
+/* Endless strip of place / store types (HomeView). The track holds the list twice, so -50% loops seamlessly. */
+@keyframes deilar-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.deilar-marquee { animation: deilar-marquee 40s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .deilar-marquee { animation: none; } }
+
+/* Small icons drifting behind a slider tile's big icon (ServiceSlider). */
+@keyframes deilar-float { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(8px,-12px) rotate(18deg); } }
+.deilar-float { animation: deilar-float 5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .deilar-float { animation: none; } }

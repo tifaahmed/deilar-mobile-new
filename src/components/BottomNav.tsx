@@ -11,10 +11,13 @@ export type NavTab = 'home' | 'store' | 'products' | 'map' | 'mycard' | 'profile
 interface BottomNavProps {
   activeTab: NavTab;
   onTabChange: (tab: NavTab) => void;
+  /** Keep the bar in its small size (the stores map page, where the map needs the room). */
+  slim?: boolean;
 }
 
-export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
-  const [isSlim, setIsSlim] = useState(false);
+export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, slim = false }) => {
+  const [scrollSlim, setIsSlim] = useState(false);
+  const isSlim = slim || scrollSlim;
   const { isAr } = useLanguage();
 
   const tabs = [

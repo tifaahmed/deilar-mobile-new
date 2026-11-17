@@ -26,9 +26,15 @@ async function sendToken(token: string, memberToken?: string | null): Promise<vo
   }
 }
 
+/** Fired when a tapped notification opens an app page, so the start-up screens (location gate, area pop-up) get out of its way. */
+export const PUSH_OPEN_EVENT = 'deilar:push-open';
+
 function open(url: string | undefined): void {
   if (!url) return;
-  if (url.startsWith('/')) navigate(url);
+  if (url.startsWith('/')) {
+    window.dispatchEvent(new Event(PUSH_OPEN_EVENT));
+    navigate(url);
+  }
   else if (/^https:\/\//i.test(url)) void Browser.open({ url });
 }
 

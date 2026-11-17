@@ -1,9 +1,11 @@
+import { useFab } from '../utils/floatingFabs';
 import React, { useEffect, useState } from 'react';
 import { BadgePercent, X, CheckCircle2 } from 'lucide-react';
 import { ApiError, postContactMessage } from '../api/http';
 import { useLanguage } from '../context/LanguageContext';
 import { useSession } from '../utils/session';
 import { reportClientError } from '../utils/reportError';
+import { usePopupHash } from '../utils/popupHash';
 import { REFERRAL_SUBJECT, isValidProviderPhone, referralMessage } from '../utils/providerReferral';
 
 /** How often the label beside the icon shows itself (3.5 minutes), when the first one comes, and how long it stays. */
@@ -20,12 +22,16 @@ export const ReferProviderButton: React.FC = () => {
   const { isAr } = useLanguage();
   const session = useSession();
   const [open, setOpen] = useState(false);
+  const fab = useFab('refer');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [nudge, setNudge] = useState(false);
+
+  // An open popup is named in the URL (…#refer-provider-popup), like the other popups.
+  usePopupHash('refer-provider-popup', open);
 
   // Every few minutes a short line appears beside the icon, so members remember they can recommend a provider for a discount.
   useEffect(() => {
@@ -73,27 +79,29 @@ export const ReferProviderButton: React.FC = () => {
     <>
       <button
         type="button"
+        {...fab.props()}
         aria-label={isAr ? 'رشّح مقدم خدمة' : 'Recommend a provider'}
         onClick={() => setOpen(true)}
-        className={`fixed bottom-[calc(12rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg ring-2 ring-white flex items-center justify-center active:scale-95 transition-transform ${nudge ? 'animate-bounce' : ''}`}
+        className={`fixed bottom-[calc(7.5rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg ring-2 ring-white flex items-center justify-center active:scale-95 transition-transform ${nudge ? 'animate-bounce' : ''}`}
       >
-        <BadgePercent className="w-6 h-6" />
+        <BadgePercent className="w-5 h-5" />
       </button>
       {nudge && (
         <button
           type="button"
           data-testid="referral-nudge"
+          style={fab.pos ? { left: fab.pos.left + 52, bottom: fab.pos.bottom + 4, top: 'auto', right: 'auto' } : undefined}
           onClick={() => setOpen(true)}
           dir={isAr ? 'rtl' : 'ltr'}
-          className="fixed bottom-[calc(12.4rem+env(safe-area-inset-bottom))] left-[4.75rem] sm:left-[5.75rem] z-40 max-w-[11rem] rounded-2xl rounded-bl-sm bg-orange-500 px-3 py-2 text-[11px] font-black leading-snug text-white shadow-lg animate-in fade-in slide-in-from-left-2 duration-300 cursor-pointer"
+          className="fixed bottom-[calc(7.8rem+env(safe-area-inset-bottom))] left-[4.25rem] sm:left-[5.25rem] z-40 max-w-[11rem] rounded-2xl rounded-bl-sm bg-orange-500 px-3 py-2 text-[11px] font-black leading-snug text-white shadow-lg animate-in fade-in slide-in-from-left-2 duration-300 cursor-pointer"
         >
           {isAr ? 'رشّح مقدم خدمة عايز عليه خصم' : 'Recommend a provider you want a discount on'}
         </button>
       )}
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-3" role="dialog" aria-modal="true">
-          <div className="w-full max-w-sm bg-white rounded-2xl p-4 space-y-3 text-right max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] overflow-y-auto" role="dialog" aria-modal="true" onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
+          <div className="w-full max-w-sm bg-white rounded-2xl p-4 space-y-3 text-right ">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-black text-slate-800">{isAr ? 'رشّح مقدم خدمة واستفد بخصم' : 'Recommend a provider, get a discount'}</h2>
               <button type="button" aria-label={isAr ? 'إغلاق' : 'Close'} onClick={close} className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>

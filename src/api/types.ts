@@ -62,6 +62,8 @@ export interface BranchPage {
 
 export interface FacilityDetail extends BranchPage {
   id: number;
+  /** How many times the page was opened (backend counter); absent on an older backend. */
+  visits?: number;
   slug: string;
   name: string;
   description: string;
@@ -103,6 +105,8 @@ export interface StorePin {
 
 export interface StoreDetail extends BranchPage {
   id: number;
+  /** How many times the page was opened (backend counter); absent on an older backend. */
+  visits?: number;
   slug: string;
   title: string;
   short_description: string | null;

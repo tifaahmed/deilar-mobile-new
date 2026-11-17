@@ -11,7 +11,7 @@ import type { NavTab } from './components/BottomNav';
  *   /map  /map?type=22     map / list, optionally filtered by facility type
  *   /map?view=list         the map's list view
  *   /map?radius=50         search range in km (0 = everywhere; default 1, widened step by step until a facility is found)
- *   /map?view=list&sort=discount   biggest discount first
+ *   /map?view=list&sort=discount   biggest discount first (also sort=visits most visited, sort=newest newest first)
  *   /card                  my card (the «كارتي» tab: the card, relatives, subscription)
  *   /card/members          the card's relatives
  *   /card/pay              pay for the card with Paymob (card or mobile wallet)
@@ -27,6 +27,10 @@ import type { NavTab } from './components/BottomNav';
  *   /quiz                  the quiz game: /quiz (game types and the sections), /quiz/mcq/<section> (a section: start screen and play),
  *                          /quiz/history, /quiz/badges, /quiz/moods and /quiz/moods/<score> (the points screens)
  */
+/** List orders the backend knows: biggest discount, most visited, newest (nearest is the default, null). */
+export type SortKey = 'discount' | 'visits' | 'newest';
+const SORT_KEYS: readonly string[] = ['discount', 'visits', 'newest'];
+
 export interface Route {
   tab: NavTab;
   /** Facility type filter on the map. */
@@ -39,6 +43,8 @@ export interface Route {
   store?: string | null;
   /** The stores map (/store/map), a third page of the stores tab. */
   storeMap?: boolean;
+  /** Store category pre-picked on the stores map (/store/map?category=5). */
+  storeCategory?: number | null;
   /** Set on the orders screens: `code` is null on the list. */
   orders: { code: string | null } | null;
   /** Set on the basket and the payment page. */
@@ -54,7 +60,9 @@ export interface Route {
   /** Map search range in km; 0 = no limit, null/undefined = the default. */
   radius?: number | null;
   /** Map list order; null/undefined = nearest first. */
-  sort?: 'discount' | null;
+  sort?: SortKey | null;
+  /** Order pre-picked on the stores map (/store/map?sort=visits). */
+  storeSort?: SortKey | null;
 }
 
 /** Pages of the «كارتي» tab. */
@@ -69,6 +77,8 @@ export const tabOfSection = (section: ProfileSection): NavTab => ((CARD_SECTIONS
 
 const TAB_PATHS: Record<NavTab, string> = { home: '/', store: '/store', products: '/products', map: '/map', mycard: '/card', profile: '/account' };
 
+const sortOf = (v: string | null): SortKey | null => (v && SORT_KEYS.includes(v) ? (v as SortKey) : null);
+
 export function parseRoute(pathname: string, search: string): Route {
   const path = pathname.replace(/\/+$/, '') || '/';
   const quiz = path.match(/^\/quiz(?:\/(.+))?$/);
@@ -79,7 +89,11 @@ export function parseRoute(pathname: string, search: string): Route {
 
   if (facility) return { tab: 'map', typeId: null, facility: decodeURIComponent(facility[1]), product: null, orders: null, checkout: null, view: 'map', section: null };
 
-  if (path === '/store/map') return { tab: 'store', typeId: null, facility: null, product: null, orders: null, checkout: null, view: 'map', section: null, storeMap: true };
+  if (path === '/store/map') {
+    const category = Number(new URLSearchParams(search).get('category'));
+
+    return { tab: 'store', typeId: null, facility: null, product: null, orders: null, checkout: null, view: 'map', section: null, storeMap: true, storeCategory: category > 0 ? category : null, storeSort: sortOf(new URLSearchParams(search).get('sort')) };
+  }
 
   const store = path.match(/^\/stores\/([^/]+)$/);
 
@@ -116,7 +130,7 @@ export function parseRoute(pathname: string, search: string): Route {
     view: tab === 'map' && params.get('view') === 'list' ? 'list' : 'map',
     section,
     radius,
-    sort: tab === 'map' && params.get('sort') === 'discount' ? 'discount' : null,
+    sort: tab === 'map' ? sortOf(params.get('sort')) : null,
   };
 }
 
@@ -125,7 +139,12 @@ export function routeHref(route: Partial<Route> & { tab?: NavTab }): string {
   if (route.facility) return `/facilities/${encodeURIComponent(route.facility)}`;
   if (route.product) return `/products/${encodeURIComponent(route.product)}`;
   if (route.store) return `/stores/${encodeURIComponent(route.store)}`;
-  if (route.storeMap) return '/store/map';
+  if (route.storeMap) {
+    const query = new URLSearchParams();
+    if (route.storeCategory) query.set('category', String(route.storeCategory));
+    if (route.storeSort) query.set('sort', route.storeSort);
+    return query.size ? `/store/map?${query}` : '/store/map';
+  }
   if (route.checkout) return route.checkout === 'cart' ? '/cart' : '/checkout';
   if (route.orders) return route.orders.code ? `/orders/${encodeURIComponent(route.orders.code)}` : '/orders';
 
@@ -138,7 +157,7 @@ export function routeHref(route: Partial<Route> & { tab?: NavTab }): string {
     if (route.typeId) query.set('type', String(route.typeId));
     if (route.view === 'list') query.set('view', 'list');
     if (route.radius !== null && route.radius !== undefined) query.set('radius', String(route.radius));
-    if (route.sort === 'discount') query.set('sort', 'discount');
+    if (route.sort) query.set('sort', route.sort);
     return query.size ? `${base}?${query}` : base;
   }
 

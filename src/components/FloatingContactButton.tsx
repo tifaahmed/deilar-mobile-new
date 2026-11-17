@@ -1,16 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MessageCircle, PhoneCall, X } from 'lucide-react';
 import { useIsAr } from '../context/LanguageContext';
 import { useContact } from '../hooks/useCatalog';
+import { useFab } from '../utils/floatingFabs';
 
 export const FloatingContactButton: React.FC = () => {
   const isAr = useIsAr();
   const [isOpen, setIsOpen] = useState(false);
   const contact = useContact();
   const contactNumber = contact.phone ?? '';
+  const fab = useFab('contact');
+  const boxRef = useRef<HTMLDivElement | null>(null);
+
+  // A press anywhere outside the open panel (and its button) closes it: no need to find the close button.
+  useEffect(() => {
+    if (!isOpen) return;
+    const away = (e: Event) => { if (boxRef.current && !boxRef.current.contains(e.target as Node)) setIsOpen(false); };
+    document.addEventListener('pointerdown', away, true);
+    document.addEventListener('touchstart', away, true);
+    return () => { document.removeEventListener('pointerdown', away, true); document.removeEventListener('touchstart', away, true); };
+  }, [isOpen]);
 
   return (
-    <div className="fixed bottom-[calc(8rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 flex flex-col items-start gap-2.5 select-none">
+    <div ref={(el) => { boxRef.current = el; fab.setRoot(el); }} style={fab.style} className="fixed bottom-[calc(10.75rem+env(safe-area-inset-bottom))] left-4 sm:left-6 z-40 flex flex-col items-start gap-2.5 select-none">
       {/* 2 Quick Action Buttons Popover (اتصال هاتفي + محادثة واتس بس كده) */}
       {isOpen && (
         <div className="bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-2xl border border-slate-200/90 text-right space-y-2 animate-in slide-in-from-bottom-2 duration-150 w-48">
@@ -25,22 +37,7 @@ export const FloatingContactButton: React.FC = () => {
             </button>
           </div>
 
-          {/* 1. زرار الاتصال الهاتفي */}
-          <a
-            href={`tel:${contact.dial ?? contactNumber}`}
-            onClick={() => setIsOpen(false)}
-            className={`${contact.phone ? '' : 'hidden '}w-full py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors shadow-xs`}
-          >
-            <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-amber-400 shrink-0">
-              <PhoneCall className="w-3.5 h-3.5" />
-            </div>
-            <div className="flex flex-col text-right">
-              <span className="text-xs font-bold leading-tight">{isAr ? 'مكالمة تليفون' : 'Phone call'}</span>
-              <span className="font-mono text-[10px] text-amber-300 font-semibold">{contactNumber}</span>
-            </div>
-          </a>
-
-          {/* 2. زرار محادثة واتس */}
+          {/* 1. واتساب الأول */}
           <a
             href={`https://wa.me/${contact.whatsapp}`}
             target="_blank"
@@ -56,13 +53,30 @@ export const FloatingContactButton: React.FC = () => {
               <span className="text-[10px] text-emerald-100 font-medium">{isAr ? 'شات مباشر 24/7' : 'Live chat 24/7'}</span>
             </div>
           </a>
+
+          {/* 2. الاتصال الهاتفي */}
+          <a
+            href={`tel:${contact.dial ?? contactNumber}`}
+            onClick={() => setIsOpen(false)}
+            className={`${contact.phone ? '' : 'hidden '}w-full py-2.5 px-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors shadow-xs`}
+          >
+            <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-amber-400 shrink-0">
+              <PhoneCall className="w-3.5 h-3.5" />
+            </div>
+            <div className="flex flex-col text-right">
+              <span className="text-xs font-bold leading-tight">{isAr ? 'مكالمة تليفون' : 'Phone call'}</span>
+              <span className="font-mono text-[10px] text-amber-300 font-semibold">{contactNumber}</span>
+            </div>
+          </a>
         </div>
       )}
 
       {/* Main Single Floating Phone Icon Button (بديل ايقونة خدمة العملاء السابقة) */}
       <button
+        {...fab.handle}
+        style={{ touchAction: 'none' }}
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-600 text-white shadow-xl shadow-emerald-950/30 border-2 border-white hover:scale-110 active:scale-95 transition-all flex items-center justify-center focus:outline-none"
+        className="relative w-10 h-10 rounded-full bg-gradient-to-tr from-[#25D366] to-emerald-600 text-white shadow-xl shadow-emerald-950/30 border-2 border-white hover:scale-110 active:scale-95 transition-all flex items-center justify-center focus:outline-none"
         title={isAr ? 'مكالمة أو واتساب' : 'Call or WhatsApp'}
         aria-label={isAr ? 'مكالمة أو واتساب' : 'Call or WhatsApp'}
       >
@@ -73,9 +87,9 @@ export const FloatingContactButton: React.FC = () => {
         </span>
 
         {isOpen ? (
-          <X className="w-5 h-5 text-white animate-in zoom-in-75 duration-150" />
+          <X className="w-4 h-4 text-white animate-in zoom-in-75 duration-150" />
         ) : (
-          <PhoneCall className="w-5 h-5 text-white" />
+          <MessageCircle className="w-5 h-5 text-white fill-white/20" />
         )}
       </button>
     </div>

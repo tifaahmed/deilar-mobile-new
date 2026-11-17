@@ -1,3 +1,4 @@
+import { useFab } from '../utils/floatingFabs';
 /**
  * ==============================================================================
  * 📌 DEILAR PRODUCTS VIEW (ProductsView.tsx)
@@ -36,6 +37,9 @@ import { usePopupHash } from '../utils/popupHash';
 type Sort = 'newest' | 'price_asc' | 'price_desc' | 'discount';
 
 interface ProductsViewProps {
+  /** When the stores page owns the search box (beside its tabs), the typed text comes in here and the view draws no box of its own. */
+  query?: string;
+  onQueryChange?: (value: string) => void;
   userLocation?: { lat: number; lng: number };
   onBackToStore?: () => void;
   cart: CartItem[];
@@ -45,9 +49,13 @@ interface ProductsViewProps {
   onClearCart: () => void;
 }
 
-export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, onAddToCart, onUpdateCartQty, onRemoveFromCart, onClearCart }) => {
+export const ProductsView: React.FC<ProductsViewProps> = ({ query, onQueryChange, userLocation, cart, onAddToCart, onUpdateCartQty, onRemoveFromCart, onClearCart }) => {
+  // The round filter button can be dragged anywhere and keeps its place (the same one in every page that has it).
+  const fab = useFab('filter');
   const { isAr } = useLanguage();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [ownQuery, setOwnQuery] = useState('');
+  const searchQuery = query ?? ownQuery;
+  const setSearchQuery = onQueryChange ?? setOwnQuery;
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
   // «Accepts loyalty points» filter; the points page opens /products?points=1 with it already on.
   const [pointsOnly, setPointsOnly] = useState(() => new URLSearchParams(location.search).get('points') === '1');
@@ -108,8 +116,8 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
 
   return (
     <div className={`space-y-4 pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
-      {/* Search Input */}
-      <div className="relative">
+      {/* Search Input (not drawn when the stores page owns the box beside its tabs) */}
+      <div className={`relative ${query !== undefined ? 'hidden' : ''}`}>
         <input
           type="text"
           value={searchQuery}
@@ -294,8 +302,8 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ userLocation, cart, 
       {createPortal(
         <button
           onClick={openDrawer}
-          className="fixed z-40 bottom-40 end-4 w-12 h-12 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
-          style={{ insetInlineEnd: 'max(1rem, calc(50% - 384px + 1rem))' }}
+          className="fixed z-40 bottom-40 end-4 w-10 h-10 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+          {...fab.props({ insetInlineEnd: 'max(1rem, calc(50% - 384px + 1rem))' })}
           title={isAr ? 'فلتر المنتجات' : 'Filter products'}
           aria-label={isAr ? 'فلتر المنتجات' : 'Filter products'}
         >

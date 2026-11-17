@@ -1,8 +1,10 @@
+import { useFab } from '../utils/floatingFabs';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { createPortal } from 'react-dom';
-import { SlidersHorizontal, MapPin, Navigation, Phone, Search, X, List, Compass, Loader2, Percent } from 'lucide-react';
+import { SlidersHorizontal, MapPin, Navigation, Phone, Search, X, List, Compass, Loader2, Percent, Eye, Clock } from 'lucide-react';
+import type { SortKey } from '../router';
 import type { FacilityCard, MapPin as Pin } from '../api/types';
 import { api, PATHS } from '../api/endpoints';
 import { directionsUrl, formatKm, roundCoord } from '../api/adapters';
@@ -32,8 +34,8 @@ interface MapViewProps {
   radius: number;
   onRadiusChange: (radius: number) => void;
   /** List order; kept in the URL by the caller. */
-  sort: 'discount' | null;
-  onSortChange: (sort: 'discount' | null) => void;
+  sort: SortKey | null;
+  onSortChange: (sort: SortKey | null) => void;
   /** Clears type, range and order in one navigation (several at once would overwrite each other in the URL). */
   onResetFilters: () => void;
   onSelectProvider: (provider: FacilityCard) => void;
@@ -53,12 +55,18 @@ const escapeHtml = (value: string) =>
   value.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
 
 export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChange, selectedTypeId, onSelectType, radius: radiusProp, onRadiusChange, sort, onSortChange, onResetFilters, onSelectProvider, onRequestGps, isGpsLoading }) => {
+  // The round filter button can be dragged anywhere and keeps its place (the same one in every page that has it).
+  const fab = useFab('filter');
   const { isAr } = useLanguage();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
 
   const [activePin, setActivePin] = useState<Pin | null>(null);
+  // The list of what the map shows sits under it; a button on the map's bottom edge scrolls down to it.
+  const listRef = useRef<HTMLDivElement>(null);
+  const mapBoxRef = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(30);
   const [inView, setInView] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const maxRadiusKm = radiusProp;
@@ -145,11 +153,6 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
     () => byCloseness(locations.find((g) => g.id === govId)?.cities ?? [], cityDist, govId === myArea?.governorate.id ? myArea?.city?.id : undefined),
     [locations, govId, cityDist, myArea, isAr], // eslint-disable-line react-hooks/exhaustive-deps
   );
-  const atMyArea = govId === (myArea?.governorate.id ?? null) && cityId === (myArea?.city?.id ?? null);
-  const resetToMyArea = () => {
-    setGovId(myArea?.governorate.id ?? null);
-    setCityId(myArea?.city?.id ?? null);
-  };
 
   // ~1 km grid for the map, ~110 m for the list: nearby positions share one cached URL.
   const mapPoint = { lat: roundCoord(userLocation.lat, 2), lng: roundCoord(userLocation.lng, 2) };
@@ -191,8 +194,10 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   const popup = useApi<FacilityCard>(activePin ? `pin:${activePin.id}:${isAr}` : null, (signal) => api.branchCard(activePin!.id, signal));
 
   // ---- List mode: server-side search / filter / nearest-first, infinite scroll ---------------
-  const byDiscount = sort === 'discount';
-  const listParams = { ...listPoint, q, radius_km: null, governorate_id: govId, city_id: cityId, ...(hasGps ? {} : { home_governorate_id: myArea?.governorate.id, home_city_id: myArea?.city?.id }), type: selectedTypeId, per_page: 12, sort: byDiscount ? 'discount' : 'nearest' };
+  // «No ordering» (`none`): kept here, not in the URL. Pressing the active order again, or choosing a governorate / city, turns every order off.
+  const [noSort, setNoSort] = useState(false);
+  const sorted = sort !== null;
+  const listParams = { ...listPoint, q, radius_km: null, governorate_id: govId, city_id: cityId, ...(hasGps ? {} : { home_governorate_id: myArea?.governorate.id, home_city_id: myArea?.city?.id }), type: selectedTypeId, per_page: 12, sort: noSort ? 'none' : (sort ?? 'nearest') };
   const list = usePaged<FacilityCard>(PATHS.facilities, listParams, (page, signal) => api.facilities({ ...listParams, page }, signal), viewMode === 'list');
 
   // Initialize Leaflet Map (only while the map view is showing)
@@ -399,21 +404,9 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   const listFilters = (
     <>
           <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs space-y-2 text-[11px]">
-            <div className="flex items-center justify-between gap-2">
-              <span className="font-bold text-slate-800 flex items-center gap-1"><MapPin className="w-3.5 h-3.5 text-rose-600" />{isAr ? 'المحافظة والمدينة' : 'Governorate & city'}</span>
-              <button
-                type="button"
-                onClick={resetToMyArea}
-                disabled={atMyArea}
-                className="px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-bold flex items-center gap-1 disabled:opacity-40 cursor-pointer"
-              >
-                <Navigation className="w-3 h-3" />
-                {isAr ? 'موقعي الحالي' : 'My location'}
-              </button>
-            </div>
             {[
-              { items: [{ id: null as number | null, name: isAr ? 'كل المحافظات' : 'All governorates' }, ...sortedGovs], value: govId, mine: myArea?.governorate.id, pick: (id: number | null) => { setGovId(id); setCityId(null); } },
-              ...(govId ? [{ items: [{ id: null as number | null, name: isAr ? 'كل المدن' : 'All cities' }, ...cities], value: cityId, mine: govId === myArea?.governorate.id ? myArea?.city?.id : undefined, pick: (id: number | null) => setCityId(id) }] : []),
+              { items: [{ id: null as number | null, name: isAr ? 'كل المحافظات' : 'All governorates' }, ...sortedGovs], value: govId, mine: myArea?.governorate.id, pick: (id: number | null) => { setGovId(id); setCityId(null); setNoSort(true); onSortChange(null); } },
+              ...(govId ? [{ items: [{ id: null as number | null, name: isAr ? 'كل المدن' : 'All cities' }, ...cities], value: cityId, mine: govId === myArea?.governorate.id ? myArea?.city?.id : undefined, pick: (id: number | null) => { setCityId(id); setNoSort(true); onSortChange(null); } }] : []),
             ].map((row, i) => (
               <div key={i} className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
                 {row.items.map((o) => {
@@ -437,31 +430,34 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
               </div>
             ))}
           </div>
-          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs font-bold text-slate-800">
+          <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-bold text-slate-800">
             {/* Nearest first (the default; inside a chosen governorate / city, nearest within it); no km range in the list. */}
             <button
               type="button"
-              onClick={() => onSortChange(null)}
-              aria-pressed={!byDiscount}
-              className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
-                !byDiscount ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'
+              onClick={() => { if (!noSort && !sorted) setNoSort(true); else { setNoSort(false); onSortChange(null); } }}
+              aria-pressed={!noSort && !sorted}
+              className={`shrink-0 whitespace-nowrap px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                !noSort && !sorted ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'
               }`}
             >
               <Navigation className="w-3.5 h-3.5" />
               <span>{isAr ? 'الأقرب' : 'Nearest'}</span>
             </button>
-            {/* Biggest discount first. */}
-            <button
-              type="button"
-              onClick={() => onSortChange('discount')}
-              aria-pressed={byDiscount}
-              className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
-                byDiscount ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'
-              }`}
-            >
-              <Percent className="w-3.5 h-3.5" />
-              <span>{isAr ? 'الأعلى خصم' : 'Top discount'}</span>
-            </button>
+            {/* Biggest discount first, most visited first, newest first. */}
+            {([['discount', isAr ? 'الأعلى خصم' : 'Top discount', Percent], ['visits', isAr ? 'الأكتر زيارة' : 'Most visited', Eye], ['newest', isAr ? 'الأحدث' : 'Newest', Clock]] as const).map(([id, label, Icon]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => { if (sort === id) { onSortChange(null); setNoSort(true); } else { setNoSort(false); onSortChange(id); } }}
+                aria-pressed={sort === id}
+                className={`shrink-0 whitespace-nowrap px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${
+                  sort === id ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{label}</span>
+              </button>
+            ))}
           </div>
 
     </>
@@ -478,12 +474,12 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [viewMode]);
-  const activeFilters = (selectedTypeId ? 1 : 0) + (govId ? 1 : 0) + (cityId ? 1 : 0) + (byDiscount ? 1 : 0);
+  const activeFilters = (selectedTypeId ? 1 : 0) + (govId ? 1 : 0) + (cityId ? 1 : 0) + (sorted ? 1 : 0);
 
   return (
-    <div className="space-y-3 pb-20 animate-in fade-in duration-200">
+    <div className="space-y-2 pb-16 animate-in fade-in duration-200">
       {/* 1. Search & type filters */}
-      <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-xs space-y-2.5">
+      <div className="bg-white rounded-2xl p-1.5 border border-slate-200/80 shadow-xs space-y-1">
         <div className="flex items-center gap-2">
           <div className={`relative transition-all duration-200 ${searchFocused || searchQuery ? 'flex-1' : 'w-28 shrink-0'}`}>
             <Search className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
@@ -494,7 +490,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
               onChange={(e) => { setSearchQuery(e.target.value); setSuggestOpen(true); }}
               onFocus={() => { setSuggestOpen(true); setSearchFocused(true); }}
               onBlur={() => { setSearchFocused(false); setTimeout(() => setSuggestOpen(false), 150); }}
-              className="w-full pl-8 pr-9 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-600 transition-colors"
+              className="w-full pl-8 pr-9 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-rose-600 transition-colors"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
@@ -539,13 +535,13 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
-                  className={`${searchFocused || searchQuery ? 'p-1.5' : 'flex-1 justify-center py-2.5'} rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
+                  className={`${searchFocused || searchQuery ? 'p-1.5' : 'flex-1 justify-center py-1.5'} rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
                     viewMode === mode ? 'bg-white text-rose-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'
                   }`}
                   title={mode === 'map' ? (isAr ? 'اعرض الخريطة' : 'Map') : isAr ? 'اعرض كقائمة' : 'List'}
                 >
                   {/* The list icon hops up and down while the player is not on the list. */}
-                  <Icon className={`${searchFocused || searchQuery ? 'w-4 h-4' : 'w-5 h-5'} ${mode === 'list' && viewMode !== 'list' ? 'animate-bounce' : ''}`} />
+                  <Icon className={`${searchFocused || searchQuery ? 'w-4 h-4' : 'w-4 h-4'} ${mode === 'list' && viewMode !== 'list' ? 'animate-bounce' : ''}`} />
                   <span className={searchFocused || searchQuery ? 'hidden sm:inline' : ''}>{mode === 'map' ? (isAr ? 'الخريطة' : 'Map') : isAr ? 'القائمة' : 'List'}</span>
                 </button>
               );
@@ -553,12 +549,12 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-xs">
           {[{ id: null as number | null, name: isAr ? 'الكل' : 'All' }, ...(types.data ?? [])].map((type) => (
             <button
               key={type.id ?? 'all'}
               onClick={() => pickType(type.id)}
-              className={`px-3 py-1.5 rounded-full font-bold whitespace-nowrap transition-colors ${
+              className={`px-2.5 py-1 rounded-full font-bold whitespace-nowrap transition-colors ${
                 selectedTypeId === type.id ? 'bg-rose-700 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -575,25 +571,26 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
       {/* 2. Map or list */}
       {viewMode === 'map' ? (
-        <div className="relative w-full h-[30rem] sm:h-[33.75rem] rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
+        <>
+        <div ref={mapBoxRef} style={{ height: 'clamp(22rem, calc(100dvh - 15rem), 40rem)' }} className="relative w-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
           <div ref={mapContainerRef} className="w-full h-full" />
 
-          <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5">
+          <div className="absolute top-1.5 right-1.5 z-[400] flex items-center gap-1">
             <button
               onClick={handleCenterOnUser}
-              className="w-8 h-8 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-800 rounded-xl shadow-md border border-slate-200 flex items-center justify-center transition-all active:scale-95"
+              className="w-6 h-6 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-800 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center transition-all active:scale-95"
               title={isAr ? 'التركيز على موقعي الحالي' : 'Center on my location'}
             >
-              <Navigation className="w-4 h-4 text-rose-600 fill-rose-100" />
+              <Navigation className="w-3 h-3 text-rose-600 fill-rose-100" />
             </button>
 
-            <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-1.5 shadow-md border border-slate-200/90 text-xs font-bold text-slate-800">
-              <Navigation className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <label htmlFor="map-radius-select" className="text-[11px] font-bold text-slate-700 whitespace-nowrap">
+            <div className="flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-lg px-1.5 py-0.5 shadow-sm border border-slate-200/90 text-[10px] font-bold text-slate-800 [&_select]:text-[10px] [&_select]:py-0 [&_select]:px-1 [&_select]:rounded-md">
+              <Navigation className="w-3 h-3 text-rose-600 shrink-0" />
+              <label htmlFor="map-radius-select" className="text-[10px] font-bold text-slate-700 whitespace-nowrap">
                 {isAr ? 'النطاق:' : 'Range:'}
               </label>
               {radiusSelect('map-radius-select')}
-              <span title={isAr ? 'في الشاشة / الإجمالي' : 'on screen / total'} className="text-[10px] text-slate-500 font-semibold px-1.5 border-x border-slate-200 whitespace-nowrap">
+              <span title={isAr ? 'في الشاشة / الإجمالي' : 'on screen / total'} className="text-[9px] text-slate-500 font-semibold px-1 border-x border-slate-200 whitespace-nowrap">
                 {pinsQuery.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : `${inView}/${pins.length}${capped && !q ? '+' : ''} ${isAr ? 'فرع' : 'br.'}`}
               </span>
             </div>
@@ -606,6 +603,20 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
           )}
 
           {/* Popup for the tapped pin */}
+          {/* On the bottom edge of the map: one press scrolls down to the list of what the map shows. */}
+          {pins.length > 0 && !activePin && (
+            <button
+              type="button"
+              data-testid="map-list-button"
+              onClick={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[450] px-2.5 py-1 rounded-full bg-[#941946]/95 hover:bg-[#7b1439] text-white text-[10.5px] leading-none font-bold whitespace-nowrap shadow-md shadow-rose-900/25 flex items-center gap-1 active:scale-95 cursor-pointer"
+            >
+              <List className="w-3 h-3" />
+              <span>{isAr ? `شوف القايمة (${pins.length})` : `See the list (${pins.length})`}</span>
+              <span aria-hidden="true">↓</span>
+            </button>
+          )}
+
           {activePin && (
             <div
               className="absolute bottom-3 left-3 right-3 z-[500] bg-white rounded-2xl p-3.5 shadow-2xl border border-slate-200/90 animate-in slide-in-from-bottom-4 duration-200 touch-pan-y"
@@ -635,14 +646,7 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                 >
                   <Thumb src={popupCard?.logo} alt={activePin.name} kind="facility" fit="contain" className="w-12 h-12 rounded-xl border border-rose-100 shrink-0" />
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{popupCard?.name ?? activePin.name}</h4>
-                      {popupCard?.discount != null && (
-                        <span className="text-[10px] font-bold text-white bg-rose-600 px-2 py-0.5 rounded-md shrink-0">
-                          {isAr ? `خصم ${popupCard.discount}%` : `${popupCard.discount}% OFF`}
-                        </span>
-                      )}
-                    </div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 break-words">{popupCard?.name ?? activePin.name}</h4>
                     {popup.loading ? (
                       <p className="text-[11px] text-slate-400 mt-0.5">{isAr ? 'بنحمّل...' : 'Loading...'}</p>
                     ) : (
@@ -650,7 +654,16 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                         {popupCard?.branch?.address ?? [popupCard?.branch?.city, popupCard?.branch?.governorate].filter(Boolean).join(' - ')}
                       </p>
                     )}
-                    {popupCard?.type && <p className="text-[10px] font-bold text-slate-600 mt-1">{popupCard.type.name}</p>}
+                    {(popupCard?.type || popupCard?.discount != null) && (
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        {popupCard?.type && <span className="text-[10px] font-bold text-slate-600">{popupCard.type.name}</span>}
+                        {popupCard?.discount != null && (
+                          <span className="text-[10px] font-bold text-white bg-rose-600 px-2 py-0.5 rounded-md shrink-0">
+                            {isAr ? `خصم ${popupCard.discount}%` : `${popupCard.discount}% OFF`}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -690,6 +703,20 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
             </div>
           )}
         </div>
+        <div ref={listRef} data-testid="map-list" className="space-y-2 pt-1">
+          <h3 className="text-xs font-black text-slate-800 flex items-center gap-1.5"><List className="w-4 h-4 text-[#941946]" />{isAr ? `الأماكن على الخريطة (${pins.length})` : `On the map (${pins.length})`}</h3>
+          {pins.slice(0, shown).map((pin) => (
+            <div key={pin.id} className="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-900 truncate min-w-0">{pin.name}</span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button type="button" onClick={() => { setActivePin(pin); mapInstanceRef.current?.setView([pin.lat, pin.lng], 15, { animate: true }); mapBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }} className="px-2.5 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-[11px] font-bold cursor-pointer">{isAr ? 'على الخريطة' : 'On map'}</button>
+                <a href={directionsUrl(pin.lat, pin.lng) ?? undefined} target="_blank" rel="noreferrer" aria-label={isAr ? 'الاتجاهات' : 'Directions'} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><Navigation className="w-3.5 h-3.5 text-rose-700" /></a>
+              </div>
+            </div>
+          ))}
+          {pins.length > shown && <button type="button" onClick={() => setShown((n) => n + 30)} className="w-full py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer">{isAr ? 'عرض المزيد' : 'Show more'}</button>}
+        </div>
+        </>
       ) : (
         <div className="space-y-2.5">
           {listFilters}
@@ -707,16 +734,18 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
                 <Thumb src={provider.logo} alt={provider.name} kind="facility" fit="contain" className="w-12 h-12 rounded-xl border border-slate-200/80 shrink-0" />
 
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-rose-700 transition-colors truncate">{provider.name}</h4>
-                    {provider.discount != null && (
-                      <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-100 shrink-0">
-                        {isAr ? `خصم ${provider.discount}%` : `${provider.discount}% OFF`}
-                      </span>
-                    )}
-                  </div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-rose-700 transition-colors line-clamp-2 break-words">{provider.name}</h4>
 
-                  {provider.type && <p className="text-[11px] text-slate-500 mt-0.5">{provider.type.name}</p>}
+                  {(provider.type || provider.discount != null) && (
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                      {provider.type && <span className="text-[11px] text-slate-500">{provider.type.name}</span>}
+                      {provider.discount != null && (
+                        <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-100 shrink-0">
+                          {isAr ? `خصم ${provider.discount}%` : `${provider.discount}% OFF`}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-500">
                     {provider.distance_km != null && (
@@ -773,8 +802,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
       {viewMode === 'list' && scrolled && !drawerOpen && createPortal(
         <button
           onClick={() => setDrawerOpen(true)}
-          className="fixed z-40 bottom-40 left-4 w-12 h-12 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer animate-in fade-in zoom-in-90 duration-150"
-          style={{ left: 'max(1rem, calc(50% - 384px + 1rem))' }}
+          className="fixed z-40 bottom-[calc(14.5rem+env(safe-area-inset-bottom))] left-4 w-10 h-10 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer animate-in fade-in zoom-in-90 duration-150"
+          {...fab.props({ left: 'max(1rem, calc(50% - 384px + 1rem))' })}
           title={isAr ? 'تصفية' : 'Filters'}
           aria-label={isAr ? 'تصفية' : 'Filters'}
         >

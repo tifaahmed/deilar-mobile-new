@@ -1,10 +1,12 @@
+import { useFab } from '../utils/floatingFabs';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Navigation, Phone, Search, X, Loader2, Percent, LocateFixed, List, Compass, MapPin, SlidersHorizontal } from 'lucide-react';
+import { Navigation, Phone, Search, X, Loader2, Percent, Eye, Clock, LocateFixed, List, Compass, MapPin, SlidersHorizontal } from 'lucide-react';
+import type { SortKey } from '../router';
 import type { MapPin as Pin, StoreCard, StorePin } from '../api/types';
-import { api, PATHS, fetchLocations, fetchNearestAreas, type Locations } from '../api/endpoints';
+import { suggestStores, type StoreSuggestion, api, PATHS, fetchLocations, fetchNearestAreas, type Locations } from '../api/endpoints';
 import { directionsUrl, formatKm, roundCoord } from '../api/adapters';
 import { usePaged } from '../hooks/usePaged';
 import { useArea } from '../utils/area';
@@ -23,6 +25,12 @@ interface StoreMapViewProps {
   userLocation?: { lat: number; lng: number };
   /** Opens the store's own page (its branches and products). */
   onOpenStore: (slug: string) => void;
+  /** A store category picked from the home slider (/store/map?category=…). */
+  initialCategoryId?: number | null;
+  initialSort?: SortKey | null;
+  /** The stores page's search box (beside its tabs) drives the map's search. */
+  query?: string;
+  onQueryChange?: (value: string) => void;
 }
 
 /** Where the map opens when the position is not known yet (central Cairo). */
@@ -40,7 +48,9 @@ const escapeHtml = (value: string) =>
  * pills, a range that widens by itself while nothing is in it, clustered pins, a counter of what is on screen, "my place" and a
  * popup card with directions, call and the store page. The backend answers with light pins (`/mobile/store-map-pins`).
  */
-export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpenStore }) => {
+export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpenStore, initialCategoryId = null, initialSort = null, query, onQueryChange }) => {
+  // The round filter button can be dragged anywhere and keeps its place (the same one in every page that has it).
+  const fab = useFab('filter');
   const { isAr } = useLanguage();
   const here = userLocation ?? FALLBACK;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,15 +58,21 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
   const layerRef = useRef<L.LayerGroup | null>(null);
 
   const [view, setView] = useState<'map' | 'list'>('map');
-  const [sort, setSort] = useState<'nearest' | 'discount'>('nearest');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [sort, setSort] = useState<'nearest' | SortKey | 'none'>(initialSort ?? 'nearest');
+  const [ownQuery, setOwnQuery] = useState('');
+  const searchQuery = query ?? ownQuery;
+  const setSearchQuery = onQueryChange ?? setOwnQuery;
   const [searchFocused, setSearchFocused] = useState(false);
   const [suggestOpen, setSuggestOpen] = useState(false);
-  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [categoryId, setCategoryId] = useState<number | null>(initialCategoryId);
   const [radius, setRadius] = useState(1);
   const [widenedFrom, setWidenedFrom] = useState<number | null>(null);
   const [activePin, setActivePin] = useState<Pin | null>(null);
   const [inView, setInView] = useState(0);
+  // The list of what is on the map sits under it; a button on the map's bottom edge scrolls down to it.
+  const listRef = useRef<HTMLDivElement>(null);
+  const mapBoxRef = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(30);
   const autoWiden = useRef(true);
   const q = useDebounced(searchQuery.trim(), 350);
   const categories = useStoreCategories();
@@ -96,7 +112,7 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
     [locations, govId, cityDist, myArea, isAr], // eslint-disable-line react-hooks/exhaustive-deps
   );
   const atMyArea = govId === (myArea?.governorate.id ?? null) && cityId === (myArea?.city?.id ?? null);
-  const resetToMyArea = () => { setGovId(myArea?.governorate.id ?? null); setCityId(myArea?.city?.id ?? null); };
+  const resetToMyArea = () => { setGovId(myArea?.governorate.id ?? null); setCityId(myArea?.city?.id ?? null); setSort('none'); };
 
   // ---- Map mode: light pins ------------------------------------------------------------------
   const point = { lat: roundCoord(here.lat, 2), lng: roundCoord(here.lng, 2) };
@@ -133,6 +149,8 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
 
   // ---- Suggestions under the search box: stores, kinds of store, governorates and cities -------------
   const storeHits = useApi<StoreCard[]>(suggestOpen && q.length >= 2 ? `store-suggest:${q}` : null, (signal) => api.stores({ q, per_page: 5 }, signal).then((r) => r.data));
+  // «Closest names»: shown under the filters as soon as two letters are typed; no exact name needed (a typo, a city, a topic, a street all find it).
+  const closest = useApi<StoreSuggestion[]>(q.length >= 2 ? `store-closest:${q}` : null, (signal) => suggestStores(q, signal));
   const text = q.toLowerCase();
   const catHits = q.length >= 2 ? (categories.data ?? []).filter((c) => c.name.toLowerCase().includes(text)).slice(0, 4) : [];
   const govHits = q.length >= 2 ? locations.filter((g) => g.name.toLowerCase().includes(text)).slice(0, 4) : [];
@@ -256,7 +274,7 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [view]);
-  const activeFilters = (categoryId ? 1 : 0) + (govId ? 1 : 0) + (cityId ? 1 : 0) + (sort === 'discount' ? 1 : 0);
+  const activeFilters = (categoryId ? 1 : 0) + (govId ? 1 : 0) + (cityId ? 1 : 0) + (sort !== 'nearest' && sort !== 'none' ? 1 : 0);
 
   const categoryPills = (
     <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs">
@@ -284,8 +302,8 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
           </button>
         </div>
         {[
-          { items: [{ id: null as number | null, name: isAr ? 'كل المحافظات' : 'All governorates' }, ...sortedGovs], value: govId, mine: myArea?.governorate.id, pick: (id: number | null) => { setGovId(id); setCityId(null); } },
-          ...(govId ? [{ items: [{ id: null as number | null, name: isAr ? 'كل المدن' : 'All cities' }, ...cities], value: cityId, mine: govId === myArea?.governorate.id ? myArea?.city?.id : undefined, pick: (id: number | null) => setCityId(id) }] : []),
+          { items: [{ id: null as number | null, name: isAr ? 'كل المحافظات' : 'All governorates' }, ...sortedGovs], value: govId, mine: myArea?.governorate.id, pick: (id: number | null) => { setGovId(id); setCityId(null); setSort('none'); } },
+          ...(govId ? [{ items: [{ id: null as number | null, name: isAr ? 'كل المدن' : 'All cities' }, ...cities], value: cityId, mine: govId === myArea?.governorate.id ? myArea?.city?.id : undefined, pick: (id: number | null) => { setCityId(id); setSort('none'); } }] : []),
         ].map((row, i) => (
           <div key={i} className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
             {row.items.map((o) => {
@@ -300,13 +318,15 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
           </div>
         ))}
       </div>
-      <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center justify-between text-xs font-bold text-slate-800">
-        <button type="button" onClick={() => setSort('nearest')} aria-pressed={sort === 'nearest'} className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${sort === 'nearest' ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'}`}>
+      <div className="bg-white rounded-2xl px-3 py-2 border border-slate-200/90 shadow-2xs flex items-center gap-2 overflow-x-auto no-scrollbar text-xs font-bold text-slate-800">
+        <button type="button" onClick={() => setSort(sort === 'nearest' ? 'none' : 'nearest')} aria-pressed={sort === 'nearest'} className={`shrink-0 whitespace-nowrap px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${sort === 'nearest' ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'}`}>
           <Navigation className="w-3.5 h-3.5" /><span>{isAr ? 'الأقرب' : 'Nearest'}</span>
         </button>
-        <button type="button" onClick={() => setSort('discount')} aria-pressed={sort === 'discount'} className={`px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${sort === 'discount' ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'}`}>
-          <Percent className="w-3.5 h-3.5" /><span>{isAr ? 'الأعلى خصم' : 'Top discount'}</span>
-        </button>
+        {([['discount', isAr ? 'الأعلى خصم' : 'Top discount', Percent], ['visits', isAr ? 'الأكتر زيارة' : 'Most visited', Eye], ['newest', isAr ? 'الأحدث' : 'Newest', Clock]] as const).map(([id, label, Icon]) => (
+          <button key={id} type="button" onClick={() => setSort(sort === id ? 'none' : id)} aria-pressed={sort === id} className={`shrink-0 whitespace-nowrap px-2.5 py-1 rounded-xl border text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-colors ${sort === id ? 'bg-[#941946] border-[#941946] text-white' : 'bg-white border-slate-300 text-slate-700 hover:border-[#941946]'}`}>
+            <Icon className="w-3.5 h-3.5" /><span>{label}</span>
+          </button>
+        ))}
       </div>
     </>
   );
@@ -324,8 +344,22 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
   );
 
   return (
-    <div className="space-y-3 pb-20">
-      <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-xs space-y-2.5">
+    <div className="space-y-2 pb-16">
+      <div className="bg-white rounded-2xl p-1.5 border border-slate-200/80 shadow-xs space-y-1">
+        {q.length >= 2 && (closest.data?.length ?? 0) > 0 && (
+          <div data-testid="closest-stores" className="rounded-xl border border-rose-100 bg-rose-50/50 overflow-hidden">
+            <div className="px-3 pt-2 pb-1 text-[11px] font-black text-rose-800">{isAr ? 'أقرب الأسماء للي كتبته' : 'Closest to what you typed'}</div>
+            {closest.data!.map((st) => (
+              <button key={st.id} type="button" onClick={() => onOpenStore(st.slug)} className="w-full px-3 py-2 flex items-center gap-2.5 text-start hover:bg-rose-100/60 cursor-pointer">
+                <Thumb src={st.logo} alt={st.title} kind="store" fit="contain" className="w-8 h-8 rounded-lg bg-white shrink-0" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-bold text-slate-900 truncate" dir="auto">{st.title}</span>
+                  {st.category && <span className="block text-[11px] text-slate-500 truncate">{st.category}</span>}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
         {categoryPills}
         {widenedFrom !== null && categoryId && pins.length > 0 && view === 'map' && (
           <p data-testid="widened-note" className="text-[11px] font-bold text-amber-700 bg-amber-50 rounded-lg px-2 py-1">
@@ -335,18 +369,19 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
       </div>
 
       {view === 'map' ? (
-        <div className="relative w-full h-[30rem] sm:h-[33.75rem] rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
+        <>
+        <div ref={mapBoxRef} style={{ height: 'clamp(22rem, calc(100dvh - 15rem), 40rem)' }} className="relative w-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
           <div ref={containerRef} className="w-full h-full" />
 
-          <div className="absolute top-3 right-3 z-[400] flex items-center gap-1.5">
-            <button onClick={() => mapRef.current?.setView([here.lat, here.lng], 14, { animate: true })} className="w-8 h-8 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-800 rounded-xl shadow-md border border-slate-200 flex items-center justify-center transition-all active:scale-95 cursor-pointer" title={isAr ? 'التركيز على موقعي الحالي' : 'Center on my location'} aria-label={isAr ? 'موقعي' : 'My location'}>
-              <LocateFixed className="w-4 h-4 text-rose-600" />
+          <div className="absolute top-1.5 right-1.5 z-[400] flex items-center gap-1">
+            <button onClick={() => mapRef.current?.setView([here.lat, here.lng], 14, { animate: true })} className="w-6 h-6 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-800 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center transition-all active:scale-95 cursor-pointer" title={isAr ? 'التركيز على موقعي الحالي' : 'Center on my location'} aria-label={isAr ? 'موقعي' : 'My location'}>
+              <LocateFixed className="w-3 h-3 text-rose-600" />
             </button>
-            <div className="flex items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-2xl px-2.5 py-1.5 shadow-md border border-slate-200/90 text-xs font-bold text-slate-800">
-              <Navigation className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <label htmlFor="store-radius" className="text-[11px] font-bold text-slate-700 whitespace-nowrap">{isAr ? 'النطاق:' : 'Range:'}</label>
+            <div className="flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-lg px-1.5 py-0.5 shadow-sm border border-slate-200/90 text-[10px] font-bold text-slate-800 [&_select]:text-[10px] [&_select]:py-0 [&_select]:px-1 [&_select]:rounded-md">
+              <Navigation className="w-3 h-3 text-rose-600 shrink-0" />
+              <label htmlFor="store-radius" className="text-[10px] font-bold text-slate-700 whitespace-nowrap">{isAr ? 'النطاق:' : 'Range:'}</label>
               {radiusSelect}
-              <span title={isAr ? 'في الشاشة / الإجمالي' : 'on screen / total'} className="text-[10px] text-slate-500 font-semibold px-1.5 border-x border-slate-200 whitespace-nowrap">
+              <span title={isAr ? 'في الشاشة / الإجمالي' : 'on screen / total'} className="text-[9px] text-slate-500 font-semibold px-1 border-x border-slate-200 whitespace-nowrap">
                 {pinsQuery.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : `${inView}/${pins.length}${capped && !q ? '+' : ''} ${isAr ? 'فرع' : 'br.'}`}
               </span>
             </div>
@@ -358,6 +393,20 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
               {isAr ? 'مفيش متاجر مطابقة على الخريطة' : 'No stores to show on the map'}
               <button onClick={resetFilters} className="block mx-auto mt-2 px-4 py-1.5 bg-rose-700 text-white rounded-xl text-xs font-bold cursor-pointer">{isAr ? 'رجّع الفلاتر' : 'Reset filters'}</button>
             </div>
+          )}
+
+          {/* On the bottom edge of the map: one press scrolls down to the list of what the map shows. */}
+          {pins.length > 0 && !activePin && (
+            <button
+              type="button"
+              data-testid="map-list-button"
+              onClick={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[450] px-2.5 py-1 rounded-full bg-[#941946]/95 hover:bg-[#7b1439] text-white text-[10.5px] leading-none font-bold whitespace-nowrap shadow-md shadow-rose-900/25 flex items-center gap-1 active:scale-95 cursor-pointer"
+            >
+              <List className="w-3 h-3" />
+              <span>{isAr ? `شوف القايمة (${pins.length})` : `See the list (${pins.length})`}</span>
+              <span aria-hidden="true">↓</span>
+            </button>
           )}
 
           {activePin && (
@@ -379,14 +428,16 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
                 <div role="button" tabIndex={0} onClick={() => (card && Math.abs(swipeX) < 10 ? onOpenStore(card.slug) : undefined)} onKeyDown={(e) => { if (e.key === 'Enter' && card) onOpenStore(card.slug); }} className="flex items-start gap-3 min-w-0 flex-1 cursor-pointer">
                   <Thumb src={card?.logo} alt={activePin.name} kind="facility" fit="contain" className="w-12 h-12 rounded-xl border border-rose-100 shrink-0" />
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{card?.title ?? activePin.name}</h4>
-                      {card?.offer_to != null && (
-                        <span className="text-[10px] font-bold text-white bg-rose-600 px-2 py-0.5 rounded-md shrink-0">{isAr ? `خصم ${card.offer_from != null && card.offer_from !== card.offer_to ? `${card.offer_from}–` : ''}${card.offer_to}%` : `${card.offer_to}% OFF`}</span>
-                      )}
-                    </div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 break-words">{card?.title ?? activePin.name}</h4>
                     {popup.loading ? <p className="text-[11px] text-slate-400 mt-0.5">{isAr ? 'بنحمّل...' : 'Loading...'}</p> : <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{card?.branch.address ?? [card?.branch.city, card?.branch.governorate].filter(Boolean).join(' - ')}</p>}
-                    {card && card.categories.length > 0 && <p className="text-[10px] font-bold text-slate-600 mt-1">{card.categories.map((c) => c.name).join(' · ')}</p>}
+                    {card && (card.categories.length > 0 || card.offer_to != null) && (
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        {card.categories.length > 0 && <span className="text-[10px] font-bold text-slate-600">{card.categories.map((c) => c.name).join(' · ')}</span>}
+                        {card.offer_to != null && (
+                          <span className="text-[10px] font-bold text-white bg-rose-600 px-2 py-0.5 rounded-md shrink-0">{isAr ? `خصم ${card.offer_from != null && card.offer_from !== card.offer_to ? `${card.offer_from}–` : ''}${card.offer_to}%` : `${card.offer_to}% OFF`}</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <button onClick={() => setActivePin(null)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 shrink-0" aria-label={isAr ? 'إغلاق' : 'Close'}><X className="w-4 h-4" /></button>
@@ -399,6 +450,20 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
             </div>
           )}
         </div>
+        <div ref={listRef} data-testid="map-list" className="space-y-2 pt-1">
+          <h3 className="text-xs font-black text-slate-800 flex items-center gap-1.5"><List className="w-4 h-4 text-[#941946]" />{isAr ? `المنشآت على الخريطة (${pins.length})` : `On the map (${pins.length})`}</h3>
+          {pins.slice(0, shown).map((pin) => (
+            <div key={pin.id} className="p-3 bg-white rounded-xl border border-slate-200/90 shadow-2xs flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-900 truncate min-w-0">{pin.name}</span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button type="button" onClick={() => { setActivePin(pin); mapRef.current?.setView([pin.lat, pin.lng], 15, { animate: true }); mapBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }} className="px-2.5 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-[11px] font-bold cursor-pointer">{isAr ? 'على الخريطة' : 'On map'}</button>
+                <a href={directionsUrl(pin.lat, pin.lng) ?? undefined} target="_blank" rel="noreferrer" aria-label={isAr ? 'الاتجاهات' : 'Directions'} className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center"><Navigation className="w-3.5 h-3.5 text-rose-700" /></a>
+              </div>
+            </div>
+          ))}
+          {pins.length > shown && <button type="button" onClick={() => setShown((n) => n + 30)} className="w-full py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer">{isAr ? 'عرض المزيد' : 'Show more'}</button>}
+        </div>
+        </>
       ) : (
         <div className="space-y-2.5">
           {listFilters}
@@ -411,11 +476,13 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
               <div className="flex items-start gap-3 min-w-0">
                 <Thumb src={st.logo} alt={st.title} kind="facility" fit="contain" className="w-12 h-12 rounded-xl border border-slate-200/80 shrink-0" />
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{st.title}</h4>
-                    {st.offer_to != null && <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-100 shrink-0">{isAr ? `خصم ${st.offer_to}%` : `${st.offer_to}% OFF`}</span>}
-                  </div>
-                  {st.categories.length > 0 && <p className="text-[11px] text-slate-500 mt-0.5">{st.categories.map((c) => c.name).join(' · ')}</p>}
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-2 break-words">{st.title}</h4>
+                  {(st.categories.length > 0 || st.offer_to != null) && (
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                      {st.categories.length > 0 && <span className="text-[11px] text-slate-500">{st.categories.map((c) => c.name).join(' · ')}</span>}
+                      {st.offer_to != null && <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-100 shrink-0">{isAr ? `خصم ${st.offer_to}%` : `${st.offer_to}% OFF`}</span>}
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 mt-1.5 text-[11px] text-slate-500">
                     {st.distance_km != null && (<><span className="font-bold text-rose-700 flex items-center gap-0.5 shrink-0"><MapPin className="w-3.5 h-3.5" />{formatKm(st.distance_km, isAr)}</span><span>•</span></>)}
                     <span className="truncate max-w-[12.5rem]">{st.branch?.address ?? st.branch?.city}</span>
@@ -447,8 +514,8 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
       {view === 'list' && scrolled && !drawerOpen && createPortal(
         <button
           onClick={() => setDrawerOpen(true)}
-          className="fixed z-40 bottom-40 left-4 w-12 h-12 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer animate-in fade-in zoom-in-90 duration-150"
-          style={{ left: 'max(1rem, calc(50% - 384px + 1rem))' }}
+          className="fixed z-40 bottom-[calc(14.5rem+env(safe-area-inset-bottom))] left-4 w-10 h-10 rounded-full bg-[#941946] hover:bg-[#7b1439] text-white shadow-lg shadow-rose-900/30 flex items-center justify-center active:scale-95 transition-all cursor-pointer animate-in fade-in zoom-in-90 duration-150"
+          {...fab.props({ left: 'max(1rem, calc(50% - 384px + 1rem))' })}
           title={isAr ? 'تصفية' : 'Filters'}
           aria-label={isAr ? 'تصفية' : 'Filters'}
         >

@@ -25,6 +25,9 @@ export const RelativeFeePanel: React.FC<{ token: string }> = ({ token }) => {
   const [choice, setChoice] = useState<Choice | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [plan, setPlan] = useState<'month' | 'year'>('year');
+  const [usePoints, setUsePoints] = useState(false);
+  const [picked, setPicked] = useState<number[] | null>(null);
   const [placed, setPlaced] = useState<PlacedOrder | null>(null);
   const [pixel, setPixel] = useState<(PixelSession & { mode?: 'frame' }) | null>(null);
 
@@ -38,9 +41,16 @@ export const RelativeFeePanel: React.FC<{ token: string }> = ({ token }) => {
 
   if (!screen || screen.fee.per_relative <= 0) return null;
 
-  const { fee, waiting, payment_methods: pm } = screen;
+  const { fee, payment_methods: pm } = screen;
   const money = (v: number) => `${formatNumber(v, isAr)} ${isAr ? 'ج.م' : 'EGP'}`;
-  const total = fee.per_relative * waiting.length;
+  const plans = fee.plans ?? [{ key: 'year' as const, price: fee.per_relative, months: fee.months }];
+  const chosenPlan = plans.find((p) => p.key === plan) ?? plans[plans.length - 1];
+  const canPay = screen.can_pay !== false;
+  // Everybody on the list can be paid for (a first payment or a renewal); the ones not yet active start ticked.
+  const waiting = canPay ? screen.waiting : [];
+  const ids = picked ?? waiting.filter((w) => w.state !== 'active').map((w) => w.id);
+  const chosen = waiting.filter((w) => ids.includes(w.id));
+  const total = chosenPlan.price * chosen.length;
   const choices: { id: Choice; icon: React.ElementType; ar: string; en: string }[] = [
     ...(pm.online_card ? [{ id: 'paymob:card' as const, icon: CreditCard, ar: 'الدفع بالبطاقة (Paymob)', en: 'Pay by card (Paymob)' }] : []),
     ...(pm.online_wallet ? [{ id: 'paymob:wallet' as const, icon: Smartphone, ar: 'الدفع بمحفظة إلكترونية (Paymob)', en: 'Pay by mobile wallet (Paymob)' }] : []),
@@ -49,10 +59,11 @@ export const RelativeFeePanel: React.FC<{ token: string }> = ({ token }) => {
 
   const pay = async () => {
     if (busy || !choice) { if (!choice) setError(isAr ? 'اختار طريقة الدفع.' : 'Choose how to pay.'); return; }
+    if (chosen.length === 0) { setError(isAr ? 'اختار قريب واحد على الأقل.' : 'Pick at least one relative.'); return; }
     setBusy(true);
     setError(null);
     try {
-      const order = await placeRelativeFeeOrder(token, waiting.map((w) => w.id), choice === 'cod' ? 'cod' : 'paymob');
+      const order = await placeRelativeFeeOrder(token, chosen.map((w) => w.id), choice === 'cod' ? 'cod' : 'paymob', { plan: chosenPlan.key, usePoints });
       setPlaced(order);
 
       if (choice !== 'cod') {
@@ -77,9 +88,22 @@ export const RelativeFeePanel: React.FC<{ token: string }> = ({ token }) => {
       <p className="font-black text-xs">{isAr ? '👪 رسوم الأقارب' : '👪 Relatives fee'}</p>
       <p data-testid="relative-fee-price" className="font-bold">
         {isAr
-          ? `${money(fee.monthly)} في الشهر لكل قريب. الأفراد بيدفعوا السنة كلها مرة واحدة (${money(fee.per_relative)} للقريب) والقريب بيتفعّل فورًا لمدة ${fee.months} شهر.`
-          : `${money(fee.monthly)} a month per relative. Individuals pay the whole period at once (${money(fee.per_relative)} each) and the relative is active right away for ${fee.months} months.`}
+          ? `${money(fee.monthly)} في الشهر لكل قريب، أو ${money(fee.per_relative)} للسنة (${fee.months} شهر). القريب بيتفعّل فورًا بعد الدفع.`
+          : `${money(fee.monthly)} a month per relative, or ${money(fee.per_relative)} for the year (${fee.months} months). The relative is active right after payment.`}
       </p>
+      {screen.reason === 'trial' && (
+        <p data-testid="relative-fee-trial" className="font-bold text-amber-800">
+          {isAr ? 'أقاربك بيجرّبوا معاك لحد ما التجربة تخلص. بعد ما تدفع اشتراكك بتدفع لكل قريب (5 جنيه في الشهر أو 60 في السنة).' : 'Your relatives try the card with you until the trial ends. After you subscribe, each relative has their own fee (5 a month or 60 a year).'}
+        </p>
+      )}
+      {screen.reason === 'parent_not_paid' && (
+        <div data-testid="relative-fee-own-plan" className="space-y-1.5">
+          <p className="font-bold text-amber-800">
+            {isAr ? 'الكارت اللي إنت تابع ليه لسه مدفعش، فمش هتدفع رسوم القريب. اشترك اشتراك عادي (شهري أو نصف سنوي أو سنوي) وتبقى عضو أساسي.' : 'The card you belong to has not paid, so there is no relative fee. Buy a normal subscription (monthly, half-yearly or yearly) and become a primary member.'}
+          </p>
+          <button type="button" onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white font-bold cursor-pointer">{isAr ? 'اشترك دلوقتي' : 'Subscribe now'}</button>
+        </div>
+      )}
       {fee.request_only && (
         <p data-testid="relative-fee-company" className="font-bold text-amber-800">
           {isAr
@@ -88,9 +112,32 @@ export const RelativeFeePanel: React.FC<{ token: string }> = ({ token }) => {
         </p>
       )}
 
-      {waiting.length > 0 && !placed && (
+      {waiting.length > 0 && canPay && !placed && (
         <div className="space-y-2">
-          <p className="font-black">{isAr ? 'مستنيين الدفع:' : 'Waiting for payment:'} {waiting.map((w) => w.name).filter(Boolean).join('، ')}</p>
+          <p className="font-black">{isAr ? 'ادفع لـ:' : 'Pay for:'}</p>
+          <div className="space-y-1">
+            {waiting.map((w) => (
+              <label key={w.id} className="flex items-center gap-2 p-2 rounded-xl bg-white border border-amber-200 cursor-pointer">
+                <input type="checkbox" checked={ids.includes(w.id)} onChange={(e) => setPicked(e.target.checked ? [...ids, w.id] : ids.filter((i) => i !== w.id))} />
+                <span className="font-bold">{w.name}</span>
+                {w.expiration_date && <span className="ms-auto text-[10px] text-slate-500">{isAr ? `لحد ${w.expiration_date}` : `until ${w.expiration_date}`}</span>}
+              </label>
+            ))}
+          </div>
+          {plans.length > 1 && (
+            <div className="flex gap-1.5" role="group" aria-label={isAr ? 'الخطة' : 'Plan'}>
+              {plans.map((p) => (
+                <button key={p.key} type="button" aria-pressed={plan === p.key} onClick={() => setPlan(p.key)}
+                  className={`flex-1 py-2 rounded-xl border font-bold cursor-pointer ${plan === p.key ? 'border-[#941946] bg-rose-50' : 'border-amber-200 bg-white'}`}>
+                  {p.key === 'month' ? (isAr ? `شهر — ${money(p.price)}` : `1 month — ${money(p.price)}`) : (isAr ? `سنة — ${money(p.price)}` : `Year — ${money(p.price)}`)}
+                </button>
+              ))}
+            </div>
+          )}
+          <label className="flex items-center gap-2 font-bold cursor-pointer">
+            <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} />
+            <span>{isAr ? 'ادفع بالنقاط' : 'Pay with points'}</span>
+          </label>
           <div className="space-y-1.5">
             {choices.map((c) => (
               <button key={c.id} type="button" aria-pressed={choice === c.id} onClick={() => setChoice(c.id)}
@@ -102,7 +149,7 @@ export const RelativeFeePanel: React.FC<{ token: string }> = ({ token }) => {
           </div>
           {error && <p role="alert" className="font-bold text-rose-600">{error}</p>}
           <button type="button" data-testid="relative-fee-pay" disabled={busy || choices.length === 0} onClick={pay} className="w-full py-2.5 rounded-xl bg-[#941946] text-white text-xs font-black disabled:opacity-60 cursor-pointer">
-            {busy ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : isAr ? `ادفع ${money(total)} وفعّل الأقارب` : `Pay ${money(total)} and activate`}
+            {busy ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : isAr ? `ادفع ${money(total)}` : `Pay ${money(total)}`}
           </button>
         </div>
       )}

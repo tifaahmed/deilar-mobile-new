@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
+import { forgetCached } from '../api/http';
 
 /** Pulling down this far (after the finger's resistance) reloads the page. */
 const TRIGGER = 64;
@@ -47,6 +48,10 @@ export const reloadedByPull: boolean = (() => {
 })();
 
 export const reloadPage = () => {
+  // A pull is the member asking for fresh data: the home page's one-day copy on the phone is dropped too.
+  forgetCached('/mobile/home-shelves');
+  forgetCached('/mobile/store-categories');
+  forgetCached('/mobile/facility-types');
   try {
     sessionStorage.setItem(PULL_FLAG, '1');
   } catch {

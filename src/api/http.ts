@@ -115,11 +115,23 @@ export function peek<T>(path: string, params?: Params): T | undefined {
 /** Drops cached answers whose URL contains `part`, so the next read goes to the server. */
 export function forgetCached(part: string): void {
   for (const url of [...cache.keys()]) if (url.includes(part)) cache.delete(url);
+
+  const map = loadStored();
+  const gone = [...map.keys()].filter((url) => url.includes(part));
+  if (gone.length === 0) return;
+  gone.forEach((url) => map.delete(url));
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(Object.fromEntries(map)));
+  } catch {
+    /* blocked: the in-memory copy is already gone */
+  }
 }
 
 export function apiGet<T>(path: string, params?: Params, opts: { signal?: AbortSignal; ttl?: number; persist?: boolean } = {}): Promise<T> {
   const url = buildUrl(path, params);
-  const hit = cache.get(url);
+  // A `persist` request also trusts what was saved on the device while it is still fresh: after the app is reopened a one-day answer
+  // (the home strips) is not asked for again until the day is over.
+  const hit = cache.get(url) ?? (opts.persist ? loadStored().get(url) : undefined);
 
   if (hit && Date.now() - hit.at < (opts.ttl ?? DEFAULT_TTL_MS)) {
     return Promise.resolve(hit.data as T);

@@ -7,6 +7,8 @@ interface AddMemberFormProps {
   token: string;
   isAr: boolean;
   isDark: boolean;
+  /** The member's own gender: a man adds a wife / mother / father, a woman a husband / mother / father (children go through AddChildForm). */
+  gender?: 'male' | 'female' | '';
   onCancel: () => void;
   /** Called after the server accepted the request (the member now waits for approval). */
   onSent: () => void;
@@ -66,9 +68,14 @@ const CameraField: React.FC<{
   );
 };
 
-export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDark, onCancel, onSent }) => {
+export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDark, gender = '', onCancel, onSent }) => {
+  const relations = useMemo(() => {
+    if (gender === 'male') return RELATIONS.filter((r) => ['wife', 'mother', 'father'].includes(r.value));
+    if (gender === 'female') return RELATIONS.filter((r) => ['husband', 'mother', 'father'].includes(r.value));
+    return RELATIONS;
+  }, [gender]);
   const [name, setName] = useState('');
-  const [relationship, setRelationship] = useState('wife');
+  const [relationship, setRelationship] = useState(relations[0].value);
   const [nationalId, setNationalId] = useState('');
   // Optional. The backend saves a phone typed by the card owner UNVERIFIED (no SMS) until the relative proves it.
   const [phone, setPhone] = useState('');
@@ -80,7 +87,9 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
   const [sent, setSent] = useState(false);
 
   // Every relation but a son/daughter (added by first name in AddChildForm) needs the FULL name.
-  const complete = name.trim().split(/\s+/).length > 1 && /^\d{14}$/.test(nationalId) && (phone === '' || /^\+?\d{8,15}$/.test(phone)) && !!front && !!back && !!photo;
+  // A father is typed with the grandfather's name only (the backend adds the member's second name).
+  const isFather = relationship === 'father';
+  const complete = (isFather ? name.trim().length > 1 : name.trim().split(/\s+/).length > 1) && /^\d{14}$/.test(nationalId) && (phone === '' || /^\+?\d{8,15}$/.test(phone)) && !!front && !!back && !!photo;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,15 +159,16 @@ export const AddMemberForm: React.FC<AddMemberFormProps> = ({ token, isAr, isDar
 
       <form onSubmit={submit} className="space-y-2.5">
         <div>
-          <label className={label}>{isAr ? 'الاسم بالكامل' : 'Full name'}</label>
+          <label className={label}>{isFather ? (isAr ? 'اسم الجد (والد الأب)' : "Grandfather's name") : isAr ? 'الاسم بالكامل' : 'Full name'}</label>
           <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className={field} />
+          {isFather && <p className={`text-[10px] mt-1 ${isDark ? 'text-[#94A3B8]' : 'text-slate-500'}`}>{isAr ? 'اكتب اسم الجد بس: اسم الأب الأول هو اسمك التاني، وبنكمّله لوحدنا.' : "Type only the grandfather's name: your father's first name is your second name, we add it."}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={label}>{isAr ? 'صلة القرابة' : 'Relationship'}</label>
             <select value={relationship} onChange={(e) => setRelationship(e.target.value)} className={field}>
-              {RELATIONS.map((r) => (
+              {relations.map((r) => (
                 <option key={r.value} value={r.value}>
                   {isAr ? r.ar : r.en}
                 </option>

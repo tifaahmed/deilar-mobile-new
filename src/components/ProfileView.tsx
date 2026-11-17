@@ -53,6 +53,7 @@ import { getSession } from '../utils/session';
 import { useApi } from '../hooks/useApi';
 import { fetchFamily } from '../api/family';
 import { AddChildForm } from './AddChildForm';
+import { AddMemberForm } from './AddMemberForm';
 import { WalletScreen } from './WalletScreen';
 import { ReferralScreen } from './ReferralScreen';
 import { ReferralCodeEntry } from './ReferralCodeEntry';
@@ -262,6 +263,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   }, [personalOpen]);
 
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  // What the member is adding: a son / daughter (first name only) or another relative (wife / husband / mother / father).
+  const [addKind, setAddKind] = useState<'child' | 'member' | null>(null);
 
   // Support ticket form state
   const [ticketTopic, setTopic] = useState('ticketTopicGeneral');
@@ -767,9 +770,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <span>{t('addNewMember')}</span>
               </button>
             )}
-            {!membership.data?.is_relative && (!relatives || relatives.can_add) && canAddChildren && (
+            {!membership.data?.is_relative && (!relatives || relatives.can_add) && (
               <button
-                onClick={() => setShowAddMemberModal(true)}
+                onClick={() => { setAddKind(null); setShowAddMemberModal(true); }}
                 className="px-2.5 py-1 bg-[#941946] hover:bg-[#7b1439] text-white rounded-xl text-[11px] font-bold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -779,14 +782,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           {token && <FamilyCircle token={token} dark={isDark} />}
-          {token && !membership.data?.is_relative && <RelativeFeePanel token={token} />}
+          {token && <RelativeFeePanel token={token} />}
 
           {membership.data?.is_relative && (
-            <div className="p-3 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900 text-[11px] space-y-2">
-              <p className="font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'الفرد على كارت العيلة مبيضيفش أقارب' : 'A relative member cannot add relatives'}</p>
-              <p>{isAr ? 'اشترك في كارتك الخاص عشان تبقى عضو أساسي، وبعدها ضيف أسرتك.' : 'Subscribe to your own card to become a primary member, then add your family.'}</p>
-              <button onClick={() => navigate(routeHref({ tab: 'mycard', section: 'pay' }))} className="px-3.5 py-2 rounded-xl bg-[#941946] text-white font-bold cursor-pointer">{isAr ? 'اشترك دلوقتي' : 'Subscribe now'}</button>
-            </div>
+            <p className="p-3 rounded-2xl border border-amber-300 bg-amber-50 text-amber-900 text-[11px] font-black flex items-center gap-1.5"><Lock className="w-4 h-4" />{isAr ? 'الفرد على كارت العيلة مبيضيفش أقارب' : 'A relative member cannot add relatives'}</p>
           )}
 
           {relatives && !membership.data?.is_relative && (
@@ -928,19 +927,37 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           {/* Add member: every field + camera pictures, then waits for admin approval */}
           {showAddMemberModal && (
             token ? (
-              <AddChildForm
-                token={token}
-                isAr={isAr}
-                isDark={isDark}
-                fatherName={account.name}
-                remaining={relatives ? Math.max(relatives.max - relatives.count, 0) : undefined}
-                max={relatives?.max}
-                onCancel={() => setShowAddMemberModal(false)}
-                onSent={() => {
-                  setShowAddMemberModal(false);
-                  family.reload();
-                }}
-              />
+              addKind === null ? (
+                <div data-testid="add-kind" className={`p-3 rounded-2xl border space-y-2 ${isDark ? 'bg-[#1E2330] border-white/[0.08]' : 'bg-rose-50/40 border-rose-200'}`}>
+                  <p className="text-xs font-bold">{isAr ? 'تضيف مين؟' : 'Who do you want to add?'}</p>
+                  <button type="button" disabled={!canAddChildren} onClick={() => setAddKind('child')} className="w-full p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-[11px] font-bold text-start disabled:opacity-50 cursor-pointer">
+                    {isAr ? 'ابن / ابنة (بالاسم الأول بس)' : 'Son / daughter (first name only)'}
+                  </button>
+                  {!canAddChildren && <p className="text-[10.5px] font-bold text-amber-700">{isAr ? 'عشان تضيف أولاد لازم تضيف الزوج الأول (وهنكمّل اسم الولد باسمه).' : 'To add children, add your husband first (the child carries his name).'}</p>}
+                  <button type="button" onClick={() => setAddKind('member')} className="w-full p-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 text-[11px] font-bold text-start cursor-pointer">
+                    {isAr ? 'زوج / زوجة / أب / أم' : 'Husband / wife / father / mother'}
+                  </button>
+                  <button type="button" onClick={() => setShowAddMemberModal(false)} className="text-[11px] font-bold text-slate-500 cursor-pointer">{isAr ? 'إلغاء' : 'Cancel'}</button>
+                </div>
+              ) : addKind === 'child' ? (
+                <AddChildForm
+                  token={token}
+                  isAr={isAr}
+                  isDark={isDark}
+                  fatherName={personalInfo.gender === 'female' ? (family.data?.members.find((m) => m.relationship === 'husband' && m.approval_status !== 'rejected')?.name ?? '') : account.name}
+                  onCancel={() => setShowAddMemberModal(false)}
+                  onSent={() => { setShowAddMemberModal(false); family.reload(); }}
+                />
+              ) : (
+                <AddMemberForm
+                  token={token}
+                  isAr={isAr}
+                  isDark={isDark}
+                  gender={personalInfo.gender}
+                  onCancel={() => setShowAddMemberModal(false)}
+                  onSent={() => { setShowAddMemberModal(false); family.reload(); }}
+                />
+              )
             ) : (
               <p className={`p-3 rounded-xl text-[11px] font-bold ${isDark ? 'bg-[#1E2330] text-amber-300' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
                 {isAr ? 'سجّل دخول برقم موبايلك الأول عشان تضيف فرد جديد.' : 'Sign in with your phone number first to add a family member.'}

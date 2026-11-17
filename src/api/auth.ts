@@ -7,6 +7,9 @@ import { rememberTrialDays } from '../utils/trialDays';
 export interface OtpSent {
   phone_masked: string;
   registering: boolean;
+  /** This member has a fixed code set by an admin: no SMS is sent; `fixed_until` is the end date (null = no end date). Never the code. */
+  member_fixed?: boolean;
+  fixed_until?: string | null;
   code_length: number;
   expires_in: number;
   resend_after: number;
@@ -38,6 +41,8 @@ export const phoneHasCard = (phone: string) =>
 export interface CardOtpSent {
   has_phone: boolean;
   phone_masked?: string;
+  member_fixed?: boolean;
+  fixed_until?: string | null;
   code_length?: number;
   expires_in?: number;
   resend_after?: number;
