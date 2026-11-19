@@ -33,6 +33,8 @@ import { ErrorState, ListSkeleton, LoadMore } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
 import { StoreDetailView } from './StoreDetailView';
 import { usePopupHash } from '../utils/popupHash';
+import { DiscountTag } from './DiscountInfoPopup';
+import { productDiscountInfo, offerDiscountInfo, paymentDiscountInfo } from '../utils/discountInfo';
 
 type Sort = 'newest' | 'price_asc' | 'price_desc' | 'discount';
 
@@ -195,9 +197,9 @@ export const ProductsView: React.FC<ProductsViewProps> = ({ query, onQueryChange
 
                     {member && product.discount != null && (
                       <div className="absolute top-2 right-2">
-                        <span className="px-2 py-0.5 bg-[#941946] text-white text-[9px] font-black rounded-lg shadow-sm">
+                        <DiscountTag info={() => productDiscountInfo({ was: product.old_price, now: product.price, percent: product.discount }, true, isAr)} className="px-2 py-0.5 bg-[#941946] text-white text-[9px] font-black rounded-lg shadow-sm inline-block">
                           {isAr ? `وفر ${product.discount}%` : `Save ${product.discount}%`}
-                        </span>
+                        </DiscountTag>
                       </div>
                     )}
                   </div>

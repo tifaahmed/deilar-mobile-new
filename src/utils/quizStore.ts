@@ -2,6 +2,7 @@ import { useSyncExternalStore, useMemo } from 'react';
 import { apiGet, apiGetAuth, apiPost, ApiError } from '../api/http';
 import { getSession } from './session';
 import { reportClientError } from './reportError';
+import { applyShareState } from './quizLimit';
 
 /**
  * The quiz game's answers, kept on the phone and sent to the backend in the background.
@@ -45,7 +46,8 @@ const rulesOf = (): QuizRules | null => {
 };
 
 /** Keeps the rules in a reply (`points_wrong`, `speed_tiers`) for offline play. */
-function saveRules(d: { points_wrong?: number; speed_tiers?: SpeedTier[] }): void {
+function saveRules(d: { points_wrong?: number; speed_tiers?: SpeedTier[]; share_bonus_plays_today?: number; share_refills_left_today?: number }): void {
+  applyShareState(d);
   if (typeof d.points_wrong !== 'number') return;
   write(RULES_KEY, JSON.stringify({ points_wrong: Math.min(0, d.points_wrong), speed_tiers: d.speed_tiers } satisfies QuizRules));
 }
@@ -144,6 +146,10 @@ interface LoyaltyData {
   wallet_min_topup?: number;
   wallet_membership_enabled?: boolean;
   points_max_per_order?: number | null;
+  /** Plays a day per section, and what sharing the referral code added today (on every section). */
+  plays_per_day?: number;
+  share_bonus_plays_today?: number;
+  share_refills_left_today?: number;
 }
 
 const moneyOf = (d: LoyaltyData): Money | undefined =>

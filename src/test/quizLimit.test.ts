@@ -74,3 +74,51 @@ describe('daily plays per section', () => {
     expect(formatCountdown(500)).toBe('00:00:01');
   });
 });
+
+import { allowanceToday, applyShareState, shareBonusToday } from '../utils/quizLimit';
+
+describe('sharing the referral code refills the plays', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 27, 15, 30, 0));
+    localStorage.clear();
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it('a granted share opens one more play on EVERY section for today only', () => {
+    registerPlay(FOOTBALL);
+    registerPlay(FAWAZEER);
+    expect(lockedSections([FOOTBALL, FAWAZEER])).toEqual([FOOTBALL, FAWAZEER]);
+
+    applyShareState({ bonus_plays_today: 1, refills_left_today: 0 });
+
+    expect(allowanceToday()).toBe(PLAYS_PER_DAY + 1);
+    expect(lockedSections([FOOTBALL, FAWAZEER])).toEqual([]);
+
+    // The extra play is used too: locked again.
+    registerPlay(FOOTBALL);
+    expect(lockedSections([FOOTBALL, FAWAZEER])).toEqual([FOOTBALL]);
+
+    // Midnight: the bonus is gone with the plays.
+    vi.setSystemTime(new Date(2026, 9, 28, 0, 0, 1));
+    expect(shareBonusToday()).toBe(0);
+    expect(allowanceToday()).toBe(PLAYS_PER_DAY);
+  });
+
+  it('useQuizLimit unlocks the moment the bonus arrives', () => {
+    registerPlay(FOOTBALL);
+    const { result } = renderHook(() => useQuizLimit(FOOTBALL));
+    expect(result.current.locked).toBe(true);
+
+    act(() => applyShareState({ share_bonus_plays_today: 1, share_refills_left_today: 0 }));
+
+    expect(result.current.locked).toBe(false);
+    expect(result.current.left).toBe(1);
+  });
+
+  it('a reply without the new fields changes nothing', () => {
+    applyShareState({ bonus_plays_today: 1 });
+    applyShareState({});
+    expect(shareBonusToday()).toBe(1);
+  });
+});

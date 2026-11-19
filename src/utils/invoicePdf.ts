@@ -22,6 +22,8 @@ export interface InvoiceData {
   total: number;
   /** What the member's wallet paid (the server's figure). */
   wallet?: number;
+  /** Pounds taken off by loyalty points (the server's figure). */
+  points?: number;
   /** What is left to pay in real money (the server's figure); only drawn together with `wallet`. */
   due?: number | null;
   /** Everything already paid on the order (wallet part included). */
@@ -96,8 +98,9 @@ export function build(inv: InvoiceData, isAr: boolean): HTMLElement {
   if (inv.saved && inv.saved > 0) totals.append(row(t('وفّرت بكارت ديلر', 'Saved with your card'), money(inv.saved)));
   if (inv.delivery != null) totals.append(row(t('التوصيل', 'Delivery'), inv.delivery > 0 ? money(inv.delivery) : t('مجاناً', 'Free')));
   totals.append(row(t('الإجمالي', 'Total'), money(inv.total), true));
-  if (inv.wallet && inv.wallet > 0) {
-    totals.append(row(t('مدفوع من المحفظة', 'Paid from wallet'), `- ${money(inv.wallet)}`));
+  if (inv.points && inv.points > 0) totals.append(row(t('خصم نقاط الولاء', 'Loyalty points discount'), `- ${money(inv.points)}`));
+  if ((inv.wallet && inv.wallet > 0) || (inv.points && inv.points > 0)) {
+    if (inv.wallet && inv.wallet > 0) totals.append(row(t('مدفوع من المحفظة', 'Paid from wallet'), `- ${money(inv.wallet)}`));
     if (inv.due != null) totals.append(row(t('المتبقي (فلوس حقيقية)', 'Remaining (real money)'), money(inv.due), true));
   }
   if (inv.paid && inv.paid > 0) totals.append(row(t('اللي اتدفع', 'Total paid'), money(inv.paid)));

@@ -6,6 +6,7 @@ import { ApiError } from '../api/http';
 import { useLanguage } from '../context/LanguageContext';
 import { reportClientError } from '../utils/reportError';
 import { ImageViewer } from './ImageViewer';
+import { TransfersPanel } from './TransfersPanel';
 
 const Avatar: React.FC<{ name: string | null; url?: string | null; head: boolean }> = ({ name, url, head }) => {
   const [broken, setBroken] = useState(false);
@@ -111,6 +112,7 @@ const RelativeTools: React.FC<{ token: string; p: FamilyCirclePerson; onChanged:
 const Person: React.FC<{ p: FamilyCirclePerson; dark: boolean; token: string; onCard: (number: string) => void; onChanged: () => void }> = ({ p, dark, token, onCard, onChanged }) => {
   const { isAr } = useLanguage();
   const [open, setOpen] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const head = p.is_primary;
   const panel = `family-person-${p.id}`;
 
@@ -179,6 +181,15 @@ const Person: React.FC<{ p: FamilyCirclePerson; dark: boolean; token: string; on
                   <Award className="w-3 h-3" />{b.title}
                 </span>
               ))}
+            </div>
+          )}
+
+          {!p.is_me && p.membership_number && p.approval_status !== 'rejected' && (
+            <div>
+              <button type="button" data-testid={`share-points-${p.id}`} onClick={() => setSharing((v) => !v)} className="w-full rounded-xl bg-sky-600 py-2 text-xs font-black text-white cursor-pointer">
+                {sharing ? (isAr ? 'إخفاء' : 'Hide') : isAr ? `🤝 شارك نقاط مع ${p.name || 'ده'}` : `🤝 Share points with ${p.name || 'them'}`}
+              </button>
+              {sharing && <div className="mt-2"><TransfersPanel kindOnly="points" initialWho={p.membership_number} noteWhenOff /></div>}
             </div>
           )}
 

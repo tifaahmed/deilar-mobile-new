@@ -12,6 +12,14 @@ export const PLAYS_PER_DAY = 1;
 
 const USAGE_KEY = 'deilar_quiz_daily';
 const NOTIFIED_KEY = 'deilar_quiz_notified';
+/** Extra plays earned TODAY by sharing the referral code (on every section) and how many refills are left today (null = not known). */
+const BONUS_KEY = 'deilar_quiz_share_bonus';
+
+interface ShareBonus {
+  day: string;
+  bonus: number;
+  left: number | null;
+}
 
 interface DayUsage {
   day: string;
@@ -63,6 +71,33 @@ export const nextOpenAt = (at: number = Date.now()): number => {
   return d.getTime();
 };
 
+const bonusState = (at: number = Date.now()): ShareBonus => {
+  const b = parse<ShareBonus | null>(read(BONUS_KEY), null);
+  return b && b.day === dayKey(at) ? b : { day: dayKey(at), bonus: 0, left: null };
+};
+
+/** Extra plays on EVERY section today, earned by sharing the referral code (0 on a new day). The backend keeps the same count for points. */
+export const shareBonusToday = (at: number = Date.now()): number => bonusState(at).bonus;
+
+/** Plays a section allows today: the daily one plus what sharing earned. */
+export const allowanceToday = (at: number = Date.now()): number => PLAYS_PER_DAY + shareBonusToday(at);
+
+/** Stores what the backend says about today's share refills (from the share reply, `GET /loyalty` or the upload reply). */
+export function applyShareState(s: { share_bonus_plays_today?: number; bonus_plays_today?: number; share_refills_left_today?: number; refills_left_today?: number }): void {
+  const bonus = s.bonus_plays_today ?? s.share_bonus_plays_today;
+  const left = s.refills_left_today ?? s.share_refills_left_today;
+  if (bonus === undefined && left === undefined) return;
+  const cur = bonusState();
+  write(BONUS_KEY, { day: cur.day, bonus: bonus ?? cur.bonus, left: left ?? cur.left } satisfies ShareBonus);
+}
+
+/** Refills left today (null = not known yet: the member is shown the share offer anyway). */
+export const useShareRefillsLeft = (): number | null => {
+  const raw = useSyncExternalStore(subscribe, () => read(BONUS_KEY));
+  void raw;
+  return bonusState().left;
+};
+
 const usageOf = (all: Usage, key: string, at: number = Date.now()): number => (all[key]?.day === dayKey(at) ? all[key].count : 0);
 
 /** Plays already started today in a section. */
@@ -91,10 +126,11 @@ export interface QuizLimit {
 
 /** A section's allowance today; while it is used up, re-renders every second so a countdown can run (and flips when it ends). */
 export function useQuizLimit(key: string): QuizLimit {
-  const raw = useSyncExternalStore(subscribe, () => read(USAGE_KEY));
+  const raw = useSyncExternalStore(subscribe, () => `${read(USAGE_KEY)}|${read(BONUS_KEY)}`);
   const [now, setNow] = useState(() => Date.now());
-  const used = usageOf(parse<Usage>(raw, {}), key, now);
-  const locked = used >= PLAYS_PER_DAY;
+  const used = usageOf(parse<Usage>(read(USAGE_KEY), {}), key, now);
+  const allowed = allowanceToday(now);
+  const locked = used >= allowed;
 
   useEffect(() => {
     setNow(Date.now());
@@ -103,17 +139,17 @@ export function useQuizLimit(key: string): QuizLimit {
     return () => clearInterval(id);
   }, [locked, raw]);
 
-  return { used, left: Math.max(0, PLAYS_PER_DAY - used), locked, msLeft: locked ? Math.max(0, nextOpenAt(now) - now) : 0 };
+  return { used, left: Math.max(0, allowed - used), locked, msLeft: locked ? Math.max(0, nextOpenAt(now) - now) : 0 };
 }
 
 /** The sections (by key) whose allowance is used up today, with when each opens again. */
 export function lockedSections(keys: string[], at: number = Date.now()): string[] {
   const all = parse<Usage>(read(USAGE_KEY), {});
-  return keys.filter((k) => usageOf(all, k, at) >= PLAYS_PER_DAY);
+  return keys.filter((k) => usageOf(all, k, at) >= allowanceToday(at));
 }
 
 /** The raw usage, to re-read when it changes. */
-export const useUsageRaw = (): string | null => useSyncExternalStore(subscribe, () => read(USAGE_KEY));
+export const useUsageRaw = (): string | null => useSyncExternalStore(subscribe, () => `${read(USAGE_KEY)}|${read(BONUS_KEY)}`);
 
 /**
  * Sections that were locked on an earlier day and whose "you can play again" notice has not been shown yet — a player

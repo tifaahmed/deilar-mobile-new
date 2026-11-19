@@ -103,6 +103,19 @@ export async function payOrder(orderCode: string, channel?: OnlineChannel): Prom
   return res.payment;
 }
 
+/** The buyer drops an order that was never paid. It is cancelled (kept in the list as cancelled), never deleted; the server refuses a paid one. */
+export async function cancelOrder(orderCode: string, token?: string): Promise<void> {
+  await apiPost(`/mobile/orders/${encodeURIComponent(orderCode)}/cancel`, {}, undefined, token);
+}
+
+/**
+ * The buyer hides an order they no longer want, after confirming. Nothing is deleted: the order drops out of their lists and the
+ * admin still sees it, flagged. The server refuses (422) once the order has moved on.
+ */
+export async function hideOrder(orderCode: string): Promise<OrderDetail> {
+  return (await apiPost<{ order: OrderDetail }>(`/mobile/orders/${encodeURIComponent(orderCode)}/hide`, { confirm: true })).order;
+}
+
 /** Attaches a transfer receipt (photo) to an order already placed. */
 export async function uploadReceipt(orderCode: string, file: File): Promise<void> {
   const form = new FormData();
@@ -113,11 +126,47 @@ export async function uploadReceipt(orderCode: string, file: File): Promise<void
 }
 
 
+/** One parcel of an order: one store, several stores sharing a warehouse, or the whole order when the shop ships it all together. */
+export interface OrderShipment {
+  id: number;
+  store_ids: number[];
+  store_name: string;
+  subtotal: number;
+  delivery_price: number;
+  free_delivery_threshold: number | null;
+  delivery_free_reason: string | null;
+  /** Printable invoice for this parcel (the backend's page; open it in the browser). */
+  invoice_url: string;
+}
+
+/** What delivery would cost for the basket, split by parcel — written nowhere, same math the order uses. */
+export interface ShippingQuote {
+  goods_total: number;
+  delivery_total: number;
+  shipments: { store_ids: number[]; name: string; subtotal: number; delivery_price: number; free_delivery_threshold: number | null; free: boolean; remaining_for_free: number | null }[];
+}
+
+/** The basket's delivery per parcel. The server prices it; the app only draws the answer. */
+export async function quoteOrder(items: { slug: string; quantity: number }[], opts: { membershipNumber?: string | null; governorate?: string } = {}): Promise<ShippingQuote> {
+  const res = await apiPost<{ data: ShippingQuote }>('/mobile/orders/quote', {
+    items,
+    membership_number: opts.membershipNumber || null,
+    customer_governorate: opts.governorate?.trim() || null,
+  });
+  return res.data;
+}
+
+/** The invoice page in the app's language (the page itself is the backend's, printable / "Save as PDF"). */
+export function invoiceLink(url: string, isAr: boolean): string {
+  return `${url}${url.includes('?') ? '&' : '?'}lang=${isAr ? 'ar' : 'en'}`;
+}
+
 export interface OrderItem {
   id: number;
   slug: string;
   name: string;
   image: string | null;
+  store_id?: number | null;
   quantity: number;
   old_price: number | null;
   new_price: number | null;
@@ -161,6 +210,10 @@ export interface OrderDetail {
   refunded_amount?: number;
   can_pay_online?: boolean;
   /** Paid and not shipped yet: the buyer may ask for the money back (an admin decides). */
+  /** The order is still untouched (nothing paid, approved or shipped): the buyer may hide it. The server decides. */
+  can_hide?: boolean;
+  /** The buyer hid this order; it is left out of their lists (the admin still sees it). */
+  hidden_by_buyer?: boolean;
   can_request_refund?: boolean;
   refund_requested?: boolean;
   delivery_free_reason: string | null;
@@ -174,6 +227,9 @@ export interface OrderDetail {
   accepts_receipts: boolean;
   receipts: unknown[];
   items: OrderItem[];
+  /** The order split by parcel; empty on orders placed before the split (draw the order as before). */
+  shipments?: OrderShipment[];
+  invoice_all_url?: string;
 }
 
 /** An order by its code — the code is the key, like on the website. Resolves to null when there is no such order. */

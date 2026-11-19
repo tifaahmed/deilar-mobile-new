@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { DiscountTag } from './DiscountInfoPopup';
+import { offerDiscountInfo } from '../utils/discountInfo';
 import { useSwipeDismiss } from '../hooks/useSwipeDismiss';
 import {
   ArrowRight,
@@ -146,7 +148,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
 
         {offer && (
           <div className="absolute top-3 left-3">
-            <span className="px-2.5 py-1 bg-emerald-600 text-white text-[11px] font-black rounded-xl shadow-xs">{offer}</span>
+            <DiscountTag info={() => offerDiscountInfo({ name: title, label: offer }, isAr)} className="px-2.5 py-1 bg-emerald-600 text-white text-[11px] font-black rounded-xl shadow-xs inline-block">{offer}</DiscountTag>
           </div>
         )}
 
@@ -199,6 +201,37 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({ slug, preview,
                 {isAr ? 'متجر إلكتروني فقط' : 'Online store only'}
               </span>
             )}
+          </div>
+        )}
+
+        {store?.ships && store.shipping && (
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3 space-y-1.5">
+            <p className="flex items-center gap-1.5 text-[11px] font-extrabold text-emerald-800">
+              <Truck className="w-3.5 h-3.5" aria-hidden="true" />
+              {isAr ? 'الشحن' : 'Shipping'}
+            </p>
+            {[
+              { name: isAr ? 'كل المحافظات' : 'All governorates', price: store.shipping.price, free: store.shipping.free_threshold },
+              // A governorate without its own figure follows the store's.
+              ...store.shipping.rates.map((r) => ({
+                name: r.name,
+                price: r.price ?? store.shipping!.price,
+                free: r.free_threshold ?? store.shipping!.free_threshold,
+              })),
+            ].map((row) => (
+              <div key={row.name} className="flex flex-wrap items-center justify-between gap-x-3 text-[11px]">
+                <span className="font-bold text-slate-700">{row.name}</span>
+                <span className="text-slate-600">
+                  {row.price === null
+                    ? isAr ? 'اسأل المتجر' : 'Ask the store'
+                    : row.price === 0
+                      ? isAr ? 'شحن مجاني' : 'Free shipping'
+                      : `${row.price.toLocaleString(isAr ? 'ar-EG' : 'en-US')} ${currency}`}
+                  {row.free !== null && row.price !== 0 &&
+                    ` · ${isAr ? 'مجاني من' : 'free from'} ${row.free.toLocaleString(isAr ? 'ar-EG' : 'en-US')} ${currency}`}
+                </span>
+              </div>
+            ))}
           </div>
         )}
 

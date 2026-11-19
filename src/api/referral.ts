@@ -90,3 +90,14 @@ export interface ReferralPreview {
 /** Looks the code up and writes NOTHING. Throws `ApiError` (422) whose `reason` says why not (disabled|not_found|self|mutual|already_referred|company|already_paid). */
 export const previewReferral = (token: string, number: string) =>
   apiPost<{ data: ReferralPreview }>('/referral/preview', { number }, undefined, token).then((r) => r.data);
+
+/** The member shared their referral code: today's quiz plays come back on every section (capped per day by the admin). */
+export interface ShareRefill {
+  granted: boolean;
+  bonus_plays_today: number;
+  refills_left_today: number;
+  plays_per_day: number;
+}
+
+export const markReferralShared = (token: string) =>
+  apiPost<{ data: ShareRefill }>('/referral/shared', {}, undefined, token).then((r) => r.data);

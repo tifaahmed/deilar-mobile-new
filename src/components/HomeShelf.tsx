@@ -5,6 +5,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { Link, type SortKey } from '../router';
 import { Thumb } from './ui/Thumb';
 import { offerLabel } from './StoreDetailView';
+import { DiscountTag } from './DiscountInfoPopup';
+import { offerDiscountInfo } from '../utils/discountInfo';
 
 const MAX_ITEMS = 12; // the whole strip is fetched at once; «see more» closes it
 
@@ -58,7 +60,7 @@ export const HomeShelf: React.FC<HomeShelfProps> = ({ kind, sort, title, items: 
               >
                 <div className="relative">
                   <Thumb src={store ? s.logo : f.logo} alt={name} kind={store ? 'store' : 'facility'} fit="contain" className="w-full h-20 bg-white" />
-                  {badge && <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-black shadow-xs">{badge}</span>}
+                  {badge && <DiscountTag info={() => offerDiscountInfo({ name, label: badge }, isAr)} className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-black shadow-xs">{badge}</DiscountTag>}
                 </div>
                 <div className="p-2 space-y-1">
                   <p className="text-[11px] font-black text-slate-800 leading-tight line-clamp-2 min-h-[1.9rem]" dir="auto">{name}</p>

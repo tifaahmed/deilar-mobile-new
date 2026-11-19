@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { Product, CartItem } from '../types';
 import { ApiError } from '../api/http';
-import { fetchOrder, payOrder, placeOrder, uploadReceipt, type OnlineChannel, type PlacedOrder } from '../api/orders';
+import { fetchOrder, payOrder, placeOrder, quoteOrder, uploadReceipt, type OnlineChannel, type PlacedOrder, type ShippingQuote } from '../api/orders';
 import { useSession } from '../utils/session';
 import { useLoyalty } from '../utils/quizStore';
 import { PaymobPixel } from './PaymobPixel';
@@ -37,6 +37,8 @@ import { rememberOrder } from '../utils/orders';
 import { getArea } from '../utils/area';
 import { downloadInvoicePdf } from '../utils/invoicePdf';
 import { navigate, routeHref } from '../router';
+import { DiscountTag } from './DiscountInfoPopup';
+import { paymentDiscountInfo } from '../utils/discountInfo';
 import { PointsBadge } from './PointsBadge';
 import { pointsEligibleEgp } from '../utils/pointsCaps';
 import { useLanguage } from '../context/LanguageContext';
@@ -175,13 +177,29 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const whatsappTo = (shop.data?.contact.whatsapp ?? '').replace(/\D/g, '');
   const deliveryPrice = shop.data?.delivery_price ?? 35;
   const freeFrom = shop.data ? shop.data.free_delivery_threshold : 500;
-  const shippingFee = freeFrom !== null && totalCartPrice >= freeFrom ? 0 : deliveryPrice;
+  // The server's per-parcel quote replaces this estimate when it answers (several stores = several parcels, each with its own price).
+  const [quote, setQuote] = useState<ShippingQuote | null>(null);
+  const quoteKey = JSON.stringify(cart.map((item) => [item.product.slug, item.quantity]));
+  useEffect(() => {
+    if (!isOpen || cart.length === 0) { setQuote(null); return; }
+    let live = true;
+    const timer = setTimeout(() => {
+      quoteOrder(cart.map((item) => ({ slug: item.product.slug, quantity: item.quantity })), { membershipNumber: session.cardNumber, governorate: customerGovernorate })
+        .then((q) => { if (live) setQuote(q && Array.isArray(q.shipments) && q.shipments.length > 0 ? q : null); })
+        .catch((e) => { if (live) setQuote(null); reportClientError('Shipping quote failed', e); });
+    }, 400);
+    return () => { live = false; clearTimeout(timer); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, quoteKey, customerGovernorate, session.cardNumber]);
+  const parcels = quote && quote.shipments.length > 1 ? quote.shipments : null;
+  const estimatedFee = freeFrom !== null && totalCartPrice >= freeFrom ? 0 : deliveryPrice;
+  const shippingFee = quote ? quote.delivery_total : estimatedFee;
   // Pay-on-delivery fee from the admin; 0 means nothing is shown anywhere.
   const codFee = paymentMethod === 'cod' ? shop.data?.cod_fee ?? 0 : 0;
   const cardAvailable = !!methods?.online_card;
   const onlineWalletAvailable = !!methods?.online_wallet;
   const onlineAvailable = cardAvailable || onlineWalletAvailable;
-  const remainingForFree = freeFrom !== null && shippingFee > 0 ? Math.max(0, freeFrom - totalCartPrice) : 0;
+  const remainingForFree = quote ? (quote.shipments.length === 1 ? quote.shipments[0].remaining_for_free ?? 0 : 0) : freeFrom !== null && shippingFee > 0 ? Math.max(0, freeFrom - totalCartPrice) : 0;
   // Loyalty points cut the price of the products that accept them, then the wallet pays for ANY product (never delivery): both are
   // estimates while shopping, mirroring the server's rule (whole pounds); the server's figures replace them once the order is placed.
   const loyalty = useLoyalty();
@@ -198,6 +216,8 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const walletUsable = Math.min(walletBalance, Math.max(0, totalCartPrice - pointsEgp));
   const walletShown = placed ? placed.wallet_amount ?? 0 : useWallet ? walletUsable : 0;
   // An estimate while shopping; once the order is placed the server's figures replace it.
+  // What the buyer saved in all: the card price plus the points and the wallet pressed on (the "You saved" badge counted only the card).
+  const totalSaved = totalCartSavings + pointsEgp + walletShown;
   const finalTotal = placed ? placed.amount_due ?? placed.total_amount : Math.max(0, totalCartPrice + shippingFee + codFee - pointsEgp - walletShown);
 
   useEffect(() => {
@@ -225,6 +245,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
         delivery: placed ? placed.delivery_price : shippingFee,
         total: placed ? placed.total_amount : totalCartPrice + shippingFee + codFee,
         wallet: walletShown,
+        points: pointsEgp,
         due: finalTotal,
         payment: paymentMethod === 'wallet' ? 'تحويل محفظة إلكترونية' : paymentMethod === 'online' ? 'دفع إلكتروني' : 'الدفع عند الاستلام',
         member: totalCartSavings > 0 ? session.cardNumber : null,
@@ -378,7 +399,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
     message += `• الإجمالي بعد خصم كارت ديلر: ${totalCartPrice} ج.م\n`;
     message += `• مصاريف الشحن: ${shippingFee === 0 ? 'مجاناً (عرض ديلر)' : `${shippingFee} ج.م`}\n`;
     message += `• *المبلغ الإجمالي المطلوب تحويله: ${finalTotal} ج.م*\n`;
-    message += `• إجمالي التوفير: ${totalCartSavings} ج.م\n\n`;
+    message += `• إجمالي التوفير: ${totalSaved} ج.م\n\n`;
 
     message += `💳 *طريقة الدفع المحددة:*\n${paymentLabel}\n\n`;
     message += `من فضلكم أكّدوا استلام الحوالة وابدأوا تجهزوا الطلب وتشحنوه. شكراً!`;
@@ -444,7 +465,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <div className="space-y-2.5 divide-y divide-slate-100 max-h-72 overflow-y-auto pr-1">
                     {cart.map((item) => (
                       <div key={item.product.id} className="pt-2.5 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          data-testid="cart-line-link"
+                          onClick={() => { if (!asPage) onClose(); navigate(routeHref({ product: item.product.slug })); }}
+                          className="flex items-center gap-2.5 text-start cursor-pointer min-w-0"
+                        >
                           <img
                             src={item.product.image}
                             alt={item.product.name}
@@ -469,7 +495,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                               </span>
                             </div>
                           </div>
-                        </div>
+                        </button>
 
                         {/* Quantity Controller */}
                         <div className="flex items-center gap-1.5 shrink-0">
@@ -506,14 +532,39 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     </div>
                     {totalCartSavings > 0 && (
                       <div className="flex justify-between text-emerald-600 font-bold">
-                        <span>{isAr ? 'خصم وتوفير كارت ديلر:' : 'Deilar card discount:'}</span>
+                        <DiscountTag className="underline decoration-dotted" info={() => paymentDiscountInfo('card', [
+                          { label: isAr ? 'إجمالي المنتجات بالسعر الأصلي' : 'Products at the original price', value: `${totalCartPrice + totalCartSavings} ${isAr ? 'ج.م' : 'EGP'}` },
+                          { label: isAr ? 'بسعر العضو' : 'At the member price', value: `${totalCartPrice} ${isAr ? 'ج.م' : 'EGP'}` },
+                          { label: isAr ? 'الخصم' : 'Discount', value: `${totalCartSavings} ${isAr ? 'ج.م' : 'EGP'}` },
+                        ], isAr)}>{isAr ? 'خصم وتوفير كارت ديلر:' : 'Deilar card discount:'} ⓘ</DiscountTag>
                         <span>-{totalCartSavings} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                     )}
+                    {parcels ? (
+                      <div data-testid="parcel-lines" className="space-y-1">
+                        <p className="text-slate-600 font-bold">{isAr ? `الطلب هيتقسم على ${parcels.length} شحنات:` : `Your order ships in ${parcels.length} parcels:`}</p>
+                        {parcels.map((p, i) => (
+                          <div key={i} className="rounded-lg bg-white border border-slate-200 px-2 py-1.5 space-y-0.5">
+                            <div className="flex justify-between text-slate-700">
+                              <span className="font-bold">{p.name || (isAr ? `شحنة ${i + 1}` : `Parcel ${i + 1}`)}</span>
+                              <span>{p.delivery_price === 0 ? (isAr ? 'شحن مجاني' : 'Free shipping') : `${p.delivery_price} ${isAr ? 'ج.م' : 'EGP'}`}</span>
+                            </div>
+                            {p.remaining_for_free != null && p.remaining_for_free > 0 && (
+                              <p className="text-[10px] text-amber-700 font-bold">{isAr ? `ضيف ${p.remaining_for_free} ج.م من منتجات الشحنة دي وخد شحنها ببلاش` : `Add ${p.remaining_for_free} EGP from this parcel to ship it free`}</p>
+                            )}
+                          </div>
+                        ))}
+                        <div className="flex justify-between text-slate-600">
+                          <span>{isAr ? 'إجمالي الشحن:' : 'Total shipping:'}</span>
+                          <span>{shippingFee === 0 ? (isAr ? 'مجاناً' : 'Free') : `${shippingFee} ${isAr ? 'ج.م' : 'EGP'}`}</span>
+                        </div>
+                      </div>
+                    ) : (
                     <div className="flex justify-between text-slate-600">
                       <span>{isAr ? 'مصاريف الشحن والتوصيل:' : 'Shipping & delivery:'}</span>
-                      <span>{shippingFee === 0 ? (isAr ? `مجاناً (لطلبات ${freeFrom} ج.م فأكثر)` : `Free (orders of ${freeFrom} EGP or more)`) : `${shippingFee} ${isAr ? 'ج.م' : 'EGP'}`}</span>
+                      <span>{shippingFee === 0 ? (!quote && freeFrom !== null ? (isAr ? `مجاناً (لطلبات ${freeFrom} ج.م فأكثر)` : `Free (orders of ${freeFrom} EGP or more)`) : (isAr ? 'مجاناً' : 'Free')) : `${shippingFee} ${isAr ? 'ج.م' : 'EGP'}`}</span>
                     </div>
+                    )}
                     {codFee > 0 && (
                       <div className="flex justify-between text-slate-600">
                         <span>{isAr ? 'رسوم الدفع عند الاستلام:' : 'Cash on delivery fee:'}</span>
@@ -537,13 +588,20 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                     )}
                     {pointsEgp > 0 && (
                       <div data-testid="points-line-cart" className="flex justify-between text-amber-800 font-bold">
-                        <span>{isAr ? `⭐ خصم نقاط الولاء (${pointsSpent} نقطة):` : `⭐ Loyalty points discount (${pointsSpent} points):`}</span>
+                        <DiscountTag className="underline decoration-dotted" info={() => paymentDiscountInfo('points', [
+                          { label: isAr ? 'النقاط المستخدمة' : 'Points used', value: `${pointsSpent}` },
+                          ...(pointsRate > 0 ? [{ label: isAr ? 'سعر النقطة' : 'Rate', value: isAr ? `كل ${pointsRate} نقطة = 1 ج.م` : `${pointsRate} points = 1 EGP` }] : []),
+                          { label: isAr ? 'الخصم' : 'Discount', value: `${pointsEgp} ${isAr ? 'ج.م' : 'EGP'}` },
+                        ], isAr)}>{isAr ? `⭐ خصم نقاط الولاء (${pointsSpent} نقطة):` : `⭐ Loyalty points discount (${pointsSpent} points):`} ⓘ</DiscountTag>
                         <span>-{pointsEgp} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                     )}
                     {walletShown > 0 && (
                       <div data-testid="wallet-line-cart" className="flex justify-between text-violet-800 font-bold">
-                        <span>{isAr ? '👛 مدفوع من محفظتك:' : '👛 Paid from your wallet:'}</span>
+                        <DiscountTag className="underline decoration-dotted" info={() => paymentDiscountInfo('wallet', [
+                          { label: isAr ? 'رصيد المحفظة' : 'Wallet balance', value: `${walletBalance} ${isAr ? 'ج.م' : 'EGP'}` },
+                          { label: isAr ? 'اتدفع منها' : 'Paid from it', value: `${walletShown} ${isAr ? 'ج.م' : 'EGP'}` },
+                        ], isAr)}>{isAr ? '👛 مدفوع من محفظتك:' : '👛 Paid from your wallet:'} ⓘ</DiscountTag>
                         <span>-{walletShown} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
                     )}
@@ -590,7 +648,7 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   </div>
                 </div>
                 <span className="text-[10px] font-bold text-emerald-700 bg-white px-2 py-1 rounded-lg border border-emerald-200 shadow-2xs">
-                  {isAr ? 'وفرت' : 'You saved'} +{totalCartSavings} {isAr ? 'ج.م' : 'EGP'}
+                  {isAr ? 'وفرت' : 'You saved'} +{totalSaved} {isAr ? 'ج.م' : 'EGP'}
                 </span>
               </div>
 
@@ -919,6 +977,12 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                   <div className="flex justify-between">
                     <span className="text-slate-500">{isAr ? 'مصاريف الشحن:' : 'Shipping:'}</span>
                     <span className="font-bold text-emerald-700">{isAr ? 'مجاناً' : 'Free'}</span>
+                  </div>
+                )}
+                {pointsEgp > 0 && (
+                  <div data-testid="points-line" className="flex justify-between text-amber-800">
+                    <span>⭐ {isAr ? `خصم نقاط الولاء (${pointsSpent} نقطة):` : `Loyalty points discount (${pointsSpent} points):`}</span>
+                    <span className="font-bold font-mono">- {pointsEgp} {isAr ? 'ج.م' : 'EGP'}</span>
                   </div>
                 )}
                 {walletShown > 0 && (

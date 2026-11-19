@@ -62,18 +62,13 @@ describe('picking the questions of a play', () => {
     }
   });
 
-  it('brings back questions answered wrong when too few new ones are left, but never solved ones', () => {
-    // 26 solved, ids 31-40 answered wrong, and only ids 1-4 never met: the play is those four plus the ones to retry.
+  it('never brings back a question answered wrong either: only never-answered ones are offered', () => {
     solve(small, smallIdsRange(5, 30));
     small.slice(30).forEach((q) => recordProgress(QUIZ, small, q.id, false));
-    const solved = new Set(smallIdsRange(5, 30));
 
     for (let run = 0; run < 20; run++) {
       const deck = pickQuestions(QUIZ, small);
-      expect(deck).toHaveLength(PLAY_SIZE);
-      expect(deck.filter((q) => solved.has(q.id))).toHaveLength(0);
-      expect(deck.filter((q) => q.id > 30)).toHaveLength(6);
-      expect(deck.filter((q) => q.id <= 4)).toHaveLength(4);
+      expect(deck.map((q) => q.id).sort((x, y) => x - y)).toEqual([1, 2, 3, 4]); // all that was never answered, nothing more
     }
   });
 
@@ -96,26 +91,25 @@ describe('picking the questions of a play', () => {
     }
   });
 
-  it('only a solved question may fill a play when fewer than ten are left to solve', () => {
-    solve(small, smallIdsRange(1, 35)); // 5 left unsolved
-    const deck = pickQuestions(QUIZ, small);
+  it('gives fewer than ten when fewer are left, and none once the whole section was answered', () => {
+    solve(small, smallIdsRange(1, 35)); // 5 left
+    expect(pickQuestions(QUIZ, small)).toHaveLength(5);
 
-    expect(deck).toHaveLength(PLAY_SIZE);
-    expect(deck.filter((q) => q.id > 35)).toHaveLength(5);
-    expect(deck.filter((q) => q.id <= 35)).toHaveLength(5);
+    small.slice(35).forEach((q) => recordProgress(QUIZ, small, q.id, false));
+    expect(pickQuestions(QUIZ, small)).toHaveLength(0);
   });
 
-  it('starts a new stage with every question when all were solved', () => {
+  it('finishes the stage when every question was answered; the answered ones still stay away', () => {
     small.forEach((q, i) => {
-      const result = recordProgress(QUIZ, small, q.id, true);
+      const result = recordProgress(QUIZ, small, q.id, i % 2 === 0);
       expect(result.stageCompleted).toBe(i === small.length - 1);
     });
 
     expect(getProgress(QUIZ)).toMatchObject({ stage: 2, stagesDone: 1, seen: [], solved: [] });
-    expect(pickQuestions(QUIZ, small)).toHaveLength(PLAY_SIZE);
+    expect(pickQuestions(QUIZ, small)).toHaveLength(0);
   });
 
-  it('ends a stage once every DIFFERENT question is solved, not every id', () => {
+  it('ends a stage once every DIFFERENT question is answered, not every id', () => {
     const twins = [
       { id: 1, difficulty: 1, question: 'أ' },
       { id: 2, difficulty: 1, question: 'أ' },
@@ -126,14 +120,14 @@ describe('picking the questions of a play', () => {
     expect(getProgress(QUIZ).stage).toBe(2);
   });
 
-  it.each(SECTIONS.map((s) => [s.id, s] as const))('walks a whole stage of the %s section without showing any question twice', (_id, section) => {
+  it.each(SECTIONS.map((s) => [s.id, s] as const))('walks the whole %s section without showing any question twice', (_id, section) => {
     const different = new Set(section.questions.map(contentKey)).size;
     const seen = new Set<string>();
     let repeats = 0;
     let plays = 0;
     let completed = false;
 
-    while (!completed && plays < 400) {
+    while (!completed && plays < 2000) {
       plays++;
       const deck = pickQuestions(section.key, section.questions);
       expect(deck.length).toBeGreaterThan(0);
@@ -142,15 +136,15 @@ describe('picking the questions of a play', () => {
       for (const q of deck) {
         if (seen.has(contentKey(q))) repeats++;
         seen.add(contentKey(q));
-        completed = recordProgress(section.key, section.questions, q.id, true).stageCompleted || completed;
+        completed = recordProgress(section.key, section.questions, q.id, q.id % 3 !== 0).stageCompleted || completed;
       }
     }
 
     expect(completed).toBe(true);
     expect(seen.size).toBe(different);
-    // The only repeats allowed are the fillers of the very last play, when fewer than ten were left.
-    expect(repeats).toBeLessThan(PLAY_SIZE);
-    expect(plays).toBeLessThanOrEqual(Math.ceil(different / PLAY_SIZE) + 1);
+    expect(repeats).toBe(0); // answered right or wrong, a question never comes twice
+    expect(plays).toBe(Math.ceil(different / PLAY_SIZE));
+    expect(pickQuestions(section.key, section.questions)).toHaveLength(0);
     expect(getProgress(section.key).stage).toBe(2);
   });
 });

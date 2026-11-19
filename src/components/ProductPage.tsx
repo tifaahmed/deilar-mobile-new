@@ -14,6 +14,8 @@ import { ErrorState, Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
 import { ImageViewer } from './ImageViewer';
 import { SHARE_URL } from '../utils/shareResult';
+import { DiscountTag } from './DiscountInfoPopup';
+import { productDiscountInfo } from '../utils/discountInfo';
 
 interface ProductPageProps {
   slug: string;
@@ -111,7 +113,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
         >
           {detail.loading ? <Skeleton className="w-full h-full" /> : <Thumb src={mainImage} alt={product?.name ?? ''} kind="product" fit="contain" className="w-full h-full" />}
           {member && product?.discount != null && (
-            <span className="absolute top-3 right-3 px-2.5 py-1 bg-[#941946] text-white text-[11px] font-black rounded-xl shadow-sm">{isAr ? `وفر ${product.discount}%` : `Save ${product.discount}%`}</span>
+            <DiscountTag info={() => productDiscountInfo({ was: product.old_price, now: product.price, percent: product.discount }, true, isAr)} className="absolute top-3 right-3 px-2.5 py-1 bg-[#941946] text-white text-[11px] font-black rounded-xl shadow-sm">{isAr ? `وفر ${product.discount}%` : `Save ${product.discount}%`}</DiscountTag>
           )}
         </div>
 
@@ -175,7 +177,7 @@ export const ProductPage: React.FC<ProductPageProps> = ({ slug, cartCount, onAdd
                       product.discount != null && (
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] font-bold text-emerald-700">{isAr ? 'سعر العضو — بكارتك' : 'Member price — with your card'}</span>
-                          <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black">{isAr ? `خصم ${product.discount}%` : `${product.discount}% off`}</span>
+                          <DiscountTag info={() => productDiscountInfo({ was: product.old_price, now: product.price, percent: product.discount }, true, isAr)} className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black">{isAr ? `خصم ${product.discount}%` : `${product.discount}% off`}</DiscountTag>
                         </div>
                       )
                     ) : (

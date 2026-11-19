@@ -56,6 +56,7 @@ import { AddChildForm } from './AddChildForm';
 import { AddMemberForm } from './AddMemberForm';
 import { WalletScreen } from './WalletScreen';
 import { ReferralScreen } from './ReferralScreen';
+import { PointsSharing } from './PointsSharing';
 import { ReferralCodeEntry } from './ReferralCodeEntry';
 import { CardStatusBanner } from './CardStatusBanner';
 import { CardExpiry } from './CardExpiry';
@@ -82,7 +83,7 @@ import { LegalSheet, type LegalKind } from './LegalPages';
 import { DeleteAccountModal } from './DeleteAccountModal';
 import { SHARE_URL } from '../utils/shareResult';
 
-export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay' | 'physical' | 'wallet' | 'invite';
+export type ProfileSubSection = 'card' | 'list' | 'members' | 'support' | 'personal' | 'addresses' | 'theme' | 'pay' | 'physical' | 'wallet' | 'invite' | 'share';
 
 export interface ProfileAccount {
   name: string;
@@ -418,6 +419,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     );
   }
 
+  // /account/share: send loyalty points to a player or a relative, and the log of what was shared.
+  if (activeSection === 'share') {
+    return (
+      <div className={`pb-24 pt-2 animate-in fade-in duration-200 ${isAr ? 'text-right' : 'text-left'}`}>
+        {account.signedIn ? <PointsSharing /> : (
+          <p className="p-3 rounded-xl text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'سجّل دخول الأول عشان تشارك نقاطك.' : 'Sign in first to share your points.'}</p>
+        )}
+      </div>
+    );
+  }
+
   // /account/invite: my code, the QR, the share buttons and who I brought.
   if (activeSection === 'invite') {
     return (
@@ -604,6 +616,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             { key: 'addresses', icon: MapPin, label: isAr ? 'عناويني' : 'Addresses', go: () => setActiveSection('addresses') },
             { key: 'orders', icon: PackageSearch, label: isAr ? 'طلباتي' : 'My orders', go: () => navigate(routeHref({ orders: { code: null } })) },
             ...(account.signedIn ? [{ key: 'wallet', icon: Wallet, label: isAr ? 'محفظتي' : 'My wallet', go: () => setActiveSection('wallet') }] : []),
+            ...(account.signedIn ? [{ key: 'share', icon: Gift, label: isAr ? 'مشاركة نقاط الولاء' : 'Share loyalty points', go: () => setActiveSection('share') }] : []),
             ...(account.signedIn ? [{ key: 'invite', icon: Gift, label: isAr ? 'ادعي صحابك واكسب' : 'Invite friends & earn', go: () => setActiveSection('invite') }] : []),
             ...(account.signedIn ? [{ key: 'physical', icon: CreditCard, label: isAr ? 'طلب كارت فيزيكال' : 'Order a physical card', go: () => navigate(routeHref({ tab: 'mycard', section: 'physical' })) }] : []),
             { key: 'support', icon: Headphones, label: t('tabSupport'), go: () => setActiveSection('support') },

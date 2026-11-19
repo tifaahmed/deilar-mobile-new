@@ -302,3 +302,11 @@ html.dark, .dark {
 @keyframes deilar-float { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(8px,-12px) rotate(18deg); } }
 .deilar-float { animation: deilar-float 5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .deilar-float { animation: none; } }
+
+/* The grip on the right of the maps: a small hint-nudge downward now and then, showing it can be pulled. */
+@keyframes mapHandleNudge {
+  0%, 70%, 100% { transform: translateY(0); }
+  78% { transform: translateY(7px); }
+  86% { transform: translateY(-2px); }
+  93% { transform: translateY(3px); }
+}

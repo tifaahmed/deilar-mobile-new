@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Check, ChevronDown, Copy, Gift, MessageCircle, Share2, Users, Wallet } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
 import { Share } from '@capacitor/share';
+import { navigate } from '../router';
+import { registerReferralShare, type ShareOutcome } from '../utils/referralShare';
 import { fetchReferral, type ReferralInfo, type ReferralReward, type ReferralRow, type ReferralStage } from '../api/referral';
 import { useIsAr } from '../context/LanguageContext';
 import { useSession } from '../utils/session';
@@ -52,6 +54,7 @@ export const ReferralScreen: React.FC = () => {
   const [failed, setFailed] = useState(false);
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shareNotice, setShareNotice] = useState<ShareOutcome>('none');
   const [open, setOpen] = useState<number | null>(null);
 
   useEffect(() => {
@@ -79,12 +82,16 @@ export const ReferralScreen: React.FC = () => {
   const n = (v: number) => formatNumber(v, isAr);
   const cur = isAr ? 'ج.م' : 'EGP';
 
+  /* A share gives today's quiz plays back on every section; never blocks or breaks the share itself. */
+  const shared = () => { void registerReferralShare().then(setShareNotice); };
+
   const share = async () => {
     const text = inviteText(info, isAr);
     try {
       if (Capacitor.isNativePlatform()) await Share.share({ title: isAr ? 'ديلر' : 'Deilar', text, dialogTitle: isAr ? 'ادعي صحابك' : 'Invite friends' });
       else if (navigator.share) await navigator.share({ title: 'Deilar', text });
       else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
+      shared();
     } catch (error) {
       if (!/cancel|abort/i.test(String((error as Error)?.message ?? error))) reportClientError('Referral share failed', error);
     }
@@ -94,6 +101,7 @@ export const ReferralScreen: React.FC = () => {
     try {
       await navigator.clipboard.writeText(inviteText(info, isAr));
       setCopied(true);
+      shared();
       window.setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       reportClientError('Referral copy failed', error);
@@ -138,13 +146,15 @@ export const ReferralScreen: React.FC = () => {
             <button type="button" onClick={() => void share()} className="flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-[#941946] text-white text-sm font-black cursor-pointer" data-testid="referral-share">
               <Share2 className="w-4 h-4" /> {isAr ? 'مشاركة' : 'Share'}
             </button>
-            <a href={`https://wa.me/?text=${encodeURIComponent(inviteText(info, isAr))}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-black" data-testid="referral-whatsapp">
+            <a href={`https://wa.me/?text=${encodeURIComponent(inviteText(info, isAr))}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 px-3 py-3 rounded-2xl bg-emerald-600 text-white text-sm font-black" data-testid="referral-whatsapp" onClick={shared}>
               <MessageCircle className="w-4 h-4" /> {isAr ? 'واتساب' : 'WhatsApp'}
             </a>
           </div>
           <button type="button" onClick={() => void copy()} className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-2xl border-2 border-slate-200 text-slate-700 text-xs font-bold cursor-pointer">
             {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />} {copied ? (isAr ? 'تم النسخ' : 'Copied') : isAr ? 'نسخ الرسالة' : 'Copy message'}
           </button>
+          {shareNotice === 'granted' && <p role="status" data-testid="referral-share-granted" className="rounded-xl bg-emerald-50 p-2 text-xs font-bold text-emerald-700">{isAr ? 'اتفتحت محاولة جديدة في كل الأقسام 🎉' : 'A new play is unlocked in every section 🎉'} <button type="button" onClick={() => navigate('/quiz')} data-testid="referral-back-to-quiz" className="underline cursor-pointer">{isAr ? 'ارجع للعبة' : 'Back to the game'}</button></p>}
+          {shareNotice === 'used' && <p role="status" data-testid="referral-share-used" className="rounded-xl bg-slate-50 p-2 text-xs font-bold text-slate-600">{isAr ? 'شكراً على المشاركة! محاولات النهارده اتجددت قبل كده، وتقدر تفتح غيرها بكرة.' : "Thanks for sharing! Today's plays were already refilled; you can unlock more tomorrow."}</p>}
         </section>
       ) : (
         <p className="p-3 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">{isAr ? 'اعمل كارتك الأول عشان يبقى عندك كود تشاركه.' : 'Create your card first so you have a code to share.'}</p>

@@ -125,6 +125,12 @@ export interface StoreDetail extends BranchPage {
   coupons: { code: string; title: string | null }[];
   ships: boolean;
   ships_everywhere: boolean;
+  /** What shipping costs, from the backend (null price/free_threshold = not set, 0 = free); `rates` are the governorates that differ. */
+  shipping?: {
+    price: number | null;
+    free_threshold: number | null;
+    rates: { governorate_id: number; name: string; price: number | null; free_threshold: number | null }[];
+  } | null;
   youtube_link: string | null;
   app_store_url: string | null;
   google_play_url: string | null;

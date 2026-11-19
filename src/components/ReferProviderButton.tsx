@@ -1,5 +1,6 @@
 import { useFab } from '../utils/floatingFabs';
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { BadgePercent, X, CheckCircle2 } from 'lucide-react';
 import { ApiError, postContactMessage } from '../api/http';
 import { useLanguage } from '../context/LanguageContext';
@@ -99,8 +100,9 @@ export const ReferProviderButton: React.FC = () => {
         </button>
       )}
 
-      {open && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] overflow-y-auto" role="dialog" aria-modal="true" onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
+      {/* In the body, above everything (the map's own controls sit at z 400-500 inside their own layer). */}
+      {open && createPortal(
+        <div className="fixed inset-0 z-[1000] bg-black/50 flex items-start justify-center px-3 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] overflow-y-auto" role="dialog" aria-modal="true" onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
           <div className="w-full max-w-sm bg-white rounded-2xl p-4 space-y-3 text-right ">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-black text-slate-800">{isAr ? 'رشّح مقدم خدمة واستفد بخصم' : 'Recommend a provider, get a discount'}</h2>
@@ -123,7 +125,8 @@ export const ReferProviderButton: React.FC = () => {
               </form>
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

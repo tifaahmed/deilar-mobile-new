@@ -34,7 +34,16 @@ const STATUS_AR: Record<Transfer['status'], string> = { pending: 'مستني', a
 const unitOf = (k: TransferKind, isAr: boolean) => (k === 'points' ? (isAr ? 'نقطة' : 'points') : isAr ? 'جنيه' : 'EGP');
 
 /** Sending points or wallet money to another member by phone or card number, and answering the requests others send. */
-export const TransfersPanel: React.FC = () => {
+export const TransfersPanel: React.FC<{
+  /** Offer only this kind (the loyalty-points screens pass `points`). */
+  kindOnly?: TransferKind;
+  /** A card or phone number to start with (a relative's card on the family list). */
+  initialWho?: string;
+  /** Also draw the log of finished requests (sent, received, declined, cancelled, expired). */
+  withLog?: boolean;
+  /** Say so when the admin has this closed, instead of drawing nothing. */
+  noteWhenOff?: boolean;
+}> = ({ kindOnly, initialWho, withLog, noteWhenOff }) => {
   const isAr = useIsAr();
   const REASONS = isAr ? REASONS_AR : REASONS_EN;
   const STATUS = isAr ? STATUS_AR : STATUS_EN;
@@ -42,24 +51,33 @@ export const TransfersPanel: React.FC = () => {
   const [enabled, setEnabled] = useState(false);
   const [list, setList] = useState<Transfer[]>([]);
   const [kinds, setKinds] = useState<Record<TransferKind, boolean>>({ points: true, wallet: true });
-  const [kind, setKind] = useState<TransferKind>('points');
-  const [who, setWho] = useState('');
+  const [kind, setKind] = useState<TransferKind>(kindOnly ?? 'points');
+  const [who, setWho] = useState(initialWho ?? '');
   const [amount, setAmount] = useState('');
   const [checked, setChecked] = useState<string | null>(null);
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   const load = useCallback(async () => {
     const r = await listTransfers();
     setEnabled(r.enabled);
     setKinds(r.kinds);
-    setKind((k) => (r.kinds[k] ? k : r.kinds.points ? 'points' : 'wallet'));
-    setList(r.transfers);
-  }, []);
+    setKind((k) => (kindOnly ? kindOnly : r.kinds[k] ? k : r.kinds.points ? 'points' : 'wallet'));
+    setList(kindOnly ? r.transfers.filter((t) => t.kind === kindOnly) : r.transfers);
+    setLoaded(true);
+  }, [kindOnly]);
 
   useEffect(() => { void load(); }, [load]);
 
-  if (!enabled) return null;
+  const open = enabled && (!kindOnly || kinds[kindOnly]);
+  if (!open) {
+    return noteWhenOff && loaded ? (
+      <p data-testid="transfers-off" className="rounded-2xl bg-slate-50 border border-slate-200 p-3 text-xs font-bold text-slate-600">
+        {isAr ? 'مشاركة النقاط بين الأعضاء مقفولة دلوقتي. هتظهر هنا أول ما تتفتح.' : 'Sharing points between members is closed right now. It will appear here when it opens.'}
+      </p>
+    ) : null;
+  }
 
   const isCard = /^\d{6,}$/.test(who.trim()) && who.trim().length !== 11;
   const target = isCard ? { card: who.trim() } : { phone: who.trim() };
@@ -113,7 +131,7 @@ export const TransfersPanel: React.FC = () => {
 
       <div className="mt-3 space-y-2">
         <div className="flex gap-2">
-          {(['points', 'wallet'] as const).filter((k) => kinds[k]).map((k) => (
+          {(['points', 'wallet'] as const).filter((k) => kinds[k] && (!kindOnly || k === kindOnly)).map((k) => (
             <button key={k} type="button" onClick={() => setKind(k)} className={`flex-1 rounded-xl py-2 text-sm font-black cursor-pointer ${kind === k ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-700'}`}>
               {k === 'points' ? (isAr ? 'نقاط' : 'Points') : isAr ? 'رصيد المحفظة' : 'Wallet balance'}
             </button>
@@ -139,6 +157,28 @@ export const TransfersPanel: React.FC = () => {
           <button type="button" disabled={busy} onClick={() => answer(cancelTransfer, t.id)} className="rounded-lg bg-slate-200 px-2 py-1 cursor-pointer">{isAr ? 'إلغاء' : 'Cancel'}</button>
         </div>
       ))}
+
+      {withLog && (
+        <div className="mt-4" data-testid="transfers-log">
+          <p className="text-sm font-black text-sky-900">{isAr ? '📜 سجل المشاركة' : '📜 Sharing log'}</p>
+          {list.filter((t) => t.status !== 'pending').length === 0 ? (
+            <p className="mt-2 text-xs font-bold text-slate-500">{isAr ? 'لسه مفيش مشاركات.' : 'Nothing shared yet.'}</p>
+          ) : (
+            <ul className="mt-2 space-y-1.5">
+              {list.filter((t) => t.status !== 'pending').map((t) => (
+                <li key={t.id} className="flex items-center gap-2 rounded-xl bg-slate-50 p-2 text-xs font-bold text-slate-700">
+                  <span aria-hidden="true">{t.direction === 'out' ? '⬆️' : '⬇️'}</span>
+                  <span className="flex-1">
+                    {t.direction === 'out' ? (isAr ? 'أرسلت إلى' : 'Sent to') : isAr ? 'استلمت من' : 'Received from'} {t.other}: <span dir="ltr">{t.amount}</span> {unit(t.kind)}
+                    {t.at && <span className="block text-[10px] font-semibold text-slate-400" dir="ltr">{new Date(t.at).toLocaleDateString(isAr ? 'ar-EG' : 'en-GB')}</span>}
+                  </span>
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] ${t.status === 'accepted' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}`}>{STATUS[t.status]}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
 };

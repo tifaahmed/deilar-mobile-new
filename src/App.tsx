@@ -52,6 +52,7 @@ const AreaModal = lazy(() => import('./components/AreaModal').then((m) => ({ def
 const ProductPage = lazy(() => import('./components/ProductPage').then((m) => ({ default: m.ProductPage })));
 const OrdersPage = lazy(() => import('./components/OrdersPage').then((m) => ({ default: m.OrdersPage })));
 const AccountGate = lazy(() => import('./components/AccountGate').then((m) => ({ default: m.AccountGate })));
+import { DiscountInfoPopup } from './components/DiscountInfoPopup';
 import { Beneficiary, Product, CartItem } from './types';
 import { fetchCard, fetchProfile, signOut } from './api/auth';
 import { ApiError, forgetCached } from './api/http';
@@ -280,7 +281,24 @@ export default function App() {
   const quizPlaying = useQuizPlaying();
 
   // Shopping Cart state for Store & Products
-  const [cart, setCart] = useState<CartItem[]>([]);
+  // Kept on the phone so a reload / app restart does not empty it (the server re-prices at checkout).
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem('deilar_cart') || '[]');
+      return Array.isArray(raw)
+        ? raw.filter((i) => i && i.product && i.product.id != null && Number(i.quantity) > 0)
+        : [];
+    } catch {
+      return [];
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('deilar_cart', JSON.stringify(cart));
+    } catch {
+      /* storage blocked: the cart still works for this session */
+    }
+  }, [cart]);
   // Guests pay the full price; a registered card brings the member price. The server re-prices at checkout.
   const member = useIsMember();
   const pricedCart = member ? cart : cart.map((item) => ({ ...item, product: { ...item.product, price: item.product.originalPrice } }));
@@ -620,6 +638,7 @@ export default function App() {
       {accessStep && !areaAsk && !inGame && <AccessModal initialStep={accessStep} onClose={closeAccess} />}
       {/* Every minute while a signed-in member's profile is unfinished: how far along it is, and what is missing. */}
       {/* Nothing floats over the payment form. */}
+      <DiscountInfoPopup />
       <NoticeStack>
         {!inGame && <QuizReadyNotifier />}
         <PullToRefresh />

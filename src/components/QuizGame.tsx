@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, animate, useMotionValue, useTransform } from 'motion/react';
 import { ArrowRight, CloudCheck, Smartphone, Trophy, RotateCcw, Star, Volume2, VolumeX } from 'lucide-react';
+import { loadExtraQuestions } from '../data/quizExtra';
 import { SECTIONS as BASE_SECTIONS, sectionIn, type Question, type QuizDesign, type QuizSection } from '../data/quizSections';
 import { navigate, useRoute } from '../router';
 import { QUIZ_SPEED_TIERS, quizPoints, flushQuizAnswers, markBadgesSeen, newId, recordQuizAnswer, refreshBadgeCatalog, refreshHistory, refreshLoyalty, useBadgeCatalog, useBadges, useLoyalty, useLoyaltyHistory, useQueuedPlayIds } from '../utils/quizStore';
@@ -13,9 +14,10 @@ import { formatEgp } from './WalletPanel';
 import { TransfersPanel } from './TransfersPanel';
 import { QuizLeaderboard } from './QuizLeaderboard';
 import { resultShareText } from '../utils/shareResult';
-import { PLAY_SIZE, pickQuestions, recordProgress, useProgress } from '../utils/quizProgress';
+import { PLAY_SIZE, pickQuestions, recordProgress, unansweredOf, useProgress } from '../utils/quizProgress';
 import { useSession } from '../utils/session';
-import { formatCountdown, notifyPermission, registerPlay, requestQuizNotifications, useQuizLimit } from '../utils/quizLimit';
+import { formatCountdown, lockedSections, notifyPermission, registerPlay, requestQuizNotifications, useQuizLimit, useUsageRaw } from '../utils/quizLimit';
+import { ShareUnlockButton } from './ShareUnlock';
 import type { NotifyPermission } from '../utils/quizLimit';
 import { savePlay, useQuizHistory } from '../utils/quizHistory';
 import { useIsAr } from '../context/LanguageContext';
@@ -60,6 +62,7 @@ const LockedPanel: React.FC<{ title: string; msLeft: number }> = ({ title, msLef
       <p className="text-xs font-semibold text-slate-500">{isAr ? 'محاولة واحدة في اليوم لكل قسم' : '1 play a day for each section'}</p>
       <p dir="ltr" className="my-2 text-4xl font-black tabular-nums">{formatCountdown(msLeft)}</p>
       <p className="text-xs font-bold text-slate-600">{isAr ? 'المحاولات بتتجدد كل يوم الساعة 12 بالليل' : 'Your plays renew every day at midnight'}</p>
+      <ShareUnlockButton className="mt-3" />
       {permission === 'default' && (
         <button type="button" onClick={async () => setPermission(await requestQuizNotifications())} className="mt-3 w-full cursor-pointer rounded-xl bg-[#931A47] py-3 text-sm font-black text-white">
           {isAr ? '🔔 نبّهني لما أقدر ألعب' : '🔔 Tell me when I can play'}
@@ -70,6 +73,19 @@ const LockedPanel: React.FC<{ title: string; msLeft: number }> = ({ title, msLef
       {permission === 'unsupported' && <p className="mt-3 rounded-xl bg-slate-50 p-2 text-xs font-bold text-slate-600">{isAr ? 'هيظهرلك تنبيه جوه التطبيق أول ما العداد يخلص.' : 'You will see a reminder inside the app as soon as the countdown ends.'}</p>}
     </div>
   );
+};
+
+/** One banner at the top of the sections list while ANY section is used up: the way to open them all again. */
+const LockedSectionsBanner: React.FC<{ keys: string[] }> = ({ keys }) => {
+  useUsageRaw();
+  if (lockedSections(keys).length === 0) return null;
+  return <div data-testid="quiz-locked-banner"><ShareUnlockButton /></div>;
+};
+
+/** Under a used-up section's card: its own share-to-unlock button (nothing while the section is playable). */
+const SectionUnlockRow: React.FC<{ sec: QuizSection }> = ({ sec }) => {
+  const limit = useQuizLimit(sec.key);
+  return limit.locked ? <div data-testid={`quiz-section-unlock-${sec.id}`}><ShareUnlockButton /></div> : null;
 };
 
 /** The small line under a section's name on the sections screen. */
@@ -400,13 +416,23 @@ const QuizGameInner: React.FC = () => {
   const section = SECTIONS.find((s) => s.id === sectionId) ?? SECTIONS[0];
   // The section of the play in progress: leaving it (back button, another link) ends the play.
   const playSection = useRef(section.id);
-  const QUESTIONS = section.questions;
+  // The Arabic section's questions from Wikidata load when it is opened (data/quizExtra.ts); English has none.
+  const [extra, setExtra] = useState<Record<string, Question[]>>({});
+  useEffect(() => {
+    if (quizLang === 'en' || extra[section.id]) return;
+    let live = true;
+    void loadExtraQuestions(section.id).then((qs) => { if (live) setExtra((e) => ({ ...e, [section.id]: qs })); });
+    return () => { live = false; };
+  }, [section.id, quizLang, extra]);
+  const QUESTIONS = useMemo(() => (quizLang === 'en' || !extra[section.id]?.length ? section.questions : [...section.questions, ...extra[section.id]]), [section, quizLang, extra]);
   const QUIZ_KEY = section.key;
   const imageOf = section.imageOf;
   const [deck, setDeck] = useState<Question[]>(() => pickQuestions(SECTIONS[0].key, SECTIONS[0].questions, PLAY_SIZE));
   const stageAtStart = useRef(1);
   const progress = useProgress(QUIZ_KEY);
   const limit = useQuizLimit(QUIZ_KEY);
+  // `progress` changes with every answer, so this stays current: no unanswered question left = the section is finished.
+  const allDone = useMemo(() => unansweredOf(QUIZ_KEY, QUESTIONS).length === 0, [QUIZ_KEY, QUESTIONS, progress]); // eslint-disable-line react-hooks/exhaustive-deps
   const { badges: mine, unseen } = useBadges();
   const badgesRef = useRef<BadgeInfo[]>(mine);
   badgesRef.current = mine;
@@ -631,11 +657,13 @@ const QuizGameInner: React.FC = () => {
   /** Starts a play when the section's daily allowance has one left (and counts it); false when it is used up. */
   const restart = (): boolean => {
     if (limit.left <= 0) return false;
+    const fresh = pickQuestions(QUIZ_KEY, QUESTIONS, PLAY_SIZE);
+    if (fresh.length === 0) return false; // every question of the section was answered: none is shown twice
     registerPlay(QUIZ_KEY);
     playSection.current = section.id;
     playId.current = newId();
     stageAtStart.current = progress.stage;
-    setDeck(pickQuestions(QUIZ_KEY, QUESTIONS, PLAY_SIZE));
+    setDeck(fresh);
     setIndex(0);
     setPicked(null);
     setTimedOut(false);
@@ -710,12 +738,16 @@ const QuizGameInner: React.FC = () => {
             <h1 className="text-xl font-black text-slate-900">{isAr ? '🎮 اختار نوع اللعبة' : '🎮 Choose the game'}</h1>
             <h2 className="text-base font-black text-slate-800">{isAr ? '🎯 اختيار من متعدد' : '🎯 Multiple choice'}</h2>
             {!isAr && <button type="button" onClick={() => setQuizLang(null)} className="text-xs font-bold text-sky-700 underline cursor-pointer">{quizLang === 'en' ? 'Questions: English — change' : 'Questions: Arabic — change'}</button>}
+            <LockedSectionsBanner keys={SECTIONS.map((sec) => sec.key)} />
             {SECTIONS.map((sec) => (
-              <motion.button key={sec.id} whileTap={{ scale: 0.96 }} onClick={() => go(`mcq/${sec.id}`)} className={`w-full flex items-center gap-3 p-4 rounded-3xl bg-gradient-to-l ${sec.color} text-white shadow-[0_5px_0_rgba(0,0,0,0.2)] cursor-pointer`}>
+              <React.Fragment key={sec.id}>
+              <motion.button whileTap={{ scale: 0.96 }} onClick={() => go(`mcq/${sec.id}`)} className={`w-full flex items-center gap-3 p-4 rounded-3xl bg-gradient-to-l ${sec.color} text-white shadow-[0_5px_0_rgba(0,0,0,0.2)] cursor-pointer`}>
                 <motion.span animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 1.2 }} className="text-4xl">{sec.emoji}</motion.span>
                 <span className="flex-1 text-right"><span className="block text-lg font-black">{sec.title}</span><SectionProgressLine sec={sec} /></span>
                 <span className="text-xl">◀</span>
               </motion.button>
+              <SectionUnlockRow sec={sec} />
+              </React.Fragment>
             ))}
             <QuizLeaderboard />
           </motion.div>
@@ -725,7 +757,7 @@ const QuizGameInner: React.FC = () => {
           <motion.div key="types-more" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-3 space-y-3">
             <button onClick={() => { void refreshHistory(); void refreshLoyalty(); go('history'); }} className="w-full flex items-center gap-3 p-4 rounded-3xl bg-white border-2 border-slate-200 text-slate-800 cursor-pointer">
               <span className="text-3xl">📜</span>
-              <span className="flex-1 text-right"><span className="block text-base font-black">{isAr ? 'سجل اللعب والتقدم' : 'Play history & progress'}</span><span className="block text-xs font-semibold text-slate-500">{isAr ? `${plays.length} مرة لعب · المرحلة ${progress.stage} · حليت ${progress.solved.length}` : `${plays.length} plays · stage ${progress.stage} · ${progress.solved.length} solved`}</span></span>
+              <span className="flex-1 text-right"><span className="block text-base font-black">{isAr ? 'سجل اللعب والتقدم' : 'Play history & progress'}</span><span className="block text-xs font-semibold text-slate-500">{isAr ? `${plays.length} مرة لعب · المرحلة ${progress.stage} · حليت ${progress.solved.length}` : `${plays.length} plays · stage ${progress.stage} · ${Object.keys(progress.lifetime).length} answered`}</span></span>
               <span className="text-xl">◀</span>
             </button>
             <button onClick={() => go('moods')} className="w-full flex items-center gap-3 p-4 rounded-3xl bg-white border-2 border-fuchsia-200 text-slate-800 cursor-pointer">
@@ -909,14 +941,16 @@ const QuizGameInner: React.FC = () => {
             <h1 className="text-2xl font-black mb-1">{section.introTitle}</h1>
             <p className="text-sm font-semibold text-emerald-50 mb-2">{isAr ? `جاوب على ${PLAY_SIZE} أسئلة واجمع النقاط!` : `Answer ${PLAY_SIZE} questions and collect points!`}</p>
             <p className="text-xs font-bold text-white/90 mb-4">{isAr ? '⚡ كل ما تجاوب أسرع تكسب أكتر:' : '⚡ The faster you answer, the more you earn:'} {QUIZ_SPEED_TIERS.map((t) => `${t.upTo}${isAr ? 'ث' : 's'} = ${t.points}`).join(' · ')}</p>
-            <p className="-mt-3 mb-1 text-xs font-bold text-emerald-100">{isAr ? `المرحلة ${progress.stage} · حليت ${progress.solved.length} سؤال` : `Stage ${progress.stage} · ${progress.solved.length} solved`}</p>
+            <p className="-mt-3 mb-1 text-xs font-bold text-emerald-100">{isAr ? `المرحلة ${progress.stage} · جاوبت ${Object.keys(progress.lifetime).length} سؤال` : `Stage ${progress.stage} · ${Object.keys(progress.lifetime).length} answered`}</p>
             <p className="mb-4 text-xs font-black text-white">{limit.locked ? (isAr ? '🔒 خلصت محاولات النهارده' : '🔒 No plays left today') : isAr ? '🎮 باقيلك محاولة النهارده' : '🎮 1 play left today'}</p>
             <div className="grid grid-cols-3 gap-2 mb-5 empty:hidden">
               {introImages(section).map((src, i) => (
                 <motion.img key={src} src={src} alt="" initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 + i * 0.15 }} className="rounded-2xl border-4 border-white/70 aspect-square object-cover" />
               ))}
             </div>
-            {limit.locked ? (
+            {allDone ? (
+              <p className="rounded-2xl bg-white/20 p-4 text-sm font-black">{isAr ? '🏆 جاوبت على كل أسئلة القسم ده! هنزوّد أسئلة جديدة قريب.' : '🏆 You answered every question in this section! New ones are coming soon.'}</p>
+            ) : limit.locked ? (
               <LockedPanel title={section.title} msLeft={limit.msLeft} />
             ) : (
               <motion.button whileTap={{ scale: 0.92 }} animate={{ scale: [1, 1.07, 1] }} transition={{ repeat: Infinity, duration: 1.3 }} onClick={() => { if (restart()) beep([523, 659]); }} className="w-full py-4 rounded-2xl bg-amber-400 text-emerald-900 text-xl font-black shadow-[0_6px_0_#b45309] active:translate-y-1 active:shadow-none cursor-pointer">
@@ -1058,13 +1092,16 @@ const QuizGameInner: React.FC = () => {
               </div>
             )}
 
-            {limit.locked ? (
+            {allDone ? (
+              <p className="mb-2 rounded-2xl bg-white/20 p-3 text-sm font-black text-white">{isAr ? '🏆 جاوبت على كل أسئلة القسم ده!' : '🏆 You answered every question in this section!'}</p>
+            ) : limit.locked ? (
               <LockedPanel title={section.title} msLeft={limit.msLeft} />
             ) : (
               <motion.button whileTap={{ scale: 0.93 }} onClick={() => void restart()} className="w-full py-4 rounded-2xl bg-white text-orange-600 text-lg font-black shadow-[0_5px_0_#c2410c] flex items-center justify-center gap-2 cursor-pointer">
                 <RotateCcw className="w-5 h-5" /> {isAr ? 'العب تاني' : 'Play again'} <span className="text-xs font-bold text-orange-400">({isAr ? 'باقي' : 'left:'} {limit.left})</span>
               </motion.button>
             )}
+            {!limit.locked && !allDone && <ShareUnlockButton className="mt-3" />}
             <button onClick={() => navigate('/')} className="mt-3 text-sm font-bold text-white/90 underline cursor-pointer">{isAr ? 'الرجوع للرئيسية' : 'Back to home'}</button>
           </div>
           </motion.div>

@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, CheckCircle2, ChevronLeft, Download, Loader2, PackageSearch, Search, Upload } from 'lucide-react';
-import { fetchMyOrders, fetchOrder, requestOrderRefund, uploadReceipt, type OrderDetail } from '../api/orders';
+import { cancelOrder, fetchMyOrders, hideOrder, fetchOrder, invoiceLink, payOrder, type OnlineChannel, requestOrderRefund, uploadReceipt, type OrderDetail } from '../api/orders';
 import { useApi } from '../hooks/useApi';
 import { useLanguage } from '../context/LanguageContext';
-import { rememberOrder, snapshotOf, useStoredOrders, type StoredOrder } from '../utils/orders';
+import { forgetOrder, rememberOrder, snapshotOf, useStoredOrders, type StoredOrder } from '../utils/orders';
 import { useSession } from '../utils/session';
 import { navigate, routeHref } from '../router';
 import { downloadInvoicePdf } from '../utils/invoicePdf';
 import { ErrorState, ListSkeleton, Skeleton } from './ui/Feedback';
 import { Thumb } from './ui/Thumb';
+import { PayModal, type PixelSession } from './PayModal';
 import { OrderStatusSheet, statusTone, type StatusKind } from './OrderStatusSheet';
 
 const toRow = (o: OrderDetail): StoredOrder => ({ ...snapshotOf(o), savedAt: o.placed_at ?? '' });
@@ -40,7 +41,7 @@ const OrdersList: React.FC = () => {
   const rows = useMemo(() => {
     const byCode = new Map<string, StoredOrder>();
     for (const o of local) byCode.set(o.code, o);
-    for (const o of mine.data ?? []) byCode.set(o.order_code, { ...toRow(o), savedAt: byCode.get(o.order_code)?.savedAt ?? o.placed_at ?? '' });
+    for (const o of mine.data ?? []) if (!o.hidden_by_buyer) byCode.set(o.order_code, { ...toRow(o), savedAt: byCode.get(o.order_code)?.savedAt ?? o.placed_at ?? '' });
     return [...byCode.values()].sort((a, b) => (b.placedAt ?? b.savedAt).localeCompare(a.placedAt ?? a.savedAt));
   }, [local, mine.data]);
 
@@ -162,9 +163,70 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
     }
   };
 
+  // An order left unpaid: pay it again (a fresh form each time) or drop it (cancelled, never deleted).
+  const [payBusy, setPayBusy] = useState(false);
+  const [payMsg, setPayMsg] = useState<string | null>(null);
+  const [pixel, setPixel] = useState<PixelSession | null>(null);
+
+  const payAgain = async (channel: OnlineChannel) => {
+    setPayBusy(true);
+    setPayMsg(null);
+    try {
+      const link = await payOrder(code, channel);
+      if (link.client_secret && link.public_key) {
+        setPixel({ clientSecret: link.client_secret, publicKey: link.public_key, checkoutUrl: link.checkout_url, ...(channel === 'wallet' && link.checkout_url ? { mode: 'frame' as const } : {}) });
+      } else if (link.checkout_url) {
+        window.open(link.checkout_url, '_blank');
+      } else {
+        setPayMsg(isAr ? 'مقدرناش نفتح صفحة الدفع، جرّب تاني' : 'Could not open the payment page, please try again');
+      }
+    } catch {
+      setPayMsg(isAr ? 'مقدرناش نفتح صفحة الدفع، جرّب تاني أو الطريقة التانية' : 'Could not open the payment page, try again or the other way');
+    } finally {
+      setPayBusy(false);
+    }
+  };
+
+  const [hideAsk, setHideAsk] = useState(false);
+  const [hideBusy, setHideBusy] = useState(false);
+  const [hideMsg, setHideMsg] = useState<string | null>(null);
+
+  const confirmHide = async () => {
+    setHideBusy(true);
+    setHideMsg(null);
+    try {
+      await hideOrder(code);
+      forgetOrder(code);
+      navigate(routeHref({ orders: { code: null } }));
+    } catch (e) {
+      // The order moved on (422) or the call failed: say why and refresh what the order is now.
+      setHideMsg(e instanceof Error && e.message ? e.message : isAr ? 'مقدرناش نخفي الطلب، جرّب تاني' : 'Could not hide the order, please try again');
+      setHideAsk(false);
+      detail.reload();
+    } finally {
+      setHideBusy(false);
+    }
+  };
+
+  const dropOrder = async () => {
+    if (!window.confirm(isAr ? 'تلغي الطلب ده؟ لسه ما اتدفعش وهيتقفل.' : 'Cancel this order? It is unpaid and will be closed.')) return;
+    setPayBusy(true);
+    setPayMsg(null);
+    try {
+      await cancelOrder(code, session.token);
+      detail.reload();
+    } catch {
+      setPayMsg(isAr ? 'مقدرناش نلغي الطلب، جرّب تاني' : 'Could not cancel the order, please try again');
+    } finally {
+      setPayBusy(false);
+    }
+  };
+
   // Opening an order refreshes this device's snapshot, so the list follows the order as it moves along.
   useEffect(() => {
-    if (order) rememberOrder(snapshotOf(order));
+    if (!order) return;
+    if (order.hidden_by_buyer) forgetOrder(order.order_code);
+    else rememberOrder(snapshotOf(order));
   }, [order]);
 
   const sendReceipt = async (file?: File) => {
@@ -197,6 +259,7 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
           delivery: order.delivery_price,
           total: order.total_amount,
           wallet: order.wallet_amount,
+          points: order.points_amount,
           due: order.amount_due,
           paid: order.total_paid,
           payment: `${order.payment_type.label} — ${order.payment_status.label}`,
@@ -253,21 +316,79 @@ const OrderDetailView: React.FC<{ code: string }> = ({ code }) => {
               <StatusChip size="md" kind="payment" value={order.payment_status.value} label={order.payment_status.label} onOpen={setSheetKind} />
             </div>
             {order.cancel_reason && <p className="text-xs text-rose-600">{order.cancel_reason}</p>}
+            {['pending', 'rejected'].includes(order.payment_status.value) && order.delivery_status.value === 'pending' && (
+              <div data-testid="order-unpaid" className="rounded-xl border border-amber-200 bg-amber-50 p-2.5 space-y-2">
+                <p className="text-[11px] font-bold text-amber-900">{isAr ? 'الطلب ده لسه ما اتدفعش.' : 'This order has not been paid yet.'}</p>
+                <div className="flex flex-wrap gap-2">
+                  {order.payment_type.value === 'paymob' && (
+                    <>
+                      <button disabled={payBusy} onClick={() => payAgain('card')} className="px-3 py-1.5 rounded-xl bg-[#941946] text-white text-[11px] font-extrabold cursor-pointer disabled:opacity-60">{isAr ? 'ادفع بالكارت' : 'Pay by card'}</button>
+                      <button disabled={payBusy} onClick={() => payAgain('wallet')} className="px-3 py-1.5 rounded-xl bg-violet-700 text-white text-[11px] font-extrabold cursor-pointer disabled:opacity-60">{isAr ? 'ادفع بمحفظة موبايل' : 'Pay by mobile wallet'}</button>
+                    </>
+                  )}
+                  <button data-testid="order-cancel" disabled={payBusy} onClick={dropOrder} className="px-3 py-1.5 rounded-xl bg-white border border-rose-300 text-rose-700 text-[11px] font-extrabold cursor-pointer disabled:opacity-60">{isAr ? 'إلغاء الطلب' : 'Cancel order'}</button>
+                </div>
+                {payMsg && <p className="text-[11px] font-bold text-rose-600">{payMsg}</p>}
+              </div>
+            )}
+            {order.can_hide && !order.hidden_by_buyer && (
+              <div data-testid="order-hide-box" className="flex flex-wrap items-center gap-2">
+                <button data-testid="order-hide" disabled={hideBusy} onClick={() => setHideAsk(true)} className="px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-700 text-[11px] font-extrabold cursor-pointer disabled:opacity-60">{isAr ? 'إخفاء الطلب' : 'Hide order'}</button>
+                {hideMsg && <p className="text-[11px] font-bold text-rose-600">{hideMsg}</p>}
+              </div>
+            )}
+            {hideAsk && (
+              <div role="dialog" aria-modal="true" data-testid="order-hide-dialog" className="fixed inset-0 z-[80] bg-black/50 flex items-center justify-center p-4" onClick={() => !hideBusy && setHideAsk(false)}>
+                <div className="bg-white rounded-2xl p-4 max-w-sm w-full space-y-3" onClick={(e) => e.stopPropagation()}>
+                  <h3 className="text-sm font-extrabold text-slate-900">{isAr ? 'مش عايز الطلب ده؟' : 'Don’t want this order?'}</h3>
+                  <p className="text-xs text-slate-600 leading-relaxed">{isAr ? 'هيختفي من طلباتك. لو غيرت رأيك كلّم خدمة العملاء.' : 'It will disappear from your orders. If you change your mind, contact customer service.'}</p>
+                  <div className="flex gap-2 justify-end">
+                    <button data-testid="order-hide-cancel" disabled={hideBusy} onClick={() => setHideAsk(false)} className="px-3 py-1.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold cursor-pointer">{isAr ? 'رجوع' : 'Cancel'}</button>
+                    <button data-testid="order-hide-confirm" disabled={hideBusy} onClick={confirmHide} className="px-3 py-1.5 rounded-xl bg-rose-600 text-white text-xs font-extrabold cursor-pointer disabled:opacity-60">{isAr ? 'تأكيد الإخفاء' : 'Yes, hide it'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {pixel && <PayModal session={pixel} onClose={() => setPixel(null)} onComplete={() => { setPixel(null); detail.reload(); }} check={async () => (await fetchOrder(code))?.payment_status.value === 'accepted'} />}
             {order.placed_at && <p className="text-[11px] text-slate-400">{new Date(order.placed_at).toLocaleString(isAr ? 'ar-EG' : 'en-GB')}</p>}
           </div>
 
           <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs space-y-2.5">
             <h2 className="text-xs font-black text-slate-900">{isAr ? 'المنتجات' : 'Items'}</h2>
             {order.items.map((line) => (
-              <div key={line.id} className="flex items-center gap-3">
+              <button
+                type="button"
+                key={line.id}
+                data-testid="order-line-link"
+                onClick={() => line.slug && navigate(routeHref({ product: line.slug }))}
+                className="w-full flex items-center gap-3 text-start cursor-pointer"
+              >
                 <Thumb src={line.image ?? undefined} alt={line.name} kind="product" className="w-12 h-12 rounded-lg shrink-0 border border-slate-100" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-bold text-slate-900 line-clamp-2">{line.name}</p>
                   <p className="text-[11px] text-slate-500">{isAr ? `الكمية ${line.quantity}` : `Qty ${line.quantity}`}</p>
                 </div>
                 <span className="text-xs font-black font-mono text-slate-800 shrink-0">{line.line_total} {currency}</span>
-              </div>
+              </button>
             ))}
+
+            {(order.shipments?.length ?? 0) > 0 && (
+              <div data-testid="order-parcels" className="pt-2.5 border-t border-slate-100 space-y-1.5 text-xs">
+                <p className="font-black text-slate-900">{isAr ? `الطلب اتقسم على ${order.shipments!.length} شحنات` : `Shipped in ${order.shipments!.length} parcel(s)`}</p>
+                {order.shipments!.map((p) => (
+                  <div key={p.id} className="rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-800 truncate">{p.store_name || (isAr ? 'شحنة' : 'Parcel')}</p>
+                      <p className="text-[11px] text-slate-500">{isAr ? 'المنتجات' : 'Goods'} {p.subtotal} {currency} · {isAr ? 'الشحن' : 'Shipping'} {p.delivery_price > 0 ? `${p.delivery_price} ${currency}` : isAr ? 'مجاناً' : 'Free'}</p>
+                    </div>
+                    <a href={invoiceLink(p.invoice_url, isAr)} target="_blank" rel="noopener noreferrer" className="shrink-0 px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-[11px] font-bold text-slate-800">{isAr ? 'فاتورة' : 'Invoice'}</a>
+                  </div>
+                ))}
+                {order.invoice_all_url && (
+                  <a data-testid="invoice-all" href={invoiceLink(order.invoice_all_url, isAr)} target="_blank" rel="noopener noreferrer" className="block w-full text-center py-2 rounded-xl bg-slate-900 text-white text-[11px] font-bold">{isAr ? 'فاتورة الطلب كله' : 'Invoice — whole order'}</a>
+                )}
+              </div>
+            )}
 
             <div className="pt-2.5 border-t border-slate-100 space-y-1 text-xs">
               {savedAmount > 0 && (

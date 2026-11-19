@@ -1,4 +1,6 @@
 import { useFab } from '../utils/floatingFabs';
+import { MapListHandle } from './MapListHandle';
+import { useFitMapHeight } from '../hooks/useFitMapHeight';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import L from 'leaflet';
@@ -72,6 +74,15 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
   // The list of what is on the map sits under it; a button on the map's bottom edge scrolls down to it.
   const listRef = useRef<HTMLDivElement>(null);
   const mapBoxRef = useRef<HTMLDivElement>(null);
+  const mapHeight = useFitMapHeight(mapBoxRef, null);
+  // The box was resized to fit this phone (or it turned): the map redraws to its new size.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => mapRef.current?.invalidateSize());
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [mapHeight]);
   const [shown, setShown] = useState(30);
   const autoWiden = useRef(true);
   const q = useDebounced(searchQuery.trim(), 350);
@@ -370,8 +381,8 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
 
       {view === 'map' ? (
         <>
-        <div ref={mapBoxRef} style={{ height: 'clamp(22rem, calc(100dvh - 15rem), 40rem)' }} className="relative w-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
-          <div ref={containerRef} className="w-full h-full" />
+        <div ref={mapBoxRef} style={{ height: mapHeight }} className="relative flex flex-col w-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
+          <div ref={containerRef} className="w-full flex-1 min-h-0" />
 
           <div className="absolute top-1.5 right-1.5 z-[400] flex items-center gap-1">
             <button onClick={() => mapRef.current?.setView([here.lat, here.lng], 14, { animate: true })} className="w-6 h-6 bg-white/95 backdrop-blur-md hover:bg-slate-50 text-slate-800 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center transition-all active:scale-95 cursor-pointer" title={isAr ? 'التركيز على موقعي الحالي' : 'Center on my location'} aria-label={isAr ? 'موقعي' : 'My location'}>
@@ -396,18 +407,17 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
           )}
 
           {/* On the bottom edge of the map: one press scrolls down to the list of what the map shows. */}
-          {pins.length > 0 && !activePin && (
-            <button
-              type="button"
-              data-testid="map-list-button"
-              onClick={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[450] px-2.5 py-1 rounded-full bg-[#941946]/95 hover:bg-[#7b1439] text-white text-[10.5px] leading-none font-bold whitespace-nowrap shadow-md shadow-rose-900/25 flex items-center gap-1 active:scale-95 cursor-pointer"
-            >
-              <List className="w-3 h-3" />
-              <span>{isAr ? `شوف القايمة (${pins.length})` : `See the list (${pins.length})`}</span>
-              <span aria-hidden="true">↓</span>
-            </button>
-          )}
+          <MapListHandle visible={pins.length > 0 && !activePin} onOpen={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+          <button
+            type="button"
+            data-testid="map-list-button"
+            onClick={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className={`relative z-[450] shrink-0 w-full h-12 bg-[#941946] hover:bg-[#7b1439] text-white text-sm font-black whitespace-nowrap flex items-center justify-center gap-2 active:brightness-90 cursor-pointer ${pins.length > 0 && !activePin ? '' : 'invisible'}`}
+          >
+            <List className="w-5 h-5" />
+            <span>{isAr ? `شوف القايمة (${pins.length})` : `See the list (${pins.length})`}</span>
+            <span aria-hidden="true">↓</span>
+          </button>
 
           {activePin && (
             <div

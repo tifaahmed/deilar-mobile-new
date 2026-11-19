@@ -57,6 +57,12 @@ export const PointsGuide: React.FC = () => {
         <p className="text-xs font-bold leading-relaxed text-red-700">{isAr ? 'نقاط الولاء بتختفي عند كل الناس يوم 1 أول كل شهر. استخدم نقاطك قبل كده.' : 'Loyalty points disappear for everyone on the 1st of every month. Use yours before then.'}</p>
       </div>
 
+      <div data-testid="points-share-card" className="rounded-2xl border-2 border-sky-200 bg-sky-50 p-3 space-y-2">
+        <p className="text-sm font-black text-sky-900">{isAr ? '🤝 شارك نقاطك' : '🤝 Share your points'}</p>
+        <p className="text-xs font-semibold leading-relaxed text-sky-800">{isAr ? 'تقدر تبعت نقاط للاعبين التانيين أو لأفراد أسرتك، وتشوف سجل المشاركات.' : 'Send points to other players or your family and see the log of what you shared.'}</p>
+        <Go testId="points-go-share" label={isAr ? 'مشاركة نقاط الولاء' : 'Share loyalty points'} href={routeHref({ tab: 'profile', section: 'share' })} />
+      </div>
+
       <Go testId="points-go-products" label={isAr ? '🛍️ المنتجات اللي بتقبل نقاط الولاء' : '🛍️ Products that accept points'} href={POINTS_PRODUCTS_HREF} />
       <Go testId="points-go-physical" label={isAr ? '💳 اطلب كارت فيزيكال' : '💳 Order a physical card'} href={routeHref({ tab: 'mycard', section: 'physical' })} />
       <Go testId="points-go-membership" label={isAr ? '🎫 اشترك في العضوية' : '🎫 Buy a membership'} href={routeHref({ tab: 'mycard' })} />

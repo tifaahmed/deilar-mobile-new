@@ -69,6 +69,11 @@ export function rememberOrder(snapshot: Omit<StoredOrder, 'savedAt'>) {
   write([{ ...snapshot, savedAt: new Date().toISOString() }, ...storedOrders().filter((o) => o.code !== snapshot.code)]);
 }
 
+/** Drops one snapshot from this device's list (an order the buyer hid). Only the local copy: the order itself is never deleted. */
+export function forgetOrder(code: string) {
+  write(storedOrders().filter((o) => o.code !== code));
+}
+
 export const snapshotOf = (order: OrderDetail): Omit<StoredOrder, 'savedAt'> => ({
   code: order.order_code,
   placedAt: order.placed_at,

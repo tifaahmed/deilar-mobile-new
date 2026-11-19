@@ -1,4 +1,6 @@
 import { useFab } from '../utils/floatingFabs';
+import { MapListHandle } from './MapListHandle';
+import { useFitMapHeight } from '../hooks/useFitMapHeight';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -66,6 +68,15 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
   // The list of what the map shows sits under it; a button on the map's bottom edge scrolls down to it.
   const listRef = useRef<HTMLDivElement>(null);
   const mapBoxRef = useRef<HTMLDivElement>(null);
+  const mapHeight = useFitMapHeight(mapBoxRef, view);
+  // The box was resized to fit this phone (or it turned): the map redraws to its new size.
+  useEffect(() => {
+    const el = mapContainerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => mapInstanceRef.current?.invalidateSize());
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [mapHeight]);
   const [shown, setShown] = useState(30);
   const [inView, setInView] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -572,8 +583,8 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
       {/* 2. Map or list */}
       {viewMode === 'map' ? (
         <>
-        <div ref={mapBoxRef} style={{ height: 'clamp(22rem, calc(100dvh - 15rem), 40rem)' }} className="relative w-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
-          <div ref={mapContainerRef} className="w-full h-full" />
+        <div ref={mapBoxRef} style={{ height: mapHeight }} className="relative flex flex-col w-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-sm">
+          <div ref={mapContainerRef} className="w-full flex-1 min-h-0" />
 
           <div className="absolute top-1.5 right-1.5 z-[400] flex items-center gap-1">
             <button
@@ -604,18 +615,17 @@ export const MapView: React.FC<MapViewProps> = ({ userLocation, view, onViewChan
 
           {/* Popup for the tapped pin */}
           {/* On the bottom edge of the map: one press scrolls down to the list of what the map shows. */}
-          {pins.length > 0 && !activePin && (
-            <button
-              type="button"
-              data-testid="map-list-button"
-              onClick={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-[450] px-2.5 py-1 rounded-full bg-[#941946]/95 hover:bg-[#7b1439] text-white text-[10.5px] leading-none font-bold whitespace-nowrap shadow-md shadow-rose-900/25 flex items-center gap-1 active:scale-95 cursor-pointer"
-            >
-              <List className="w-3 h-3" />
-              <span>{isAr ? `شوف القايمة (${pins.length})` : `See the list (${pins.length})`}</span>
-              <span aria-hidden="true">↓</span>
-            </button>
-          )}
+          <MapListHandle visible={pins.length > 0 && !activePin} onOpen={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />
+          <button
+            type="button"
+            data-testid="map-list-button"
+            onClick={() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className={`relative z-[450] shrink-0 w-full h-12 bg-[#941946] hover:bg-[#7b1439] text-white text-sm font-black whitespace-nowrap flex items-center justify-center gap-2 active:brightness-90 cursor-pointer ${pins.length > 0 && !activePin ? '' : 'invisible'}`}
+          >
+            <List className="w-5 h-5" />
+            <span>{isAr ? `شوف القايمة (${pins.length})` : `See the list (${pins.length})`}</span>
+            <span aria-hidden="true">↓</span>
+          </button>
 
           {activePin && (
             <div

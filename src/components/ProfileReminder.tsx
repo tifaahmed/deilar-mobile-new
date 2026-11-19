@@ -1,5 +1,4 @@
 import { appProgress } from '../utils/profileProgress';
-import { REMINDER_EVERY_MS } from '../utils/reminderEvery';
 import React, { useEffect, useState } from 'react';
 import { UserRoundCheck } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
@@ -10,7 +9,7 @@ import { usePopupHash } from '../utils/popupHash';
 import { Notice } from './Notice';
 
 /** How often the reminder appears while a signed-in member's profile is unfinished. */
-const EVERY_MS = REMINDER_EVERY_MS;
+const EVERY_MS = 5 * 60_000;
 /** How long one reminder stays on screen. */
 const VISIBLE_MS = 12_000;
 
@@ -25,7 +24,7 @@ const FIELD_LABELS: Record<string, { ar: string; en: string }> = {
 };
 
 /**
- * "Your profile is 40% complete" — a small notice every minute, for as long as a signed-in
+ * "Your profile is 40% complete" — a small notice every 5 minutes, for as long as a signed-in
  * member's profile is unfinished, saying what is missing (address, job title…).
  *
  * The percentage and the missing fields come from the backend (`RegistrationProgress`), so the

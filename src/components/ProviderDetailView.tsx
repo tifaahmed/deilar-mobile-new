@@ -1,4 +1,6 @@
 import React from 'react';
+import { DiscountTag } from './DiscountInfoPopup';
+import { offerDiscountInfo } from '../utils/discountInfo';
 import {
   ArrowRight,
   MapPin,
@@ -102,7 +104,7 @@ export const ProviderDetailView: React.FC<ProviderDetailViewProps> = ({ slug, pr
 
         {discount != null && (
           <div className="absolute top-3 left-3">
-            <span className="px-2.5 py-1 bg-emerald-600 text-white text-[11px] font-black rounded-xl shadow-xs">{isAr ? `خصم ${discount}%` : `${discount}% off`}</span>
+            <DiscountTag info={() => offerDiscountInfo({ name, label: `${discount}%` }, isAr)} className="px-2.5 py-1 bg-emerald-600 text-white text-[11px] font-black rounded-xl shadow-xs inline-block">{isAr ? `خصم ${discount}%` : `${discount}% off`}</DiscountTag>
           </div>
         )}
 
