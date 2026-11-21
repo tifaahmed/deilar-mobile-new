@@ -472,6 +472,11 @@ export const StoreMapView: React.FC<StoreMapViewProps> = ({ userLocation, onOpen
             </div>
           ))}
           {pins.length > shown && <button type="button" onClick={() => setShown((n) => n + 30)} className="w-full py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer">{isAr ? 'عرض المزيد' : 'Show more'}</button>}
+          {/* At the end of the list: one press goes back up to the map. */}
+          <button type="button" data-testid="map-back-button" onClick={() => mapBoxRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="w-full h-12 rounded-2xl bg-[#941946] hover:bg-[#7d1439] text-white text-sm font-black flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer">
+            <Compass className="w-5 h-5" />
+            <span>{isAr ? 'ارجع للخريطة' : 'Back to the map'}</span>
+          </button>
         </div>
         </>
       ) : (

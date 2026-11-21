@@ -98,6 +98,11 @@ interface ProfileViewProps {
   mode: 'card' | 'account';
   account: ProfileAccount;
   onLogout: () => void;
+  /** The account is deleted on the server: sign it out at once (no «add / switch account» popup). Defaults to `onLogout`. */
+  onDeleted?: () => void;
+  /** «إضافة حساب» / «تبديل حساب» beside the logout button. */
+  onAddAccount?: () => void;
+  onSwitchAccount?: () => void;
   beneficiaries: Beneficiary[];
   onOpenCard?: () => void;
   theme?: 'light' | 'dark';
@@ -126,6 +131,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   mode,
   account,
   onLogout,
+  onDeleted,
+  onAddAccount,
+  onSwitchAccount,
   beneficiaries,
   theme = 'light',
   onThemeChange,
@@ -550,6 +558,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
         </div>
 
+        {!isCardMode && account.signedIn && onAddAccount && onSwitchAccount && (
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button type="button" data-testid="profile-add-account" onClick={onAddAccount} className="py-2.5 rounded-xl bg-[#941946] hover:bg-[#7d1439] text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>{isAr ? 'إضافة حساب' : 'Add account'}</span>
+            </button>
+            <button type="button" data-testid="profile-switch-account" onClick={onSwitchAccount} className={`py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer ${isDark ? 'border-white/20 text-slate-200' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-50'}`}>
+              <span>{isAr ? 'تبديل حساب' : 'Switch account'}</span>
+            </button>
+          </div>
+        )}
+
         {!isCardMode && (account.signedIn ? (
           <button
             onClick={onLogout}
@@ -648,7 +667,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           token={getSession().token as string}
           hasRelatives={beneficiaries.length > 1}
           onClose={() => setDeleting(false)}
-          onDeleted={() => { setDeleting(false); onLogout(); }}
+          onDeleted={() => { setDeleting(false); (onDeleted ?? onLogout)(); }}
         />
       )}
 

@@ -209,7 +209,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
   const pointsEligible = pointsEligibleEgp(cart, pointsRate, loyalty.money?.points_max_per_order);
   const orderPointsCap = loyalty.money?.points_max_per_order ?? null;
   const pointsEgpAvailable = pointsRate > 0 ? Math.floor(Math.min(pointsHeld / pointsRate, pointsEligible)) : 0;
-  const canUsePoints = pointsEgpAvailable > 0;
+  // An expired card (a trial that ended or a lapsed one) cannot spend points: the backend says so (`points_blocked`) and refuses too.
+  const pointsBlocked = loyalty.money?.points_blocked ?? null;
+  const canUsePoints = pointsEgpAvailable > 0 && !pointsBlocked;
   const pointsEgp = placed ? placed.points_amount ?? 0 : usePoints ? pointsEgpAvailable : 0;
   const pointsSpent = placed ? placed.points_used ?? 0 : pointsEgp * pointsRate;
   const walletBalance = session.token ? loyalty.money?.wallet_balance ?? 0 : 0;
@@ -570,6 +572,9 @@ export const CartCheckoutModal: React.FC<CartCheckoutModalProps> = ({
                         <span>{isAr ? 'رسوم الدفع عند الاستلام:' : 'Cash on delivery fee:'}</span>
                         <span>{codFee} {isAr ? 'ج.م' : 'EGP'}</span>
                       </div>
+                    )}
+                    {pointsBlocked && pointsHeld > 0 && !placed && (
+                      <p data-testid="points-blocked" className="rounded-xl border border-red-200 bg-red-50 px-2.5 py-2 text-[11px] font-bold text-red-700">{isAr ? '⭐ كارتك منتهي، فمش هتقدر تستخدم نقاط الولاء في الشراء. جدّد الكارت الأول.' : '⭐ Your card has expired, so loyalty points cannot be used to buy. Renew the card first.'}</p>
                     )}
                     {canUsePoints && !placed && (
                       <label data-testid="points-toggle" className="flex items-center justify-between gap-2 rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] font-bold text-amber-900">

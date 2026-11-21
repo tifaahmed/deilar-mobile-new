@@ -8,6 +8,7 @@ vi.mock('../api/relativeFees', () => ({ fetchRelativeFees: fetchFees, placeRelat
 vi.mock('../api/orders', async (orig) => ({ ...(await orig<typeof import('../api/orders')>()), payOrder: vi.fn(), fetchOrder: vi.fn() }));
 vi.mock('../utils/reportError', () => ({ reportClientError: vi.fn() }));
 
+import { RELATIVE_ADDED_EVENT } from '../api/family';
 import { RelativeFeePanel } from '../components/RelativeFeePanel';
 import { LanguageProvider } from '../context/LanguageContext';
 
@@ -27,7 +28,7 @@ describe('the relatives fee', () => {
     expect(screen.queryByTestId('relative-fee-company')).toBeNull();
     fireEvent.click(screen.getByText('الدفع عند الاستلام'));
     fireEvent.click(screen.getByTestId('relative-fee-pay'));
-    await waitFor(() => expect(place).toHaveBeenCalledWith('t', [7], 'cod', { plan: 'year', usePoints: false }));
+    await waitFor(() => expect(place).toHaveBeenCalledWith('t', [7], 'cod', { plan: 'year', usePoints: false, useWallet: false }));
   });
 
   it('tells a company card the team will call, and still offers to pay the year', async () => {
@@ -42,14 +43,17 @@ describe('the relatives fee', () => {
     const plans = [{ key: 'month', price: 5, months: 1 }, { key: 'year', price: 60, months: 12 }];
     fetchFees.mockResolvedValue({ fee: { ...fee, plans }, payment_methods: methods, can_pay: true, reason: null, waiting: [{ id: 9, name: 'منى', relationship: 'wife', state: 'expired', expiration_date: '2026-11-01' }] });
     place.mockResolvedValue({ order_code: 'DL-2', total_amount: 5, payment_status: { value: 'pending' } });
+    localStorage.setItem('deilar_loyalty_server', JSON.stringify({ points: 2000, token: 't', money: { points_per_egp: 100, wallet_balance: 0, wallet_enabled: true, wallet_min_egp: 20 } }));
+    (await import('../utils/session')).updateSession({ token: 't' });
     show();
 
     await screen.findByTestId('relative-fee-pay');
     fireEvent.click(screen.getByText(/شهر —/));
-    fireEvent.click(screen.getByLabelText('ادفع بالنقاط'));
-    fireEvent.click(screen.getByText('الدفع عند الاستلام'));
+    fireEvent.click((await screen.findByTestId('relative-points-toggle')).querySelector('input')!);
+    // The points cover the whole 5 EGP, so no payment method is asked for.
+    expect(screen.queryByText('الدفع عند الاستلام')).toBeNull();
     fireEvent.click(screen.getByTestId('relative-fee-pay'));
-    await waitFor(() => expect(place).toHaveBeenCalledWith('t', [9], 'cod', { plan: 'month', usePoints: true }));
+    await waitFor(() => expect(place).toHaveBeenCalledWith('t', [9], 'cod', { plan: 'month', usePoints: true, useWallet: false }));
   });
 
   it('says a trial card lets the family try, and sends a relative on an unpaid card to a normal plan', async () => {
@@ -62,6 +66,36 @@ describe('the relatives fee', () => {
     fetchFees.mockResolvedValue({ fee, payment_methods: methods, can_pay: false, reason: 'parent_not_paid', waiting: [] });
     show();
     expect(await screen.findByTestId('relative-fee-own-plan')).toBeTruthy();
+  });
+
+  it('drops the payment form when the waiting relative is removed', async () => {
+    fetchFees.mockResolvedValueOnce({ fee, payment_methods: methods, waiting: [{ id: 7, name: 'منى', relationship: 'wife' }] });
+    show();
+    expect(await screen.findByTestId('relative-fee-pay')).toBeTruthy();
+
+    fetchFees.mockResolvedValueOnce({ fee, payment_methods: methods, waiting: [] });
+    window.dispatchEvent(new Event(RELATIVE_ADDED_EVENT));
+    await waitFor(() => expect(screen.queryByTestId('relative-fee-pay')).toBeNull());
+  });
+
+  it('shows clear points and wallet switches and the pay button drops to the smaller number', async () => {
+    localStorage.setItem('deilar_loyalty_server', JSON.stringify({ points: 2000, token: 't', money: { points_per_egp: 100, wallet_balance: 100, wallet_enabled: true, wallet_min_egp: 20 } }));
+    const { updateSession } = await import('../utils/session');
+    updateSession({ token: 't' });
+    fetchFees.mockResolvedValue({ fee, payment_methods: methods, waiting: [{ id: 7, name: 'منى', relationship: 'wife' }] });
+    show();
+
+    const due = async () => (await screen.findByTestId('relative-fee-due')).textContent ?? '';
+    expect(await due()).toMatch(/٦٠|60/);
+    expect(screen.queryByTestId('relative-fee-old-price')).toBeNull();
+
+    fireEvent.click((await screen.findByTestId('relative-points-toggle')).querySelector('input')!);
+    expect(await due()).toMatch(/٤٠|40/);
+    expect(screen.getByTestId('relative-fee-old-price').textContent).toMatch(/٦٠|60/);
+
+    fireEvent.click(screen.getByTestId('relative-wallet-toggle').querySelector('input')!);
+    expect(await due()).toMatch(/٠|0/);
+    expect(screen.queryByText('الدفع عند الاستلام')).toBeNull();
   });
 
   it('shows nothing while the fee is free', async () => {

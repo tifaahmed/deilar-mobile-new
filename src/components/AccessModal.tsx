@@ -25,6 +25,8 @@ type CodeFor = 'phone' | 'card' | 'addphone';
 interface AccessModalProps {
   onClose: () => void;
   initialStep?: AccessStep;
+  /** Signing in ANOTHER account beside the one already held: nothing of the current session (card number) is carried over. */
+  newAccount?: boolean;
 }
 
 /**
@@ -38,7 +40,7 @@ interface AccessModalProps {
  * The phone typed here is also sent to the Contact Us inbox (source: card popup),
  * so the team can call people who started but never finished.
  */
-export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep = 'choose' }) => {
+export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep = 'choose', newAccount = false }) => {
   // Shrinks the whole card to the screen when its content is taller than the viewport, so nothing ever scrolls.
   const fitRef = useRef<HTMLDivElement>(null);
   const { isAr, brandName } = useLanguage();
@@ -217,7 +219,7 @@ export const AccessModal: React.FC<AccessModalProps> = ({ onClose, initialStep =
       const card = cardNumber.trim();
       const result =
         codeFor === 'card' ? await verifyCardOtp(card, value) : codeFor === 'addphone' ? await verifyCardPhone(card, cleanPhone, value) : await verifyOtp(cleanPhone, value);
-      const session = getSession();
+      const session = newAccount ? ({} as ReturnType<typeof getSession>) : getSession();
 
       updateSession({
         token: result.token,

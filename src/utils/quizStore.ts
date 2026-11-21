@@ -119,6 +119,15 @@ interface Server {
   badges?: BadgeInfo[];
   /** The money side, as the backend last said it (see `LoyaltyWallet` there). */
   money?: Money;
+  /** Points that expire within a month (the backend decides; null = none close or expiry is off). */
+  expiring?: ExpiringPoints | null;
+}
+
+export interface ExpiringPoints {
+  points: number;
+  /** `YYYY-MM-DD`: the day the first of them goes. */
+  expires_on: string;
+  days: number;
 }
 
 /** What the backend says about points as pounds and the wallet. The rate is the admin's (`loyalty_points_per_egp`). */
@@ -132,6 +141,8 @@ export interface Money {
   wallet_membership_enabled?: boolean;
   /** Most points one order may spend (null = no limit); set by the admin. */
   points_max_per_order?: number | null;
+  /** Why points cannot be spent at checkout (`card_expired`), or null. The backend decides. */
+  points_blocked?: string | null;
 }
 
 interface LoyaltyData {
@@ -146,6 +157,8 @@ interface LoyaltyData {
   wallet_min_topup?: number;
   wallet_membership_enabled?: boolean;
   points_max_per_order?: number | null;
+  points_blocked?: string | null;
+  expiring?: ExpiringPoints | null;
   /** Plays a day per section, and what sharing the referral code added today (on every section). */
   plays_per_day?: number;
   share_bonus_plays_today?: number;
@@ -153,7 +166,7 @@ interface LoyaltyData {
 }
 
 const moneyOf = (d: LoyaltyData): Money | undefined =>
-  d.points_per_egp == null ? undefined : { points_per_egp: d.points_per_egp, wallet_balance: d.wallet_balance ?? 0, wallet_enabled: !!d.wallet_enabled, wallet_min_egp: d.wallet_min_egp ?? 20, wallet_min_topup: d.wallet_min_topup ?? 20, wallet_membership_enabled: d.wallet_membership_enabled ?? true, points_max_per_order: d.points_max_per_order ?? null };
+  d.points_per_egp == null ? undefined : { points_per_egp: d.points_per_egp, wallet_balance: d.wallet_balance ?? 0, wallet_enabled: !!d.wallet_enabled, wallet_min_egp: d.wallet_min_egp ?? 20, wallet_min_topup: d.wallet_min_topup ?? 20, wallet_membership_enabled: d.wallet_membership_enabled ?? true, points_max_per_order: d.points_max_per_order ?? null, points_blocked: d.points_blocked ?? null };
 
 const SEEN_KEY = 'deilar_quiz_badges_seen';
 
@@ -325,7 +338,7 @@ export async function convertPointsToWallet(egp: number): Promise<{ ok: true } |
 
   try {
     const { data } = await apiPost<{ data: LoyaltyData }>('/loyalty/convert', { egp, id: newId() }, undefined, token);
-    write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, money: moneyOf(data), token } satisfies Server));
+    write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, money: moneyOf(data), expiring: data.expiring ?? null, token } satisfies Server));
     saveRules(data);
     void refreshHistory();
     return { ok: true };
@@ -353,18 +366,26 @@ export async function startWalletTopup(amount: number): Promise<{ ok: true; chec
   }
 }
 
-/** Re-reads the member's balance and badge catalog (when online and signed in). Quiet on failure: the saved copy stays. */
-export async function refreshLoyalty(): Promise<void> {
-  const token = getSession().token;
-  if (!token || (typeof navigator !== 'undefined' && navigator.onLine === false)) return;
+let loyaltyInFlight: Promise<void> | null = null;
 
-  try {
-    const { data } = await apiGetAuth<{ data: LoyaltyData }>('/loyalty', token);
-    write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, money: moneyOf(data), token } satisfies Server));
-    saveRules(data);
-  } catch {
-    /* offline or signed out: keep what we have */
-  }
+/** Re-reads the member's balance and badge catalog (when online and signed in). Quiet on failure: the saved copy stays. One request at a time. */
+export function refreshLoyalty(): Promise<void> {
+  const token = getSession().token;
+  if (!token || (typeof navigator !== 'undefined' && navigator.onLine === false)) return Promise.resolve();
+  if (loyaltyInFlight) return loyaltyInFlight;
+
+  loyaltyInFlight = (async () => {
+    try {
+      const { data } = await apiGetAuth<{ data: LoyaltyData }>('/loyalty', token);
+      write(SERVER_KEY, JSON.stringify({ points: data.points, badges: data.badges, money: moneyOf(data), token } satisfies Server));
+      saveRules(data);
+    } catch {
+      /* offline or signed out: keep what we have */
+    } finally {
+      loyaltyInFlight = null;
+    }
+  })();
+  return loyaltyInFlight;
 }
 
 /** A badge on offer, the same for everyone. */
@@ -463,6 +484,8 @@ export interface LoyaltyView {
   egp: number;
   /** The wallet and the conversion rules, as the backend last said them; null until it has. */
   money: Money | null;
+  /** Points that run out within a month, as the backend last said; null when none. */
+  expiring: ExpiringPoints | null;
 }
 
 /** Pounds a number of points is worth at the backend's rate, with pennies. */
@@ -485,5 +508,7 @@ export function useLoyalty(): LoyaltyView {
   const money = server && token && server.token === token ? server.money ?? null : null;
   const total = held + pending;
 
-  return { pending, total, answers: queue.length, egp: pointsToEgp(total, money?.points_per_egp), money };
+  const expiring = server && token && server.token === token ? server.expiring ?? null : null;
+
+  return { pending, total, answers: queue.length, egp: pointsToEgp(total, money?.points_per_egp), money, expiring };
 }

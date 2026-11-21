@@ -47,6 +47,13 @@ describe('wallet and loyalty points cut the bill automatically at checkout', () 
     expect((await screen.findByTestId('wallet-line-cart')).textContent).toContain('-80');
   });
 
+  it('an expired card cannot use points: no switch, and it says why', async () => {
+    localStorage.setItem('deilar_loyalty_server', JSON.stringify({ points: 1250, token: 'tok', money: { points_per_egp: 10, wallet_balance: 0, wallet_enabled: true, wallet_min_egp: 10, points_blocked: 'card_expired' } }));
+    show([item('a', 100, true)] as never[]);
+    expect(await screen.findByTestId('points-blocked')).toBeTruthy();
+    expect(screen.queryByTestId('points-toggle')).toBeNull();
+  });
+
   it('shows no wallet line when the balance is empty', async () => {
     seed(0);
     show([item('a', 100)] as never[]);

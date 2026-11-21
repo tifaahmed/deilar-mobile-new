@@ -32,11 +32,11 @@ export const placeRelativeFeeOrder = (
   token: string,
   relativeIds: number[],
   payment: 'cod' | 'transfer-wallet' | 'paymob',
-  opts: { plan?: 'month' | 'year'; usePoints?: boolean } = {},
+  opts: { plan?: 'month' | 'year'; usePoints?: boolean; useWallet?: boolean } = {},
 ) =>
   apiPost<{ order: PlacedOrder }>(
     '/mobile/relative-fees/orders',
-    { relative_ids: relativeIds, payment_type: payment, plan: opts.plan, use_points: opts.usePoints ? true : undefined },
+    { relative_ids: relativeIds, payment_type: payment, plan: opts.plan, use_points: opts.usePoints ? true : undefined, use_wallet: opts.useWallet ? true : undefined },
     undefined,
     token,
   ).then((r) => r.order);

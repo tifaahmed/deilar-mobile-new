@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ExternalLink, Loader2, Maximize2, Minimize2, ShieldCheck } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { useLanguage } from '../context/LanguageContext';
 
 interface PaymobFrameProps {
@@ -27,6 +28,19 @@ async function openInAppBrowser(url: string) {
 }
 
 /**
+ * A page framed in the app can leave the app's own view zoomed / wider than the screen (the whole app then scrolls left and right
+ * until a reload). Switching the viewport to "no zoom" for a moment puts the scale back to 1 and the page back to the screen's width.
+ */
+export function resetViewportZoom(): void {
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+  if (!meta) return;
+  const original = meta.content;
+  meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover';
+  window.scrollTo(0, 0);
+  window.setTimeout(() => { meta.content = original; }, 300);
+}
+
+/**
  * The wallet payment page drawn INSIDE the app, in a frame. Paymob (or the wallet's own page) may refuse
  * to be framed — a browser cannot tell us — so the "open in the in-app browser" way is always one tap
  * away and is promoted when the frame is slow to load.
@@ -38,6 +52,16 @@ export const PaymobFrame: React.FC<PaymobFrameProps> = ({ url, check, onComplete
   const [full, setFull] = useState(false);
   const done = useRef(onComplete);
   done.current = onComplete;
+
+  // Whatever the page did to the app's view while it was open, undo it when it goes away.
+  useEffect(() => () => resetViewportZoom(), []);
+
+  // In the installed app the payment page is NOT framed: a wide framed page widened the whole app. It opens in the in-app browser (its own
+  // sheet, isolated from the app's layout) and the payment is still confirmed by the server, polled below.
+  const native = Capacitor.isNativePlatform();
+  useEffect(() => {
+    if (native) void openInAppBrowser(url);
+  }, [native, url]);
 
   useEffect(() => {
     setLoaded(false);
@@ -64,6 +88,20 @@ export const PaymobFrame: React.FC<PaymobFrameProps> = ({ url, check, onComplete
       window.clearInterval(timer);
     };
   }, [check]);
+
+  if (native) {
+    return (
+      <div className="space-y-2" data-testid="paymob-native">
+        <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700"><ShieldCheck className="w-4 h-4" />{isAr ? 'دفع آمن عبر Paymob' : 'Secure payment by Paymob'}</span>
+        <p className="text-xs font-semibold text-slate-600">{isAr ? 'صفحة الدفع اتفتحت في المتصفح الداخلي. كمّل الدفع هناك وارجع هنا، وهنأكد الدفع لوحدنا.' : 'The payment page opened in the in-app browser. Finish there and come back; we confirm the payment ourselves.'}</p>
+        <button type="button" onClick={() => void openInAppBrowser(url)} className="w-full py-2.5 rounded-xl text-xs font-bold bg-[#941946] text-white flex items-center justify-center gap-1.5 cursor-pointer">
+          <ExternalLink className="w-3.5 h-3.5" />
+          <span>{isAr ? 'افتح صفحة الدفع' : 'Open the payment page'}</span>
+        </button>
+        <button type="button" onClick={onComplete} className="w-full text-[11px] font-bold text-slate-500 hover:text-[#941946] cursor-pointer">{isAr ? 'خلّصت الدفع' : 'I have finished paying'}</button>
+      </div>
+    );
+  }
 
   const frame = (
     <div className={full ? 'relative flex-1 min-h-0 bg-white' : 'relative rounded-2xl overflow-hidden border border-slate-200 bg-white h-[clamp(640px,92vh,900px)]'}>

@@ -62,7 +62,8 @@ import { useIsMember } from './utils/pricing';
 import { getArea, useArea } from './utils/area';
 import { flushQuizAnswers, startQuizSync } from './utils/quizStore';
 import { claimPendingReferral } from './utils/referral';
-import { clearSession, markPopupClosed, popupDueIn, popupSilenced, updateSession, useSession } from './utils/session';
+import { AccountsModal, type AccountsMode } from './components/AccountsModal';
+import { canAddAccount, clearSession, getAccounts, markPopupClosed, switchAccount, popupDueIn, popupSilenced, updateSession, useSession } from './utils/session';
 import { ProfileReminder } from './components/ProfileReminder';
 import { MembershipReminder } from './components/MembershipReminder';
 import { AddPhoneReminder } from './components/AddPhoneReminder';
@@ -215,11 +216,24 @@ export default function App() {
       ]
     : [];
 
-  const handleLogout = () => {
+  // Several accounts can be held on this phone: «تسجيل الخروج» first offers to add or switch (no new code), and only then signs out.
+  const [accountsMode, setAccountsMode] = useState<AccountsMode | null>(null);
+  const [addingAccount, setAddingAccount] = useState(false);
+
+  /** Signs the active account out of this phone for good; if another account is held, that one becomes the active one. */
+  const doLogout = () => {
     const token = session.token;
     clearSession();
     setAddedBeneficiaries([]);
     if (token) signOut(token).catch(() => undefined); // the device is signed out either way
+    const next = getAccounts()[0];
+    if (next) switchAccount(next.token);
+  };
+  const handleLogout = () => (session.token ? setAccountsMode('logout') : doLogout());
+  const afterSwitch = () => {
+    setAddedBeneficiaries([]);
+    forgetCached('/mobile/card/');
+    setAccountsMode(null);
   };
 
   // App Appearance Theme state ('light' | 'dark')
@@ -269,6 +283,7 @@ export default function App() {
   const closeAccess = () => {
     markPopupClosed();
     setAccessStep(null);
+    setAddingAccount(false);
   };
   const dismissReminder = () => {
     markPopupClosed();
@@ -558,6 +573,9 @@ export default function App() {
                     signedIn: !!session.token,
                   }}
                   onLogout={handleLogout}
+                  onDeleted={doLogout}
+                  onAddAccount={() => (canAddAccount() ? (setAddingAccount(true), setAccessStep('phone')) : setAccountsMode('switch'))}
+                  onSwitchAccount={() => setAccountsMode('switch')}
                   beneficiaries={beneficiaries}
                   theme={theme}
                   onThemeChange={handleThemeChange}
@@ -574,6 +592,7 @@ export default function App() {
                     onSignIn={() => setAccessStep('phone')}
                     onEnterCard={() => setAccessStep('card')}
                     onLogout={handleLogout}
+                    onDeleted={doLogout}
                     onRetry={card.reload}
                   />
                 )
@@ -635,7 +654,16 @@ export default function App() {
 
       {/* Global Shopping Cart & Bank / Wallet Checkout Modal */}
       {areaAsk && !inGame && <AreaModal lat={userLocation.lat} lng={userLocation.lng} onClose={closeArea} />}
-      {accessStep && !areaAsk && !inGame && <AccessModal initialStep={accessStep} onClose={closeAccess} />}
+      {accessStep && !areaAsk && !inGame && <AccessModal initialStep={accessStep} newAccount={addingAccount} onClose={closeAccess} />}
+      {accountsMode && (
+        <AccountsModal
+          mode={accountsMode}
+          onClose={() => setAccountsMode(null)}
+          onAdd={() => { setAccountsMode(null); setAddingAccount(true); setAccessStep('phone'); }}
+          onSwitched={afterSwitch}
+          onLogout={() => { setAccountsMode(null); doLogout(); }}
+        />
+      )}
       {/* Every minute while a signed-in member's profile is unfinished: how far along it is, and what is missing. */}
       {/* Nothing floats over the payment form. */}
       <DiscountInfoPopup />

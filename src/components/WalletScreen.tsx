@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { History, Wallet } from 'lucide-react';
 import { fetchWallet, walletSourceLabel, type WalletEntry } from '../api/wallet';
 import { listTransfers, type Transfer } from '../api/transfers';
+import { PointsExpiryNotice } from './PointsExpiryNotice';
 import { WalletPanel, formatEgp } from './WalletPanel';
 import { TransfersPanel } from './TransfersPanel';
 import { navigate, routeHref } from '../router';
@@ -48,6 +49,7 @@ export const WalletScreen: React.FC = () => {
         </div>
       </div>
 
+      <PointsExpiryNotice />
       <WalletPanel signedIn />
       <TransfersPanel />
 

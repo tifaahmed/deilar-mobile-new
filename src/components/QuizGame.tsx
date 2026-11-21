@@ -18,6 +18,7 @@ import { PLAY_SIZE, pickQuestions, recordProgress, unansweredOf, useProgress } f
 import { useSession } from '../utils/session';
 import { formatCountdown, lockedSections, notifyPermission, registerPlay, requestQuizNotifications, useQuizLimit, useUsageRaw } from '../utils/quizLimit';
 import { ShareUnlockButton } from './ShareUnlock';
+import { QuizRefillWatcher } from './QuizRefillWatcher';
 import type { NotifyPermission } from '../utils/quizLimit';
 import { savePlay, useQuizHistory } from '../utils/quizHistory';
 import { useIsAr } from '../context/LanguageContext';
@@ -62,6 +63,7 @@ const LockedPanel: React.FC<{ title: string; msLeft: number }> = ({ title, msLef
       <p className="text-xs font-semibold text-slate-500">{isAr ? 'محاولة واحدة في اليوم لكل قسم' : '1 play a day for each section'}</p>
       <p dir="ltr" className="my-2 text-4xl font-black tabular-nums">{formatCountdown(msLeft)}</p>
       <p className="text-xs font-bold text-slate-600">{isAr ? 'المحاولات بتتجدد كل يوم الساعة 12 بالليل' : 'Your plays renew every day at midnight'}</p>
+      <QuizRefillWatcher />
       <ShareUnlockButton className="mt-3" />
       {permission === 'default' && (
         <button type="button" onClick={async () => setPermission(await requestQuizNotifications())} className="mt-3 w-full cursor-pointer rounded-xl bg-[#931A47] py-3 text-sm font-black text-white">
@@ -738,6 +740,7 @@ const QuizGameInner: React.FC = () => {
             <h1 className="text-xl font-black text-slate-900">{isAr ? '🎮 اختار نوع اللعبة' : '🎮 Choose the game'}</h1>
             <h2 className="text-base font-black text-slate-800">{isAr ? '🎯 اختيار من متعدد' : '🎯 Multiple choice'}</h2>
             {!isAr && <button type="button" onClick={() => setQuizLang(null)} className="text-xs font-bold text-sky-700 underline cursor-pointer">{quizLang === 'en' ? 'Questions: English — change' : 'Questions: Arabic — change'}</button>}
+            <QuizRefillWatcher />
             <LockedSectionsBanner keys={SECTIONS.map((sec) => sec.key)} />
             {SECTIONS.map((sec) => (
               <React.Fragment key={sec.id}>

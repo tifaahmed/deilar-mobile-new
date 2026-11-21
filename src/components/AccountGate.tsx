@@ -15,6 +15,7 @@ interface AccountGateProps {
   onSignIn: () => void;
   onEnterCard: () => void;
   onLogout: () => void;
+  onDeleted?: () => void;
   onRetry: () => void;
   /** The signed-in member's token; with it, a member who holds no card is offered the free trial. */
   token?: string;
@@ -78,7 +79,7 @@ const QuizPointsNotice: React.FC = () => {
 };
 
 /** The Profile tab before there is a card to show: both ways in, or what is still missing. */
-export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSignIn, onEnterCard, onLogout, onRetry, token, defaultName, onTrialCreated }) => {
+export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSignIn, onEnterCard, onLogout, onDeleted, onRetry, token, defaultName, onTrialCreated }) => {
   const { isAr } = useLanguage();
   const [legal, setLegal] = React.useState<LegalKind | null>(null);
   const [deleting, setDeleting] = React.useState(false);
@@ -174,7 +175,7 @@ export const AccountGate: React.FC<AccountGateProps> = ({ state, signedIn, onSig
     </div>
     <ContactUs />
     {legal && <LegalSheet kind={legal} onClose={() => setLegal(null)} />}
-    {deleting && token && <DeleteAccountModal token={token} hasRelatives={false} onClose={() => setDeleting(false)} onDeleted={() => { setDeleting(false); onLogout(); }} />}
+    {deleting && token && <DeleteAccountModal token={token} hasRelatives={false} onClose={() => setDeleting(false)} onDeleted={() => { setDeleting(false); (onDeleted ?? onLogout)(); }} />}
     </>
   );
 };

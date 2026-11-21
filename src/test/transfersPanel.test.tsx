@@ -57,4 +57,19 @@ describe('transfers between members', () => {
     fireEvent.click(screen.getByRole('button', { name: 'موافق' }));
     await waitFor(() => expect(http.apiPost).toHaveBeenCalledWith('/transfers/7/accept', {}, undefined, 'tok'));
   });
+
+  it('tells the sender about the transfer fee up front, while typing and what the recipient gets', async () => {
+    http.apiGetAuth.mockResolvedValue({ data: { enabled: true, fee_percent: 50, transfers: [] } });
+    http.apiPost.mockResolvedValueOnce({ data: { name: 'منى ••78' } });
+    render(<TransfersPanel />);
+
+    expect((await screen.findByTestId('transfer-fee-notice')).textContent).toMatch(/50|٥٠/);
+    fireEvent.change(screen.getByLabelText(/رقم التليفون/), { target: { value: '01012345678' } });
+    fireEvent.click(screen.getByRole('button', { name: 'اتأكد من العضو' }));
+    await screen.findByText(/منى ••78/);
+    fireEvent.change(screen.getByLabelText('المبلغ'), { target: { value: '200' } });
+    const preview = screen.getByTestId('transfer-fee-preview').textContent ?? '';
+    expect(preview).toMatch(/200|٢٠٠/);
+    expect(preview).toMatch(/100|١٠٠/);
+  });
 });

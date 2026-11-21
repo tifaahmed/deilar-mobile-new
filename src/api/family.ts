@@ -30,10 +30,13 @@ export const addFamilyChild = (token: string, body: { first_name: string; relati
  */
 export const RELATIVE_ADDED_EVENT = 'deilar:relative-added';
 
+/** Tells the relative-fee panel the list of relatives changed (added, edited or removed), so it asks the backend again. */
+const announceRelativesChanged = () => { if (typeof window !== 'undefined') window.dispatchEvent(new Event(RELATIVE_ADDED_EVENT)); };
+
 export const addFamilyMember = (token: string, body: FormData) =>
   apiPost<{ data: { family_member: FamilyPerson } }>('/family/members', body, undefined, token).then((r) => {
     // The relative-fee panel listens, so the new (waiting) relative shows up with its price at once.
-    if (typeof window !== 'undefined') window.dispatchEvent(new Event(RELATIVE_ADDED_EVENT));
+    announceRelativesChanged();
     return r;
   });
 
@@ -82,7 +85,12 @@ export const updateRelative = (token: string, id: number, body: { name?: string;
   apiPatch<{ data: { family_member: FamilyPerson } }>(`/family/relatives/${id}`, body, token).then((r) => r.data.family_member);
 
 /** The card owner removes one of their relatives (any relation, waiting or approved). */
-export const deleteRelative = (token: string, id: number) => apiDelete<{ success: boolean }>(`/family/relatives/${id}`, token);
+export const deleteRelative = (token: string, id: number) =>
+  apiDelete<{ success: boolean }>(`/family/relatives/${id}`, token).then((r) => {
+    // The fee form for that relative must go with it.
+    announceRelativesChanged();
+    return r;
+  });
 
 /** Sets the profile photo of one of the owner's relatives (an image up to 2 MB); resolves to its URL. */
 export const uploadRelativeAvatar = (token: string, id: number, file: File) => {

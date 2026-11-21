@@ -11,6 +11,9 @@ export interface Transfer {
   direction: 'in' | 'out';
   kind: TransferKind;
   amount: number;
+  /** The transfer fee kept from `amount` and what the recipient gets (the backend decides both; 0 / amount for old rows). */
+  fee?: number;
+  net?: number;
   status: TransferStatus;
   other: string | null;
   note: string | null;
@@ -40,12 +43,12 @@ export async function lookupRecipient(who: { phone?: string; card?: string }): P
 }
 
 /** The member's requests, both ways, newest first, and whether the admin has transfers open. */
-export async function listTransfers(): Promise<{ enabled: boolean; kinds: Record<TransferKind, boolean>; transfers: Transfer[] }> {
+export async function listTransfers(): Promise<{ enabled: boolean; kinds: Record<TransferKind, boolean>; transfers: Transfer[]; fee_percent?: number }> {
   const t = token();
   const off = { enabled: false, kinds: { points: false, wallet: false }, transfers: [] as Transfer[] };
   if (!t) return off;
   try {
-    const { data } = await apiGetAuth<{ data: { enabled: boolean; kinds?: Record<TransferKind, boolean>; transfers: Transfer[] } }>('/transfers', t);
+    const { data } = await apiGetAuth<{ data: { enabled: boolean; kinds?: Record<TransferKind, boolean>; transfers: Transfer[]; fee_percent?: number } }>('/transfers', t);
     // An older backend sends no `kinds`: both are open whenever transfers are.
     return { ...data, kinds: data.kinds ?? { points: data.enabled, wallet: data.enabled } };
   } catch {
@@ -79,3 +82,12 @@ const act = (verb: 'accept' | 'decline' | 'cancel') => async (id: number): Promi
 export const acceptTransfer = act('accept');
 export const declineTransfer = act('decline');
 export const cancelTransfer = act('cancel');
+
+/**
+ * What a transfer of `amount` costs, mirroring the backend (`MemberTransfers::split`) so it can be shown while typing: the recipient gets the
+ * amount minus the fee (points whole, rounded down; wallet pounds with pennies). The backend's own figures replace this once the request is made.
+ */
+export function transferSplit(kind: TransferKind, amount: number, percent: number): { fee: number; net: number } {
+  const net = kind === 'points' ? Math.floor((amount * (100 - percent)) / 100) : Math.round(((amount * (100 - percent)) / 100) * 100) / 100;
+  return { net, fee: Math.round((amount - net) * 100) / 100 };
+}

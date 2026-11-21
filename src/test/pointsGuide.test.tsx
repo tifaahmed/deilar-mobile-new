@@ -17,10 +17,11 @@ describe('the loyalty points page', () => {
     expect(parseQuizPath('points')).toMatchObject({ step: 'points' });
   });
 
-  it('tells the rate, where to use points and that they reset on the 1st', () => {
+  it('tells the rate and where to use points, and says nothing about a monthly reset', () => {
     render(<LanguageProvider><PointsGuide /></LanguageProvider>);
     expect(screen.getByTestId('points-rate').textContent).toContain('100');
-    expect(screen.getByTestId('points-expiry').textContent).toContain('1 أول كل شهر');
+    expect(screen.queryByTestId('points-expiry')).toBeNull();
+    expect(document.body.textContent).not.toContain('أول كل شهر');
     expect(screen.getByText(/كل حاجة/)).toBeTruthy();
   });
 

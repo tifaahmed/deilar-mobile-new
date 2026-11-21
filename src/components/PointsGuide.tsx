@@ -2,13 +2,14 @@ import React from 'react';
 import { useIsAr } from '../context/LanguageContext';
 import { navigate, routeHref } from '../router';
 import { useLoyalty } from '../utils/quizStore';
+import { PointsExpiryNotice } from './PointsExpiryNotice';
 
 /** Where the points page sends the player: the products that take points, the physical card and the membership. */
 export const POINTS_PRODUCTS_HREF = '/products?points=1';
 
 /**
  * «How do I use my loyalty points»: opened from the points total at the top of the games page (/quiz/points). It tells the rate the
- * backend gave (`points_per_egp`), where points can be spent, and that they are reset on the 1st of every month.
+ * backend gave (`points_per_egp`), where points can be spent and how points are shared.
  */
 export const PointsGuide: React.FC = () => {
   const isAr = useIsAr();
@@ -34,6 +35,8 @@ export const PointsGuide: React.FC = () => {
     <div data-testid="points-guide" className="space-y-3">
       <h1 className="text-xl font-black text-slate-900">{isAr ? '⭐ إزاي تستخدم نقاط الولاء؟' : '⭐ How to use your loyalty points'}</h1>
 
+      <PointsExpiryNotice />
+
       <div className="rounded-3xl bg-gradient-to-l from-amber-400 to-orange-500 p-4 text-white shadow-md">
         <p className="text-xs font-bold text-white/90">{isAr ? 'كام نقطة بجنيه؟' : 'How many points per pound?'}</p>
         {rate ? (
@@ -51,11 +54,6 @@ export const PointsGuide: React.FC = () => {
       <Row icon="🎮" title={isAr ? 'بتجيبها منين؟' : 'Where do points come from?'} text={isAr ? 'كل إجابة صح في الألعاب بتكسّبك نقاط، وكل ما تجاوب أسرع بتاخد أكتر. والشارات بتدّيك هدايا نقاط.' : 'Every right answer wins points, more when you answer faster, and badges give gift points.'} />
       <Row icon="🛍️" title={isAr ? 'تستخدمها فين؟' : 'Where can you use them?'} text={isAr ? 'تقدر تستخدم نقاط الولاء في كل حاجة: المنتجات، وطلب كارت فيزيكال، وشراء العضوية.' : 'You can use loyalty points on everything: products, a physical card and the membership.'} />
       <Row icon="👆" title={isAr ? 'إزاي؟' : 'How?'} text={isAr ? 'وإنت بتدفع، دوس على «استخدم نقاط الولاء». النقاط ما بتتخصمش لوحدها، إنت اللي بتختار.' : 'When you pay, tap “Use my loyalty points”. They are never spent on their own; you choose.'} />
-
-      <div data-testid="points-expiry" className="rounded-2xl border-2 border-red-200 bg-red-50 p-3">
-        <p className="text-sm font-black text-red-700">{isAr ? '⏰ خد بالك' : '⏰ Heads up'}</p>
-        <p className="text-xs font-bold leading-relaxed text-red-700">{isAr ? 'نقاط الولاء بتختفي عند كل الناس يوم 1 أول كل شهر. استخدم نقاطك قبل كده.' : 'Loyalty points disappear for everyone on the 1st of every month. Use yours before then.'}</p>
-      </div>
 
       <div data-testid="points-share-card" className="rounded-2xl border-2 border-sky-200 bg-sky-50 p-3 space-y-2">
         <p className="text-sm font-black text-sky-900">{isAr ? '🤝 شارك نقاطك' : '🤝 Share your points'}</p>

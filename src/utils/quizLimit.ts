@@ -82,13 +82,28 @@ export const shareBonusToday = (at: number = Date.now()): number => bonusState(a
 /** Plays a section allows today: the daily one plus what sharing earned. */
 export const allowanceToday = (at: number = Date.now()): number => PLAYS_PER_DAY + shareBonusToday(at);
 
+const refillListeners = new Set<(added: number) => void>();
+
+/**
+ * Called when today's stored bonus goes UP after it was already known (someone registered under the member's code, or any
+ * other refill the app had not seen). Not called for the first value of the day: that is a load, not news.
+ */
+export function onRefillGranted(l: (added: number) => void): () => void {
+  refillListeners.add(l);
+  return () => void refillListeners.delete(l);
+}
+
 /** Stores what the backend says about today's share refills (from the share reply, `GET /loyalty` or the upload reply). */
 export function applyShareState(s: { share_bonus_plays_today?: number; bonus_plays_today?: number; share_refills_left_today?: number; refills_left_today?: number }): void {
   const bonus = s.bonus_plays_today ?? s.share_bonus_plays_today;
   const left = s.refills_left_today ?? s.share_refills_left_today;
   if (bonus === undefined && left === undefined) return;
+  const stored = parse<ShareBonus | null>(read(BONUS_KEY), null);
+  const known = !!stored && stored.day === dayKey();
   const cur = bonusState();
-  write(BONUS_KEY, { day: cur.day, bonus: bonus ?? cur.bonus, left: left ?? cur.left } satisfies ShareBonus);
+  const next = bonus ?? cur.bonus;
+  write(BONUS_KEY, { day: cur.day, bonus: next, left: left ?? cur.left } satisfies ShareBonus);
+  if (known && next > cur.bonus) refillListeners.forEach((l) => l(next - cur.bonus));
 }
 
 /** Refills left today (null = not known yet: the member is shown the share offer anyway). */
